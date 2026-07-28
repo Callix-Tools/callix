@@ -8,9 +8,17 @@ vars:
   # The release profile is not incidental: in debug the embedded ty is about
   # 15x slower (resolving graphlens takes 12.5s against 0.8s) and the dev loop
   # turns into waiting. DEBUG=1 is only for a debugger or a quick compile
-  # check.
+  # check. Every cargo task shares the profile so the ty tree — some 200
+  # crates — is compiled once rather than once per profile.
   PROFILE: '{{if eq .DEBUG "1"}}{{else}}--release{{end}}'
   SCRIPT: '{{default "example/test.py" .CLI_ARGS}}'
+
+env:
+  # abi3-py313 demands an interpreter >= 3.13, and pyo3 otherwise picks
+  # whatever `python3` is first on PATH — on a CI runner that is often older.
+  # `task install` creates this venv, so pointing pyo3 at it directly keeps
+  # cargo independent of whether the venv happens to be activated.
+  PYO3_PYTHON: '{{.TASKFILE_DIR}}/.venv/bin/python'
 
 tasks:
   default:
@@ -23,7 +31,11 @@ tasks:
   install:
     desc: Create the venv and install maturin
     cmds:
-      - uv venv
+      # The version is pinned rather than left to whatever `python3` resolves
+      # to: abi3-py313 refuses to build against anything older, and uv fetches
+      # 3.13 itself when the machine has none.
+      # --allow-existing keeps a re-run idempotent instead of erroring out.
+      - uv venv --python 3.13 --allow-existing
       - uv pip install maturin
 
   build:
@@ -39,7 +51,7 @@ tasks:
     desc: Regenerate the .pyi stubs from the pyo3-stub-gen annotations
     cmds:
       # Without pyo3/extension-module, or the binary will not link libpython.
-      - cargo run --quiet --bin stub_gen
+      - cargo run --quiet {{.PROFILE}} --bin stub_gen
 
   stubs:check:
     desc: Check the committed .pyi files match the generated ones
@@ -55,17 +67,17 @@ tasks:
   lint:
     desc: Run clippy (any warning is an error)
     cmds:
-      - cargo clippy --all-targets -- -D warnings
+      - cargo clippy --all-targets {{.PROFILE}} -- -D warnings
 
   check:
     desc: Quick compile check without building the module
     cmds:
-      - cargo check --all-targets
+      - cargo check --all-targets {{.PROFILE}}
 
   test:
     desc: Rust tests plus a smoke run of the example
     cmds:
-      - cargo test
+      - cargo test {{.PROFILE}}
       - task: example
 
   clean:

@@ -116,6 +116,15 @@ into waiting.
 equals a failure. `cargo fmt` is deliberately not a task: formatting is
 hand-tuned in places and it would rewrite the code into its own style.
 
+Every cargo task shares one profile, release by default: the ty tree is some
+200 crates, and linting in debug while building in release would compile it
+twice. `DEBUG=1` switches all of them together.
+
+The Taskfile points `PYO3_PYTHON` at `.venv/bin/python`, because abi3-py313
+needs an interpreter >= 3.13 and pyo3 would otherwise pick whatever `python3`
+comes first on PATH — which on a CI runner is regularly older. So run cargo
+through the tasks rather than directly, or export that variable yourself.
+
 The `.pyi` stubs are generated automatically (`pyo3-stub-gen`) into
 `python/callix/_core/` and are committed — CI fails when the generated files
 drift from the committed ones. There is no need to edit them by hand.

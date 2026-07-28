@@ -5,72 +5,170 @@ includes:
     taskfile: benchmarks/Taskfile.yaml
 
 vars:
-  # Сборка релизная не случайно: в debug встроенный ty медленнее примерно
-  # в 15 раз (резолв graphlens — 12.5s против 0.8s), и цикл разработки
-  # превращается в ожидание. DEBUG=1 нужен только под отладчик или для
-  # быстрой проверки компиляции.
+  # The release profile is not incidental: in debug the embedded ty is about
+  # 15x slower (resolving graphlens takes 12.5s against 0.8s) and the dev loop
+  # turns into waiting. DEBUG=1 is only for a debugger or a quick compile
+  # check.
   PROFILE: '{{if eq .DEBUG "1"}}{{else}}--release{{end}}'
   SCRIPT: '{{default "example/test.py" .CLI_ARGS}}'
 
 tasks:
   default:
-    desc: Цикл разработки — сборка, стабы, пример (DEBUG=1 для debug-сборки)
+    desc: Dev loop — build, stubs, example (DEBUG=1 for a debug build)
     cmds:
       - task: build
       - task: stubs
       - task: example
 
   install:
-    desc: Создать venv и поставить maturin
+    desc: Create the venv and install maturin
     cmds:
       - uv venv
       - uv pip install maturin
 
   build:
-    desc: Собрать расширение в venv (DEBUG=1 для debug-сборки)
+    desc: Build the extension into the venv (DEBUG=1 for a debug build)
     cmds:
       - |
         if [[ "{{.DEBUG}}" == "1" ]]; then
-          echo "!! debug-сборка: встроенный ty будет очень медленным"
+          echo "!! debug build: the embedded ty will be very slow"
         fi
       - uv run maturin develop --uv {{.PROFILE}}
 
   stubs:
-    desc: Перегенерировать .pyi из аннотаций pyo3-stub-gen
+    desc: Regenerate the .pyi stubs from the pyo3-stub-gen annotations
     cmds:
-      # Без pyo3/extension-module, иначе бинарь не слинкуется с libpython.
+      # Without pyo3/extension-module, or the binary will not link libpython.
       - cargo run --quiet --bin stub_gen
 
   stubs:check:
-    desc: Проверить, что закоммиченные .pyi совпадают со сгенерированными
+    desc: Check the committed .pyi files match the generated ones
     cmds:
       - task: stubs
       - git diff --exit-code -- python/callix
 
   example:
-    desc: Запустить пример (task example -- example/foo.py)
+    desc: Run the example (task example -- example/foo.py)
     cmds:
       - uv run python {{.SCRIPT}}
 
   lint:
-    desc: Прогнать clippy
-    # Без `-D warnings`: форматирование местами ручное, а часть подсказок
-    # clippy для этого кода спорна — задача показывает их, но не валит.
+    desc: Run clippy (any warning is an error)
     cmds:
-      - cargo clippy --all-targets
+      - cargo clippy --all-targets -- -D warnings
 
   check:
-    desc: Быстрая проверка компиляции без сборки модуля
+    desc: Quick compile check without building the module
     cmds:
       - cargo check --all-targets
 
   test:
-    desc: Тесты Rust плюс smoke-прогон примера
+    desc: Rust tests plus a smoke run of the example
     cmds:
       - cargo test
       - task: example
 
   clean:
-    desc: Убрать артефакты сборки (клон typescript-go в .ts-go остаётся)
+    desc: Remove build artifacts (the typescript-go clone in .ts-go stays)
     cmds:
       - cargo clean
+
+  # ---------------------------------------------------------------------------
+  # Release
+  # ---------------------------------------------------------------------------
+
+  release:version:
+    desc: Determine the next version from conventional commits
+    cmds:
+      - |
+        NEXT=$(git cliff --bumped-version 2>/dev/null || echo "")
+        if [[ -z "$NEXT" ]]; then
+          echo "No tags yet, bootstrapping with v0.1.0"
+          NEXT="v0.1.0"
+        fi
+        NEXT_CLEAN="${NEXT#v}"
+        echo "Next version: $NEXT ($NEXT_CLEAN)"
+        if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "version=$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
+        fi
+
+  release:bump:
+    desc: Bump the version in Cargo.toml and Cargo.lock (requires VERSION=x.y.z)
+    requires:
+      vars: [VERSION]
+    # The package version lives only in Cargo.toml: in pyproject.toml it is
+    # `dynamic` and maturin reads it from there. The first `version =` inside
+    # the [package] section is edited, so dependency versions stay untouched.
+    cmds:
+      - |
+        python3 - "{{.VERSION}}" <<'PY'
+        import pathlib, re, sys
+        version = sys.argv[1]
+        path = pathlib.Path("Cargo.toml")
+        text = path.read_text(encoding="utf-8")
+        head, sep, tail = text.partition("\n[")
+        new_head, count = re.subn(
+            r'(?m)^version = ".*"$', f'version = "{version}"', head, count=1
+        )
+        if count != 1:
+            sys.exit("no version found in Cargo.toml's [package] section")
+        path.write_text(new_head + sep + tail, encoding="utf-8")
+        print(f"Cargo.toml -> {version}")
+        PY
+      - cargo update --workspace --quiet
+
+  release:changelog:
+    desc: Generate CHANGELOG.md (requires TAG=vX.Y.Z)
+    requires:
+      vars: [TAG]
+    cmds:
+      - git cliff --tag {{.TAG}} --output CHANGELOG.md
+
+  release:commit:
+    desc: Commit the version bump and changelog, create the tag (requires TAG=vX.Y.Z)
+    requires:
+      vars: [TAG]
+    cmds:
+      - |
+        git add Cargo.toml Cargo.lock CHANGELOG.md
+        git commit -m "chore(release): {{.TAG}}"
+        git tag -a "{{.TAG}}" -m "Release {{.TAG}}"
+
+  release:push:
+    desc: Push the commit and tag to origin (requires TAG=vX.Y.Z)
+    requires:
+      vars: [TAG]
+    cmds:
+      - git push origin main
+      - git push origin {{.TAG}}
+
+  release:sdist:
+    desc: Build the source distribution
+    cmds:
+      - uv run maturin sdist --out dist
+
+  release:wheel:
+    desc: Build a wheel for the current platform
+    cmds:
+      - uv run maturin build --release --out dist
+
+  release:publish:
+    desc: Publish everything in dist/ to PyPI
+    # Wheels are built by the matrix in release.yml and gathered into dist/
+    # as artifacts: callix carries ty and the Go bridge inside, so one wheel
+    # cannot cover every platform.
+    cmds:
+      - uv publish dist/*
+
+  release:github:
+    desc: Create the GitHub Release with changelog notes (requires TAG=vX.Y.Z)
+    requires:
+      vars: [TAG]
+    cmds:
+      - |
+        git cliff --latest --strip all > /tmp/release-notes.md
+        gh release create {{.TAG}} \
+          --title {{.TAG}} \
+          --notes-file /tmp/release-notes.md \
+          dist/*

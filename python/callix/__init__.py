@@ -1,6 +1,6 @@
-"""Ядро полиглотного анализа кода: исходники → граф-IR.
+"""The polyglot code-analysis core: sources → a graph IR.
 
-Всё, кроме этого фасада, живёт в нативном модуле `callix._core`.
+Everything but this facade lives in the native `callix._core` module.
 """
 
 from __future__ import annotations

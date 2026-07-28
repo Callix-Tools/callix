@@ -1,5 +1,5 @@
-//! Места использования символов и классификация происхождения импортов —
-//! общее для всех языковых визиторов.
+//! Symbol use-sites and import-origin classification — shared by every
+//! language visitor.
 
 use std::collections::HashSet;
 
@@ -8,12 +8,13 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::span::Span;
 
-/// Место использования, которое резолвер потом привяжет к определению.
+/// A use-site the resolution pass will later bind to a definition.
 ///
-/// Координаты 1-based. Роли:
-/// `call` — место вызова функции/метода; `read` — чтение идентификатора;
-/// `write` — цель присваивания; `annotation` — аннотация типа или правая
-/// часть TypeAlias; `base` — базовый класс в списке наследования.
+/// Coordinates are 1-based. Roles:
+/// `call` — a function/method call site; `read` — an identifier read;
+/// `write` — an assignment target; `annotation` — a type annotation or the
+/// right-hand side of a TypeAlias; `base` — a base class in an inheritance
+/// list.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all, from_py_object)]
 #[derive(Clone)]
@@ -41,11 +42,11 @@ impl OccurrenceRef {
     }
 }
 
-/// Определяет происхождение импорта по заранее посчитанным наборам имён.
+/// Determines an import's origin from precomputed name sets.
 ///
-/// Значения (ложатся в `Node.metadata["origin"]`): `stdlib`, `internal`,
-/// `third_party`, `unknown` — последнее означает «ни в одном наборе»
-/// (транзитивная зависимость или её отсутствие).
+/// The values (stored in `Node.metadata["origin"]`): `stdlib`, `internal`,
+/// `third_party`, `unknown` — the last one meaning "in none of the sets"
+/// (a transitive dependency, or no dependency at all).
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen)]
 #[derive(Default)]
@@ -72,7 +73,7 @@ impl ImportClassifier {
         }
     }
 
-    /// Происхождение по имени модуля верхнего уровня.
+    /// The origin for a top-level module name.
     #[pyo3(name = "classify")]
     fn py_classify(&self, top_level: &str) -> &'static str {
         self.classify(top_level)

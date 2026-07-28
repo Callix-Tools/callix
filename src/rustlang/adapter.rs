@@ -1,8 +1,8 @@
-//! Оркестрация анализа Rust-крейтов.
+//! Orchestration of Rust crate analysis.
 //!
-//! MODULE здесь — модуль Rust (`crate::net::http`), а не каталог: имя
-//! выводится из пути файла внутри `src`, а вложенные `mod foo { ... }`
-//! добавляют свои сегменты уже в визиторе.
+//! A MODULE here is a Rust module (`crate::net::http`) rather than a
+//! directory: the name is derived from the file's path inside `src`, and
+//! nested `mod foo { ... }` blocks add their segments in the visitor.
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -40,10 +40,10 @@ pub fn collect_rust_files(root: &Path) -> Vec<PathBuf> {
     collect_files(root, &RUST_EXTENSIONS, &EXCLUDED_DIRS)
 }
 
-/// Полное имя модуля по пути файла внутри крейта.
+/// A module's qualified name from its file path within the crate.
 ///
-/// `src/net/http.rs` → `crate_name::net::http`; хвостовые `lib`, `main` и
-/// `mod` отбрасываются — они называют не себя, а объемлющий модуль.
+/// `src/net/http.rs` → `crate_name::net::http`; trailing `lib`, `main`, and
+/// `mod` are dropped — they name the enclosing module, not themselves.
 fn module_qname(file: &Path, crate_root: &Path, crate_name: &str) -> String {
     let relative = file
         .strip_prefix(crate_root.join("src"))
@@ -66,12 +66,12 @@ fn module_qname(file: &Path, crate_root: &Path, crate_name: &str) -> String {
     format!("{crate_name}::{}", parts.join("::"))
 }
 
-/// MODULE-имена, к которым может вести внутренний путь `use`.
+/// The MODULE names an internal `use` path may lead to.
 ///
-/// Корень пути переводится в пространство имён крейта (`crate` → имя
-/// крейта, `self` → текущий модуль, `super` → родительский), после чего
-/// предлагается сам путь (путь и есть модуль) и его родитель (последний
-/// сегмент — импортируемый элемент, а не модуль).
+/// The path root is translated into the crate's namespace (`crate` → the
+/// crate name, `self` → the current module, `super` → the parent), after
+/// which the full path is offered (the path is the module) along with its
+/// parent (the final segment is an imported item, not a module).
 fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) -> Vec<String> {
     let segments: Vec<&str> = import_path
         .split("::")
@@ -99,7 +99,7 @@ fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) ->
         _ if head.replace('-', "_") == crate_name.replace('-', "_") => {
             (vec![crate_name], &segments[1..])
         }
-        // Классификатор внутренними считает только перечисленное выше.
+        // The classifier only marks the cases above as internal.
         _ => return Vec::new(),
     };
 
@@ -218,7 +218,7 @@ fn push_relation(
     Ok(())
 }
 
-/// Структура и импорты одного крейта.
+/// Structure and imports for one crate.
 fn build_crate_structure(
     py: Python<'_>,
     graph: &mut Graph,
@@ -290,9 +290,9 @@ fn build_crate_structure(
         }
     }
 
-    // Внутренние импорты связываем, когда все модули крейта уже созданы.
-    // Не найденное падает в EXTERNAL_SYMBOL, чтобы ребро RESOLVES_TO не
-    // пропало.
+    // Internal imports are bound once every module of the crate exists.
+    // Anything not found falls through to an EXTERNAL_SYMBOL so the
+    // RESOLVES_TO edge is never lost.
     for (import_id, import_path, importer_qname) in internal_imports {
         let target_id = module_candidates(&import_path, &project, &importer_qname)
             .into_iter()
@@ -307,7 +307,7 @@ fn build_crate_structure(
     Ok((project, occurrences, boundaries))
 }
 
-/// Абсолютный путь резолвера → путь относительно корня проекта.
+/// A resolver's absolute path → a path relative to the project root.
 fn relative_to(file_path: &str, project_root: &Path) -> String {
     let path = Path::new(file_path);
     let resolved = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
@@ -317,11 +317,11 @@ fn relative_to(file_path: &str, project_root: &Path) -> String {
         .unwrap_or_else(|_| file_path.to_string())
 }
 
-/// Ключ EXTERNAL_SYMBOL для цели, которую не удалось назвать.
+/// The EXTERNAL_SYMBOL key for a target that could not be named.
 ///
-/// Путь файла входит в ключ намеренно: без него вызовы на одной и той же
-/// строке в разных файлах схлопывались бы в один узел (см. README,
-/// «Отличия от graphlens»).
+/// The file path is part of the key deliberately: without it, calls on the
+/// same line in different files would collapse into one node (see the README,
+/// "Differences from graphlens").
 fn positional_key(project_root: &Path, file_path: &str, occurrence: &OccurrenceRef) -> String {
     let path = Path::new(file_path);
     let relative = path.strip_prefix(project_root).unwrap_or(path).to_string_lossy();
@@ -339,7 +339,7 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
     })
 }
 
-/// Языковой адаптер для Rust-крейтов.
+/// The language adapter for Rust crates.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 pub struct RustAdapter {
@@ -350,8 +350,8 @@ pub struct RustAdapter {
 #[pymethods]
 impl RustAdapter {
     /// Args:
-    ///     resolve: False отключает резолв-фазу — граф останется
-    ///         структурным, а `resolver_status` станет `unavailable`.
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` becomes `unavailable`.
     #[new]
     #[pyo3(signature = (*, resolve = true))]
     fn new(resolve: bool) -> Self {
@@ -376,7 +376,7 @@ impl RustAdapter {
         collect_rust_files(&project_root)
     }
 
-    /// Разбирает воркспейс и возвращает граф.
+    /// Analyses the workspace and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
     fn analyze(
         &mut self,
@@ -406,17 +406,17 @@ impl RustAdapter {
 
         let mut graph = Graph::empty(py);
 
-        // Фаза 1 — структура по каждому крейту, без резолва: SpanIndex ниже
-        // должен покрывать весь воркспейс, чтобы межкрейтовые цели уже
-        // существовали к моменту разрешения первого occurrence.
+        // Phase 1 — structure per crate, no resolution: the SpanIndex below
+        // has to cover the whole workspace, so cross-crate targets already
+        // exist by the time the first occurrence is resolved.
         let mut built = Vec::with_capacity(crate_files.len());
         for (crate_root, files) in &crate_files {
             built.push(build_crate_structure(py, &mut graph, &project_root, crate_root, files)?);
         }
 
-        // Фаза 2 — ОДИН индекс на весь воркспейс. Индексировать каждый
-        // крейт-участник по отдельности значило бы и терять межкрейтовые
-        // вызовы, и перезагружать воркспейс на каждого участника.
+        // Phase 2 — ONE index for the whole workspace. Indexing each member
+        // crate separately would both lose cross-crate calls and reload the
+        // workspace once per member.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
         if let Some(resolver) = &mut self.resolver {
@@ -437,7 +437,7 @@ impl RustAdapter {
             status = resolver.status_rust();
         }
 
-        // Фаза 3 — границы; от резолва не зависят.
+        // Phase 3 — boundaries; independent of resolution.
         for (_project, _occurrences, boundaries) in &built {
             apply_boundaries(py, &mut graph, boundaries)?;
         }
@@ -528,7 +528,7 @@ fn resolve_pass(
         metadata.set_item("span", occurrence.span)?;
         let relation = Relation {
             source_id: occurrence.enclosing_id.clone(),
-            target_id: target_id.expect("внешний символ создаётся выше"),
+            target_id: target_id.expect("the external symbol is created above"),
             kind: rel_kind,
             metadata: metadata.unbind(),
         };
@@ -537,7 +537,7 @@ fn resolve_pass(
     Ok(metrics)
 }
 
-/// Узлы BOUNDARY и рёбра EXPOSES / CONSUMES.
+/// BOUNDARY nodes and EXPOSES / CONSUMES edges.
 fn apply_boundaries(py: Python<'_>, graph: &mut Graph, files: &[FileBoundaries]) -> PyResult<()> {
     if files.is_empty() {
         return Ok(());

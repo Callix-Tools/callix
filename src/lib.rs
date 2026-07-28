@@ -1,4 +1,5 @@
-//! Нативное ядро callix: модели графа и (дальше) парсинг через tree-sitter.
+//! The native callix core: graph models, parsing via tree-sitter, and the
+//! language adapters built on top of them.
 
 use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;

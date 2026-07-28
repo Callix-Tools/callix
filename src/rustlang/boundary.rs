@@ -1,8 +1,8 @@
-//! Извлечение межъязыковых границ из Rust.
+//! Cross-language boundary extraction from Rust.
 //!
-//! Сервер: axum `.route("/x", get(handler))` (глагол — обёртка обработчика)
-//! и атрибуты actix/rocket `#[get("/x")]`. Клиент: reqwest
-//! `client.get("/x")`. Ключи проходят через общий `normalize_http_path`.
+//! Server: axum's `.route("/x", get(handler))` (the verb is the handler
+//! wrapper) and actix/rocket's `#[get("/x")]` attributes. Client: reqwest's
+//! `client.get("/x")`. Keys go through the shared `normalize_http_path`.
 
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
@@ -17,10 +17,10 @@ use crate::boundaries::{BoundaryRef, normalize_http_path};
 use crate::ts;
 
 const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", "options"];
-/// axum `route(path, handler)`: обёртка обработчика — второй аргумент.
+/// axum's `route(path, handler)`: the handler wrapper is the 2nd argument.
 const HANDLER_ARG_INDEX: usize = 1;
 
-/// Конструкторы клиента gRPC у tonic.
+/// tonic's gRPC client constructors.
 const GRPC_CTORS: [&str; 2] = ["new", "connect"];
 const GRPC_CLIENT_SUFFIX: &str = "Client";
 
@@ -32,12 +32,12 @@ const Q_METHOD_CALL: &str = r#"
     field: (field_identifier) @method)
   arguments: (arguments) @args)
 "#;
-/// Атрибут-макрос `#[get("/x")]`.
+/// The `#[get("/x")]` attribute macro.
 const Q_ATTRIBUTE: &str = r#"
 (attribute_item
   (attribute (identifier) @attr arguments: (token_tree) @args))
 "#;
-/// `let client = ...;` — из значения достаётся конструктор gRPC-стаба.
+/// `let client = ...;` — the gRPC stub constructor is read out of the value.
 const Q_LET_IDENT: &str = r#"
 (let_declaration
   pattern: (identifier) @var
@@ -49,7 +49,7 @@ macro_rules! cached_query {
         static QUERY: OnceLock<Query> = OnceLock::new();
         QUERY.get_or_init(|| {
             Query::new(&tree_sitter_rust::LANGUAGE.into(), $source)
-                .expect("запрос валиден для грамматики rust")
+                .expect("the query is valid for the rust grammar")
         })
     }};
 }
@@ -68,7 +68,7 @@ impl<'a> Extractor<'a> {
         (span.start_line, span.start_col)
     }
 
-    /// Содержимое строкового литерала Rust; None — если это не литерал.
+    /// The contents of a Rust string literal; None if it is not one.
     fn string_content(&self, node: TsNode<'_>) -> Option<String> {
         if node.kind() != "string_literal" {
             return None;
@@ -80,13 +80,13 @@ impl<'a> Extractor<'a> {
         )
     }
 
-    /// Первый аргумент, если он строковый литерал.
+    /// The first argument, if it is a string literal.
     fn first_string(&self, args: TsNode<'_>) -> Option<String> {
         let first = ts::named_children(args).into_iter().next()?;
         self.string_content(first)
     }
 
-    /// Для axum `route(path, get(h))` — глагол во втором аргументе.
+    /// For axum's `route(path, get(h))` — the verb in the 2nd argument.
     fn handler_verb(&self, args: TsNode<'_>) -> Option<String> {
         let positional = ts::named_children(args);
         let handler = *positional.get(HANDLER_ARG_INDEX)?;
@@ -99,7 +99,7 @@ impl<'a> Extractor<'a> {
         HTTP_VERBS.contains(&verb.as_str()).then_some(verb)
     }
 
-    /// Первый строковый литерал внутри token tree атрибута.
+    /// The first string literal inside an attribute's token tree.
     fn string_in_tree(&self, tree: TsNode<'_>) -> Option<String> {
         ts::children(tree)
             .into_iter()
@@ -124,7 +124,7 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Маршруты axum `.route(...)` и атрибуты actix/rocket `#[get(...)]`.
+    /// axum `.route(...)` routes and actix/rocket `#[get(...)]` attributes.
     fn http_server(&self, root: TsNode<'_>, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -156,7 +156,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Клиентские вызовы reqwest (`client.get("/x")`).
+    /// reqwest client calls (`client.get("/x")`).
     fn http_client(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -178,7 +178,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Продюсеры (publish/produce) и консьюмеры (subscribe) очередей.
+    /// Queue producers (publish/produce) and consumers (subscribe).
     fn queue(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -207,7 +207,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Сервис из конструктора `<Service>Client::new` внутри значения.
+    /// The service from a `<Service>Client::new` constructor inside a value.
     fn grpc_service_from_value(&self, value: TsNode<'_>) -> Option<String> {
         let mut stack = vec![value];
         while let Some(node) = stack.pop() {
@@ -228,7 +228,7 @@ impl<'a> Extractor<'a> {
         None
     }
 
-    /// Вызовы RPC на сгенерированном стабе tonic (клиентская сторона).
+    /// RPC calls on a generated tonic stub (the client side).
     fn grpc(&self, root: TsNode<'_>, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut clients: BTreeMap<String, String> = BTreeMap::new();
         for caps in ts::run_query(cached_query!(Q_LET_IDENT), root, self.source) {
@@ -251,9 +251,9 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             let method = self.text(method_node);
-            // Метод-HTTP-глагол со строкой-URL в аргументе — это вызов в
-            // стиле reqwest (его разбирает http_client), а не RPC: у RPC
-            // аргумент всегда сообщение-запрос, а не URL.
+            // An HTTP-verb method whose argument is a URL string is a
+            // reqwest-style call (handled by http_client), not an RPC: an
+            // RPC's argument is always a request message, never a URL.
             if HTTP_VERBS.contains(&method.to_lowercase().as_str())
                 && let Some(url) = self.first_string(args)
                 && (url.starts_with('/') || url.contains("://"))
@@ -287,14 +287,14 @@ fn cap<'tree>(caps: &Caps<'_, 'tree>, name: &str) -> Option<TsNode<'tree>> {
 
 fn queue_role(method: &str) -> Option<&'static str> {
     match method {
-        // Продюсер обращается к топику, консьюмер его обслуживает.
+        // A producer addresses the topic, a consumer serves it.
         "publish" | "produce" => Some("client"),
         "subscribe" => Some("server"),
         _ => None,
     }
 }
 
-/// `get_user` → `GetUser`, чтобы ключи Rust сходились с Go и Python.
+/// `get_user` → `GetUser`, so Rust keys line up with Go and Python.
 fn snake_to_pascal(name: &str) -> String {
     name.split('_')
         .map(|part| match part.chars().next() {
@@ -304,10 +304,10 @@ fn snake_to_pascal(name: &str) -> String {
         .collect()
 }
 
-/// Все границы одного файла. Порядок экстракторов — как в graphlens.
+/// Every boundary in one file. The extractor order matches graphlens's.
 pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     let extractor = Extractor { source };
-    // Три экстрактора из четырёх ходят по одному и тому же запросу.
+    // Three of the four extractors walk the same one query.
     let calls = ts::run_query(cached_query!(Q_METHOD_CALL), root, source);
 
     let mut refs = extractor.http_server(root, &calls);
@@ -317,7 +317,7 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     refs
 }
 
-/// Границы в одном исходнике — точка входа для проверок.
+/// Boundaries in a single source — the entry point for checks.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn extract_rust_boundaries(source: &Bound<'_, PyBytes>) -> PyResult<Vec<BoundaryRef>> {

@@ -1,9 +1,9 @@
-//! Мост «позиция в исходнике → узел графа».
+//! The bridge from "position in a source file" to "node in the graph".
 //!
-//! Держит по два списка на файл: полные экстенты узлов и спаны их имён.
-//! Резолвер бьёт сюда на каждый occurrence, поэтому списки заранее
-//! отсортированы по началу спана — поиск идёт бинарным срезом, а не
-//! полным перебором файла, как в Python-версии.
+//! Keeps two lists per file: full node extents and their name spans. The
+//! resolution pass hits this once per occurrence, so the lists are sorted by
+//! span start up front — a lookup is a binary slice rather than a full scan
+//! of the file, as it was in the Python version.
 
 use std::collections::HashMap;
 
@@ -37,13 +37,13 @@ impl Table {
         self.sorted = true;
     }
 
-    /// Самый тесный спан, содержащий позицию.
+    /// The tightest span containing the position.
     fn smallest_containing(&mut self, file_path: &str, line: u32, col: u32) -> Option<String> {
         self.sort();
         let entries = self.per_file.get(file_path)?;
 
-        // Спаны отсортированы по началу, поэтому всё после первого начала
-        // строго правее позиции содержать её уже не может.
+        // Spans are sorted by start, so once a start lies strictly to the
+        // right of the position, nothing after it can contain the position.
         let end = entries.partition_point(|(_, s)| (s.start_line, s.start_col) <= (line, col));
 
         entries[..end]
@@ -63,7 +63,7 @@ pub struct SpanIndex {
 }
 
 impl SpanIndex {
-    /// Поиск по спанам имён — та же таблица, что и у `at()`.
+    /// Lookup by name span — the same table `at()` uses.
     pub(crate) fn lookup_name(&mut self, file_path: &str, line: u32, col: u32) -> Option<String> {
         self.name.smallest_containing(file_path, line, col)
     }
@@ -77,17 +77,17 @@ impl SpanIndex {
         Self::default()
     }
 
-    /// Регистрирует полный экстент узла.
+    /// Registers a node's full extent.
     fn add_full(&mut self, file_path: String, node_id: String, span: Span) {
         self.full.add(file_path, node_id, span);
     }
 
-    /// Регистрирует спан имени (идентификатора) узла.
+    /// Registers a node's name (identifier) span.
     fn add_name(&mut self, file_path: String, node_id: String, name_span: Span) {
         self.name.add(file_path, node_id, name_span);
     }
 
-    /// Собирает индекс по всем узлам графа, у которых есть спан.
+    /// Builds the index over every graph node that carries a span.
     #[staticmethod]
     pub(crate) fn from_graph(py: Python<'_>, graph: &Graph) -> PyResult<Self> {
         let mut idx = Self::default();
@@ -108,12 +108,12 @@ impl SpanIndex {
         Ok(idx)
     }
 
-    /// Внутренний узел, чей полный экстент содержит позицию (1-based).
+    /// The innermost node whose full extent contains the (1-based) position.
     fn enclosing(&mut self, file_path: &str, line: u32, col: u32) -> Option<String> {
         self.full.smallest_containing(file_path, line, col)
     }
 
-    /// Узел, чей спан имени содержит позицию (1-based).
+    /// The node whose name span contains the (1-based) position.
     fn at(&mut self, file_path: &str, line: u32, col: u32) -> Option<String> {
         self.name.smallest_containing(file_path, line, col)
     }

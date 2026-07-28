@@ -1,40 +1,40 @@
-//! Границы между сервисами и нормализация их ключей.
+//! Boundaries between services, and the normalization of their keys.
 //!
-//! Межъязыковое сопоставление работает, только если Python
-//! `@app.get("/users/{id}")` и TypeScript `fetch("/users/1")` сводятся к
-//! одному ключу, поэтому нормализация живёт в ядре и общая для всех
-//! адаптеров.
+//! Cross-language matching only works if Python's
+//! `@app.get("/users/{id}")` and TypeScript's `fetch("/users/1")` reduce to
+//! the same key, so normalization lives in the core and is shared by every
+//! adapter.
 
 use indexmap::IndexMap;
 
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
-/// Один *порт* на межъязыковой границе, найденный в исходнике.
+/// A single *port* on a cross-language boundary, found in the source.
 ///
-/// Граница — это контракт между сервисами, который не разрешает ни один
-/// компилятор: HTTP-маршрут, gRPC-метод, топик очереди, активность
-/// Temporal. Каждая сторона контракта (сервер — `exposes`, клиент —
-/// `consumes`) и есть порт.
+/// A boundary is a contract between services that no compiler resolves: an
+/// HTTP route, a gRPC method, a queue topic, a Temporal activity. Each side
+/// of the contract (the server `exposes`, the client `consumes`) is a port.
 ///
-/// Координаты 1-based и указывают на место порта (декоратор маршрута,
-/// вызов `fetch`, вызов `publish`), чтобы адаптер смог сопоставить его с
-/// объемлющим объявлением.
+/// Coordinates are 1-based and point at the port's site (a route decorator,
+/// a `fetch` call, a `publish` call) so the adapter can match it to the
+/// enclosing declaration.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all, from_py_object)]
 #[derive(Clone)]
 pub struct BoundaryRef {
-    /// Семейство границы: `http` | `grpc` | `queue` | `temporal`.
+    /// The boundary family: `http` | `grpc` | `queue` | `temporal`.
     pub mechanism: String,
-    /// `server` (предоставляет контракт) или `client` (потребляет).
+    /// `server` (provides the contract) or `client` (consumes it).
     pub role: String,
-    /// Нормализованный ключ сопоставления, например `GET /users/{}`.
+    /// The normalized matching key, for example `GET /users/{}`.
     pub key: String,
     pub line: u32,
     pub col: u32,
-    /// Уверенность экстрактора: 1.0 — литерал, меньше — вывод по контексту.
+    /// The extractor's confidence: 1.0 for a literal, less when inferred
+    /// from context.
     pub confidence: f64,
-    /// Человекочитаемый контекст: метод, путь, топик, фреймворк.
+    /// Human-readable context: method, path, topic, framework.
     pub detail: IndexMap<String, String>,
 }
 
@@ -71,7 +71,7 @@ impl BoundaryRef {
     }
 }
 
-/// Схлопывает параметр пути в `{}`, если сегмент им является.
+/// Collapses a path parameter into `{}` if the segment is one.
 fn collapse_params(path: &str) -> String {
     let mut out = String::with_capacity(path.len());
     let mut rest = path;
@@ -101,8 +101,8 @@ fn collapse_params(path: &str) -> String {
     }
     result.push_str(rest);
 
-    // :id — Express, только в начале сегмента, чтобы двоеточие внутри
-    // сегмента (`/v1/users/123:activate`, `sha256:abc`) осталось как есть.
+    // :id is Express style, only at the start of a segment, so a colon
+    // inside a segment (`/v1/users/123:activate`, `sha256:abc`) stays put.
     result
         .split('/')
         .enumerate()
@@ -117,11 +117,11 @@ fn collapse_params(path: &str) -> String {
         .join("/")
 }
 
-/// Приводит маршрут или URL к ключу, не зависящему от хоста и параметров.
+/// Reduces a route or URL to a key independent of host and parameters.
 ///
-/// Убирает схему и хост, query и фрагмент; схлопывает параметры пути всех
-/// стилей и конкретные числовые id (`/users/1` встречается с `/users/{}`);
-/// снимает завершающий слэш, кроме корня.
+/// Strips scheme and host, query and fragment; collapses path parameters of
+/// every style along with concrete numeric ids (`/users/1` has to meet
+/// `/users/{}`); drops the trailing slash except at the root.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn normalize_http_path(raw: &str) -> String {
@@ -147,7 +147,7 @@ pub fn normalize_http_path(raw: &str) -> String {
 
     path = collapse_params(&path);
 
-    // Числовые сегменты — тоже параметры.
+    // Numeric segments are parameters too.
     path = path
         .split('/')
         .map(|segment| {

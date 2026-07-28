@@ -1,5 +1,5 @@
-//! Диапазон в исходнике. Все значения 1-based (tree-sitter отдаёт 0-based —
-//! конвертировать на границе визитора).
+//! A range in a source file. Every value is 1-based (tree-sitter reports
+//! 0-based — convert at the visitor boundary).
 
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -22,7 +22,7 @@ impl Span {
         Self { start_line, start_col, end_line, end_col }
     }
 
-    /// Содержит ли диапазон позицию (1-based).
+    /// Whether the range contains the (1-based) position.
     #[pyo3(name = "contains")]
     fn py_contains(&self, line: u32, col: u32) -> bool {
         self.contains(line, col)
@@ -42,7 +42,8 @@ impl Span {
             && (line, col) <= (self.end_line, self.end_col)
     }
 
-    /// Насколько диапазон «узкий»: меньше — теснее. Для выбора внутреннего узла.
+    /// How "narrow" the range is: smaller is tighter. Used to pick the
+    /// innermost node.
     pub fn area(&self) -> (u32, u32) {
         (
             self.end_line.saturating_sub(self.start_line),

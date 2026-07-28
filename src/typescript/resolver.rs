@@ -1,8 +1,9 @@
-//! Резолвер символов TypeScript поверх typescript-go.
+//! The TypeScript symbol resolver, built on typescript-go.
 //!
-//! Компилятор слинкован в модуль статически: `tsc`, `tsgo` и Node в
-//! системе не нужны, `lib.d.ts` тоже внутри. Мост на стороне Go живёт в
-//! `go/bridge.go`, здесь — только вызовы через FFI и разбор ответа.
+//! The compiler is linked into the module statically: no `tsc`, `tsgo`, or
+//! Node is needed on the system, and `lib.d.ts` is bundled too. The Go-side
+//! bridge lives in `go/bridge.go`; this file holds only the FFI calls and the
+//! answer parsing.
 
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int, c_uint};
@@ -26,7 +27,7 @@ unsafe extern "C" {
     ) -> *mut c_char;
 }
 
-/// Ответ моста: `путь\tстрока\tколонка` либо пустая строка.
+/// The bridge's answer: `path\tline\tcolumn`, or an empty string.
 fn parse_answer(raw: &str) -> Option<(String, u32, u32)> {
     let mut parts = raw.split('\t');
     let path = parts.next()?;
@@ -39,7 +40,7 @@ fn parse_answer(raw: &str) -> Option<(String, u32, u32)> {
 }
 
 #[gen_stub_pyclass]
-// unsendable: сессия живёт в Go и привязана к своему хэндлу.
+// unsendable: the session lives in Go and is tied to its handle.
 #[pyclass(module = "callix._core", unsendable)]
 pub struct TsResolver {
     handle: c_int,
@@ -47,7 +48,7 @@ pub struct TsResolver {
 }
 
 impl TsResolver {
-    /// Резолвер без поднятой сессии — для вызова из Rust.
+    /// A resolver with no session yet — for callers on the Rust side.
     pub fn empty() -> Self {
         Self { handle: 0, root: None }
     }
@@ -64,10 +65,10 @@ impl TsResolver {
         if self.handle > 0 { ResolverStatus::Ok } else { ResolverStatus::Unavailable }
     }
 
-    /// Происхождение цели по её пути.
+    /// A target's origin, from its path.
     fn classify(&self, path: &str) -> &'static str {
-        // Встроенные библиотеки ts отдаются под своей схемой, файла на
-        // диске у них нет.
+        // ts's bundled libraries are reported under their own scheme and have
+        // no file on disk.
         if path.starts_with("bundled:") {
             return "stdlib";
         }
@@ -123,8 +124,8 @@ impl TsResolver {
         Self { handle: 0, root: None }
     }
 
-    /// Поднимает проект: typescript-go сам находит tsconfig.json и строит
-    /// программу, поэтому список файлов ему не передаётся.
+    /// Brings the project up: typescript-go finds tsconfig.json and builds
+    /// the program itself, so no file list is passed to it.
     #[pyo3(signature = (project_root, files = None))]
     fn prepare(&mut self, project_root: PathBuf, files: Option<Vec<PathBuf>>) -> PyResult<()> {
         let _ = files;
@@ -141,7 +142,7 @@ impl TsResolver {
         Ok(())
     }
 
-    /// Батч позиций → определения, порядок сохраняется.
+    /// A batch of positions → definitions, order preserved.
     fn resolve_all(&self, queries: Vec<(PathBuf, u32, u32)>) -> Vec<Option<ResolvedRef>> {
         queries
             .into_iter()
@@ -149,7 +150,7 @@ impl TsResolver {
             .collect()
     }
 
-    /// Одна позиция → определение.
+    /// One position → a definition.
     fn definition_at(&self, file: PathBuf, line: u32, col: u32) -> Option<ResolvedRef> {
         self.resolve_one(&file.to_string_lossy(), line, col)
     }

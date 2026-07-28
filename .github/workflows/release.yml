@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Version, changelog, tag. Wheels are built from that tag.
+  # ---------------------------------------------------------------------------
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: kenji-miyake/setup-git-cliff@v2
+
+      - name: Determine next version
+        id: version
+        run: task release:version
+
+      - name: Bump version
+        run: task release:bump VERSION=${{ steps.version.outputs.version }}
+
+      - name: Generate changelog
+        run: task release:changelog TAG=${{ steps.version.outputs.tag }}
+
+      - name: Commit and tag
+        run: task release:commit TAG=${{ steps.version.outputs.tag }}
+
+      - name: Push
+        run: task release:push TAG=${{ steps.version.outputs.tag }}
+
+  # ---------------------------------------------------------------------------
+  # 2. Wheels. One wheel cannot cover every platform: ty and the Go bridge to
+  #    typescript-go are linked inside. Thanks to abi3-py313 the matrix runs
+  #    over platforms only, not over Python versions.
+  # ---------------------------------------------------------------------------
+  wheels:
+    needs: version
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+          - os: macos-latest
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go/go.sum
+
+      - name: Build wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          # The manylinux container carries no Go, and build.rs cannot build
+          # the bridge without it, so Go is installed into the container first.
+          manylinux: ${{ matrix.os == 'ubuntu-latest' && '2_28' || 'auto' }}
+          before-script-linux: |
+            curl -sSL https://go.dev/dl/go1.26.0.linux-amd64.tar.gz \
+              | tar -C /usr/local -xz
+            export PATH=$PATH:/usr/local/go/bin
+            go version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-${{ matrix.target }}
+          path: dist/
+
+  # ---------------------------------------------------------------------------
+  # 3. The source distribution, so platforms outside the matrix can build.
+  # ---------------------------------------------------------------------------
+  sdist:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/
+
+  # ---------------------------------------------------------------------------
+  # 4. Publishing and the GitHub Release.
+  # ---------------------------------------------------------------------------
+  publish:
+    needs: [version, wheels, sdist]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: astral-sh/setup-uv@v7
+      - uses: kenji-miyake/setup-git-cliff@v2
+
+      - name: Collect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: task release:publish
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: task release:github TAG=${{ needs.version.outputs.tag }}

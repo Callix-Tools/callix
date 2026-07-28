@@ -1,8 +1,8 @@
-//! (Де)сериализация значений метаданных.
+//! (De)serialization of metadata values.
 //!
-//! Метаданные — открытый `dict[str, object]`. Здесь они приводятся к
-//! JSON-совместимому виду; `Span` переживает round-trip через тег
-//! `{"__span__": [l, c, l, c]}`, поэтому разобранный граф равен исходному.
+//! Metadata is an open `dict[str, object]`. Here it is coerced into a
+//! JSON-compatible shape; `Span` survives the round-trip via a
+//! `{"__span__": [l, c, l, c]}` tag, so a parsed graph equals the original.
 
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyFloat, PyInt, PyList, PyString, PyTuple};
@@ -20,7 +20,7 @@ pub fn span_to_list<'py>(py: Python<'py>, span: Span) -> Bound<'py, PyList> {
     .expect("4 ints always build a list")
 }
 
-/// Собирает Span из списка 4 целых; None, если форма не та.
+/// Builds a Span from a list of 4 integers; None if the shape is wrong.
 pub fn span_from_list(value: &Bound<'_, PyAny>) -> Option<Span> {
     let list = value.cast::<PyList>().ok()?;
     if list.len() != SPAN_LEN {
@@ -29,7 +29,7 @@ pub fn span_from_list(value: &Bound<'_, PyAny>) -> Option<Span> {
     let mut nums = [0u32; SPAN_LEN];
     for (i, slot) in nums.iter_mut().enumerate() {
         let item = list.get_item(i).ok()?;
-        // bool — подкласс int в Python, но координатой быть не может.
+        // bool is an int subclass in Python, but cannot be a coordinate.
         if item.is_instance_of::<PyBool>() {
             return None;
         }
@@ -43,8 +43,8 @@ pub fn span_from_list(value: &Bound<'_, PyAny>) -> Option<Span> {
     })
 }
 
-/// Приводит значение метаданных к JSON-совместимому виду.
-/// Всё, что не легло ни в одну ветку, становится `str(value)`.
+/// Coerces a metadata value into a JSON-compatible shape.
+/// Anything that matched no branch becomes `str(value)`.
 pub fn encode_value<'py>(
     py: Python<'py>,
     value: &Bound<'py, PyAny>,
@@ -54,7 +54,7 @@ pub fn encode_value<'py>(
         tagged.set_item(SPAN_TAG, span_to_list(py, *span.get()))?;
         return Ok(tagged.into_any());
     }
-    // bool до int: в Python bool — подкласс int.
+    // bool before int: in Python, bool is an int subclass.
     if value.is_instance_of::<PyBool>() || value.is_none() {
         return Ok(value.clone());
     }
@@ -91,7 +91,7 @@ fn encode_seq<'py>(
     Ok(out.into_any())
 }
 
-/// Обратное к [`encode_value`].
+/// The inverse of [`encode_value`].
 pub fn decode_value<'py>(
     py: Python<'py>,
     value: &Bound<'py, PyAny>,
@@ -119,7 +119,7 @@ pub fn decode_value<'py>(
     Ok(value.clone())
 }
 
-/// Кодирует весь словарь метаданных.
+/// Encodes the whole metadata dict.
 pub fn encode_metadata<'py>(
     py: Python<'py>,
     metadata: &Bound<'py, PyDict>,
@@ -131,7 +131,7 @@ pub fn encode_metadata<'py>(
     Ok(out)
 }
 
-/// Декодирует метаданные; не-словарь даёт пустой словарь, а не ошибку.
+/// Decodes metadata; a non-dict yields an empty dict rather than an error.
 pub fn decode_metadata<'py>(
     py: Python<'py>,
     metadata: Option<&Bound<'py, PyAny>>,

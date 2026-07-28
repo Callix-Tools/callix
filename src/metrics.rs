@@ -1,30 +1,30 @@
-//! Счётчики резолв-фазы, которые адаптер кладёт в метаданные графа.
+//! Resolution-pass counters an adapter records in the graph metadata.
 //!
-//! Без них быстрый прогон, не построивший почти ни одного ребра,
-//! неотличим от быстрого прогона, который разрешил всё.
+//! Without them, a fast run that built almost no edges is indistinguishable
+//! from a fast run that resolved everything.
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
-/// Ключ в `graph.metadata`, под которым лежат метрики.
+/// The `graph.metadata` key the metrics are stored under.
 pub const RESOLVER_METRICS_KEY: &str = "resolver_metrics";
 
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", get_all, set_all, from_py_object)]
 #[derive(Default, Clone)]
 pub struct ResolverMetrics {
-    /// Позиций отдано резолверу — по одной на место использования.
+    /// Positions handed to the resolver — one per use-site.
     pub queries: u64,
-    /// Запросов, вернувших определение.
+    /// Queries that returned a definition.
     pub resolved: u64,
-    /// Определений, привязанных к узлу в графе.
+    /// Definitions bound to a node in the graph.
     pub internal: u64,
-    /// Определений, ушедших в EXTERNAL_SYMBOL.
+    /// Definitions that fell through to an EXTERNAL_SYMBOL.
     pub external: u64,
-    /// Запросов, не давших ничего.
+    /// Queries that returned nothing.
     pub unresolved: u64,
-    /// Секунд внутри `resolve_all`.
+    /// Seconds spent inside `resolve_all`.
     pub seconds: f64,
 }
 
@@ -44,7 +44,7 @@ impl ResolverMetrics {
         Self { queries, resolved, internal, external, unresolved, seconds }
     }
 
-    /// Доля запросов, вернувших определение, в процентах.
+    /// Share of queries that returned a definition, in percent.
     #[getter]
     fn resolved_pct(&self) -> f64 {
         if self.queries == 0 {
@@ -53,7 +53,7 @@ impl ResolverMetrics {
         100.0 * self.resolved as f64 / self.queries as f64
     }
 
-    /// Складывает счётчики другого прохода в этот.
+    /// Folds another pass's counters into this one.
     pub fn merge(&mut self, other: &Self) {
         self.queries += other.queries;
         self.resolved += other.resolved;
@@ -63,7 +63,7 @@ impl ResolverMetrics {
         self.seconds += other.seconds;
     }
 
-    /// Плоский словарь для хранения в `graph.metadata`.
+    /// A flat dict for storage in `graph.metadata`.
     pub fn as_dict<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let out = PyDict::new(py);
         out.set_item("queries", self.queries)?;
@@ -84,7 +84,7 @@ impl ResolverMetrics {
     }
 }
 
-/// Округление до N знаков — как `round()` в Python (half-to-even).
+/// Rounds to N digits the way Python's `round()` does (half-to-even).
 fn round_to(value: f64, digits: i32) -> f64 {
     let factor = 10f64.powi(digits);
     let scaled = value * factor;

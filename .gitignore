@@ -1,6 +1,6 @@
 /target
 
-# Клон typescript-go для Go-моста: тянется build.rs, ~370 МБ
+# The typescript-go clone for the Go bridge: fetched by build.rs, ~370 MB
 /.ts-go
 
 # Byte-compiled / optimized / DLL files

@@ -1,0 +1,167 @@
+name: Benchmark
+
+# A load benchmark on real-world projects — report only, it never gates a
+# release. The matrix runs per language: one hung resolver neither blocks the
+# others nor eats their time.
+#
+# - workflow_dispatch — every language runs, and the README is refreshed and
+#   committed; run it by hand after a release when all the numbers are wanted.
+# - pull_request — only the languages whose adapter the PR touches. The result
+#   goes to the job summary; the README is left alone.
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ["*"]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      # paths-filter's `changes` output is already a JSON array of the filters
+      # that matched — exactly what the matrix below needs.
+      langs: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            python:
+              - "src/python/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            typescript:
+              - "src/typescript/**"
+              - "go/bridge.go"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            go:
+              - "src/golang/**"
+              - "go/bridge_go.go"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            rust:
+              - "src/rustlang/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+
+  benchmark:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (needs.changes.result == 'success' && needs.changes.outputs.langs != '[]')
+    needs: [changes]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: >-
+          ${{ github.event_name == 'workflow_dispatch'
+              && fromJSON('["python","typescript","go","rust"]')
+              || fromJSON(needs.changes.outputs.langs) }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+      # Go is needed both to build the bridge and as the toolchain the Go
+      # resolver drives.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go/go.sum
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+
+      - name: Install rust-analyzer (the Rust resolver)
+        if: matrix.lang == 'rust'
+        run: |
+          rustup component add rust-analyzer
+          echo "$(dirname "$(rustup which rust-analyzer)")" >> "$GITHUB_PATH"
+
+      - name: Build
+        run: |
+          task install
+          task build
+
+      - name: Benchmark ${{ matrix.lang }}
+        run: task bench:run BENCH_LANG=${{ matrix.lang }}
+
+      - name: Report
+        if: always()
+        run: |
+          {
+            echo "## callix benchmark — ${{ matrix.lang }}"
+            echo
+            task bench:show VERSION="${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results-${{ matrix.lang }}
+          path: benchmarks/results/
+
+  # Aggregates every language's results and refreshes the README. Manual runs
+  # only: a PR never commits anything.
+  render:
+    if: always() && github.event_name == 'workflow_dispatch'
+    needs: benchmark
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: benchmark-render
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-results-*
+          path: benchmarks/results
+          merge-multiple: true
+
+      - name: Render into README
+        # benchmarks/results/ holds the committed results of the previous run
+        # overlaid with the fresh ones: languages that did not run this time
+        # keep their last known numbers.
+        run: task bench:render VERSION="${{ github.ref_name }}"
+
+      - name: Commit
+        run: |
+          if git diff --quiet -- README.md benchmarks/results; then
+            echo "Nothing changed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md benchmarks/results
+          git commit -m "docs(bench): refresh benchmark metrics [skip ci]"
+          for i in 1 2 3 4; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main || true
+            sleep "$((2 ** i))"
+          done
+          echo "::error::could not push the README update"
+          exit 1

@@ -1,8 +1,9 @@
 module github.com/microsoft/typescript-go/callixbridge
 
-// Имя модуля лежит внутри пути typescript-go намеренно: Go разрешает
-// импорт internal/-пакетов по пути импорта, а не по расположению на диске.
-// Так мост добирается до internal/project и internal/ls без форка ts-go.
+// The module name sits inside typescript-go's path deliberately: Go permits
+// importing internal/ packages by import path, not by location on disk. That
+// is how the bridge reaches internal/project and internal/ls without forking
+// ts-go.
 
 go 1.26
 

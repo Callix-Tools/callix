@@ -1,4 +1,4 @@
-//! Извлечение межъязыковых границ из Go.
+//! Cross-language boundary extraction from Go.
 
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
@@ -15,7 +15,7 @@ use crate::ts;
 const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", "options"];
 const TEMPORAL_EXEC: [&str; 2] = ["executeactivity", "executelocalactivity"];
 
-/// `r.GET("/x", h)` / `http.Get("/x")` — вызов метода на получателе.
+/// `r.GET("/x", h)` / `http.Get("/x")` — a method call on a receiver.
 const Q_SELECTOR_CALL: &str = r#"
 (call_expression
   function: (selector_expression
@@ -23,7 +23,7 @@ const Q_SELECTOR_CALL: &str = r#"
     field: (field_identifier) @method)
   arguments: (argument_list) @args)
 "#;
-/// gRPC: protoc порождает конструкторы `New<Service>Client`.
+/// gRPC: protoc generates `New<Service>Client` constructors.
 const Q_GRPC_CLIENT_ASSIGN: &str = r#"
 (short_var_declaration
   left: (expression_list (identifier) @var)
@@ -36,7 +36,7 @@ macro_rules! cached_query {
         static QUERY: OnceLock<Query> = OnceLock::new();
         QUERY.get_or_init(|| {
             Query::new(&tree_sitter_go::LANGUAGE.into(), $source)
-                .expect("запрос валиден для грамматики go")
+                .expect("the query is valid for the go grammar")
         })
     }};
 }
@@ -55,7 +55,7 @@ impl<'a> Extractor<'a> {
         (span.start_line, span.start_col)
     }
 
-    /// Содержимое строкового литерала Go.
+    /// The contents of a Go string literal.
     fn string_content(&self, node: TsNode<'_>) -> Option<String> {
         if !matches!(
             node.kind(),
@@ -77,7 +77,7 @@ impl<'a> Extractor<'a> {
         )
     }
 
-    /// Первый аргумент, если он строковый литерал.
+    /// The first argument, if it is a string literal.
     fn first_string(&self, args: TsNode<'_>) -> Option<String> {
         let first = ts::named_children(args).into_iter().next()?;
         self.string_content(first)
@@ -100,7 +100,7 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Маршруты роутеров gin / chi / echo (`r.GET(...)`).
+    /// Routes on gin / chi / echo routers (`r.GET(...)`).
     fn http_server(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -109,7 +109,7 @@ impl<'a> Extractor<'a> {
             else {
                 continue;
             };
-            // Пакет net/http — это клиентская сторона.
+            // The net/http package is the client side.
             if self.text(obj) == "http" {
                 continue;
             }
@@ -125,7 +125,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Клиентские вызовы net/http (`http.Get(url)`).
+    /// net/http client calls (`http.Get(url)`).
     fn http_client(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -152,7 +152,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Продюсеры (Publish/Produce) и консьюмеры (Subscribe) очередей.
+    /// Queue producers (Publish/Produce) and consumers (Subscribe).
     fn queue(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -181,7 +181,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Имя активности из позиционного аргумента.
+    /// An activity's name from a positional argument.
     fn activity_name(&self, args: TsNode<'_>, index: usize) -> Option<String> {
         let kids = ts::named_children(args);
         let node = *kids.get(index)?;
@@ -211,7 +211,7 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Temporal: ExecuteActivity (клиент) и RegisterActivity (сервер).
+    /// Temporal: ExecuteActivity (client) and RegisterActivity (server).
     fn temporal(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
@@ -220,7 +220,7 @@ impl<'a> Extractor<'a> {
             };
             let method = self.text(method_node).to_lowercase();
             if TEMPORAL_EXEC.contains(&method.as_str()) {
-                // Первый аргумент — контекст.
+                // The first argument is the context.
                 if let Some(name) = self.activity_name(args, 1) {
                     refs.push(Self::temporal_ref("client", &name, method_node));
                 }
@@ -233,7 +233,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Вызовы на стабе `New<Service>Client` (клиентская сторона).
+    /// Calls on a `New<Service>Client` stub (the client side).
     fn grpc(&self, root: TsNode<'_>, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut clients: BTreeMap<String, String> = BTreeMap::new();
         for caps in ts::run_query(cached_query!(Q_GRPC_CLIENT_ASSIGN), root, self.source) {
@@ -280,14 +280,14 @@ fn cap<'tree>(caps: &Caps<'_, 'tree>, name: &str) -> Option<TsNode<'tree>> {
 
 fn queue_role(method: &str) -> Option<&'static str> {
     match method {
-        // Продюсер обращается к топику, консьюмер его обслуживает.
+        // A producer addresses the topic, a consumer serves it.
         "publish" | "produce" => Some("client"),
         "subscribe" => Some("server"),
         _ => None,
     }
 }
 
-/// Имя сервиса из конструктора `New<Service>Client`.
+/// The service name from a `New<Service>Client` constructor.
 fn grpc_service(callee: &str) -> Option<String> {
     let stem = callee.strip_prefix("New")?.strip_suffix("Client")?;
     if stem.is_empty() {
@@ -296,10 +296,10 @@ fn grpc_service(callee: &str) -> Option<String> {
     Some(stem.to_string())
 }
 
-/// Все границы одного файла. Порядок экстракторов — как в graphlens.
+/// Every boundary in one file. The extractor order matches graphlens's.
 pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     let extractor = Extractor { source };
-    // Все экстракторы, кроме gRPC-присваиваний, ходят по одному запросу.
+    // Every extractor but the gRPC assignments walks the same one query.
     let calls = ts::run_query(cached_query!(Q_SELECTOR_CALL), root, source);
 
     let mut refs = extractor.http_server(&calls);
@@ -310,7 +310,7 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     refs
 }
 
-/// Границы в одном исходнике — точка входа для проверок.
+/// Boundaries in a single source — the entry point for checks.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn extract_go_boundaries(source: &Bound<'_, PyBytes>) -> PyResult<Vec<BoundaryRef>> {

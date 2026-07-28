@@ -1,8 +1,8 @@
-//! Граф ↔ JSON-совместимые структуры.
+//! Graph ↔ JSON-compatible structures.
 //!
-//! JSON гоняется через штатный модуль `json` — так вывод байт в байт
-//! совпадает с graphlens (включая `ensure_ascii=False`), а сам dump
-//! всё равно исполняется сишным кодом CPython.
+//! JSON goes through the stdlib `json` module — that keeps the output
+//! byte-for-byte identical to graphlens (including `ensure_ascii=False`),
+//! and the dump itself still runs in CPython's C code.
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
@@ -22,7 +22,7 @@ fn required<'py>(data: &Bound<'py, PyDict>, key: &str) -> PyResult<Bound<'py, Py
     })
 }
 
-/// Сериализует узел в JSON-совместимый словарь.
+/// Serializes a node into a JSON-compatible dict.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn node_to_dict<'py>(py: Python<'py>, node: &Node) -> PyResult<Bound<'py, PyDict>> {
@@ -40,7 +40,7 @@ pub fn node_to_dict<'py>(py: Python<'py>, node: &Node) -> PyResult<Bound<'py, Py
     Ok(out)
 }
 
-/// Обратное к [`node_to_dict`].
+/// The inverse of [`node_to_dict`].
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn node_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Node> {
@@ -66,7 +66,7 @@ pub fn node_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Node
     })
 }
 
-/// Сериализует ребро в JSON-совместимый словарь.
+/// Serializes an edge into a JSON-compatible dict.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn relation_to_dict<'py>(
@@ -81,7 +81,7 @@ pub fn relation_to_dict<'py>(
     Ok(out)
 }
 
-/// Обратное к [`relation_to_dict`].
+/// The inverse of [`relation_to_dict`].
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn relation_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Relation> {
@@ -98,7 +98,7 @@ pub fn relation_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<
     })
 }
 
-/// Падает с SerializationError на неподдерживаемой версии схемы.
+/// Fails with SerializationError on an unsupported schema version.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn ensure_schema_version(data: &Bound<'_, PyDict>) -> PyResult<()> {
@@ -138,7 +138,7 @@ pub fn json_loads<'py>(py: Python<'py>, text: &str) -> PyResult<Bound<'py, PyAny
     py.import("json")?.call_method1("loads", (text,))
 }
 
-/// Извлекает список словарей по ключу; отсутствующий или не-список — пусто.
+/// Extracts a list of dicts by key; missing or non-list yields empty.
 pub fn dict_list<'py>(data: &Bound<'py, PyDict>, key: &str) -> PyResult<Vec<Bound<'py, PyDict>>> {
     let Some(value) = data.get_item(key)? else {
         return Ok(Vec::new());

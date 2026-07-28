@@ -1,4 +1,4 @@
-//! Направленное ребро между двумя узлами, ссылающееся на них по ID.
+//! A directed edge between two nodes, referring to them by ID.
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;

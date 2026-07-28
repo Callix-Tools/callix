@@ -1,8 +1,8 @@
-//! Накопитель графа и поверхность запросов к нему.
+//! The graph accumulator and its query surface.
 //!
-//! Индексы входящих/исходящих рёбер строятся лениво и сбрасываются при
-//! добавлении ребра — как в graphlens, но хранят позиции в `relations`,
-//! а не копии самих рёбер.
+//! The incoming/outgoing edge indices are built lazily and invalidated when
+//! an edge is added — as in graphlens, except they store positions into
+//! `relations` rather than copies of the edges themselves.
 
 use std::collections::HashMap;
 
@@ -68,13 +68,13 @@ impl Graph {
             .collect()
     }
 
-    /// Разворачивает ID в узлы, молча пропуская отсутствующие.
+    /// Expands IDs into nodes, silently skipping missing ones.
     fn resolve(&self, py: Python<'_>, ids: impl Iterator<Item = String>) -> Vec<Py<Node>> {
         ids.filter_map(|id| self.nodes.get(&id).map(|n| n.clone_ref(py)))
             .collect()
     }
 
-    /// Узлы в порядке вставки, без копирования наружу.
+    /// Nodes in insertion order, without copying them out.
     pub(crate) fn node_map(&self) -> &IndexMap<String, Py<Node>> {
         &self.nodes
     }
@@ -83,12 +83,12 @@ impl Graph {
         &self.relations
     }
 
-    /// Пустой граф — конструктор для вызова из Rust.
+    /// An empty graph — the constructor for callers on the Rust side.
     pub(crate) fn empty(py: Python<'_>) -> Self {
         Self::new(py)
     }
 
-    /// Кладёт значение в метаданные графа.
+    /// Stores a value in the graph metadata.
     pub(crate) fn set_metadata_item(
         &self,
         py: Python<'_>,
@@ -102,7 +102,7 @@ impl Graph {
         self.nodes.contains_key(id)
     }
 
-    /// Добавляет узел, молча пропуская дубликат по ID.
+    /// Adds a node, silently skipping a duplicate ID.
     pub(crate) fn insert_node(&mut self, id: String, node: Py<Node>) {
         self.nodes.entry(id).or_insert(node);
     }
@@ -113,7 +113,7 @@ impl Graph {
         self.in_index = None;
     }
 
-    /// Соответствие `qualified_name` → id для MODULE-узлов.
+    /// The `qualified_name` → id mapping for MODULE nodes.
     pub(crate) fn module_index(&self) -> HashMap<&str, &str> {
         let mut index = HashMap::new();
         for node in self.nodes.values() {
@@ -160,9 +160,9 @@ impl Graph {
         self.metadata.clone_ref(py)
     }
 
-    // -- построение ------------------------------------------------------
+    // -- construction ----------------------------------------------------
 
-    /// Добавляет узел; DuplicateNodeError при совпадении ID.
+    /// Adds a node; raises DuplicateNodeError on an ID collision.
     fn add_node(&mut self, node: Py<Node>) -> PyResult<()> {
         let id = node.get().id.clone();
         if self.nodes.contains_key(&id) {
@@ -174,19 +174,19 @@ impl Graph {
         Ok(())
     }
 
-    /// Добавляет ребро и сбрасывает индексы.
+    /// Adds an edge and invalidates the indices.
     fn add_relation(&mut self, relation: Py<Relation>) {
         self.relations.push(relation);
         self.out_index = None;
         self.in_index = None;
     }
 
-    /// Вливает другой граф.
+    /// Merges another graph in.
     ///
-    /// `allow_shared=True` разрешает совпадение *идентичных* узлов — так
-    /// объединяются межъязыковые графы, где адаптеры разных языков намеренно
-    /// порождают один и тот же BOUNDARY-узел. Коллизия двух *разных* узлов
-    /// остаётся ошибкой и в этом режиме.
+    /// `allow_shared=True` permits *identical* nodes to coincide — that is
+    /// how cross-language graphs are combined, where adapters for different
+    /// languages deliberately produce the same BOUNDARY node. A collision
+    /// between two *different* nodes stays an error even in this mode.
     #[pyo3(signature = (other, *, allow_shared = false))]
     fn merge(&mut self, py: Python<'_>, other: &Self, allow_shared: bool) -> PyResult<()> {
         for (id, node) in &other.nodes {
@@ -203,8 +203,8 @@ impl Graph {
         self.relations
             .extend(other.relations.iter().map(|r| r.clone_ref(py)));
 
-        // Статус резолвера сливаем по худшему, а не «побеждает последний»,
-        // иначе деградировавшая сторона молча замаскируется.
+        // Resolver statuses merge to the worst rather than last-one-wins,
+        // otherwise a degraded side would be silently masked.
         let this_meta = self.metadata.bind(py);
         let other_meta = other.metadata.bind(py);
         let before = this_meta.get_item(RESOLVER_STATUS_KEY)?;
@@ -223,9 +223,9 @@ impl Graph {
         Ok(())
     }
 
-    // -- сериализация / diff ---------------------------------------------
+    // -- serialization / diff --------------------------------------------
 
-    /// Сериализует граф в JSON-совместимый словарь.
+    /// Serializes the graph into a JSON-compatible dict.
     fn to_dict<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let out = PyDict::new(py);
         out.set_item("schema_version", SCHEMA_VERSION)?;
@@ -245,13 +245,13 @@ impl Graph {
         Ok(out)
     }
 
-    /// Сериализует граф в строку JSON.
+    /// Serializes the graph into a JSON string.
     #[pyo3(signature = (*, indent = None))]
     fn to_json(&self, py: Python<'_>, indent: Option<u32>) -> PyResult<String> {
         json_dumps(py, self.to_dict(py)?.as_any(), indent)
     }
 
-    /// Восстанавливает граф из вывода `to_dict`.
+    /// Rebuilds a graph from `to_dict` output.
     #[staticmethod]
     fn from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Self> {
         ensure_schema_version(data)?;
@@ -266,7 +266,7 @@ impl Graph {
         Ok(graph)
     }
 
-    /// Восстанавливает граф из вывода `to_json`.
+    /// Rebuilds a graph from `to_json` output.
     #[staticmethod]
     fn from_json(py: Python<'_>, text: &str) -> PyResult<Self> {
         let data = json_loads(py, text)?;
@@ -276,14 +276,14 @@ impl Graph {
         Self::from_dict(py, data)
     }
 
-    /// Структурный diff от этого графа (старого) к `other`.
+    /// The structural diff from this graph (the old one) to `other`.
     fn diff(&self, py: Python<'_>, other: &Self) -> PyResult<GraphDiff> {
         diff_graphs(py, self, other)
     }
 
-    // -- рёбра -----------------------------------------------------------
+    // -- edges -----------------------------------------------------------
 
-    /// Рёбра, исходящие из `node_id`.
+    /// Edges leaving `node_id`.
     #[pyo3(signature = (node_id, kind = None))]
     fn outgoing(
         &mut self,
@@ -294,7 +294,7 @@ impl Graph {
         self.edges(py, node_id, kind, true)
     }
 
-    /// Рёбра, входящие в `node_id`.
+    /// Edges entering `node_id`.
     #[pyo3(signature = (node_id, kind = None))]
     fn incoming(
         &mut self,
@@ -305,9 +305,9 @@ impl Graph {
         self.edges(py, node_id, kind, false)
     }
 
-    // -- запросы ---------------------------------------------------------
+    // -- queries ---------------------------------------------------------
 
-    /// Кого вызывает `node_id`.
+    /// What `node_id` calls.
     fn callees(&mut self, py: Python<'_>, node_id: &str) -> Vec<Py<Node>> {
         let ids: Vec<String> = self
             .edges(py, node_id, Some(RelationKind::Calls), true)
@@ -317,7 +317,7 @@ impl Graph {
         self.resolve(py, ids.into_iter())
     }
 
-    /// Кто вызывает `node_id`.
+    /// What calls `node_id`.
     fn callers(&mut self, py: Python<'_>, node_id: &str) -> Vec<Py<Node>> {
         let ids: Vec<String> = self
             .edges(py, node_id, Some(RelationKind::Calls), false)
@@ -327,7 +327,7 @@ impl Graph {
         self.resolve(py, ids.into_iter())
     }
 
-    /// Кто ссылается на `node_id`.
+    /// What references `node_id`.
     fn references_to(&mut self, py: Python<'_>, node_id: &str) -> Vec<Py<Node>> {
         let ids: Vec<String> = self
             .edges(py, node_id, Some(RelationKind::References), false)
@@ -337,7 +337,7 @@ impl Graph {
         self.resolve(py, ids.into_iter())
     }
 
-    /// Различные узлы в пределах `depth` переходов в любую сторону.
+    /// Distinct nodes within `depth` hops in either direction.
     #[pyo3(signature = (node_id, depth = 1))]
     fn neighbors(&mut self, py: Python<'_>, node_id: &str, depth: u32) -> Vec<Py<Node>> {
         let mut seen: std::collections::HashSet<String> =
@@ -367,7 +367,7 @@ impl Graph {
         found.into_values().collect()
     }
 
-    /// Все узлы данного вида.
+    /// Every node of the given kind.
     fn nodes_by_kind(&self, py: Python<'_>, kind: NodeKind) -> Vec<Py<Node>> {
         self.nodes
             .values()
@@ -376,7 +376,7 @@ impl Graph {
             .collect()
     }
 
-    /// Все узлы, объявленные в файле.
+    /// Every node declared in the file.
     fn nodes_in_file(&self, py: Python<'_>, file_path: &str) -> Vec<Py<Node>> {
         self.nodes
             .values()
@@ -385,7 +385,7 @@ impl Graph {
             .collect()
     }
 
-    /// Узлы, у которых короткое или полное имя равно `name`.
+    /// Nodes whose short or qualified name equals `name`.
     fn nodes_by_name(&self, py: Python<'_>, name: &str) -> Vec<Py<Node>> {
         self.nodes
             .values()
@@ -397,7 +397,7 @@ impl Graph {
             .collect()
     }
 
-    /// Новый граф из этих узлов и всех инцидентных им рёбер.
+    /// A new graph from these nodes and every edge incident to them.
     fn subgraph(&self, py: Python<'_>, node_ids: Vec<String>) -> PyResult<Self> {
         let ids: std::collections::HashSet<String> = node_ids.into_iter().collect();
         let mut sub = Self::new(py);
@@ -423,7 +423,7 @@ impl Graph {
         Ok(sub)
     }
 
-    /// Подграф из всех узлов файла и их рёбер.
+    /// The subgraph of every node in the file, plus their edges.
     fn subgraph_for_file(&self, py: Python<'_>, file_path: &str) -> PyResult<Self> {
         let ids = self
             .nodes

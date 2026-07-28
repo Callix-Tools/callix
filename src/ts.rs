@@ -1,7 +1,8 @@
-//! Общие хелперы поверх tree-sitter: обход дерева и перевод позиций в Span.
+//! Shared helpers on top of tree-sitter: tree walking and position-to-Span
+//! conversion.
 //!
-//! Позиции tree-sitter 0-based, Span — 1-based, конвертация живёт здесь и
-//! больше нигде.
+//! tree-sitter positions are 0-based, Span is 1-based; the conversion lives
+//! here and nowhere else.
 
 use std::collections::HashMap;
 
@@ -9,19 +10,20 @@ use tree_sitter::Node as TsNode;
 
 use crate::span::Span;
 
-/// Текст узла. Битый UTF-8 заменяется, а не роняет разбор.
+/// A node's text. Broken UTF-8 is replaced rather than failing the parse.
 pub fn text<'a>(node: TsNode<'_>, source: &'a [u8]) -> std::borrow::Cow<'a, str> {
     String::from_utf8_lossy(&source[node.byte_range()])
 }
 
-/// Прямые потомки, включая анонимные (как `node.children` в Python-API).
+/// Direct children, anonymous ones included (like `node.children` in the
+/// Python API).
 pub fn children<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut cursor = node.walk();
     node.children(&mut cursor).collect()
 }
 
-/// Поиск потомка идёт курсором, без сборки `Vec`: на больших деревьях
-/// (типы в TypeScript) эти аллокации заметны в профиле.
+/// Child lookup walks a cursor instead of collecting a `Vec`: on large trees
+/// (TypeScript types) those allocations show up in the profile.
 pub fn child_of_type<'tree>(node: TsNode<'tree>, kind: &str) -> Option<TsNode<'tree>> {
     let mut cursor = node.walk();
     node.children(&mut cursor).find(|c| c.kind() == kind)
@@ -37,7 +39,7 @@ pub fn has_child_of_type(node: TsNode<'_>, kind: &str) -> bool {
     child_of_type(node, kind).is_some()
 }
 
-/// Обход прямых потомков без промежуточного `Vec`.
+/// Iterates direct children without an intermediate `Vec`.
 pub fn for_each_child<'tree, E>(
     node: TsNode<'tree>,
     mut visit: impl FnMut(TsNode<'tree>) -> Result<(), E>,
@@ -54,7 +56,7 @@ pub fn for_each_child<'tree, E>(
     }
 }
 
-/// Позиции tree-sitter (0-based) → Span (1-based).
+/// tree-sitter positions (0-based) → Span (1-based).
 pub fn span(node: TsNode<'_>) -> Span {
     let start = node.start_position();
     let end = node.end_position();
@@ -66,9 +68,10 @@ pub fn span(node: TsNode<'_>) -> Span {
     }
 }
 
-/// Первый `identifier` в прямом порядке обхода.
+/// The first `identifier` in pre-order traversal.
 ///
-/// Так берётся ведущее имя составного типа: `list[int]`, `Optional[str]`.
+/// This is how the leading name of a compound type is taken: `list[int]`,
+/// `Optional[str]`.
 pub fn first_identifier<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
     if node.kind() == "identifier" {
         return Some(node);
@@ -76,8 +79,8 @@ pub fn first_identifier<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
     children(node).into_iter().find_map(first_identifier)
 }
 
-/// Самые внешние `call`-узлы: внутрь найденного вызова не спускаемся,
-/// вложенные вызовы в аргументах разберёт сканер значений.
+/// The outermost `call` nodes: we do not descend into a call once found —
+/// calls nested in its arguments are handled by the value scanner.
 pub fn find_calls<'tree>(node: TsNode<'tree>, out: &mut Vec<TsNode<'tree>>) {
     if node.kind() == "call" {
         out.push(node);
@@ -88,17 +91,17 @@ pub fn find_calls<'tree>(node: TsNode<'tree>, out: &mut Vec<TsNode<'tree>>) {
     }
 }
 
-/// Именованные потомки — без пунктуации и прочих анонимных узлов.
+/// Named children — no punctuation or other anonymous nodes.
 pub fn named_children<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut cursor = node.walk();
     node.named_children(&mut cursor).collect()
 }
 
-/// Прогоняет tree-sitter запрос по поддереву.
+/// Runs a tree-sitter query over a subtree.
 ///
-/// Возвращает по одной карте захватов на совпадение: `@имя` → узлы.
-/// Так шаблоны описываются декларативно (язык запросов `.scm`), а не
-/// ветками ручного визитора.
+/// Returns one capture map per match: `@name` → nodes. This lets patterns be
+/// written declaratively (the `.scm` query language) instead of as branches
+/// in a hand-written visitor.
 pub fn run_query<'q, 'tree>(
     query: &'q tree_sitter::Query,
     root: TsNode<'tree>,
@@ -106,8 +109,8 @@ pub fn run_query<'q, 'tree>(
 ) -> Vec<HashMap<&'q str, Vec<TsNode<'tree>>>> {
     use streaming_iterator::StreamingIterator;
 
-    // Имена захватов живут в самом запросе, поэтому наружу отдаются
-    // ссылками — на каждое совпадение иначе набегала бы аллокация строки.
+    // Capture names live in the query itself, so they are handed out as
+    // references — otherwise every match would cost a string allocation.
     let names = query.capture_names();
     let mut cursor = tree_sitter::QueryCursor::new();
     let mut matches = cursor.matches(query, root, source);

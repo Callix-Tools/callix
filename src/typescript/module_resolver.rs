@@ -1,4 +1,5 @@
-//! Полное имя модуля по пути файла, корни исходников и алиасы tsconfig.
+//! A module's qualified name from its file path, source roots, and tsconfig
+//! aliases.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -7,14 +8,14 @@ use std::path::{Path, PathBuf};
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::gen_stub_pyfunction;
 
-/// Расширения, которые срезаются при переводе пути в имя модуля.
+/// Extensions stripped when turning a path into a module name.
 const TS_EXTENSIONS: [&str; 4] = ["ts", "tsx", "mts", "cts"];
 
-/// Файлы, представляющие сам пакет — аналог `__init__.py` в Python.
+/// Files that represent the package itself — Python's `__init__.py` analogue.
 const INDEX_STEMS: [&str; 1] = ["index"];
 
-/// Корни исходников: `src/`, если файлы лежат там, плюс сам корень для
-/// всего, что вне `src/`.
+/// Source roots: `src/` when files live there, plus the root itself for
+/// everything outside `src/`.
 pub fn source_roots(project_root: &Path, files: &[PathBuf]) -> Vec<PathBuf> {
     let src = project_root.join("src");
     if src.is_dir() && !files.is_empty() && files.iter().any(|f| f.starts_with(&src)) {
@@ -23,8 +24,8 @@ pub fn source_roots(project_root: &Path, files: &[PathBuf]) -> Vec<PathBuf> {
     vec![project_root.to_path_buf()]
 }
 
-/// Убирает `//`-комментарии и висящие запятые — tsconfig.json обычно
-/// JSONC, а не строгий JSON.
+/// Strips `//` comments and trailing commas — tsconfig.json is usually JSONC
+/// rather than strict JSON.
 fn strip_jsonc(raw: &str) -> String {
     let mut out = String::with_capacity(raw.len());
     for line in raw.lines() {
@@ -52,7 +53,7 @@ fn strip_jsonc(raw: &str) -> String {
         out.push('\n');
     }
 
-    // Висящая запятая перед } или ]
+    // A trailing comma before } or ]
     let mut cleaned = String::with_capacity(out.len());
     let chars: Vec<char> = out.chars().collect();
     let mut i = 0;
@@ -73,10 +74,11 @@ fn strip_jsonc(raw: &str) -> String {
     cleaned
 }
 
-/// Алиасы путей из `compilerOptions.paths` вида `"<prefix>/*": ["<target>/*"]`.
+/// Path aliases from `compilerOptions.paths` of the form
+/// `"<prefix>/*": ["<target>/*"]`.
 ///
-/// Записи с несколькими целями и без glob игнорируются. Ошибки чтения и
-/// разбора дают пустую карту — метод не падает никогда.
+/// Entries with multiple targets or without a glob are ignored. Read and
+/// parse errors yield an empty map — this never fails.
 pub fn path_aliases(project_root: &Path) -> BTreeMap<String, String> {
     let mut aliases = BTreeMap::new();
     let Ok(raw) = fs::read_to_string(project_root.join("tsconfig.json")) else {
@@ -117,9 +119,9 @@ pub fn path_aliases(project_root: &Path) -> BTreeMap<String, String> {
     aliases
 }
 
-/// Переписывает импорт, если он начинается с алиаса tsconfig.
+/// Rewrites an import when it starts with a tsconfig alias.
 ///
-/// С `{"@/": "src/"}` путь `@/client/v2` становится `src/client/v2`.
+/// With `{"@/": "src/"}` the path `@/client/v2` becomes `src/client/v2`.
 pub fn apply_alias(import_path: &str, aliases: &BTreeMap<String, String>) -> String {
     for (prefix, target) in aliases {
         if let Some(rest) = import_path.strip_prefix(prefix.as_str()) {
@@ -129,11 +131,11 @@ pub fn apply_alias(import_path: &str, aliases: &BTreeMap<String, String>) -> Str
     import_path.to_string()
 }
 
-/// Путь файла → точечное имя модуля.
+/// File path → dotted module name.
 ///
 /// `src/pkg/index.ts` → `pkg`, `src/pkg/utils.ts` → `pkg.utils`,
-/// `src/pkg/ui.tsx` → `pkg.ui`. Файлы деклараций (`.d.ts`) отображаются
-/// так же — отсекаются они уровнем выше.
+/// `src/pkg/ui.tsx` → `pkg.ui`. Declaration files (`.d.ts`) map the same
+/// way — they are filtered out one level up.
 pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
     let relative = file_path.strip_prefix(source_root).ok()?;
     let mut parts: Vec<String> = relative
@@ -152,14 +154,14 @@ pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
         .map(|s| s.to_string_lossy().into_owned())
         .unwrap_or_default();
     if TS_EXTENSIONS.contains(&suffix.as_str()) {
-        // Для деклараций снимаем внутренний `.d`: foo.d.ts → foo
+        // For declarations drop the inner `.d`: foo.d.ts → foo
         if let Some(without) = stem.strip_suffix(".d") {
             stem = without.to_string();
         }
     }
     *last = stem;
 
-    // index-файлы представляют сам пакет
+    // index files represent the package itself
     if parts
         .last()
         .is_some_and(|p| INDEX_STEMS.contains(&p.as_str()))
@@ -175,13 +177,13 @@ pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
     Some(parts.join("."))
 }
 
-/// Относительный импорт → абсолютное имя модуля.
+/// A relative import → an absolute module name.
 ///
 /// `("pkg.core", "./utils")` → `pkg.utils`; `("pkg.core", "../shared")` →
 /// `shared`; `("pkg.core", ".")` → `pkg`.
 pub fn resolve_relative(current_module_qname: &str, import_path: &str) -> String {
     let current_parts: Vec<&str> = current_module_qname.split('.').collect();
-    // Стартуем от каталога текущего файла, отбросив имя модуля.
+    // Start from the current file's directory, dropping the module name.
     let mut base: Vec<String> = if current_parts.len() > 1 {
         current_parts[..current_parts.len() - 1]
             .iter()
@@ -210,7 +212,7 @@ pub fn resolve_relative(current_module_qname: &str, import_path: &str) -> String
     }
 
     if base.is_empty() {
-        // Ушли выше корня — берём верхний сегмент исходного имени.
+        // Walked above the root — take the top segment of the original name.
         return current_parts[0].to_string();
     }
     base.join(".")

@@ -1,4 +1,4 @@
-//! Разбор go.mod и определение Go-проектов.
+//! Parsing go.mod and detecting Go projects.
 
 use std::collections::HashSet;
 use std::fs;
@@ -12,7 +12,7 @@ use crate::roots::collect_marker_roots;
 const GO_MARKERS: [&str; 1] = ["go.mod"];
 const GO_EXCLUDED_DIRS: [&str; 4] = ["vendor", ".git", "node_modules", "testdata"];
 
-/// Путь модуля из директивы `module` в go.mod.
+/// The module path from the `module` directive in go.mod.
 pub fn module_path(root: &Path) -> Option<String> {
     let text = fs::read_to_string(root.join("go.mod")).ok()?;
     for line in text.lines() {
@@ -29,14 +29,14 @@ pub fn module_path(root: &Path) -> Option<String> {
     None
 }
 
-/// Пути модулей из директив `require` — и блочных, и однострочных.
+/// Module paths from `require` directives — both block and single-line.
 pub fn required_modules(root: &Path) -> HashSet<String> {
     let mut modules = HashSet::new();
     let Ok(text) = fs::read_to_string(root.join("go.mod")) else {
         return modules;
     };
 
-    // Блок require ( ... )
+    // A require ( ... ) block
     let mut rest = text.as_str();
     while let Some(start) = rest.find("require") {
         let after = &rest[start + "require".len()..];
@@ -44,7 +44,7 @@ pub fn required_modules(root: &Path) -> HashSet<String> {
             rest = after;
             continue;
         };
-        // Между `require` и `(` допустимы только пробелы.
+        // Only whitespace may sit between `require` and `(`.
         if !after[..open].chars().all(char::is_whitespace) {
             rest = after;
             continue;
@@ -65,8 +65,8 @@ pub fn required_modules(root: &Path) -> HashSet<String> {
         rest = &body[close..];
     }
 
-    // Однострочный `require <path> <version>`: пробелы только внутри
-    // строки, иначе открывающая скобка блока попала бы в путь.
+    // A single-line `require <path> <version>`: whitespace within the line
+    // only, or a block's opening parenthesis would end up in the path.
     for line in text.lines() {
         let trimmed = line.trim_start_matches([' ', '\t']);
         let Some(after) = trimmed.strip_prefix("require") else {
@@ -85,22 +85,22 @@ pub fn required_modules(root: &Path) -> HashSet<String> {
     modules
 }
 
-/// Есть ли в каталоге go.mod.
+/// Whether the directory holds a go.mod.
 pub fn is_go(root: &Path) -> bool {
     root.join("go.mod").is_file()
 }
 
-/// Корни модулей Go при обходе монорепозитория.
+/// Go module roots when walking a monorepo.
 pub fn go_roots(root: &Path) -> Vec<PathBuf> {
     let roots = collect_marker_roots(root, &GO_MARKERS, &GO_EXCLUDED_DIRS, |_| true);
-    // Общая функция откатывается к самому корню; для Go этого не нужно.
+    // The shared helper falls back to the root itself; Go does not want that.
     if roots.len() == 1 && roots[0] == root && !is_go(root) {
         return Vec::new();
     }
     roots
 }
 
-/// Имя проекта — последний сегмент пути модуля.
+/// The project name — the last segment of the module path.
 pub fn project_name(root: &Path) -> String {
     match module_path(root) {
         Some(path) => path
@@ -146,7 +146,7 @@ pub fn go_parse_dependencies(root: PathBuf) -> HashSet<String> {
     required_modules(&root)
 }
 
-/// Классификация пути импорта Go.
+/// Classification of a Go import path.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (import_path, module_path = None, required = None))]

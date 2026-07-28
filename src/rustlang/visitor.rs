@@ -1,9 +1,9 @@
-//! Структурное извлечение из Rust: модули, типы, функции, импорты.
+//! Structural extraction from Rust: modules, types, functions, imports.
 //!
-//! Отличие от Go: `impl`-блоки разбираются вторым проходом. Rust не
-//! требует, чтобы тип или трейт были объявлены выше своего `impl`, и без
-//! отсрочки `impl Trait for Type`, написанный над `struct Type`, не нашёл
-//! бы узел типа и потерял бы occurrence `base`.
+//! Unlike Go, `impl` blocks are dispatched in a second pass. Rust does not
+//! require a type or trait to be declared above its `impl`, and without
+//! deferring, an `impl Trait for Type` written above `struct Type` would find
+//! no type node and lose the `base` occurrence.
 
 use std::collections::HashSet;
 
@@ -18,8 +18,8 @@ use crate::occurrence::OccurrenceRef;
 use crate::relation::{Relation, RelationKind};
 use crate::ts;
 
-/// Потомки узла (включая его самого) тем же порядком, что и в Python:
-/// стек с `pop()` с конца, то есть в глубину и справа налево.
+/// A node's descendants (itself included) in the order Python walks them: a
+/// stack popped from the end, i.e. depth-first and right to left.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = vec![node];
@@ -30,7 +30,7 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// Все потомки заданного вида; внутрь найденного не спускаемся.
+/// Every descendant of the given kind; we do not descend into a match.
 fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = ts::children(node);
@@ -44,12 +44,12 @@ fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// Самый левый узел набора — ведущее имя составного типа.
+/// The leftmost node of a set — the leading name of a compound type.
 fn leftmost<'tree>(nodes: &[TsNode<'tree>]) -> Option<TsNode<'tree>> {
     nodes.iter().min_by_key(|n| n.start_byte()).copied()
 }
 
-/// Токен-имя вызываемого; None, когда вызывается результат выражения.
+/// The callee's name token; None when an expression result is called.
 fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
     match function.kind() {
         // foo()
@@ -58,7 +58,7 @@ fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
         "scoped_identifier" => function.child_by_field_name("name"),
         // obj.method()
         "field_expression" => function.child_by_field_name("field"),
-        // вызов результата выражения, например funcs[0]()
+        // calling an expression result, e.g. funcs[0]()
         _ => None,
     }
 }
@@ -68,15 +68,15 @@ pub struct RustExtractor<'a> {
     graph: &'a mut Graph,
     source: &'a [u8],
     project_name: &'a str,
-    /// Меняется на время обхода `mod foo { ... }`.
+    /// Changed for the duration of a `mod foo { ... }` walk.
     module_qname: String,
     file_id: &'a str,
     file_rel: &'a str,
     crate_name: Option<&'a str>,
     deps: &'a HashSet<String>,
     occurrences: Vec<OccurrenceRef>,
-    /// `(id узла импорта, путь, модуль-импортёр)` для внутренних импортов:
-    /// настоящий MODULE-узел подставит адаптер, когда все модули созданы.
+    /// `(import node id, path, importing module)` for internal imports: the
+    /// adapter substitutes the real MODULE node once every module exists.
     internal_imports: Vec<(String, String, String)>,
 }
 
@@ -125,7 +125,7 @@ impl<'a> RustExtractor<'a> {
         self.dispatch(root)
     }
 
-    /// Раздаёт прямых потомков по обработчикам; `impl` — вторым проходом.
+    /// Dispatches direct children to their handlers; `impl` in a second pass.
     fn dispatch(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let mut deferred_impls = Vec::new();
         for child in ts::children(node) {
@@ -152,11 +152,11 @@ impl<'a> RustExtractor<'a> {
         Ok(())
     }
 
-    /// Спускается в `mod foo { ... }` с вложенным именем модуля.
+    /// Descends into `mod foo { ... }` with a nested module name.
     ///
-    /// Без этого всё содержимое встроенного модуля (а это идиоматика Rust,
-    /// например `#[cfg(test)] mod tests { ... }`) молча терялось бы.
-    /// У безтелесного `mod foo;` обходить нечего.
+    /// Without this, everything inside an inline module (idiomatic Rust, e.g.
+    /// `#[cfg(test)] mod tests { ... }`) would be silently dropped. A bodyless
+    /// `mod foo;` has nothing to walk.
     fn on_mod_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let (Some(name_node), Some(body)) = (
             node.child_by_field_name("name"),
@@ -219,7 +219,7 @@ impl<'a> RustExtractor<'a> {
         });
     }
 
-    /// Место вызова на каждый `call_expression` внутри области.
+    /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
             if node.kind() != "call_expression" {
@@ -271,11 +271,12 @@ impl<'a> RustExtractor<'a> {
         Ok(())
     }
 
-    /// `impl Trait for Type` как occurrence `base`.
+    /// `impl Trait for Type` as a `base` occurrence.
     ///
-    /// Rust объявляет эту связь на отдельном `impl`, а не в самом типе (в
-    /// отличие от списков баз в Python и Go), поэтому id реализующего типа
-    /// приходится пересчитывать здесь, а не брать из `declare_named`.
+    /// Rust declares this relationship on a separate `impl` rather than on the
+    /// type itself (unlike Python's and Go's base lists), so the implementing
+    /// type's id has to be recomputed here instead of reused from
+    /// `declare_named`.
     fn collect_impl_trait(&mut self, impl_node: TsNode<'_>, type_name: &str) -> PyResult<()> {
         let Some(trait_node) = impl_node.child_by_field_name("trait") else {
             return Ok(());
@@ -347,8 +348,8 @@ impl<'a> RustExtractor<'a> {
         )?;
 
         if origin == "internal" {
-            // Откладываем: привяжем к настоящему MODULE-узлу, когда все
-            // модули созданы (иначе — EXTERNAL_SYMBOL).
+            // Deferred: bound to the real MODULE node once every module
+            // exists (falling back to an EXTERNAL_SYMBOL otherwise).
             self.internal_imports.push((
                 import_id,
                 import_path.to_string(),

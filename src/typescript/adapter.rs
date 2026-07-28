@@ -1,9 +1,9 @@
-//! Структурная фаза TypeScript-адаптера и оркестрация анализа.
+//! The TypeScript adapter's structural phase and analysis orchestration.
 //!
-//! Устроен так же, как Python-адаптер: структура по каждому корню,
-//! затем один резолв на весь вызов, затем границы.
+//! Laid out like the Python adapter: structure per root, then a single
+//! resolution pass for the whole call, then boundaries.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -33,7 +33,7 @@ use super::visitor::{TsImportClassifier, TsVisitor};
 
 const TS_EXTENSIONS: [&str; 4] = [".ts", ".tsx", ".mts", ".cts"];
 
-/// Файлы деклараций содержат только типы, без реализации.
+/// Declaration files carry types only, no implementation.
 const DECLARATION_SUFFIXES: [&str; 3] = [".d.ts", ".d.mts", ".d.cts"];
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
@@ -46,7 +46,7 @@ fn is_declaration(path: &Path) -> bool {
         .any(|suffix| name.ends_with(suffix))
 }
 
-/// Исходники TypeScript под корнем, без файлов деклараций.
+/// TypeScript sources under the root, declaration files excluded.
 pub fn collect_typescript_files(root: &Path) -> Vec<PathBuf> {
     collect_files(root, &TS_EXTENSIONS, &TS_EXCLUDED_DIRS)
         .into_iter()
@@ -54,7 +54,7 @@ pub fn collect_typescript_files(root: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-/// Структура и импорты одного корня TypeScript-проекта.
+/// Structure and imports for one TypeScript project root.
 fn build_root_structure(
     py: Python<'_>,
     graph: &mut Graph,
@@ -74,9 +74,9 @@ fn build_root_structure(
     }
 
     let third_party = dependencies(lang_root);
-    // Конфиги в корне (next.config.ts и подобные) заводят в internal_tops
-    // имена вроде "next"; если имя объявлено в package.json, манифест
-    // авторитетнее.
+    // Root-level configs (next.config.ts and friends) push names like "next"
+    // into internal_tops; when a name is declared in package.json, the
+    // manifest wins.
     internal_tops.retain(|name| !third_party.contains(name));
 
     let aliases = path_aliases(lang_root);
@@ -232,7 +232,7 @@ fn push_relation(
     Ok(())
 }
 
-/// Языковой адаптер для TypeScript-проектов.
+/// The language adapter for TypeScript projects.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", unsendable)]
 pub struct TypeScriptAdapter {
@@ -243,8 +243,8 @@ pub struct TypeScriptAdapter {
 #[pymethods]
 impl TypeScriptAdapter {
     /// Args:
-    ///     resolve: False отключает резолв-фазу — граф останется
-    ///         структурным, а `resolver_status` станет `unavailable`.
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` becomes `unavailable`.
     #[new]
     #[pyo3(signature = (*, resolve = true))]
     fn new(resolve: bool) -> Self {
@@ -265,12 +265,12 @@ impl TypeScriptAdapter {
         super::detector::is_typescript(&project_root)
     }
 
-    /// Исходники под корнем, кроме файлов деклараций.
+    /// Sources under the root, declaration files excluded.
     fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
         collect_typescript_files(&project_root)
     }
 
-    /// Разбирает проект и возвращает граф.
+    /// Analyses the project and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
     fn analyze(
         &mut self,
@@ -298,7 +298,7 @@ impl TypeScriptAdapter {
 
         let mut graph = Graph::empty(py);
 
-        // Фаза 1 — структура по каждому корню, без резолва.
+        // Phase 1 — structure per root, no resolution.
         let mut built = Vec::with_capacity(root_files.len());
         for (lang_root, file_list) in &root_files {
             built.push(build_root_structure(
@@ -310,7 +310,7 @@ impl TypeScriptAdapter {
             )?);
         }
 
-        // Фаза 2 — один резолвер на весь project_root.
+        // Phase 2 — one resolver for the whole project_root.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
         if let Some(resolver) = &mut self.resolver {
@@ -331,7 +331,7 @@ impl TypeScriptAdapter {
             status = resolver.status_rust();
         }
 
-        // Фаза 3 — границы, после резолва.
+        // Phase 3 — boundaries, after resolution.
         for (_project, _occurrences, boundaries) in &built {
             crate::python::apply_boundaries_rust(py, &mut graph, boundaries)?;
         }
@@ -389,7 +389,7 @@ fn resolve_pass(
     Ok(metrics)
 }
 
-/// Структурная фаза одного корня — точка входа для проверок.
+/// One root's structural phase — the entry point for checks.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_root, lang_root, files))]
@@ -399,12 +399,12 @@ pub fn ts_build_root_structure(
     project_root: PathBuf,
     lang_root: PathBuf,
     files: Vec<PathBuf>,
-) -> PyResult<(String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>)> {
+) -> PyResult<BuiltRoot> {
     let mut graph = graph.borrow_mut();
     build_root_structure(py, &mut graph, &project_root, &lang_root, &files)
 }
 
-/// Все TypeScript-файлы под корнем, кроме деклараций.
+/// Every TypeScript file under the root, declarations excluded.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn collect_typescript_files_py(project_root: PathBuf) -> Vec<PathBuf> {

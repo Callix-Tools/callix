@@ -1,8 +1,8 @@
-//! Извлечение межъязыковых границ из TypeScript.
+//! Cross-language boundary extraction from TypeScript.
 //!
-//! Зеркалит Python-экстракторы: ключи путей проходят через общий
-//! `normalize_http_path`, поэтому TS-овый `fetch("/users/1")` и питонячий
-//! `@app.get("/users/{id}")` попадают в один и тот же узел BOUNDARY.
+//! Mirrors the Python extractors: path keys go through the shared
+//! `normalize_http_path`, so TypeScript's `fetch("/users/1")` and Python's
+//! `@app.get("/users/{id}")` land on the same BOUNDARY node.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -34,19 +34,19 @@ const Q_FETCH: &str = r#"
   function: (identifier) @fn
   arguments: (arguments) @args)
 "#;
-/// `@Get("/x")` — декоратор метода контроллера в стиле NestJS.
+/// `@Get("/x")` — a NestJS-style controller method decorator.
 const Q_DECORATOR: &str = r#"
 (decorator (call_expression
   function: (identifier) @deco
   arguments: (arguments) @args))
 "#;
 
-/// Запросы компилируются под каждую грамматику по одному разу.
+/// Queries are compiled once per grammar.
 fn cached_query(source: &str, tsx: bool) -> &'static Query {
     static CACHE: OnceLock<std::sync::Mutex<HashMap<(String, bool), &'static Query>>> =
         OnceLock::new();
     let cache = CACHE.get_or_init(|| std::sync::Mutex::new(HashMap::new()));
-    let mut cache = cache.lock().expect("мьютекс кеша запросов не отравлен");
+    let mut cache = cache.lock().expect("the query cache mutex is not poisoned");
     let key = (source.to_string(), tsx);
     cache.entry(key).or_insert_with(|| {
         let language = if tsx {
@@ -55,7 +55,7 @@ fn cached_query(source: &str, tsx: bool) -> &'static Query {
             tree_sitter_typescript::LANGUAGE_TYPESCRIPT
         };
         let query = Query::new(&language.into(), source)
-            .expect("запрос валиден для грамматики typescript");
+            .expect("the query is valid for the typescript grammar");
         Box::leak(Box::new(query))
     })
 }
@@ -75,7 +75,7 @@ impl<'a> Extractor<'a> {
         (span.start_line, span.start_col)
     }
 
-    /// Строка или шаблонный литерал → шаблон пути; None для прочего.
+    /// A string or template literal → a path template; None otherwise.
     fn url_template(&self, node: TsNode<'_>) -> Option<String> {
         match node.kind() {
             "string" => Some(
@@ -100,13 +100,13 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Первый аргумент, если он строка или шаблон.
+    /// The first argument, if it is a string or a template.
     fn first_url(&self, args: TsNode<'_>) -> Option<String> {
         let first = ts::named_children(args).into_iter().next()?;
         self.url_template(first)
     }
 
-    /// Содержимое обычного строкового литерала.
+    /// The contents of a plain string literal.
     fn string_literal(&self, node: TsNode<'_>) -> Option<String> {
         if node.kind() != "string" {
             return None;
@@ -120,10 +120,10 @@ impl<'a> Extractor<'a> {
         )
     }
 
-    /// Метод из `fetch(url, {method: "..."})`.
+    /// The method from `fetch(url, {method: "..."})`.
     ///
-    /// По умолчанию GET — но если метод задан литералом, берётся он, иначе
-    /// не-GET запрос попал бы в граф как GET.
+    /// GET by default — but a literal method is taken when present, or a
+    /// non-GET request would enter the graph as a GET.
     fn fetch_method(&self, args: TsNode<'_>) -> String {
         let kids = ts::named_children(args);
         if kids.len() < 2 || kids[1].kind() != "object" {
@@ -175,7 +175,7 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Маршруты Express `app.get(...)` и методы NestJS `@Get(...)`.
+    /// Express routes `app.get(...)` and NestJS methods `@Get(...)`.
     fn http_server(&self, root: TsNode<'_>) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
 
@@ -194,8 +194,8 @@ impl<'a> Extractor<'a> {
             if !HTTP_VERBS.contains(&method.as_str()) {
                 continue;
             }
-            // Маршруты Express — абсолютные пути; строка иного вида это
-            // `app.get("view engine")`, то есть чтение настройки.
+            // Express routes are absolute paths; any other string is
+            // `app.get("view engine")`, i.e. reading a setting.
             let Some(url) = self.first_url(*args) else {
                 continue;
             };
@@ -221,8 +221,8 @@ impl<'a> Extractor<'a> {
             if !HTTP_VERBS.contains(&method.as_str()) {
                 continue;
             }
-            // Путь в декораторе NestJS может быть относительным
-            // (`@Get("users")`), но пустая строка маршрутом не бывает.
+            // A NestJS decorator's path may be relative (`@Get("users")`),
+            // but an empty string is never a route.
             let Some(url) = self.first_url(*args).filter(|u| !u.is_empty()) else {
                 continue;
             };
@@ -231,7 +231,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Клиентские вызовы `fetch(...)` и `axios.get(...)`.
+    /// Client calls `fetch(...)` and `axios.get(...)`.
     fn http_client(&self, root: TsNode<'_>) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
 
@@ -286,7 +286,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Продюсеры (publish/produce/emit) и консьюмеры очередей.
+    /// Queue producers (publish/produce/emit) and consumers.
     fn queue(&self, root: TsNode<'_>) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in ts::run_query(cached_query(Q_MEMBER_CALL, self.tsx), root, self.source) {
@@ -321,15 +321,15 @@ impl<'a> Extractor<'a> {
 
 fn queue_role(method: &str) -> Option<&'static str> {
     match method {
-        // Продюсер обращается к топику, консьюмер его обслуживает.
+        // A producer addresses the topic, a consumer serves it.
         "publish" | "produce" | "emit" => Some("client"),
         "subscribe" => Some("server"),
         _ => None,
     }
 }
 
-/// Все границы одного разобранного файла. Порядок экстракторов тот же,
-/// что в graphlens, — от него зависит порядок рёбер в графе.
+/// Every boundary in one parsed file. The extractor order matches
+/// graphlens's, because edge order in the graph depends on it.
 pub fn extract_boundaries(root: TsNode<'_>, source: &[u8], tsx: bool) -> Vec<BoundaryRef> {
     let extractor = Extractor { source, tsx };
     let mut refs = extractor.http_server(root);
@@ -338,7 +338,7 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8], tsx: bool) -> Vec<Bou
     refs
 }
 
-/// Границы в одном исходнике — точка входа для проверок.
+/// Boundaries in a single source — the entry point for checks.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (source, tsx = false))]

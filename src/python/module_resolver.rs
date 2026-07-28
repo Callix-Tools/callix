@@ -1,11 +1,11 @@
-//! Полное имя модуля по пути файла и определение корней исходников.
+//! A module's qualified name from its file path, and source-root detection.
 
 use std::path::{Path, PathBuf};
 
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::gen_stub_pyfunction;
 
-/// Корни исходников Python: сначала макет с `src/`, иначе корень проекта.
+/// Python source roots: the `src/` layout first, otherwise the project root.
 pub fn source_roots(project_root: &Path, files: &[PathBuf]) -> Vec<PathBuf> {
     let src = project_root.join("src");
     if src.is_dir()
@@ -17,10 +17,10 @@ pub fn source_roots(project_root: &Path, files: &[PathBuf]) -> Vec<PathBuf> {
     vec![project_root.to_path_buf()]
 }
 
-/// Путь файла → точечное имя модуля.
+/// File path → dotted module name.
 ///
 /// `src/pkg/__init__.py` → `pkg`, `src/pkg/utils.py` → `pkg.utils`.
-/// None, если файл лежит вне корня исходников.
+/// None if the file lies outside a source root.
 pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
     let relative = file_path.strip_prefix(source_root).ok()?;
     let mut parts: Vec<String> = relative
@@ -29,17 +29,17 @@ pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
         .collect();
 
     let last = parts.last_mut()?;
-    // Отрезаем .py / .pyi
+    // Strip .py / .pyi
     if let Some(stem) = Path::new(last.as_str()).file_stem() {
         *last = stem.to_string_lossy().into_owned();
     }
-    // Для __init__ модулем является сам пакет
+    // For __init__ the module is the package itself
     if last == "__init__" {
         parts.pop();
     }
 
     if parts.is_empty() {
-        // __init__.py в самом корне — берём имя корня
+        // __init__.py at the root itself — take the root's name
         return source_root
             .file_name()
             .map(|n| n.to_string_lossy().into_owned());
@@ -47,7 +47,7 @@ pub fn qualified_name(file_path: &Path, source_root: &Path) -> Option<String> {
     Some(parts.join("."))
 }
 
-/// Первый корень исходников, которому принадлежит файл.
+/// The first source root the file belongs to.
 pub fn source_root_for<'a>(file: &Path, roots: &'a [PathBuf]) -> Option<&'a PathBuf> {
     roots.iter().find(|root| file.starts_with(root))
 }
@@ -62,7 +62,7 @@ pub fn file_to_qualified_name(file_path: &str, source_root: &str) -> PyResult<St
     })
 }
 
-/// `__init__.py` или `__init__.pyi`.
+/// `__init__.py` or `__init__.pyi`.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn is_package_init(file_path: &str) -> bool {

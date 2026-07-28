@@ -1,8 +1,8 @@
-//! Оркестрация анализа Go-проекта.
+//! Orchestration of Go project analysis.
 //!
-//! Схема узлов отличается от Python и TypeScript: MODULE — это пакет Go
-//! (каталог), а не точечное имя, и его qualified_name совпадает с путём
-//! импорта, поэтому внутренние импорты связываются прямым поиском.
+//! The node scheme differs from Python and TypeScript: a MODULE is a Go
+//! package (a directory) rather than a dotted name, and its qualified_name
+//! equals the import path, so internal imports are bound by direct lookup.
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -36,23 +36,25 @@ const GO_EXTENSIONS: [&str; 1] = [".go"];
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
 type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 
-/// Исходники Go под корнем.
+/// Go sources under the root.
 ///
-/// Исключается общий список служебных каталогов, а НЕ тот, по которому
-/// ищутся корни модулей: `vendor` и `testdata` скрывают вложенные go.mod
-/// от поиска корней, но их собственные файлы в анализ входят — так же,
-/// как в graphlens, где сбор файлов идёт базовой реализацией.
+/// The shared service-directory list is excluded, NOT the one used to find
+/// module roots: `vendor` and `testdata` hide nested go.mod files from root
+/// discovery, but their own files are analysed — the same as in graphlens,
+/// where file collection goes through the base implementation.
 pub fn collect_go_files(root: &Path) -> Vec<PathBuf> {
     collect_files(root, &GO_EXTENSIONS, &EXCLUDED_DIRS)
 }
 
-/// Полное имя пакета: путь модуля плюс каталог файла внутри него.
+/// A package's qualified name: the module path plus the file's directory
+/// within it.
 fn package_qname(file: &Path, go_root: &Path, module_path: &str) -> String {
     let Some(parent) = file.parent() else {
         return module_path.to_string();
     };
     match parent.strip_prefix(go_root) {
-        // Файл вне корня модуля (передан явно) — считаем корневым пакетом.
+        // A file outside the module root (passed explicitly) counts as the
+        // root package.
         Err(_) => module_path.to_string(),
         Ok(rel) if rel.as_os_str().is_empty() => module_path.to_string(),
         Ok(rel) => format!("{module_path}/{}", rel.to_string_lossy()),
@@ -169,7 +171,7 @@ fn push_relation(
     Ok(())
 }
 
-/// Структура и импорты одного корня Go-модуля.
+/// Structure and imports for one Go module root.
 fn build_root_structure(
     py: Python<'_>,
     graph: &mut Graph,
@@ -247,10 +249,10 @@ fn build_root_structure(
         }
     }
 
-    // Внутренние импорты связываем, когда все пакеты уже созданы: путь
-    // импорта Go совпадает с полным именем пакета, поэтому достаточно
-    // прямого поиска. Не найденное падает в EXTERNAL_SYMBOL, чтобы ребро
-    // не пропало.
+    // Internal imports are bound once every package exists: a Go import path
+    // equals the package's qualified name, so a direct lookup suffices.
+    // Anything not found falls through to an EXTERNAL_SYMBOL so the edge is
+    // never lost.
     for (import_id, import_path) in internal_imports {
         let target_id = match packages.get(&import_path) {
             Some(id) => id.clone(),
@@ -262,10 +264,10 @@ fn build_root_structure(
     Ok((project, occurrences, boundaries))
 }
 
-/// Абсолютный путь резолвера → путь относительно корня проекта.
+/// A resolver's absolute path → a path relative to the project root.
 ///
-/// Резолвер отдаёт абсолютные пути, а узлы графа хранят относительные;
-/// без приведения поиск в SpanIndex промахивается.
+/// The resolver hands back absolute paths while graph nodes store relative
+/// ones; without the conversion, SpanIndex lookups miss.
 fn relative_to(file_path: &str, project_root: &Path) -> String {
     let path = Path::new(file_path);
     let resolved = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
@@ -275,11 +277,11 @@ fn relative_to(file_path: &str, project_root: &Path) -> String {
         .unwrap_or_else(|_| file_path.to_string())
 }
 
-/// Ключ EXTERNAL_SYMBOL для цели, которую не удалось назвать.
+/// The EXTERNAL_SYMBOL key for a target that could not be named.
 ///
-/// Путь файла входит в ключ намеренно: без него места с одинаковыми
-/// координатами в разных файлах схлопывались бы в один узел (см. README,
-/// «Отличия от graphlens»).
+/// The file path is part of the key deliberately: without it, sites sharing
+/// coordinates across different files would collapse into one node (see the
+/// README, "Differences from graphlens").
 fn positional_key(project_root: &Path, file_path: &str, occurrence: &OccurrenceRef) -> String {
     let path = Path::new(file_path);
     let relative = path.strip_prefix(project_root).unwrap_or(path).to_string_lossy();
@@ -299,7 +301,7 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
     })
 }
 
-/// Языковой адаптер для Go-проектов.
+/// The language adapter for Go projects.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", unsendable)]
 pub struct GoAdapter {
@@ -310,8 +312,8 @@ pub struct GoAdapter {
 #[pymethods]
 impl GoAdapter {
     /// Args:
-    ///     resolve: False отключает резолв-фазу — граф останется
-    ///         структурным, а `resolver_status` станет `unavailable`.
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` becomes `unavailable`.
     #[new]
     #[pyo3(signature = (*, resolve = true))]
     fn new(resolve: bool) -> Self {
@@ -336,7 +338,7 @@ impl GoAdapter {
         collect_go_files(&project_root)
     }
 
-    /// Разбирает проект и возвращает граф.
+    /// Analyses the project and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
     fn analyze(
         &mut self,
@@ -363,7 +365,7 @@ impl GoAdapter {
 
         let mut graph = Graph::empty(py);
 
-        // Фаза 1 — структура по каждому модулю, без резолва.
+        // Phase 1 — structure per module, no resolution.
         let mut built = Vec::with_capacity(root_files.len());
         for (go_root, module_files) in &root_files {
             built.push(build_root_structure(
@@ -375,8 +377,8 @@ impl GoAdapter {
             )?);
         }
 
-        // Фаза 2 — один резолвер на весь project_root, чтобы межмодульные
-        // вызовы разрешались и воркспейс не перезагружался на каждый модуль.
+        // Phase 2 — one resolver for the whole project_root, so cross-module
+        // calls resolve and the workspace is not reloaded per module.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
         if let Some(resolver) = &mut self.resolver {
@@ -397,7 +399,7 @@ impl GoAdapter {
             status = resolver.status_rust();
         }
 
-        // Фаза 3 — границы, после резолва.
+        // Phase 3 — boundaries, after resolution.
         for (_project, _occurrences, boundaries) in &built {
             apply_boundaries(py, &mut graph, boundaries)?;
         }
@@ -491,7 +493,7 @@ fn resolve_pass(
         }
         let relation = Relation {
             source_id: occurrence.enclosing_id.clone(),
-            target_id: target_id.expect("внешний символ создаётся выше"),
+            target_id: target_id.expect("the external symbol is created above"),
             kind: rel_kind,
             metadata: metadata.unbind(),
         };
@@ -500,7 +502,7 @@ fn resolve_pass(
     Ok(metrics)
 }
 
-/// Узлы BOUNDARY и рёбра EXPOSES / CONSUMES.
+/// BOUNDARY nodes and EXPOSES / CONSUMES edges.
 fn apply_boundaries(
     py: Python<'_>,
     graph: &mut Graph,

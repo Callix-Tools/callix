@@ -1,5 +1,5 @@
-//! TypeScript-адаптер. Пока здесь только резолвер символов поверх
-//! typescript-go, слинкованного в модуль (см. `go/bridge.go` и `build.rs`).
+//! The TypeScript adapter, built on typescript-go linked into the module
+//! (see `go/bridge.go` and `build.rs`).
 
 mod adapter;
 mod boundary;
@@ -36,7 +36,7 @@ use crate::graph::Graph;
 use crate::occurrence::OccurrenceRef;
 
 thread_local! {
-    /// По парсеру на грамматику: у .ts и .tsx они разные.
+    /// One parser per grammar: .ts and .tsx do not share one.
     static TS_PARSER: RefCell<Parser> = RefCell::new(parser_for(false));
     static TSX_PARSER: RefCell<Parser> = RefCell::new(parser_for(true));
 }
@@ -50,7 +50,7 @@ fn parser_for(tsx: bool) -> Parser {
     };
     parser
         .set_language(&language.into())
-        .expect("грамматика typescript совместима с этой версией tree-sitter");
+        .expect("the typescript grammar is compatible with this tree-sitter");
     parser
 }
 
@@ -60,10 +60,10 @@ pub fn parse_tree(source: &[u8], tsx: bool) -> Result<Tree, PyErr> {
     } else {
         TS_PARSER.with(|p| p.borrow_mut().parse(source, None))
     };
-    parsed.ok_or_else(|| ParseError::new_err("tree-sitter не смог разобрать исходник"))
+    parsed.ok_or_else(|| ParseError::new_err("tree-sitter could not parse the source"))
 }
 
-/// Разбирает один TypeScript-файл и наполняет граф его структурой.
+/// Parses one TypeScript file and fills the graph with its structure.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, file_path, module_qualified_name, file_node_id, source, source_root_name, classifier = None, modules = None, path_aliases = None, tsx = false))]

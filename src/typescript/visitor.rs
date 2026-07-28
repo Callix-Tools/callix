@@ -1,8 +1,8 @@
-//! Обход CST TypeScript и наполнение графа.
+//! Walking TypeScript's CST and filling the graph.
 //!
-//! Устройство то же, что у Python-визитора: три стека (область имён,
-//! родитель, вид узла), структура строится сразу, а места использования
-//! копятся в `OccurrenceRef` для резолв-фазы.
+//! Laid out like the Python visitor: three stacks (name scope, parent, node
+//! kind), structure is built as we go, and use-sites accumulate as
+//! `OccurrenceRef`s for the resolution pass.
 
 use std::collections::{BTreeMap, HashSet};
 
@@ -23,14 +23,15 @@ use crate::ts;
 
 use super::module_resolver::{apply_alias, resolve_relative};
 
-/// Имя метода в теле класса может лежать в одном из трёх слотов.
+/// A method's name in a class body may sit in one of three slots.
 const METHOD_NAME_TYPES: [&str; 3] = [
     "identifier",
     "property_identifier",
     "private_property_identifier",
 ];
 
-/// Вложенные определения — граница области, внутрь сканер значений не идёт.
+/// Nested definitions are a scope boundary; the value scanner does not enter
+/// them.
 const NESTED_DEF_TYPES: [&str; 9] = [
     "function_declaration",
     "generator_function_declaration",
@@ -43,7 +44,7 @@ const NESTED_DEF_TYPES: [&str; 9] = [
     "method_definition",
 ];
 
-/// Операторы, которые сами содержат другие операторы.
+/// Statements that contain other statements.
 const BLOCK_TYPES: [&str; 15] = [
     "statement_block",
     "if_statement",
@@ -62,9 +63,9 @@ const BLOCK_TYPES: [&str; 15] = [
     "labeled_statement",
 ];
 
-/// Определяет происхождение импорта по заранее посчитанным наборам имён.
+/// Determines an import's origin from precomputed name sets.
 ///
-/// В отличие от Python, ключом служит имя пакета, выведенное из спецификатора:
+/// Unlike Python, the key is the package name derived from the specifier:
 /// `@scope/pkg/sub` → `@scope/pkg`, `lodash/fp` → `lodash`.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen)]
@@ -131,7 +132,7 @@ impl TsImportClassifier {
     }
 }
 
-/// Ключ пакета из спецификатора модуля.
+/// The package key from a module specifier.
 fn package_key(import_path: &str) -> String {
     let pkg = if import_path.starts_with('@') {
         let parts: Vec<&str> = import_path.splitn(3, '/').collect();
@@ -146,7 +147,7 @@ fn package_key(import_path: &str) -> String {
     normalize_pkg_name(&pkg)
 }
 
-/// Снимает окружающие кавычки со строкового литерала.
+/// Strips the surrounding quotes from a string literal.
 fn strip_quotes(text: &str) -> String {
     let chars: Vec<char> = text.chars().collect();
     if chars.len() > 1 {
@@ -158,7 +159,7 @@ fn strip_quotes(text: &str) -> String {
     text.to_string()
 }
 
-/// Путь модуля → точечное имя для хранения в графе.
+/// A module path → the dotted name stored in the graph.
 fn module_path_to_qname(module_path: &str, is_relative: bool, current_qname: &str) -> String {
     if is_relative {
         return resolve_relative(current_qname, module_path);
@@ -166,7 +167,7 @@ fn module_path_to_qname(module_path: &str, is_relative: bool, current_qname: &st
     module_path.replace('/', ".")
 }
 
-/// Путь → безопасный идентификатор.
+/// A path → a safe identifier.
 fn safe_name(path: &str) -> String {
     let mapped: String = path
         .chars()
@@ -188,8 +189,8 @@ pub struct TsVisitor<'a> {
     file_node_id: &'a str,
     source_root_name: String,
     classifier: &'a TsImportClassifier,
-    /// Модули корня целиком: имя → id. В отличие от Python-визитора,
-    /// список приходит снаружи и накапливается между файлами.
+    /// The root's modules in full: name → id. Unlike the Python visitor, the
+    /// map comes from outside and accumulates across files.
     modules: &'a IndexMap<String, String>,
     path_aliases: &'a BTreeMap<String, String>,
     scope_stack: Vec<String>,
@@ -251,7 +252,7 @@ impl<'a> TsVisitor<'a> {
         self.kind_stack.last() == Some(&NodeKind::Class)
     }
 
-    // -- диспетчер --------------------------------------------------------
+    // -- dispatch ---------------------------------------------------------
 
     pub fn visit(&mut self, node: TsNode<'_>) -> PyResult<()> {
         match node.kind() {
@@ -282,11 +283,11 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    /// Голое выражение на уровне файла или класса.
+    /// A bare expression at file or class level.
     ///
-    /// В теле функции такие операторы уже разобраны `walk_statement`,
-    /// поэтому повторно записывать occurrences нельзя — отсюда проверка
-    /// вида текущей области.
+    /// Inside a function body such statements are already handled by
+    /// `walk_statement`, so occurrences must not be recorded twice — hence the
+    /// check on the current scope's kind.
     fn visit_expression_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         if matches!(
             self.kind_stack.last(),
@@ -310,13 +311,13 @@ impl<'a> TsVisitor<'a> {
         self.scan_value(expr, &enclosing)
     }
 
-    // -- экспорт ----------------------------------------------------------
+    // -- exports ----------------------------------------------------------
 
     fn visit_export_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let children = ts::children(node);
 
-        // `export { X } from 'mod'`: строка лежит прямо в export_statement,
-        // без обёртки from_clause.
+        // `export { X } from 'mod'`: the string sits directly in the
+        // export_statement, with no from_clause wrapper.
         let export_clause = children.iter().find(|c| c.kind() == "export_clause");
         let from_string = children.iter().find(|c| c.kind() == "string");
         if let (Some(_), Some(from_string)) = (export_clause, from_string) {
@@ -347,7 +348,7 @@ impl<'a> TsVisitor<'a> {
         let is_relative = is_relative_path(module_path);
         let local_name = format!(
             "__reexport_{}",
-            module_path.replace('/', "_").replace('.', "_")
+            module_path.replace(['/', '.'], "_")
         );
         let mut classify_path = module_path.to_string();
         if !is_relative && !self.path_aliases.is_empty() {
@@ -360,17 +361,17 @@ impl<'a> TsVisitor<'a> {
         self.emit_import(&local_name, &ext_qname, is_relative, &classify_path, None, true)
     }
 
-    /// Снимает ведущий сегмент корня исходников из переписанного алиаса.
+    /// Strips the source root's leading segment from a rewritten alias.
     ///
-    /// Алиас `@/client/v2` → `src/client/v2`; при корне `.../src` ведущий
-    /// `src/` надо убрать, иначе верхний уровень имени не совпадёт с тем,
-    /// что выведено из путей файлов.
+    /// The alias `@/client/v2` becomes `src/client/v2`; with a `.../src` root
+    /// the leading `src/` has to go, or the name's top level would not match
+    /// what was derived from file paths.
     fn strip_source_root_prefix(&self, path: &str) -> String {
         let prefix = format!("{}/", self.source_root_name);
         path.strip_prefix(&prefix).unwrap_or(path).to_string()
     }
 
-    // -- классы и интерфейсы ----------------------------------------------
+    // -- classes and interfaces -------------------------------------------
 
     fn handle_class(
         &mut self,
@@ -431,7 +432,7 @@ impl<'a> TsVisitor<'a> {
         self.handle_class(node, true, true)
     }
 
-    /// Поле интерфейса `x: T;`.
+    /// An interface field `x: T;`.
     fn visit_property_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(prop) = ts::child_of_type(node, "property_identifier") else {
             return Ok(());
@@ -454,7 +455,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    /// Сигнатура метода интерфейса `foo(): T;`.
+    /// An interface method signature `foo(): T;`.
     fn visit_method_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name_node) = ts::child_of_types(node, &METHOD_NAME_TYPES) else {
             return Ok(());
@@ -480,7 +481,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    // -- псевдонимы типов и перечисления ----------------------------------
+    // -- type aliases and enums -------------------------------------------
 
     fn visit_type_alias(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name_node) = ts::child_of_type(node, "type_identifier") else {
@@ -499,7 +500,7 @@ impl<'a> TsVisitor<'a> {
         let alias_id = alias.get().id.clone();
         self.add_node_with_relation(alias, RelationKind::Declares)?;
 
-        // Тип-значение — первый именованный потомок после `=`.
+        // The aliased type is the first named child after `=`.
         let mut past_eq = false;
         for child in ts::children(node) {
             if !child.is_named() && child.kind() == "=" {
@@ -558,7 +559,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    /// Поле класса `x: T = value;`.
+    /// A class field `x: T = value;`.
     fn visit_public_field(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(prop) = ts::child_of_type(node, "property_identifier") else {
             return Ok(());
@@ -576,8 +577,8 @@ impl<'a> TsVisitor<'a> {
         let attr_id = attr.get().id.clone();
         self.add_node_with_relation(attr, RelationKind::Declares)?;
 
-        // Место использования принадлежит классу, а не самому полю —
-        // так же, как у переменных в lexical_declaration.
+        // The use-site belongs to the class, not to the field itself — the
+        // same as for variables in a lexical_declaration.
         let class_id = self.container();
         self.record_occurrence("write", prop, &class_id);
 
@@ -603,7 +604,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    // -- функции ----------------------------------------------------------
+    // -- functions --------------------------------------------------------
 
     fn handle_function(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let children = ts::children(node);
@@ -643,7 +644,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    /// Текст аннотации без ведущего двоеточия.
+    /// The annotation's text without the leading colon.
     fn annotation_text(&self, node: TsNode<'_>) -> String {
         self.text(node).trim_start_matches(':').trim().to_string()
     }
@@ -683,8 +684,8 @@ impl<'a> TsVisitor<'a> {
         let is_async = ts::children(value).iter().any(|c| c.kind() == "async");
         let kind = if self.in_class() { NodeKind::Method } else { NodeKind::Function };
 
-        // Аннотация возврата висит на самой стрелочной функции, а не на
-        // деклараторе: у того потомки — `identifier = value`.
+        // The return annotation hangs on the arrow function itself, not on
+        // the declarator, whose children are `identifier = value`.
         let type_ann = ts::child_of_type(value, "type_annotation");
         let return_annotation = type_ann.map(|n| self.annotation_text(n));
 
@@ -742,8 +743,8 @@ impl<'a> TsVisitor<'a> {
             self.record_annotation(type_ann, &var_id);
         }
 
-        // Инициализатор ищем фильтром, а не по позиции: аннотация типа
-        // сдвигает его со второго именованного потомка на третий.
+        // The initializer is found by filtering rather than by position: a
+        // type annotation shifts it from the second named child to the third.
         let initializer = ts::children(declarator).into_iter().find(|c| {
             c.is_named() && c.id() != name_node.id() && c.kind() != "type_annotation"
         });
@@ -753,14 +754,14 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    // -- импорты ----------------------------------------------------------
+    // -- imports ----------------------------------------------------------
 
     fn visit_import_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let module_path = match ts::child_of_type(node, "from_clause") {
             Some(from_clause) => ts::child_of_type(from_clause, "string")
                 .map(|s| strip_quotes(&self.text(s)))
                 .unwrap_or_default(),
-            // Импорт ради побочного эффекта: import 'mod'
+            // A side-effect import: import 'mod'
             None => ts::child_of_type(node, "string")
                 .map(|s| strip_quotes(&self.text(s)))
                 .unwrap_or_default(),
@@ -770,13 +771,13 @@ impl<'a> TsVisitor<'a> {
         }
 
         let is_relative = is_relative_path(&module_path);
-        // Схема node: мешает классификации stdlib.
+        // The node: scheme gets in the way of stdlib classification.
         let mut classify_path = module_path
             .strip_prefix("node:")
             .unwrap_or(&module_path)
             .to_string();
-        // Алиасы переписываем до вычисления имени, чтобы @/client/v2 →
-        // src/client/v2 → client.v2 и совпало с внутренними модулями.
+        // Aliases are rewritten before the name is computed, so @/client/v2 →
+        // src/client/v2 → client.v2 and matches the internal modules.
         if !is_relative && !self.path_aliases.is_empty() {
             let rewritten = apply_alias(&classify_path, self.path_aliases);
             if rewritten != classify_path {
@@ -912,14 +913,14 @@ impl<'a> TsVisitor<'a> {
         if target_id.is_none() {
             target_id = Some(self.get_or_create_external_symbol(ext_qname, origin)?);
         }
-        let target_id = target_id.expect("внешний символ создаётся выше");
+        let target_id = target_id.expect("the external symbol is created above");
 
         let file_id = self.file_node_id.to_string();
         self.push_relation(file_id, target_id.clone(), RelationKind::Imports)?;
         self.push_relation(import_id, target_id, RelationKind::ResolvesTo)
     }
 
-    // -- параметры --------------------------------------------------------
+    // -- parameters -------------------------------------------------------
 
     fn extract_parameters(
         &mut self,
@@ -943,7 +944,7 @@ impl<'a> TsVisitor<'a> {
                         None => ts::child_of_types(child, &["identifier", "this"]),
                     };
                     type_node = ts::child_of_type(child, "type_annotation");
-                    // У обязательного параметра тоже бывает значение по умолчанию
+                    // A required parameter can carry a default value too
                     if ts::children(child).iter().any(|c| c.kind() == "=") {
                         has_default = true;
                     }
@@ -997,9 +998,9 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    // -- места использования ----------------------------------------------
+    // -- use-sites --------------------------------------------------------
 
-    /// Ведущий идентификатор типа из аннотации.
+    /// The leading type identifier from an annotation.
     fn first_type_identifier<'tree>(&self, node: TsNode<'tree>) -> Option<TsNode<'tree>> {
         match node.kind() {
             "type_annotation" => ts::named_children(node)
@@ -1007,11 +1008,11 @@ impl<'a> TsVisitor<'a> {
                 .next()
                 .and_then(|c| self.first_type_identifier(c)),
             "type_identifier" | "identifier" => Some(node),
-            // Встроенные string/number/boolean — берём сам токен.
+            // Built-in string/number/boolean — take the token itself.
             "predefined_type" => ts::children(node).into_iter().next(),
-            // Base<T> — только имя базы.
+            // Base<T> — the base's name only.
             "generic_type" => ts::child_of_types(node, &["type_identifier", "identifier"]),
-            // NS.Type — замыкающее свойство.
+            // NS.Type — the trailing property.
             "member_expression" => ts::children(node).last().copied(),
             _ => ts::named_children(node)
                 .into_iter()
@@ -1036,7 +1037,7 @@ impl<'a> TsVisitor<'a> {
         });
     }
 
-    /// Сканирует выражение-значение, собирая `call` и `read`.
+    /// Scans a value expression, collecting `call` and `read`.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if NESTED_DEF_TYPES.contains(&node.kind()) {
             return Ok(());
@@ -1067,7 +1068,7 @@ impl<'a> TsVisitor<'a> {
                 self.record_occurrence("read", node, enclosing_id);
                 Ok(())
             }
-            // Объектный литерал { key: value } — сканируем только значение.
+            // An object literal { key: value } — only the value is scanned.
             "pair" => {
                 let named = ts::named_children(node);
                 if named.len() > 1 {
@@ -1075,7 +1076,7 @@ impl<'a> TsVisitor<'a> {
                 }
                 Ok(())
             }
-            // Сокращение { x } — идентификатор и ключ, и значение.
+            // The shorthand { x } — the identifier is both key and value.
             "shorthand_property_identifier" => {
                 self.record_occurrence("read", node, enclosing_id);
                 Ok(())
@@ -1150,7 +1151,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    // -- имена ------------------------------------------------------------
+    // -- names ------------------------------------------------------------
 
     fn name_from_node(&self, node: TsNode<'_>) -> String {
         match node.kind() {
@@ -1196,7 +1197,7 @@ impl<'a> TsVisitor<'a> {
         bases
     }
 
-    // -- работа с графом --------------------------------------------------
+    // -- graph plumbing ---------------------------------------------------
 
     fn get_or_create_external_symbol(&mut self, qname: &str, origin: &str) -> PyResult<String> {
         let sym_id = node_id(self.project_name, qname, NodeKind::ExternalSymbol.as_str());
@@ -1282,13 +1283,13 @@ impl<'a> TsVisitor<'a> {
     }
 }
 
-/// Узлы-имена для каждой базы в списке наследования.
+/// The name nodes for each base in an inheritance list.
 fn heritage_base_nodes<'tree>(heritage: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut nodes = Vec::new();
     for child in ts::children(heritage) {
         match child.kind() {
             "identifier" | "type_identifier" => nodes.push(child),
-            // NS.Base — именем является замыкающее свойство.
+            // NS.Base — the name is the trailing property.
             "member_expression" => {
                 if let Some(last) = ts::children(child).last() {
                     nodes.push(*last);

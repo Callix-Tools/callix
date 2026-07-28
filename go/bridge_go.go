@@ -1,7 +1,7 @@
-// Мост к go/packages: типизирует проект и отвечает на goto-definition.
-// В отличие от ty и typescript-go, стандартная библиотека Go не может
-// быть вкомпилирована — её исходники берутся из GOROOT, поэтому этому
-// резолверу нужен установленный Go у того, кто анализирует.
+// The bridge to go/packages: type-checks the project and answers
+// goto-definition. Unlike ty and typescript-go, Go's standard library cannot
+// be compiled in — its sources come from GOROOT, so this resolver needs Go
+// installed on the machine doing the analysis.
 package main
 
 /*
@@ -19,28 +19,28 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// fileUnit — файл в контексте одного пакета: с Tests=true один и тот же
-// файл входит сразу в несколько пакетов (обычный, тестовый вариант,
-// внешний test-пакет), и типовая информация у них разная.
+// fileUnit is a file in the context of one package: with Tests=true the same
+// file belongs to several packages at once (the normal one, the test variant,
+// the external test package), and their type information differs.
 type fileUnit struct {
 	pkg    *packages.Package
 	syntax *ast.File
 }
 
-// goSession держит загруженные пакеты и индекс файлов проекта.
+// goSession holds the loaded packages and the project's file index.
 type goSession struct {
 	packages []*packages.Package
-	// Файл → все его вхождения; перебираются по очереди, пока какое-то
-	// не даст определение.
+	// File → all of its units; tried in turn until one yields a definition.
 	byFile map[string][]fileUnit
-	// Встроенные имена (len, make, append, string, error, …) → позиция в
-	// $GOROOT/src/builtin/builtin.go. Своей позиции в исходниках у них
-	// нет — они живут в universe scope, — но gopls указывает именно на
-	// builtin.go, и без этого каждый вызов len() остаётся неразрешённым.
+	// Builtin names (len, make, append, string, error, …) → their position in
+	// $GOROOT/src/builtin/builtin.go. They have no position of their own in
+	// the sources — they live in universe scope — but gopls points at
+	// builtin.go, and without this every len() call stays unresolved.
 	builtins map[string]token.Position
 }
 
-// loadBuiltins разбирает пакет builtin и запоминает позиции его деклараций.
+// loadBuiltins parses the builtin package and records its declarations'
+// positions.
 func loadBuiltins(dir string) map[string]token.Position {
 	out := map[string]token.Position{}
 	cfg := &packages.Config{
@@ -62,9 +62,9 @@ func loadBuiltins(dir string) map[string]token.Position {
 						switch s := spec.(type) {
 						case *ast.TypeSpec:
 							out[s.Name.Name] = pkg.Fset.Position(s.Name.Pos())
-							// Методы встроенных интерфейсов (error.Error)
-							// тоже живут в universe scope и своей позиции
-							// в пользовательском коде не имеют.
+							// Methods of builtin interfaces (error.Error) also
+							// live in universe scope and have no position of
+							// their own in user code.
 							if iface, ok := s.Type.(*ast.InterfaceType); ok && iface.Methods != nil {
 								for _, method := range iface.Methods.List {
 									for _, name := range method.Names {
@@ -99,8 +99,8 @@ func callix_go_open(root *C.char) C.int {
 			packages.NeedSyntax | packages.NeedTypes | packages.NeedTypesInfo |
 			packages.NeedImports | packages.NeedDeps,
 		Dir: dir,
-		// Без этого тестовые файлы не типизируются, и все места
-		// использования в *_test.go остаются неразрешёнными.
+		// Without this, test files are not type-checked and every use-site in
+		// *_test.go stays unresolved.
 		Tests: true,
 	}
 	loaded, err := packages.Load(cfg, "./...")
@@ -113,8 +113,8 @@ func callix_go_open(root *C.char) C.int {
 		byFile:   map[string][]fileUnit{},
 		builtins: loadBuiltins(dir),
 	}
-	// Индексируем только пакеты проекта: зависимости нужны для типов,
-	// но запросы приходят по файлам проекта.
+	// Only the project's packages are indexed: dependencies are needed for
+	// types, but queries arrive for the project's own files.
 	for _, pkg := range loaded {
 		for i, file := range pkg.Syntax {
 			if i >= len(pkg.CompiledGoFiles) {
@@ -140,8 +140,8 @@ func callix_go_close(handle C.int) {
 	delete(goSessions, int(handle))
 }
 
-// callix_go_definition отвечает строкой "путь\tстрока\tколонка" либо
-// пустой строкой. Координаты 1-based с обеих сторон.
+// callix_go_definition answers with "path\tline\tcolumn" or an empty string.
+// Coordinates are 1-based on both sides.
 //
 //export callix_go_definition
 func callix_go_definition(handle C.int, file *C.char, line C.uint, col C.uint) *C.char {
@@ -166,7 +166,7 @@ func callix_go_definition(handle C.int, file *C.char, line C.uint, col C.uint) *
 		if object == nil {
 			continue
 		}
-		// Встроенное имя: своей позиции нет, берём из builtin.go.
+		// A builtin name: no position of its own, so take it from builtin.go.
 		if object.Pos() == token.NoPos {
 			position, ok := session.builtins[object.Name()]
 			if !ok {
@@ -180,7 +180,7 @@ func callix_go_definition(handle C.int, file *C.char, line C.uint, col C.uint) *
 	return C.CString("")
 }
 
-// positionToPos переводит 1-based (строка, колонка) в token.Pos.
+// positionToPos converts a 1-based (line, column) into a token.Pos.
 func positionToPos(fset *token.FileSet, filename string, line, col int) token.Pos {
 	var found *token.File
 	fset.Iterate(func(f *token.File) bool {
@@ -201,7 +201,7 @@ func positionToPos(fset *token.FileSet, filename string, line, col int) token.Po
 	return found.Pos(offset)
 }
 
-// identAt возвращает идентификатор, покрывающий позицию.
+// identAt returns the identifier covering the position.
 func identAt(file *ast.File, pos token.Pos) *ast.Ident {
 	var found *ast.Ident
 	ast.Inspect(file, func(node ast.Node) bool {
@@ -219,8 +219,8 @@ func identAt(file *ast.File, pos token.Pos) *ast.Ident {
 	return found
 }
 
-// lookupObject: сначала использование, затем объявление — так место
-// использования ведёт к определению, а само определение к себе же.
+// lookupObject: uses first, then definitions — so a use-site leads to its
+// definition, and a definition leads to itself.
 func lookupObject(info *types.Info, ident *ast.Ident) types.Object {
 	if object := info.Uses[ident]; object != nil {
 		return object

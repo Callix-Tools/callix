@@ -1,5 +1,5 @@
-//! Go-адаптер. Пока здесь резолвер символов поверх `go/packages`,
-//! слинкованного в модуль (см. `go/bridge_go.go` и `build.rs`).
+//! The Go adapter, built on `go/packages` linked into the module
+//! (see `go/bridge_go.go` and `build.rs`).
 
 mod adapter;
 mod boundary;
@@ -14,7 +14,6 @@ pub use deps::{
 pub use adapter::GoAdapter;
 pub use boundary::extract_go_boundaries;
 pub use resolver::GoResolver;
-pub use visitor::GoExtractor;
 
 use std::cell::RefCell;
 
@@ -28,7 +27,7 @@ thread_local! {
         let mut parser = Parser::new();
         parser
             .set_language(&tree_sitter_go::LANGUAGE.into())
-            .expect("грамматика go совместима с этой версией tree-sitter");
+            .expect("the go grammar is compatible with this tree-sitter");
         parser
     });
 }
@@ -36,5 +35,5 @@ thread_local! {
 pub fn parse_tree(source: &[u8]) -> Result<Tree, PyErr> {
     PARSER
         .with(|p| p.borrow_mut().parse(source, None))
-        .ok_or_else(|| ParseError::new_err("tree-sitter не смог разобрать исходник"))
+        .ok_or_else(|| ParseError::new_err("tree-sitter could not parse the source"))
 }

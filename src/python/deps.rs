@@ -1,7 +1,7 @@
-//! Разбор манифестов: откуда берутся имена сторонних пакетов.
+//! Manifest parsing: where third-party package names come from.
 //!
-//! Dev/test-группы включены намеренно — иначе импорты из тестов
-//! классифицировались бы как `unknown`, а не `third_party`.
+//! Dev/test groups are included deliberately — otherwise imports from tests
+//! would classify as `unknown` rather than `third_party`.
 
 use std::collections::HashSet;
 use std::fs;
@@ -12,11 +12,12 @@ use pyo3_stub_gen::derive::gen_stub_pyfunction;
 
 use crate::roots::ini_sections;
 
-/// Приводит имя дистрибутива к виду, сравнимому с именем импорта.
+/// Normalizes a distribution name into a form comparable with an import
+/// name.
 ///
-/// Отрезает версии и extras (`requests>=2.0 [security]` → `requests`),
-/// переводит в нижний регистр, дефисы меняет на подчёркивания.
-/// Scoped-имена npm (`@scope/pkg`) остаются как есть.
+/// Strips versions and extras (`requests>=2.0 [security]` → `requests`),
+/// lowercases, and turns hyphens into underscores. Scoped npm names
+/// (`@scope/pkg`) are left as they are.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn normalize_pkg_name(name: &str) -> String {
@@ -41,7 +42,7 @@ fn add(names: &mut HashSet<String>, raw: &str) {
     }
 }
 
-/// PEP 621 (`[project]`) и Poetry (`[tool.poetry]`) из pyproject.toml.
+/// PEP 621 (`[project]`) and Poetry (`[tool.poetry]`) from pyproject.toml.
 fn parse_pyproject(root: &Path, names: &mut HashSet<String>) {
     let path = root.join("pyproject.toml");
     let Ok(text) = fs::read_to_string(&path) else {
@@ -90,7 +91,7 @@ fn parse_pyproject(root: &Path, names: &mut HashSet<String>) {
             add(names, dep);
         }
     }
-    // Группы зависимостей poetry >= 1.2
+    // poetry >= 1.2 dependency groups
     if let Some(groups) = poetry.get("group").and_then(|v| v.as_table()) {
         for group in groups.values().filter_map(|g| g.as_table()) {
             if let Some(deps) = group.get("dependencies").and_then(|v| v.as_table()) {
@@ -102,7 +103,7 @@ fn parse_pyproject(root: &Path, names: &mut HashSet<String>) {
     }
 }
 
-/// Строки URL/VCS пропускаются: имя импорта из них не вытащить.
+/// URL/VCS lines are skipped: no import name can be pulled from them.
 fn is_skipped(line: &str) -> bool {
     let line = line.trim_start();
     ["-r", "-c", "-e", "https://", "http://", "git+", "svn+", "hg+", "bzr+"]
@@ -120,7 +121,7 @@ fn parse_requirements_file(path: &Path, root: &Path, names: &mut HashSet<String>
             continue;
         }
         if is_skipped(line) {
-            // Включения `-r other.txt` разворачиваем на один уровень.
+            // `-r other.txt` includes are expanded one level deep.
             if let Some(reference) = line.strip_prefix("-r")
                 && depth == 0
             {
@@ -135,7 +136,7 @@ fn parse_requirements_file(path: &Path, root: &Path, names: &mut HashSet<String>
     }
 }
 
-/// Файлы `requirements*.txt` в корне проекта.
+/// The `requirements*.txt` files at the project root.
 fn parse_requirements(root: &Path, names: &mut HashSet<String>) {
     let Ok(entries) = fs::read_dir(root) else {
         return;
@@ -155,7 +156,7 @@ fn parse_requirements(root: &Path, names: &mut HashSet<String>) {
     }
 }
 
-/// `install_requires` из `[options]` и `[options.extras_require*]`.
+/// `install_requires` from `[options]` and `[options.extras_require*]`.
 fn parse_setup_cfg(root: &Path, names: &mut HashSet<String>) {
     let path = root.join("setup.cfg");
     let Ok(text) = fs::read_to_string(&path) else {
@@ -170,7 +171,7 @@ fn parse_setup_cfg(root: &Path, names: &mut HashSet<String>) {
     }
 }
 
-/// Имена сторонних пакетов, объявленных в манифестах корня.
+/// Third-party package names declared in the root's manifests.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn parse_dependencies(project_root: &str) -> HashSet<String> {
@@ -182,10 +183,10 @@ pub fn parse_dependencies(project_root: &str) -> HashSet<String> {
     names
 }
 
-/// Имена модулей stdlib верхнего уровня для текущего интерпретатора.
+/// Top-level stdlib module names for the running interpreter.
 ///
-/// Берётся из `sys.stdlib_module_names` — это свойство запущенного
-/// Python, а не сборки, поэтому считается на стороне интерпретатора.
+/// Taken from `sys.stdlib_module_names` — a property of the running Python
+/// rather than of the build, so it is computed on the interpreter side.
 pub fn stdlib_names(py: Python<'_>) -> PyResult<HashSet<String>> {
     py.import("sys")?
         .getattr("stdlib_module_names")?

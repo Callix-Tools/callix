@@ -1,7 +1,8 @@
-"""Резолвер символов на ty, слинкованном в сам модуль.
+"""A symbol resolver built on ty, linked into the module itself.
 
-Внешний бинарь `ty` и подпроцесс `ty server` не нужны: тайп-чекер и стабы
-typeshed вкомпилированы в нативный модуль. Реализует протокол
+No external `ty` binary or `ty server` subprocess is needed: the type checker
+and the typeshed stubs are compiled into the native module. Implements the
+protocol
 :class:`callix.SymbolResolver`.
 """
 
@@ -15,31 +16,31 @@ from ._core import ResolvedRef, ResolverStatus
 
 
 class TyResolver:
-    """Разрешает символы через встроенный ty."""
+    """Resolves symbols through the embedded ty."""
 
     def __init__(self, base_prefix: str | Path | None = None) -> None:
         """
         Args:
-            base_prefix: корень установки Python, по которому опознаётся
-                stdlib вне typeshed. По умолчанию ``sys.base_prefix``.
+            base_prefix: the Python installation root used to recognize
+                stdlib outside typeshed. Defaults to ``sys.base_prefix``.
 
         """
         self._inner = _Native(str(base_prefix or sys.base_prefix))
 
     def prepare(self, project_root: Path, files: list[Path]) -> None:
-        """Поднимает базу ty для проекта."""
+        """Brings up ty's database for the project."""
         self._inner.prepare(str(project_root), [str(f) for f in files])
 
     def resolve_all(
         self, queries: list[tuple[Path, int, int]]
     ) -> list[ResolvedRef | None]:
-        """Батч позиций → определения, порядок сохраняется."""
+        """A batch of positions → definitions, order preserved."""
         return self._inner.resolve_all(
             [(str(path), line, col) for path, line, col in queries]
         )
 
     def definition_at(self, file: Path, line: int, col: int) -> ResolvedRef | None:
-        """Одна позиция → определение."""
+        """One position → a definition."""
         return self._inner.definition_at(str(file), line, col)
 
     def status(self) -> ResolverStatus:

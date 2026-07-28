@@ -8,12 +8,12 @@ vars:
 
 tasks:
   list:
-    desc: Показать проекты манифеста (LANG=go — только по одному языку)
+    desc: List the manifest's projects (BENCH_LANG=go for one language only)
     cmds:
-      - python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.LANG}}"
+      - python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.BENCH_LANG}}"
 
   one:
-    desc: Прогнать один проект (requires PROJECT=owner/name)
+    desc: Benchmark one project (requires PROJECT=owner/name)
     requires:
       vars: [PROJECT]
     cmds:
@@ -28,26 +28,26 @@ tasks:
           --out "{{.RESULTS}}/${safe}.json"
 
   run:
-    desc: Прогнать все проекты манифеста (LANG=go ограничит одним языком)
+    desc: Benchmark every project in the manifest (BENCH_LANG=go narrows it to one language)
     cmds:
       - |
         mkdir -p {{.RESULTS}}
-        python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.LANG}}" |
+        python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.BENCH_LANG}}" |
         while read -r name; do
           safe="${name//\//__}"
           echo "==> $name"
-          # Каждый проект ограничен по времени: один зависший резолвер не
-          # должен съесть прогон и потерять уже собранные результаты.
+          # Each project is time-bounded: one hung resolver must not eat the
+          # run and lose the results already collected.
           timeout --signal=TERM 1800 uv run python {{.RUNNER}} analyze \
             --project "$name" \
             --manifest {{.MANIFEST}} \
             --workdir {{.WORKDIR}} \
             --out "{{.RESULTS}}/${safe}.json" \
-            || echo "!! $name не уложился или упал"
+            || echo "!! $name timed out or failed"
         done
 
   render:
-    desc: Свести результаты в таблицу README (VERSION=x.y.z для подписи)
+    desc: Render the results into the README table (VERSION=x.y.z for the caption)
     cmds:
       - |
         python3 {{.RUNNER}} render \
@@ -57,7 +57,7 @@ tasks:
           --version "{{default "dev" .VERSION}}"
 
   show:
-    desc: Напечатать таблицу, не трогая README
+    desc: Print the table without touching the README
     cmds:
       - |
         python3 {{.RUNNER}} render \

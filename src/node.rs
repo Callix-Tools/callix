@@ -1,5 +1,5 @@
-//! Узел графа: плоская модель с дискриминатором `kind` вместо иерархии
-//! классов — так проще сериализовать и дешевле создавать в горячем цикле.
+//! A graph node: a flat model with a `kind` discriminator instead of a class
+//! hierarchy — easier to serialize and cheaper to build in a hot loop.
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -85,13 +85,13 @@ impl NodeKind {
 #[gen_stub_pymethods]
 #[pymethods]
 impl NodeKind {
-    /// Строковое значение — то же, что у `enum.Enum` в graphlens.
+    /// The string value — the same one `enum.Enum` carries in graphlens.
     #[getter]
     fn value(&self) -> &'static str {
         self.as_str()
     }
 
-    /// Разбор из строкового значения; ValueError на неизвестном.
+    /// Parses from a string value; raises ValueError on an unknown one.
     #[staticmethod]
     fn from_value(value: &str) -> PyResult<Self> {
         Self::parse(value).ok_or_else(|| {
@@ -121,6 +121,8 @@ pub struct Node {
 impl Node {
     #[new]
     #[pyo3(signature = (id, kind, qualified_name, name, file_path = None, span = None, metadata = None))]
+    // The signature is the node's public API: every field is set on creation.
+    #[allow(clippy::too_many_arguments)]
     fn new(
         py: Python<'_>,
         id: String,

@@ -1,15 +1,15 @@
-//! Поиск корней языковых проектов в монорепозитории и сбор исходников.
+//! Finding language-project roots in a monorepo and collecting sources.
 //!
-//! Общее правило: маркер в самом `search_root` НЕ скрывает вложенные
-//! корни — иначе монорепозиторий, который сам является проектом, съел бы
-//! свои подпроекты.
+//! The general rule: a marker in `search_root` itself does NOT hide nested
+//! roots — otherwise a monorepo that is a project in its own right would
+//! swallow its subprojects.
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-/// Каталоги, которые не являются исходниками ни для одного языка.
+/// Directories that are not sources for any language.
 pub const EXCLUDED_DIRS: [&str; 8] = [
     ".venv",
     "venv",
@@ -21,7 +21,7 @@ pub const EXCLUDED_DIRS: [&str; 8] = [
     "node_modules",
 ];
 
-/// Лежит ли путь внутри исключённого каталога (относительно корня).
+/// Whether the path lies inside an excluded directory (relative to the root).
 fn in_excluded_dir(path: &Path, search_root: &Path, excluded: &[&str]) -> bool {
     let Ok(relative) = path.strip_prefix(search_root) else {
         return false;
@@ -31,12 +31,12 @@ fn in_excluded_dir(path: &Path, search_root: &Path, excluded: &[&str]) -> bool {
         .any(|c| excluded.contains(&c.as_os_str().to_string_lossy().as_ref()))
 }
 
-/// Сортировка путей — как `sorted()` над `pathlib.Path` в Python.
+/// Path sorting the way Python's `sorted()` over `pathlib.Path` works.
 ///
-/// Python сравнивает пути ПОКОМПОНЕНТНО, а не строкой целиком, и на этом
-/// расходятся соседи вроде `src/v4-mini/...` и `src/v4/...`: строкой
-/// первым идёт `v4-mini` (дефис < слэша), покомпонентно — `v4`
-/// (короткий компонент — префикс длинного).
+/// Python compares paths COMPONENT BY COMPONENT rather than as whole
+/// strings, and neighbours like `src/v4-mini/...` and `src/v4/...` diverge
+/// on exactly that: as strings `v4-mini` comes first (hyphen < slash), by
+/// component `v4` does (the shorter component is a prefix of the longer).
 fn path_sort_key(path: &Path) -> Vec<String> {
     path.to_string_lossy()
         .split('/')
@@ -56,11 +56,11 @@ pub fn is_relative_to(path: &Path, root: &Path) -> bool {
     path.strip_prefix(root).is_ok()
 }
 
-/// Все каталоги с валидными маркерами проекта.
+/// Every directory holding a valid project marker.
 ///
-/// `marker_filter` отсеивает ложные срабатывания (например, pyproject.toml
-/// без секции `[project]`). Пустой результат откатывается к самому
-/// `search_root`.
+/// `marker_filter` rejects false positives (for instance a pyproject.toml
+/// with no `[project]` section). An empty result falls back to `search_root`
+/// itself.
 pub fn collect_marker_roots(
     search_root: &Path,
     markers: &[&str],
@@ -99,8 +99,8 @@ pub fn collect_marker_roots(
     roots
 }
 
-/// Отбрасывает файлы, принадлежащие вложенным корням: родительский корень
-/// не должен разбирать файлы своих подпроектов.
+/// Drops files belonging to nested roots: a parent root must not parse its
+/// subprojects' files.
 pub fn filter_nested_root_files(
     files: Vec<PathBuf>,
     current_root: &Path,
@@ -117,7 +117,8 @@ pub fn filter_nested_root_files(
         .collect()
 }
 
-/// Все файлы с указанными расширениями под корнем, кроме служебных каталогов.
+/// Every file with the given extensions under the root, excluding service
+/// directories.
 pub fn collect_files(root: &Path, extensions: &[&str], excluded: &[&str]) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = WalkDir::new(root)
         .into_iter()
@@ -139,7 +140,7 @@ pub fn collect_files(root: &Path, extensions: &[&str], excluded: &[&str]) -> Vec
     files
 }
 
-/// Есть ли под корнем хоть один файл с таким расширением.
+/// Whether at least one file with this extension exists under the root.
 pub fn any_file_with_extension(root: &Path, extension: &str) -> bool {
     WalkDir::new(root)
         .into_iter()
@@ -150,10 +151,10 @@ pub fn any_file_with_extension(root: &Path, extension: &str) -> bool {
         })
 }
 
-/// Значения ключа по секциям INI-файла.
+/// The key's values, per section of an INI file.
 ///
-/// Понимает продолжения строк с отступом — так `install_requires` в
-/// setup.cfg почти всегда и записан:
+/// Understands indented continuation lines — which is how `install_requires`
+/// in setup.cfg is almost always written:
 ///
 /// ```ini
 /// [options]
@@ -162,8 +163,8 @@ pub fn any_file_with_extension(root: &Path, extension: &str) -> bool {
 ///     httpx
 /// ```
 ///
-/// Ключи сравниваются без учёта регистра (как `optionxform` в
-/// configparser), имена секций — с учётом.
+/// Keys are compared case-insensitively (like configparser's `optionxform`),
+/// section names case-sensitively.
 pub fn ini_sections(text: &str, key: &str) -> Vec<(String, Vec<String>)> {
     let mut out: Vec<(String, Vec<String>)> = Vec::new();
     let mut section = String::new();
@@ -181,10 +182,14 @@ pub fn ini_sections(text: &str, key: &str) -> Vec<(String, Vec<String>)> {
         let trimmed = raw.trim();
         let indented = raw.starts_with([' ', '\t']);
 
-        // Продолжение значения — строка с отступом, пока не начнётся новое.
-        if collecting.is_some() && indented && !trimmed.is_empty() && !trimmed.starts_with('[') {
+        // A value continues on indented lines until a new entry starts.
+        if let Some(values) = collecting.as_mut()
+            && indented
+            && !trimmed.is_empty()
+            && !trimmed.starts_with('[')
+        {
             if !trimmed.starts_with('#') && !trimmed.starts_with(';') {
-                collecting.as_mut().expect("проверено выше").push(trimmed.to_string());
+                values.push(trimmed.to_string());
             }
             continue;
         }

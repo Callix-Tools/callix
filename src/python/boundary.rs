@@ -1,13 +1,12 @@
-//! Извлечение межъязыковых границ из Python-исходника.
+//! Cross-language boundary extraction from Python sources.
 //!
-//! Каждый экстрактор распознаёт один *механизм* границы и возвращает
-//! языконезависимые `BoundaryRef` (server — предоставляет, client —
-//! потребляет). Адаптер превращает их в узлы BOUNDARY и рёбра
-//! EXPOSES / CONSUMES, так что Python-сервер и, скажем, TypeScript-клиент
-//! встречаются в одном узле графа.
+//! Each extractor recognizes one boundary *mechanism* and returns
+//! language-independent `BoundaryRef`s (server provides, client consumes).
+//! The adapter turns them into BOUNDARY nodes and EXPOSES / CONSUMES edges,
+//! so a Python server and, say, a TypeScript client meet in one graph node.
 //!
-//! Шаблоны описаны декларативными tree-sitter запросами, а не ветками
-//! ручного визитора.
+//! Patterns are written as declarative tree-sitter queries rather than as
+//! branches in a hand-written visitor.
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::OnceLock;
@@ -30,7 +29,7 @@ const TEMPORAL_EXEC: [&str; 4] = [
     "execute_activity_method",
 ];
 
-/// Вызов-декоратор: `@app.get("/x")` / `@activity.defn(name=...)`.
+/// A decorator call: `@app.get("/x")` / `@activity.defn(name=...)`.
 const Q_DECORATOR_CALL: &str = r#"
 (decorated_definition
   (decorator (call
@@ -38,19 +37,19 @@ const Q_DECORATOR_CALL: &str = r#"
     arguments: (argument_list) @args))
   definition: (function_definition name: (identifier) @func))
 "#;
-/// Голый декоратор-атрибут: `@activity.defn`.
+/// A bare attribute decorator: `@activity.defn`.
 const Q_DECORATOR_BARE: &str = r#"
 (decorated_definition
   (decorator (attribute) @deco)
   definition: (function_definition name: (identifier) @func))
 "#;
-/// Вызов атрибута: `requests.get("/x")` / `workflow.execute_activity(a)`.
+/// An attribute call: `requests.get("/x")` / `workflow.execute_activity(a)`.
 const Q_ATTR_CALL: &str = r#"
 (call
   function: (attribute attribute: (identifier) @method)
   arguments: (argument_list) @args) @call
 "#;
-// gRPC: protoc порождает базы `<Service>Servicer` и стабы `<Service>Stub`.
+// gRPC: protoc generates `<Service>Servicer` bases and `<Service>Stub` stubs.
 const Q_SERVICER_CLASS: &str = r#"
 (class_definition
   superclasses: (argument_list) @bases
@@ -67,21 +66,22 @@ const Q_OBJ_CALL: &str = r#"
   attribute: (identifier) @method))
 "#;
 
-/// Компиляция запроса дороже прогона, поэтому она разовая на процесс.
+/// Compiling a query costs more than running it, so it happens once per
+/// process.
 macro_rules! cached_query {
     ($source:expr) => {{
         static QUERY: OnceLock<Query> = OnceLock::new();
         QUERY.get_or_init(|| {
             Query::new(&tree_sitter_python::LANGUAGE.into(), $source)
-                .expect("запрос валиден для грамматики python")
+                .expect("the query is valid for the python grammar")
         })
     }};
 }
 
-/// Карта захватов одного совпадения: `@имя` → узлы.
+/// One match's capture map: `@name` → nodes.
 type Caps<'q, 'tree> = HashMap<&'q str, Vec<TsNode<'tree>>>;
 
-/// Первый узел под захватом.
+/// The first node under a capture.
 fn cap<'tree>(caps: &Caps<'_, 'tree>, name: &str) -> Option<TsNode<'tree>> {
     caps.get(name).and_then(|nodes| nodes.first()).copied()
 }
@@ -95,17 +95,17 @@ impl<'a> Extractor<'a> {
         ts::text(node, self.source).into_owned()
     }
 
-    /// 1-based (line, col) начала узла.
+    /// The node's 1-based start (line, col).
     fn pos(node: TsNode<'_>) -> (u32, u32) {
         let span = ts::span(node);
         (span.start_line, span.start_col)
     }
 
-    /// Сводит строку или f-строку к нормализованному шаблону.
+    /// Reduces a string or f-string to a normalized template.
     ///
-    /// `"/users/{id}"` и `f"/users/{id}"` дают `/users/{id}`, а подстановки
-    /// схлопываются в `{}`, чтобы литерал и f-строка на один маршрут
-    /// сошлись.
+    /// `"/users/{id}"` and `f"/users/{id}"` both yield `/users/{id}`, and
+    /// interpolations collapse into `{}` so a literal and an f-string for the
+    /// same route meet.
     fn string_template(&self, node: TsNode<'_>) -> String {
         let mut parts: Vec<String> = Vec::new();
         for child in ts::children(node) {
@@ -121,7 +121,7 @@ impl<'a> Extractor<'a> {
         self.text(node).trim_matches(['\'', '"']).to_string()
     }
 
-    /// Первый позиционный аргумент; None, если первым идёт именованный.
+    /// The first positional argument; None if a keyword argument comes first.
     fn first_positional<'tree>(args: TsNode<'tree>) -> Option<TsNode<'tree>> {
         let first = ts::named_children(args).into_iter().next()?;
         if first.kind() == "keyword_argument" {
@@ -134,7 +134,7 @@ impl<'a> Extractor<'a> {
         Self::first_positional(args).filter(|node| node.kind() == "string")
     }
 
-    /// Значение именованного строкового аргумента.
+    /// The value of a named string argument.
     fn kwarg<'tree>(&self, args: TsNode<'tree>, wanted: &str) -> Option<TsNode<'tree>> {
         for child in ts::named_children(args) {
             if child.kind() != "keyword_argument" {
@@ -149,7 +149,7 @@ impl<'a> Extractor<'a> {
         None
     }
 
-    /// Flask `methods=[...]`; по умолчанию `["GET"]`.
+    /// Flask's `methods=[...]`; defaults to `["GET"]`.
     fn methods_kwarg(&self, args: TsNode<'_>) -> Vec<String> {
         if let Some(value) = self.kwarg(args, "methods") {
             let verbs: Vec<String> = ts::named_children(value)
@@ -173,7 +173,7 @@ impl<'a> Extractor<'a> {
 
     // -- http -------------------------------------------------------------
 
-    /// Маршруты FastAPI / Flask / Starlette (серверная сторона).
+    /// FastAPI / Flask / Starlette routes (the server side).
     fn http_server(&self, decorator_calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in decorator_calls {
@@ -214,7 +214,7 @@ impl<'a> Extractor<'a> {
         }
     }
 
-    /// Вызовы requests / httpx / сессий (клиентская сторона).
+    /// requests / httpx / session calls (the client side).
     fn http_client(&self, attr_calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in attr_calls {
@@ -223,7 +223,7 @@ impl<'a> Extractor<'a> {
             else {
                 continue;
             };
-            // Декоратор маршрута, а не клиентский вызов.
+            // A route decorator, not a client call.
             if call.parent().is_some_and(|p| p.kind() == "decorator") {
                 continue;
             }
@@ -235,7 +235,7 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             let url = self.string_template(url_node);
-            // Не URL и не путь — например, dict.get("key").
+            // Neither a URL nor a path — dict.get("key"), for instance.
             if !url.starts_with('/') && !url.contains("://") {
                 continue;
             }
@@ -258,7 +258,7 @@ impl<'a> Extractor<'a> {
 
     // -- temporal ---------------------------------------------------------
 
-    /// Активности Temporal / DBOS: `@activity.defn` и execute-вызовы.
+    /// Temporal / DBOS activities: `@activity.defn` and execute calls.
     fn temporal(
         &self,
         bare_decorators: &[Caps<'_, '_>],
@@ -349,7 +349,7 @@ impl<'a> Extractor<'a> {
 
     // -- queue ------------------------------------------------------------
 
-    /// Продюсеры (publish/produce) и консьюмеры (subscribe) очередей.
+    /// Queue producers (publish/produce) and consumers (subscribe).
     fn queue(&self, attr_calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in attr_calls {
@@ -379,7 +379,7 @@ impl<'a> Extractor<'a> {
 
     fn queue_role(method: &str) -> Option<&'static str> {
         match method {
-            // Продюсер обращается к топику, консьюмер его обслуживает.
+            // A producer addresses the topic, a consumer serves it.
             "publish" | "produce" => Some("client"),
             "subscribe" => Some("server"),
             _ => None,
@@ -388,7 +388,7 @@ impl<'a> Extractor<'a> {
 
     // -- grpc -------------------------------------------------------------
 
-    /// Реализации servicer (сервер) и вызовы стабов (клиент).
+    /// Servicer implementations (server) and stub calls (client).
     fn grpc(&self, root: TsNode<'_>) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
 
@@ -437,7 +437,7 @@ impl<'a> Extractor<'a> {
         refs
     }
 
-    /// Ведущее имя сервиса, если текст оканчивается на суффикс.
+    /// The leading service name, if the text ends with the suffix.
     fn strip_suffix(text: &str, suffix: &str) -> Option<String> {
         let last = text.rsplit('.').next().unwrap_or(text);
         let stem = last.strip_suffix(suffix)?;
@@ -453,7 +453,7 @@ impl<'a> Extractor<'a> {
             .find_map(|base| Self::strip_suffix(&self.text(base), "Servicer"))
     }
 
-    /// function_definition непосредственно в теле класса.
+    /// A function_definition directly in a class body.
     fn class_methods<'tree>(body: TsNode<'tree>) -> Vec<TsNode<'tree>> {
         let mut methods = Vec::new();
         for child in ts::children(body) {
@@ -486,17 +486,17 @@ impl<'a> Extractor<'a> {
     }
 }
 
-/// Все границы в одном разобранном файле.
+/// Every boundary in one parsed file.
 ///
-/// Порядок экстракторов тот же, что в graphlens
-/// (`PY_DEFAULT_BOUNDARY_EXTRACTORS`), потому что от него зависит порядок
-/// рёбер в графе.
+/// The extractor order matches graphlens's
+/// (`PY_DEFAULT_BOUNDARY_EXTRACTORS`), because edge order in the graph
+/// depends on it.
 pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     let extractor = Extractor { source };
 
-    // Запросы, нужные нескольким экстракторам, прогоняются по одному разу:
-    // Q_ATTR_CALL раньше обходил дерево трижды (http-клиент, temporal,
-    // очереди), Q_DECORATOR_CALL — дважды.
+    // Queries several extractors need are run once each: Q_ATTR_CALL used to
+    // walk the tree three times (http client, temporal, queues) and
+    // Q_DECORATOR_CALL twice.
     let decorator_calls = ts::run_query(cached_query!(Q_DECORATOR_CALL), root, source);
     let bare_decorators = ts::run_query(cached_query!(Q_DECORATOR_BARE), root, source);
     let attr_calls = ts::run_query(cached_query!(Q_ATTR_CALL), root, source);
@@ -509,7 +509,8 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     refs
 }
 
-/// Границы в одном исходнике — точка входа для проверок и внешних вызовов.
+/// Boundaries in a single source — the entry point for checks and external
+/// callers.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn extract_python_boundaries(source: &Bound<'_, PyBytes>) -> PyResult<Vec<BoundaryRef>> {

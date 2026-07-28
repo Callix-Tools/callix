@@ -1,12 +1,12 @@
-//! Резолвер символов Rust поверх пакетного индекса `rust-analyzer scip`.
+//! The Rust symbol resolver, built on the batch `rust-analyzer scip` index.
 //!
-//! Интерактивный LSP-сервер держит состояние анализа всего воркспейса в
-//! памяти и на больших проектах разрастается до десятков гигабайт. Индекс
-//! SCIP пишется один раз, читается статически и отвечает на запросы из
-//! таблиц в памяти — поэтому здесь именно он, а не LSP.
+//! An interactive LSP server keeps the whole workspace's analysis state
+//! resident and balloons to tens of gigabytes on large projects. A SCIP index
+//! is written once, read statically, and answers queries from in-memory
+//! tables — which is why it is used here instead of the LSP.
 //!
-//! Как и Go, вкомпилировать сюда язык целиком нельзя: нужен установленный
-//! `rust-analyzer` (и Cargo) — но для Rust-проекта они и так есть.
+//! As with Go, the language cannot be compiled in wholesale: `rust-analyzer`
+//! (and Cargo) must be installed — but a Rust project has them anyway.
 
 use std::collections::HashMap;
 use std::fs;
@@ -22,21 +22,21 @@ use crate::status::ResolverStatus;
 
 use super::scip::{ROLE_DEFINITION, for_each_document};
 
-/// Потолок на один прогон `rust-analyzer scip`. Большие воркспейсы
-/// укладываются сильно раньше; ограничение страхует от зависания.
+/// The ceiling on one `rust-analyzer scip` run. Large workspaces finish well
+/// under it; the cap only guards against a hang.
 const SCIP_TIMEOUT: Duration = Duration::from_secs(1800);
 
-/// Крейты стандартной поставки Rust в символе SCIP. Символ cargo выглядит
-/// как `<scheme> cargo <package> <version> <descriptors>`.
+/// Crates of the Rust standard distribution as they appear in a SCIP symbol.
+/// A cargo symbol reads `<scheme> cargo <package> <version> <descriptors>`.
 const STD_PACKAGES: [&str; 5] = ["std", "core", "alloc", "proc_macro", "test"];
 
-/// Символу cargo нужны хотя бы `<scheme> <manager> <package> <version>`.
+/// A cargo symbol needs at least `<scheme> <manager> <package> <version>`.
 const SCIP_SYMBOL_MIN_PARTS: usize = 4;
 
-/// Происхождение внешнего символа читается прямо из его схемы.
+/// An external symbol's origin is read straight from its scheme.
 ///
-/// Это надёжнее, чем гадать по пути файла с определением, и работает даже
-/// когда исходники крейта вообще не открывались.
+/// That is more robust than guessing from the definition's file path, and it
+/// works even when the crate's sources were never opened.
 fn symbol_origin(symbol: &str) -> &'static str {
     let parts: Vec<&str> = symbol.splitn(5, ' ').collect();
     if parts.len() < SCIP_SYMBOL_MIN_PARTS || parts[1] != "cargo" {
@@ -49,7 +49,7 @@ fn symbol_origin(symbol: &str) -> &'static str {
     }
 }
 
-/// Первый исполняемый файл с таким именем в PATH.
+/// The first executable with this name on PATH.
 fn which(name: &str) -> Option<PathBuf> {
     let path = std::env::var_os("PATH")?;
     std::env::split_paths(&path)
@@ -57,12 +57,13 @@ fn which(name: &str) -> Option<PathBuf> {
         .find(|candidate| candidate.is_file())
 }
 
-/// Конкретный путь к rust-analyzer, который rustup выдаёт из `cwd`.
+/// The concrete rust-analyzer path rustup resolves from `cwd`.
 fn rustup_which(rustup: &Path, cwd: &Path) -> Option<PathBuf> {
     let output = Command::new(rustup)
         .args(["which", "rust-analyzer"])
         .current_dir(cwd)
-        // Пин из окружения перебил бы rust-toolchain.toml проекта.
+        // A pin from the environment would override the project's
+        // rust-toolchain.toml.
         .env_remove("RUSTUP_TOOLCHAIN")
         .output()
         .ok()?;
@@ -73,18 +74,18 @@ fn rustup_which(rustup: &Path, cwd: &Path) -> Option<PathBuf> {
     path.is_file().then_some(path)
 }
 
-/// Какой именно rust-analyzer запускать для этого проекта.
+/// Which rust-analyzer binary to spawn for this project.
 ///
-/// `rust-analyzer` в PATH обычно не бинарь, а прокси rustup, уважающий
-/// `rust-toolchain.toml` проекта. Отсюда два случая:
+/// `rust-analyzer` on PATH is usually not a binary but a rustup proxy that
+/// honours the project's `rust-toolchain.toml`. Two cases follow:
 ///
-/// 1. В закреплённом тулчейне компонент есть — нужен именно он: сборка под
-///    тулчейн проекта разбирает его корректно. Поэтому сначала спрашиваем
-///    `rustup which` из корня проекта.
-/// 2. В закреплённом тулчейне компонента нет (так, ruff пинит 1.96 без
-///    rust-analyzer) — прокси вышел бы с `Unknown binary`, и резолв молча
-///    дал бы пустоту. Тогда откатываемся к тулчейну по умолчанию, спросив
-///    из нейтрального каталога.
+/// 1. The pinned toolchain has the component — that is the one we want: a
+///    build matching the project's toolchain analyses it correctly. So we ask
+///    `rustup which` from the project root first.
+/// 2. The pinned toolchain lacks the component (ruff, for instance, pins 1.96
+///    without rust-analyzer) — the proxy would exit with `Unknown binary` and
+///    resolution would silently yield nothing. Then we fall back to the
+///    default toolchain, asking from a neutral directory.
 fn resolve_ra_binary(project_root: &Path) -> PathBuf {
     let fallback = || which("rust-analyzer").unwrap_or_else(|| PathBuf::from("rust-analyzer"));
     match which("rustup") {
@@ -95,9 +96,9 @@ fn resolve_ra_binary(project_root: &Path) -> PathBuf {
     }
 }
 
-/// Ждёт завершения процесса, убивая его по таймауту.
+/// Waits for the process, killing it on timeout.
 ///
-/// Возвращает код возврата (None, если процесс пришлось убить).
+/// Returns the exit code (None when the process had to be killed).
 fn wait_with_timeout(child: &mut Child, timeout: Duration) -> Option<i32> {
     let deadline = Instant::now() + timeout;
     loop {
@@ -115,7 +116,7 @@ fn wait_with_timeout(child: &mut Child, timeout: Duration) -> Option<i32> {
     }
 }
 
-/// Позиция определения: индекс документа и 0-based координаты.
+/// A definition's location: the document index and 0-based coordinates.
 type Location = (u32, u32, u32);
 
 #[gen_stub_pyclass]
@@ -123,17 +124,18 @@ type Location = (u32, u32, u32);
 pub struct RustResolver {
     root: Option<PathBuf>,
     status: ResolverStatus,
-    /// Относительные пути документов индекса и обратный поиск по ним.
+    /// The index's document paths and the reverse lookup over them.
     docs: Vec<String>,
     doc_index: HashMap<String, u32>,
-    /// Пул символов: одна строка на много вхождений.
+    /// The symbol pool: one string for many occurrences.
     symbols: Vec<String>,
     symbol_index: HashMap<String, u32>,
-    /// Документ → `(строка, колонка)` → символ. Координаты 0-based.
+    /// Document → `(line, column)` → symbol. Coordinates are 0-based.
     by_doc: Vec<HashMap<(u32, u32), u32>>,
-    /// Глобальный символ → место его определения.
+    /// Global symbol → the location of its definition.
     defs: HashMap<u32, Location>,
-    /// Документ → символ `local …` → место определения внутри документа.
+    /// Document → a `local …` symbol → its definition site within the
+    /// document.
     local_defs: Vec<HashMap<u32, (u32, u32)>>,
 }
 
@@ -190,7 +192,7 @@ impl RustResolver {
         self.local_defs.clear();
     }
 
-    /// Сворачивает индекс SCIP в таблицы поиска.
+    /// Folds a SCIP index into the lookup tables.
     fn ingest(&mut self, data: &[u8]) {
         for_each_document(data, |relative_path, occurrences| {
             let mut doc: Option<u32> = None;
@@ -198,7 +200,7 @@ impl RustResolver {
                 if occurrence.symbol.is_empty() {
                     continue;
                 }
-                // Документ заводится только когда в нём есть что искать.
+                // A document is only created once it has something to find.
                 let doc = *doc.get_or_insert_with(|| self.intern_doc(&relative_path));
                 let is_local = occurrence.symbol.starts_with("local ");
                 let index = self.intern_symbol(&occurrence.symbol);
@@ -216,11 +218,11 @@ impl RustResolver {
         });
     }
 
-    /// Запускает `rust-analyzer scip`; отдаёт `(байты индекса, код возврата)`.
+    /// Runs `rust-analyzer scip`; returns `(index bytes, exit code)`.
     fn run_scip(&self, project_root: &Path) -> (Option<Vec<u8>>, Option<i32>) {
         let binary = resolve_ra_binary(project_root);
-        // temp_dir уважает TMPDIR: индекс большого воркспейса весит сотни
-        // мегабайт, и на маленьком /tmp его стоит увести в другое место.
+        // temp_dir honours TMPDIR: a large workspace's index weighs hundreds
+        // of megabytes, and on a small /tmp it is worth moving elsewhere.
         let output_path = std::env::temp_dir().join(format!("callix-{}.scip", std::process::id()));
 
         let spawned = Command::new(&binary)
@@ -246,7 +248,7 @@ impl RustResolver {
     }
 
     fn definition_ref(&self, doc: u32, line: u32, col: u32, origin: &str) -> ResolvedRef {
-        let root = self.root.as_ref().expect("root задан при prepare");
+        let root = self.root.as_ref().expect("root is set during prepare");
         ResolvedRef {
             full_name: String::new(),
             file_path: Some(root.join(&self.docs[doc as usize]).to_string_lossy().into_owned()),
@@ -257,7 +259,7 @@ impl RustResolver {
         }
     }
 
-    /// Символ → его определение либо внешняя ссылка.
+    /// A symbol → its definition, or an external reference.
     fn symbol_to_ref(&self, symbol: u32, doc: u32) -> Option<ResolvedRef> {
         let name = &self.symbols[symbol as usize];
         if name.starts_with("local ") {
@@ -277,9 +279,9 @@ impl RustResolver {
         })
     }
 
-    /// Абсолютный путь → путь относительно корня индекса.
+    /// An absolute path → a path relative to the index root.
     ///
-    /// В SCIP `relative_path` всегда со слэшами, поэтому и здесь только они.
+    /// SCIP's `relative_path` always uses forward slashes, so this does too.
     fn relative(&self, file: &Path) -> String {
         let Some(root) = &self.root else {
             return file.to_string_lossy().into_owned();
@@ -319,10 +321,10 @@ impl RustResolver {
         Self::default()
     }
 
-    /// Строит индекс SCIP для воркспейса.
+    /// Builds the SCIP index for the workspace.
     ///
-    /// Список файлов не нужен: `rust-analyzer` сам разбирает `Cargo.toml` и
-    /// индексирует весь воркспейс.
+    /// No file list is needed: `rust-analyzer` parses `Cargo.toml` and indexes
+    /// the whole workspace itself.
     #[pyo3(signature = (project_root, files = None))]
     fn prepare(&mut self, project_root: PathBuf, files: Option<Vec<PathBuf>>) {
         let _ = files;
@@ -340,9 +342,9 @@ impl RustResolver {
         self.status = if self.docs.is_empty() {
             ResolverStatus::Degraded
         } else if code != Some(0) {
-            // rust-analyzer упал посреди прогона (например, крейт не
-            // загрузился), но оставил частичный индекс: помечаем degraded,
-            // чтобы strict-режим не принял неполный граф за полный.
+            // rust-analyzer errored mid-run (a crate failed to load, say) but
+            // left a partial index: report degraded so strict mode does not
+            // mistake an incomplete graph for a complete one.
             ResolverStatus::Degraded
         } else {
             ResolverStatus::Ok

@@ -1,6 +1,6 @@
-// Мост к typescript-go: поднимает языковой сервис и отвечает на
-// goto-definition. Собирается как c-archive и линкуется в нативный
-// модуль callix, поэтому tsgo как отдельный процесс не нужен.
+// The bridge to typescript-go: brings the language service up and answers
+// goto-definition. Built as a c-archive and linked into callix's native
+// module, so tsgo is not needed as a separate process.
 package main
 
 /*
@@ -23,8 +23,8 @@ import (
 	"github.com/microsoft/typescript-go/internal/vfs/osvfs"
 )
 
-// nopClient — заглушка вместо LSP-клиента: наблюдение за файлами,
-// диагностика и телеметрия при разовом анализе не нужны.
+// nopClient stands in for an LSP client: file watching, diagnostics, and
+// telemetry are all pointless for a one-shot analysis.
 type nopClient struct{}
 
 func (nopClient) WatchFiles(context.Context, project.WatcherID, []*lsproto.FileSystemWatcher) error {
@@ -49,7 +49,7 @@ type session struct {
 	ctx   context.Context
 }
 
-// Указатели Go нельзя отдавать в C, поэтому наружу уходит числовой хэндл.
+// Go pointers cannot be handed to C, so a numeric handle goes out instead.
 var (
 	mu       sync.Mutex
 	sessions = map[int]*session{}
@@ -66,7 +66,7 @@ func callix_ts_open(root *C.char) C.int {
 		Options: &project.SessionOptions{
 			CurrentDirectory:   dir,
 			DefaultLibraryPath: bundled.LibPath(),
-			// UTF-8: наши колонки байтовые, как их отдаёт tree-sitter.
+			// UTF-8: our columns are byte offsets, as tree-sitter reports them.
 			PositionEncoding: lsproto.PositionEncodingKindUTF8,
 			WatchEnabled:     false,
 			LoggingEnabled:   false,
@@ -96,8 +96,8 @@ func callix_ts_free(ptr *C.char) {
 	C.free(unsafe.Pointer(ptr))
 }
 
-// callix_ts_definition отвечает строкой "путь\tстрока\tколонка" либо
-// пустой строкой, если определения нет. Вход 1-based, LSP 0-based.
+// callix_ts_definition answers with "path\tline\tcolumn" or an empty string
+// when there is no definition. Input is 1-based, LSP is 0-based.
 //
 //export callix_ts_definition
 func callix_ts_definition(handle C.int, file *C.char, line C.uint, col C.uint) *C.char {

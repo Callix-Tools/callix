@@ -1,11 +1,11 @@
-//! Обход CST Python и наполнение графа.
+//! Walking Python's CST and filling the graph.
 //!
-//! Состояние — три стека, которые толкаются/снимаются при смене области:
-//! `scope_stack` (префикс полного имени), `container_stack` (id родителя),
-//! `kind_stack` (чтобы отличить METHOD от FUNCTION).
+//! The state is three stacks, pushed and popped as scopes change:
+//! `scope_stack` (the qualified-name prefix), `container_stack` (the parent's
+//! id), and `kind_stack` (to tell METHOD from FUNCTION).
 //!
-//! Визитор не создаёт рёбра CALLS/INHERITS_FROM/REFERENCES/HAS_TYPE —
-//! он собирает `OccurrenceRef`, которые резолв-фаза свяжет с определениями.
+//! The visitor creates no CALLS/INHERITS_FROM/REFERENCES/HAS_TYPE edges — it
+//! collects `OccurrenceRef`s, which the resolution pass binds to definitions.
 
 use std::collections::HashMap;
 
@@ -30,7 +30,7 @@ const NESTED_DEF_TYPES: [&str; 3] = [
 
 const ENUM_BASES: [&str; 5] = ["Enum", "IntEnum", "StrEnum", "Flag", "IntFlag"];
 
-/// Аналог `str.isupper()`: есть буквы и все они заглавные.
+/// The equivalent of `str.isupper()`: there are letters and all are upper.
 fn is_upper(name: &str) -> bool {
     let mut has_cased = false;
     for ch in name.chars() {
@@ -110,7 +110,7 @@ impl<'a> PythonVisitor<'a> {
         self.container_stack.last().cloned().unwrap_or_default()
     }
 
-    // -- диспетчер --------------------------------------------------------
+    // -- dispatch ---------------------------------------------------------
 
     pub fn visit(&mut self, node: TsNode<'_>) -> PyResult<()> {
         match node.kind() {
@@ -155,7 +155,7 @@ impl<'a> PythonVisitor<'a> {
         }
     }
 
-    // -- импорты ----------------------------------------------------------
+    // -- imports ----------------------------------------------------------
 
     fn visit_import_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         // import X / import X.Y / import X as Y
@@ -187,7 +187,7 @@ impl<'a> PythonVisitor<'a> {
     fn visit_import_from_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let children = ts::children(node);
 
-        // Модуль-источник и уровень относительности — только до `import`.
+        // The source module and relative level come only before `import`.
         let mut level = 0usize;
         let mut source_module = String::new();
         for child in &children {
@@ -221,7 +221,7 @@ impl<'a> PythonVisitor<'a> {
             }
         };
 
-        // Имена после `import`.
+        // The names after `import`.
         let mut past_import_kw = false;
         for child in &children {
             if child.kind() == "import" {
@@ -308,8 +308,8 @@ impl<'a> PythonVisitor<'a> {
         let import_id = import_node.get().id.clone();
         self.add_node_with_relation(import_node, RelationKind::Declares)?;
 
-        // Внутренний импорт целится в MODULE-узел, если он уже в графе;
-        // иначе — в EXTERNAL_SYMBOL, чтобы ребро не пропало.
+        // An internal import targets a MODULE node when one is already in the
+        // graph; otherwise an EXTERNAL_SYMBOL, so the edge is never lost.
         let mut target_id = if origin == "internal" {
             self.find_module_node_id(ext_qname)
         } else {
@@ -318,7 +318,7 @@ impl<'a> PythonVisitor<'a> {
         if target_id.is_none() {
             target_id = Some(self.get_or_create_external_symbol(ext_qname, origin)?);
         }
-        let target_id = target_id.expect("внешний символ создаётся выше");
+        let target_id = target_id.expect("the external symbol is created above");
 
         let file_id = self.file_node_id.to_string();
         self.push_relation(file_id, target_id.clone(), RelationKind::Imports)?;
@@ -326,10 +326,10 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    /// ID MODULE-узла по точному совпадению или самому длинному префиксу.
+    /// A MODULE node's ID by exact match or the longest prefix.
     ///
-    /// Так `from mypackage.utils import Foo` попадает в модуль
-    /// `mypackage.utils`, даже когда у Foo ещё нет своего узла.
+    /// This is how `from mypackage.utils import Foo` lands on the
+    /// `mypackage.utils` module even when Foo has no node of its own yet.
     fn find_module_node_id(&self, qname: &str) -> Option<String> {
         let parts: Vec<&str> = qname.split('.').collect();
         for length in (1..=parts.len()).rev() {
@@ -341,7 +341,7 @@ impl<'a> PythonVisitor<'a> {
         None
     }
 
-    // -- классы и функции -------------------------------------------------
+    // -- classes and functions --------------------------------------------
 
     fn handle_class(
         &mut self,
@@ -389,10 +389,11 @@ impl<'a> PythonVisitor<'a> {
         let class_id = class_node.get().id.clone();
         self.add_node_with_relation(class_node, RelationKind::Declares)?;
 
-        // Аргументы декораторов — обычные значения (@deco(handler)).
+        // Decorator arguments are ordinary values (@deco(handler)).
         self.scan_decorators(decorator_nodes, &class_id)?;
 
-        // Базы записываем как occurrences; INHERITS_FROM создаст резолвер.
+        // Bases are recorded as occurrences; the resolver creates
+        // INHERITS_FROM.
         if let Some(arg_list) = arg_list {
             for child in ts::children(arg_list) {
                 if matches!(child.kind(), "identifier" | "attribute")
@@ -431,7 +432,7 @@ impl<'a> PythonVisitor<'a> {
         let name = self.text(name_node);
         let qname = format!("{}.{name}", self.scope());
 
-        // Аннотация возврата: узел `type`, но не самый первый ребёнок.
+        // The return annotation: a `type` node, but not the very first child.
         let first_id = children.first().map(|c| c.id());
         let type_node = children
             .iter()
@@ -464,8 +465,8 @@ impl<'a> PythonVisitor<'a> {
         if let Some(params) = ts::child_of_type(node, "parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
         }
-        // Один проход по телу: вызовы, чтения и вложенные определения без
-        // двойного учёта.
+        // A single pass over the body: calls, reads, and nested definitions
+        // without double counting.
         if let Some(body) = ts::child_of_type(node, "block") {
             self.walk_body(body, &func_id)?;
         }
@@ -540,23 +541,24 @@ impl<'a> PythonVisitor<'a> {
 
             if let Some(ann_type_node) = ann_type_node {
                 self.record_annotation(ann_type_node, &param_id);
-                // Вызовы внутри аннотации (Depends(get_dep)) — использования
-                // значений, и заключены они в функцию, а не в параметр.
+                // Calls inside an annotation (Depends(get_dep)) are value
+                // uses, and they are enclosed by the function, not the
+                // parameter.
                 self.scan_annotation_calls(ann_type_node, function_id)?;
             }
         }
         Ok(())
     }
 
-    // -- сканирование значений --------------------------------------------
+    // -- value scanning ---------------------------------------------------
 
-    /// Единственное место, где выражение в позиции значения превращается в
-    /// occurrences: каждый идентификатор даёт ровно один `read`, каждый
-    /// вызов — ровно один `call`.
+    /// The one place an expression in value position turns into occurrences:
+    /// every identifier yields exactly one `read`, every call exactly one
+    /// `call`.
     ///
-    /// Получатель вызова (`obj` в `obj.m()`) не записывается. Выражения-
-    /// значения не содержат вложенных определений, так что защита от них
-    /// здесь не нужна.
+    /// A call's receiver (`obj` in `obj.m()`) is not recorded. Value
+    /// expressions contain no nested definitions, so no guard against them is
+    /// needed here.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if node.kind() == "call" {
             if let Some(callee) = ts::child_of_types(node, &["identifier", "attribute"]) {
@@ -573,8 +575,8 @@ impl<'a> PythonVisitor<'a> {
                         continue;
                     }
                     if child.kind() == "keyword_argument" {
-                        // Только значение (последний ребёнок) — имя kwarg
-                        // не должно порождать REFERENCES.
+                        // The value only (the last child) — a kwarg's name
+                        // must not produce REFERENCES.
                         if let Some(value) = ts::children(child).last() {
                             self.scan_value(*value, enclosing_id)?;
                         }
@@ -602,11 +604,11 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    /// Разбор одного оператора (или клаузы) внутри тела.
+    /// Handling one statement (or clause) inside a body.
     ///
-    /// Присваивания и return идут в свои обработчики, вложенные определения —
-    /// в `visit`, блоки и блочные клаузы (else/except/elif/finally) —
-    /// рекурсивно, всё остальное — выражения-значения.
+    /// Assignments and returns go to their own handlers, nested definitions
+    /// to `visit`, blocks and block clauses (else/except/elif/finally)
+    /// recursively, and everything else is a value expression.
     fn walk_statement(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if NESTED_DEF_TYPES.contains(&node.kind()) {
             return self.visit(node);
@@ -647,15 +649,15 @@ impl<'a> PythonVisitor<'a> {
         });
     }
 
-    /// Записывает `annotation` для ведущего идентификатора узла `type`.
+    /// Records an `annotation` for the leading identifier of a `type` node.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         if let Some(ident) = ts::first_identifier(type_node) {
             self.record_occurrence("annotation", ident, enclosing_id);
         }
     }
 
-    /// Аргументы декораторов: `@deco(handler)` даёт `call` на deco и `read`
-    /// на handler. У голого `@deco` вызова нет — записывать нечего.
+    /// Decorator arguments: `@deco(handler)` yields a `call` on deco and a
+    /// `read` on handler. A bare `@deco` has no call — nothing to record.
     fn scan_decorators(
         &mut self,
         decorator_nodes: &[TsNode<'_>],
@@ -669,8 +671,8 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    /// Вызовы внутри аннотации типа: `Annotated[T, Depends(get_dep)]`.
-    /// Простые идентификаторы типов остаются за `record_annotation`.
+    /// Calls inside a type annotation: `Annotated[T, Depends(get_dep)]`.
+    /// Plain type identifiers stay with `record_annotation`.
     fn scan_annotation_calls(
         &mut self,
         type_node: TsNode<'_>,
@@ -684,7 +686,7 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    // -- присваивания -----------------------------------------------------
+    // -- assignments ------------------------------------------------------
 
     fn visit_return_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let container = self.container();
@@ -708,10 +710,10 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    /// Создаёт VARIABLE, ATTRIBUTE или TYPE_ALIAS из присваивания.
+    /// Creates a VARIABLE, ATTRIBUTE, or TYPE_ALIAS from an assignment.
     ///
-    /// `x: TypeAlias = v` → TYPE_ALIAS; `self.attr = v` или тело класса →
-    /// ATTRIBUTE; иначе VARIABLE.
+    /// `x: TypeAlias = v` → TYPE_ALIAS; `self.attr = v` or a class body →
+    /// ATTRIBUTE; otherwise VARIABLE.
     fn handle_assignment(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let children = ts::children(node);
         let Some(lhs) = children.first().copied() else {
@@ -721,8 +723,8 @@ impl<'a> PythonVisitor<'a> {
         let last = children.last().copied();
         let rhs = last.filter(|n| n.id() != lhs.id());
 
-        // Для `self.attr = v` имя — ПОСЛЕДНИЙ identifier, а не первый
-        // (первый был бы `self`).
+        // For `self.attr = v` the name is the LAST identifier, not the first
+        // (the first would be `self`).
         let name_node = if lhs.kind() == "attribute" {
             ts::children(lhs)
                 .into_iter()
@@ -780,7 +782,7 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    // -- работа с графом --------------------------------------------------
+    // -- graph plumbing ---------------------------------------------------
 
     fn get_or_create_external_symbol(&mut self, qname: &str, origin: &str) -> PyResult<String> {
         let sym_id = node_id(self.project_name, qname, NodeKind::ExternalSymbol.as_str());
@@ -811,8 +813,8 @@ impl<'a> PythonVisitor<'a> {
         metadata: Bound<'a, PyDict>,
         name_node: Option<TsNode<'_>>,
     ) -> PyResult<Py<Node>> {
-        // name_span нужен SpanIndex, чтобы сопоставить позицию определения
-        // обратно с узлом графа.
+        // SpanIndex needs name_span to map a definition's position back to
+        // the graph node.
         if let Some(name_node) = name_node {
             metadata.set_item("name_span", ts::span(name_node))?;
         }
@@ -871,7 +873,7 @@ impl<'a> PythonVisitor<'a> {
         self.kind_stack.pop();
     }
 
-    // -- имена ------------------------------------------------------------
+    // -- names ------------------------------------------------------------
 
     fn dotted_name(&self, node: TsNode<'_>) -> String {
         ts::children(node)

@@ -15,14 +15,14 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Дерево ty/ruff — около 200 крейтов; холодная сборка идёт долго,
-    # прогретая укладывается в несколько минут.
+    # The ty/ruff tree is about 200 crates; a cold build takes a long time,
+    # a warm one finishes in a few minutes.
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      # Go нужен только при сборке: мост к typescript-go линкуется
-      # статически, у пользователя wheel уже собран.
+      # Go is only needed at build time: the typescript-go bridge is linked
+      # statically, and users get a prebuilt wheel.
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
@@ -32,13 +32,16 @@ jobs:
           python-version: "3.13"
       - uses: arduino/setup-task@v2
 
-      # Без кеша каждый прогон пересобирал бы весь ty с нуля.
+      # Without the cache every run would rebuild all of ty from scratch.
       - uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
 
       - name: Install
         run: task install
+
+      - name: Lint
+        run: task lint
 
       - name: Build
         run: task build

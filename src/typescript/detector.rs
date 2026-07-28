@@ -1,4 +1,4 @@
-//! Определение TypeScript-проектов и разбор package.json.
+//! Detecting TypeScript projects and parsing package.json.
 
 use std::collections::HashSet;
 use std::fs;
@@ -11,7 +11,8 @@ use crate::roots::{any_file_with_extension, collect_marker_roots};
 
 pub const TYPESCRIPT_MARKERS: [&str; 2] = ["package.json", "tsconfig.json"];
 
-/// Помимо общих служебных каталогов, у Node свои артефакты сборки.
+/// On top of the shared service directories, Node has build artifacts of its
+/// own.
 pub const TS_EXCLUDED_DIRS: [&str; 12] = [
     ".venv",
     "venv",
@@ -27,7 +28,7 @@ pub const TS_EXCLUDED_DIRS: [&str; 12] = [
     ".nuxt",
 ];
 
-/// Приводит имя к виду идентификатора: нижний регистр, всё лишнее — в `_`.
+/// Normalizes a name into identifier shape: lowercase, everything else `_`.
 fn normalize_name(name: &str) -> String {
     let normalized: String = name
         .to_lowercase()
@@ -54,17 +55,18 @@ fn has_markers(directory: &Path) -> bool {
         .any(|marker| directory.join(marker).exists())
 }
 
-/// Есть ли под корнем TypeScript: сначала маркеры, потом любой `.ts`/`.tsx`.
+/// Whether there is TypeScript under the root: markers first, then any
+/// `.ts`/`.tsx`.
 pub fn is_typescript(project_root: &Path) -> bool {
     has_markers(project_root)
         || any_file_with_extension(project_root, "ts")
         || any_file_with_extension(project_root, "tsx")
 }
 
-/// Корни TypeScript-проектов (поддержка монорепозиториев).
+/// TypeScript project roots (monorepo-aware).
 ///
-/// tsconfig внутри уже найденного package.json-корня считается конфигом
-/// этого пакета, а не отдельным корнем.
+/// A tsconfig inside an already-found package.json root counts as that
+/// package's config rather than as a root of its own.
 pub fn typescript_roots(search_root: &Path) -> Vec<PathBuf> {
     let package_roots =
         collect_marker_roots_no_fallback(search_root, &["package.json"], &TS_EXCLUDED_DIRS);
@@ -92,14 +94,14 @@ pub fn typescript_roots(search_root: &Path) -> Vec<PathBuf> {
     roots
 }
 
-/// `collect_marker_roots` без отката к `search_root`.
+/// `collect_marker_roots` without the fallback to `search_root`.
 fn collect_marker_roots_no_fallback(
     search_root: &Path,
     markers: &[&str],
     excluded: &[&str],
 ) -> Vec<PathBuf> {
     let roots = collect_marker_roots(search_root, markers, excluded, |_| true);
-    // Общая функция откатывается к самому корню; здесь это не нужно.
+    // The shared helper falls back to the root itself; not wanted here.
     if roots.len() == 1 && roots[0] == search_root && !markers.iter().any(|m| search_root.join(m).exists())
     {
         return Vec::new();
@@ -107,7 +109,8 @@ fn collect_marker_roots_no_fallback(
     roots
 }
 
-/// Имя проекта: `name` из package.json (без npm-скоупа), иначе имя каталога.
+/// The project name: `name` from package.json (npm scope stripped),
+/// otherwise the directory name.
 pub fn project_name(project_root: &Path) -> String {
     let package_json = project_root.join("package.json");
     if package_json.exists()
@@ -134,11 +137,11 @@ pub fn project_name(project_root: &Path) -> String {
     )
 }
 
-/// Зависимости из package.json.
+/// Dependencies from package.json.
 ///
-/// Берутся `dependencies`, `devDependencies`, `peerDependencies` и
-/// `optionalDependencies`, чтобы импорты из тестов и peer-зависимости
-/// классифицировались как `third_party`, а не `unknown`.
+/// `dependencies`, `devDependencies`, `peerDependencies`, and
+/// `optionalDependencies` are all taken, so imports from tests and peer
+/// dependencies classify as `third_party` rather than `unknown`.
 pub fn dependencies(project_root: &Path) -> HashSet<String> {
     let mut names = HashSet::new();
     let Ok(raw) = fs::read_to_string(project_root.join("package.json")) else {
@@ -165,7 +168,7 @@ pub fn dependencies(project_root: &Path) -> HashSet<String> {
     names
 }
 
-/// Имена встроенных модулей Node.js — без схемы `node:`.
+/// Node.js built-in module names — without the `node:` scheme.
 pub fn node_builtins() -> HashSet<String> {
     [
         "assert", "async_hooks", "buffer", "child_process", "cluster", "console", "constants",

@@ -1,8 +1,7 @@
-//! Структурное извлечение из Go: пакеты, типы, функции, импорты.
+//! Structural extraction from Go: packages, types, functions, imports.
 //!
-//! Устроено проще, чем в Python и TypeScript: у Go нет вложенных областей
-//! видимости в объявлениях, поэтому стеков нет — обходятся только
-//! верхнеуровневые декларации файла.
+//! Simpler than Python and TypeScript: Go has no nested declaration scopes,
+//! so there are no stacks — only a file's top-level declarations are walked.
 
 use std::collections::HashSet;
 
@@ -17,8 +16,8 @@ use crate::occurrence::OccurrenceRef;
 use crate::relation::{Relation, RelationKind};
 use crate::ts;
 
-/// Потомки узла в том же порядке, в каком их обходит Python-версия:
-/// стек с `pop()` с конца, то есть в глубину и справа налево.
+/// A node's descendants in the order the Python version walks them: a stack
+/// popped from the end, i.e. depth-first and right to left.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = vec![node];
@@ -29,7 +28,7 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// Все потомки заданного вида — тем же порядком обхода.
+/// Every descendant of the given kind, in the same traversal order.
 fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = ts::children(node);
@@ -43,7 +42,7 @@ fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// Токен-имя вызываемого; None, когда вызывается результат выражения.
+/// The callee's name token; None when an expression result is called.
 fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
     match function.kind() {
         // foo()
@@ -54,7 +53,7 @@ fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
     }
 }
 
-/// Является ли узел левой частью присваивания или инкремента.
+/// Whether the node is the left-hand side of an assignment or increment.
 fn is_assignment_target(node: TsNode<'_>) -> bool {
     let Some(parent) = node.parent() else {
         return false;
@@ -71,7 +70,7 @@ fn is_assignment_target(node: TsNode<'_>) -> bool {
     false
 }
 
-/// `type_identifier`, называющий (возможно квалифицированный) тип.
+/// The `type_identifier` naming a (possibly qualified) type.
 fn type_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<'tree>> {
     let type_node = type_node?;
     match type_node.kind() {
@@ -79,7 +78,7 @@ fn type_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<'tre
         "type_identifier" => Some(type_node),
         // pkg.Base → Base
         "qualified_type" => type_node.child_by_field_name("name"),
-        // например, инстанцирование дженерика Base[int]
+        // e.g. instantiating the generic Base[int]
         _ => None,
     }
 }
@@ -92,12 +91,12 @@ pub struct GoExtractor<'a> {
     package_qname: &'a str,
     file_id: &'a str,
     file_rel: &'a str,
-    /// Модуль проекта и его зависимости — для классификации импортов.
+    /// The project's module and its dependencies — for classifying imports.
     module_path: Option<&'a str>,
     required: &'a HashSet<String>,
     occurrences: Vec<OccurrenceRef>,
-    /// `(id узла импорта, путь)` для внутренних импортов: настоящий
-    /// MODULE-узел подставит адаптер, когда все пакеты уже созданы.
+    /// `(import node id, path)` for internal imports: the adapter substitutes
+    /// the real MODULE node once every package exists.
     internal_imports: Vec<(String, String)>,
 }
 
@@ -137,7 +136,7 @@ impl<'a> GoExtractor<'a> {
         ts::text(node, self.source).into_owned()
     }
 
-    /// Разбирает верхнеуровневые объявления файла.
+    /// Parses the file's top-level declarations.
     pub fn extract(&mut self, root: TsNode<'_>) -> PyResult<()> {
         for child in ts::children(root) {
             match child.kind() {
@@ -192,7 +191,7 @@ impl<'a> GoExtractor<'a> {
         });
     }
 
-    /// Место вызова на каждый `call_expression` внутри области.
+    /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
             if node.kind() != "call_expression" {
@@ -207,11 +206,11 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
-    /// `read`/`write` на каждый селектор пакета или поля.
+    /// A `read`/`write` for every package or field selector.
     ///
-    /// Селекторы, уже записанные как `call` (то есть `pkg.Foo` в
-    /// `pkg.Foo()`), пропускаются, чтобы одно место не дало два
-    /// occurrence. Селектор слева от присваивания даёт `write`.
+    /// Selectors already recorded as a `call` (that is, `pkg.Foo` in
+    /// `pkg.Foo()`) are skipped so one site does not yield two occurrences. A
+    /// selector on an assignment's left-hand side yields `write`.
     fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
             if node.kind() != "selector_expression" {
@@ -231,7 +230,7 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
-    /// `base` на каждый встроенный тип.
+    /// A `base` for every embedded type.
     fn collect_bases(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         if type_node.kind() == "struct_type" {
             for fdl in ts::children(type_node) {
@@ -242,7 +241,7 @@ impl<'a> GoExtractor<'a> {
                     if fd.kind() != "field_declaration" {
                         continue;
                     }
-                    // Именованное поле — не встроенный тип.
+                    // A named field is not an embedded type.
                     if fd.child_by_field_name("name").is_some() {
                         continue;
                     }
@@ -259,9 +258,9 @@ impl<'a> GoExtractor<'a> {
             if elem.kind() != "type_elem" {
                 continue;
             }
-            // Несколько термов в одном элементе — это объединение
-            // type-set (`A | B`, `~int`), то есть ограничение дженерика,
-            // а не встраивание. У настоящего встраивания ровно один терм.
+            // Several terms in one element form a type-set union (`A | B`,
+            // `~int`), i.e. a generic constraint rather than embedding. Real
+            // embedding has exactly one term.
             let terms = ts::named_children(elem);
             if terms.len() != 1 {
                 continue;
@@ -390,8 +389,8 @@ impl<'a> GoExtractor<'a> {
         )?;
 
         if origin == "internal" {
-            // Откладываем: привяжем к настоящему MODULE-узлу, когда все
-            // пакеты созданы (иначе — EXTERNAL_SYMBOL).
+            // Deferred: bound to the real MODULE node once every package
+            // exists (falling back to an EXTERNAL_SYMBOL otherwise).
             self.internal_imports
                 .push((import_id, import_path.to_string()));
             return Ok(());
@@ -442,10 +441,10 @@ impl<'a> GoExtractor<'a> {
     }
 }
 
-/// Классификация пути импорта Go.
+/// Classification of a Go import path.
 ///
-/// Используется собственное правило Go: у пути стандартной библиотеки в
-/// первом сегменте нет точки, а сторонние пути начинаются с домена.
+/// Go's own rule applies: a standard-library path has no dot in its first
+/// segment, while third-party paths start with a domain.
 pub fn classify_import(
     import_path: &str,
     module_path: Option<&str>,

@@ -1,4 +1,4 @@
-//! Python-адаптер: разбор через tree-sitter и построение структуры графа.
+//! The Python adapter: tree-sitter parsing and graph structure building.
 
 mod adapter;
 mod boundary;
@@ -34,13 +34,13 @@ pub use ty_embedded::EmbeddedTyResolver;
 pub use visitor::PythonVisitor;
 
 thread_local! {
-    /// Парсер переиспользуется в пределах потока: настройка грамматики
-    /// заметно дороже самого разбора файла.
+    /// The parser is reused within a thread: setting up the grammar costs
+    /// noticeably more than parsing a file.
     static PARSER: RefCell<Parser> = RefCell::new({
         let mut parser = Parser::new();
         parser
             .set_language(&tree_sitter_python::LANGUAGE.into())
-            .expect("грамматика python совместима с этой версией tree-sitter");
+            .expect("the python grammar is compatible with this tree-sitter");
         parser
     });
 }
@@ -48,13 +48,14 @@ thread_local! {
 pub fn parse_tree(source: &[u8]) -> Result<Tree, PyErr> {
     PARSER
         .with(|p| p.borrow_mut().parse(source, None))
-        .ok_or_else(|| ParseError::new_err("tree-sitter не смог разобрать исходник"))
+        .ok_or_else(|| ParseError::new_err("tree-sitter could not parse the source"))
 }
 
-/// Приводит относительный импорт к абсолютному имени.
+/// Resolves a relative import to an absolute name.
 ///
-/// `level` — число ведущих точек (1 — текущий пакет, 2 — родительский).
-/// Пакет текущего модуля — это все части имени, кроме последней.
+/// `level` is the number of leading dots (1 for the current package, 2 for
+/// the parent). The current module's package is every part of its name but
+/// the last.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (current_module_qname, level, module = None))]
@@ -78,11 +79,11 @@ pub fn resolve_relative_import(
     }
 }
 
-/// Разбирает один файл и наполняет граф его структурой.
+/// Parses one file and fills the graph with its structure.
 ///
-/// Рёбра CALLS/REFERENCES/HAS_TYPE/INHERITS_FROM здесь не создаются —
-/// вместо них возвращается список мест использования, который резолв-фаза
-/// на стороне Python привяжет к определениям.
+/// CALLS/REFERENCES/HAS_TYPE/INHERITS_FROM edges are not created here —
+/// instead a list of use-sites is returned, which the resolution pass on the
+/// Python side binds to definitions.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, file_path, module_qualified_name, file_node_id, source, classifier = None))]

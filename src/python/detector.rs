@@ -1,4 +1,4 @@
-//! Определение Python-проектов: файлы-маркеры и имя проекта.
+//! Detecting Python projects: marker files and the project name.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -16,9 +16,9 @@ pub const PYTHON_MARKERS: [&str; 5] = [
     "requirements.txt",
 ];
 
-/// pyproject.toml засчитывается только с секцией `[project]` — иначе
-/// Rust-проект, держащий pyproject.toml ради инструментов, притворится
-/// Python-проектом.
+/// A pyproject.toml only counts with a `[project]` section — otherwise a
+/// Rust project keeping a pyproject.toml for tooling would masquerade as a
+/// Python project.
 fn is_valid_marker(path: &Path) -> bool {
     if path.file_name().is_some_and(|n| n == "pyproject.toml") {
         return pyproject_has_project_section(path);
@@ -32,7 +32,7 @@ fn pyproject_has_project_section(path: &Path) -> bool {
     };
     match text.parse::<toml::Table>() {
         Ok(table) => table.contains_key("project"),
-        // Не разобрали — смотрим, есть ли рядом .py вообще.
+        // Unparseable — fall back to whether any .py exists nearby.
         Err(_) => fallback_has_py_files(path),
     }
 }
@@ -53,8 +53,8 @@ pub fn python_roots(search_root: &Path) -> Vec<PathBuf> {
     collect_marker_roots(search_root, &PYTHON_MARKERS, &EXCLUDED_DIRS, is_valid_marker)
 }
 
-/// Имя проекта: `[project].name` из pyproject.toml, затем `[metadata] name`
-/// из setup.cfg, затем имя каталога.
+/// The project name: `[project].name` from pyproject.toml, then
+/// `[metadata] name` from setup.cfg, then the directory name.
 pub fn project_name(project_root: &Path) -> String {
     let pyproject = project_root.join("pyproject.toml");
     if pyproject.exists()
@@ -83,7 +83,7 @@ pub fn project_name(project_root: &Path) -> String {
         .unwrap_or_default()
 }
 
-/// Первое значение ключа в INI-секции.
+/// The first value of a key in an INI section.
 fn ini_first(text: &str, section: &str, key: &str) -> Option<String> {
     ini_sections(text, key)
         .into_iter()
@@ -91,10 +91,10 @@ fn ini_first(text: &str, section: &str, key: &str) -> Option<String> {
         .map(|(_, values)| values[0].clone())
 }
 
-/// Есть ли под корнем Python: сначала маркеры, потом — любой `.py`.
+/// Whether there is Python under the root: markers first, then any `.py`.
 ///
-/// Откат по `.py` нужен для многоязычных монорепозиториев, где в корне
-/// нет Python-маркеров, но есть Python-подпакеты рядом с JS/Rust.
+/// The `.py` fallback exists for polyglot monorepos whose root carries no
+/// Python markers but holds Python subpackages next to JS/Rust.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn is_python_project(project_root: &str) -> bool {
@@ -102,7 +102,7 @@ pub fn is_python_project(project_root: &str) -> bool {
     has_python_markers(root) || any_file_with_extension(root, "py")
 }
 
-/// Корни Python-проектов внутри `search_root` (по одному на подпроект).
+/// Python project roots inside `search_root` (one per subproject).
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn find_python_roots(search_root: &str) -> Vec<String> {

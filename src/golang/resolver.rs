@@ -1,10 +1,10 @@
-//! Резолвер символов Go поверх `go/packages` и `go/types`.
+//! The Go symbol resolver, built on `go/packages` and `go/types`.
 //!
-//! В отличие от Python и TypeScript, стандартную библиотеку сюда не
-//! вкомпилировать: у Go это исходники в GOROOT, и типизация без них
-//! невозможна. Поэтому резолверу нужен установленный Go — но для
-//! Go-проекта он и так есть, а `gopls` (который требует graphlens)
-//! ставится отдельно.
+//! Unlike Python and TypeScript, the standard library cannot be compiled in
+//! here: in Go it is sources in GOROOT, and type checking is impossible
+//! without them. So this resolver needs Go installed — but a Go project has
+//! it anyway, whereas `gopls` (which graphlens requires) is a separate
+//! install.
 
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int, c_uint};
@@ -29,7 +29,7 @@ unsafe extern "C" {
     ) -> *mut c_char;
 }
 
-/// Сегмент кеша модулей: пути вида `.../pkg/mod/...`.
+/// The module cache segment: paths of the form `.../pkg/mod/...`.
 const MOD_CACHE: [&str; 2] = ["pkg", "mod"];
 
 fn parse_answer(raw: &str) -> Option<(String, u32, u32)> {
@@ -45,7 +45,7 @@ fn parse_answer(raw: &str) -> Option<(String, u32, u32)> {
     ))
 }
 
-/// `go env GOROOT`; None, если Go не установлен.
+/// `go env GOROOT`; None when Go is not installed.
 fn detect_goroot() -> Option<PathBuf> {
     let output = Command::new("go").args(["env", "GOROOT"]).output().ok()?;
     let root = String::from_utf8(output.stdout).ok()?.trim().to_string();
@@ -65,7 +65,7 @@ fn in_mod_cache(path: &Path) -> bool {
 }
 
 #[gen_stub_pyclass]
-// unsendable: сессия живёт в Go и привязана к своему хэндлу.
+// unsendable: the session lives in Go and is tied to its handle.
 #[pyclass(module = "callix._core", unsendable)]
 pub struct GoResolver {
     handle: c_int,
@@ -78,12 +78,12 @@ impl GoResolver {
         Self { handle: 0, root: None, goroot: detect_goroot() }
     }
 
-    /// Происхождение цели по её пути.
+    /// A target's origin, from its path.
     ///
-    /// Сравнивается и исходный путь, и развёрнутый: симлинк может быть с
-    /// любой стороны. graphlens разворачивает только путь цели, из-за чего
-    /// на Debian-подобных установках (`/usr/lib/go-X/src` → `/usr/share/…`)
-    /// вся стандартная библиотека попадает в `unknown`.
+    /// Both the original and the resolved path are compared: a symlink may
+    /// sit on either side. graphlens resolves the target path only, which on
+    /// Debian-like installs (`/usr/lib/go-X/src` → `/usr/share/…`) drops the
+    /// entire standard library into `unknown`.
     fn classify(&self, path: &str) -> &'static str {
         let original = Path::new(path);
         let resolved = original
@@ -165,10 +165,10 @@ impl GoResolver {
         Self::empty()
     }
 
-    /// Загружает и типизирует пакеты проекта.
+    /// Loads and type-checks the project's packages.
     ///
-    /// Список файлов не нужен: `go/packages` сам разбирает `go.mod` и
-    /// подтягивает зависимости.
+    /// No file list is needed: `go/packages` parses `go.mod` and pulls in the
+    /// dependencies itself.
     #[pyo3(signature = (project_root, files = None))]
     fn prepare(&mut self, project_root: PathBuf, files: Option<Vec<PathBuf>>) -> PyResult<()> {
         let _ = files;

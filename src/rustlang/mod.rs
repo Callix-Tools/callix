@@ -1,5 +1,5 @@
-//! Rust-адаптер: структура через tree-sitter, символы — через индекс
-//! `rust-analyzer scip` (см. `resolver.rs`).
+//! The Rust adapter: structure via tree-sitter, symbols via the
+//! `rust-analyzer scip` index (see `resolver.rs`).
 
 mod adapter;
 mod boundary;
@@ -28,7 +28,7 @@ thread_local! {
         let mut parser = Parser::new();
         parser
             .set_language(&tree_sitter_rust::LANGUAGE.into())
-            .expect("грамматика rust совместима с этой версией tree-sitter");
+            .expect("the rust grammar is compatible with this tree-sitter");
         parser
     });
 }
@@ -36,5 +36,5 @@ thread_local! {
 pub fn parse_tree(source: &[u8]) -> Result<Tree, PyErr> {
     PARSER
         .with(|p| p.borrow_mut().parse(source, None))
-        .ok_or_else(|| ParseError::new_err("tree-sitter не смог разобрать исходник"))
+        .ok_or_else(|| ParseError::new_err("tree-sitter could not parse the source"))
 }

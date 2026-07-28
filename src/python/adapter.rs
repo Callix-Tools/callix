@@ -1,9 +1,10 @@
-//! Структурная фаза Python-адаптера и применение результатов резолвера.
+//! The Python adapter's structural phase and the application of resolver
+//! results.
 //!
-//! Анализ разделён надвое (см. §7 архитектуры graphlens): структура
-//! строится по каждому подкорню отдельно, а резолв идёт один раз на весь
-//! вызов — иначе ссылки между подкорнями не разрешатся в принципе, а
-//! каждый подкорень платил бы за собственный запуск движка.
+//! Analysis is split in two (see §7 of the graphlens architecture): structure
+//! is built per sub-root, while resolution runs once for the whole call —
+//! otherwise references between sub-roots could not resolve at all, and every
+//! sub-root would pay for its own engine start-up.
 
 use std::collections::{HashMap, HashSet};
 use std::time::Instant;
@@ -37,13 +38,13 @@ use super::visitor::PythonVisitor;
 
 const PY_EXTENSIONS: [&str; 2] = [".py", ".pyi"];
 
-/// Границы одного файла: `(абсолютный путь, id FILE-узла, порты)`.
+/// One file's boundaries: `(absolute path, FILE node id, ports)`.
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
 
-/// Результат структурной фазы одного корня.
+/// The result of one root's structural phase.
 type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 
-/// Символ, привязанный резолвером к своему определению. Координаты 1-based.
+/// A symbol the resolver bound to its definition. Coordinates are 1-based.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all, from_py_object)]
 #[derive(Clone)]
@@ -84,7 +85,7 @@ impl ResolvedRef {
     }
 }
 
-/// Роль места использования → вид ребра.
+/// Use-site role → edge kind.
 fn role_to_kind(role: &str) -> Option<RelationKind> {
     Some(match role {
         "call" => RelationKind::Calls,
@@ -115,7 +116,7 @@ fn add_relation(
     Ok(())
 }
 
-/// Создаёт цепочку MODULE-узлов для `a.b.c` и возвращает id листа.
+/// Creates the MODULE node chain for `a.b.c` and returns the leaf's id.
 fn ensure_module_chain(
     py: Python<'_>,
     graph: &mut Graph,
@@ -183,7 +184,7 @@ fn ensure_external_symbol(
     Ok(sym_id)
 }
 
-/// Все Python-файлы под корнем.
+/// Every Python file under the root.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn collect_python_files(project_root: &str) -> Vec<String> {
@@ -193,7 +194,7 @@ pub fn collect_python_files(project_root: &str) -> Vec<String> {
         .collect()
 }
 
-/// Отбрасывает файлы вложенных корней (родитель не разбирает подпроекты).
+/// Drops nested roots' files (a parent does not parse its subprojects).
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn filter_nested_files(
@@ -209,11 +210,11 @@ pub fn filter_nested_files(
         .collect()
 }
 
-/// Фаза 1: структура и импорты одного корня Python-проекта.
+/// Phase 1: structure and imports for one Python project root.
 ///
-/// Возвращает `(project_name, [(абсолютный путь, место использования)])`.
-/// Резолв и извлечение границ идут позже и на уровне всего проекта, чтобы
-/// один резолвер и полный `SpanIndex` обслуживали все корни сразу.
+/// Returns `(project_name, [(absolute path, use-site)])`. Resolution and
+/// boundary extraction happen later at project level, so that a single
+/// resolver and a full `SpanIndex` serve every root at once.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_root, py_root, files, stdlib, third_party))]
@@ -247,8 +248,8 @@ fn build_root_structure_inner(
     let project = project_name(py_root);
     let roots = source_roots(py_root, &files);
 
-    // Пре-проход: имена внутренних модулей выводятся из путей, без разбора
-    // исходников — классификатору они нужны до первого визита.
+    // Pre-pass: internal module names are derived from paths without parsing
+    // sources — the classifier needs them before the first visit.
     let mut internal_tops: HashSet<String> = HashSet::new();
     for file in &files {
         let root = source_root_for(file, &roots).unwrap_or(&roots[0]);
@@ -273,8 +274,8 @@ fn build_root_structure_inner(
         add_node(py, graph, node)?;
     }
 
-    // Порядок вставки важен: PROJECT --CONTAINS--> модули верхнего уровня
-    // должны выходить в том же порядке, что и у dict в Python.
+    // Insertion order matters: PROJECT --CONTAINS--> top-level modules has to
+    // come out in the same order a Python dict would give.
     let mut modules: IndexMap<String, String> = IndexMap::new();
     let mut all_occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut all_boundaries: Vec<FileBoundaries> = Vec::new();
@@ -288,8 +289,8 @@ fn build_root_structure_inner(
         let leaf_module_id =
             ensure_module_chain(py, graph, &project, &module_qname, &mut modules)?;
 
-        // Путь FILE-узла — относительно ИСХОДНОГО project_root, чтобы во
-        // всём монорепозитории была одна точка отсчёта.
+        // A FILE node's path is relative to the ORIGINAL project_root, so the
+        // whole monorepo shares one point of reference.
         let relative_path = file
             .strip_prefix(project_root)
             .or_else(|_| file.strip_prefix(py_root))
@@ -342,15 +343,15 @@ fn build_root_structure_inner(
             all_occurrences.push((abs_path.clone(), occurrence));
         }
 
-        // Границы снимаем с того же дерева, но применяем позже: узлы
-        // BOUNDARY должны лечь в граф после рёбер резолвера.
+        // Boundaries are read off the same tree but applied later: BOUNDARY
+        // nodes must land in the graph after the resolver's edges.
         let boundaries = extract_boundaries(tree.root_node(), &source);
         if !boundaries.is_empty() {
             all_boundaries.push((abs_path, file_id, boundaries));
         }
     }
 
-    // PROJECT --CONTAINS--> модули верхнего уровня
+    // PROJECT --CONTAINS--> top-level modules
     let top_level: Vec<String> = modules
         .iter()
         .filter(|(qname, _)| !qname.contains('.'))
@@ -370,11 +371,11 @@ fn build_root_structure_inner(
     Ok((project, all_occurrences, all_boundaries))
 }
 
-/// Фаза 2: превращает ответы резолвера в рёбра.
+/// Phase 2: turns resolver answers into edges.
 ///
-/// На каждое место использования: внутреннее определение ищется в
-/// `SpanIndex`, всё остальное падает в EXTERNAL_SYMBOL — так ребро не
-/// пропадает, даже когда цель вне графа.
+/// Per use-site: an internal definition is looked up in the `SpanIndex`,
+/// everything else falls through to an EXTERNAL_SYMBOL — so the edge is never
+/// lost, even when the target lies outside the graph.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, project_root, span_index, occurrences, refs))]
@@ -400,13 +401,13 @@ pub fn apply_resolutions(
     )
 }
 
-/// Ключ для неразрешённого места использования.
+/// The key for an unresolved use-site.
 ///
-/// Путь файла обязателен: без него места с одинаковыми координатами в
-/// разных файлах схлопываются в один узел (в graphlens ключ — только
-/// `{role}@{line}:{col}`, и на superset так слипались 98% внешних узлов).
-/// Путь берётся относительно корня проекта, чтобы ID оставались
-/// одинаковыми между машинами.
+/// The file path is mandatory: without it, sites sharing coordinates across
+/// different files collapse into one node (graphlens keys on
+/// `{role}@{line}:{col}` alone, and on superset that merged 98% of external
+/// nodes). The path is taken relative to the project root so IDs stay
+/// identical across machines.
 fn positional_key(project_root: &Path, file_path: &str, occurrence: &OccurrenceRef) -> String {
     let path = Path::new(file_path);
     let relative = path
@@ -438,7 +439,7 @@ fn apply_resolutions_inner(
     }
     if occurrences.len() != refs.len() {
         return Err(pyo3::exceptions::PyValueError::new_err(
-            "occurrences и refs должны быть одной длины",
+            "occurrences and refs must have the same length",
         ));
     }
 
@@ -463,8 +464,9 @@ fn apply_resolutions_inner(
             Some(_) => metrics.internal += 1,
             None => {
                 metrics.external += 1;
-                // Без full_name ключ дополняется файлом и позицией, иначе
-                // разные неразрешённые места схлопнулись бы в один узел.
+                // Without a full_name the key is completed with file and
+                // position, otherwise distinct unresolved sites would
+                // collapse into a single node.
                 let fallback = if reference.full_name.is_empty() {
                     positional_key(project_root, path, occurrence)
                 } else {
@@ -489,7 +491,7 @@ fn apply_resolutions_inner(
             py,
             graph,
             occurrence.enclosing_id.clone(),
-            target_id.expect("внешний символ создаётся выше"),
+            target_id.expect("the external symbol is created above"),
             rel_kind,
             Some(metadata),
         )?;
@@ -497,10 +499,10 @@ fn apply_resolutions_inner(
     Ok(metrics)
 }
 
-/// Самый глубокий FUNCTION/METHOD, содержащий позицию.
+/// The deepest FUNCTION/METHOD containing the position.
 ///
-/// При равенстве начала выигрывает последний в порядке вставки — так же,
-/// как при обходе `graph.nodes.values()` в Python-версии.
+/// On equal starts the last one in insertion order wins — the same way
+/// iterating `graph.nodes.values()` behaves in the Python version.
 fn innermost_enclosing(candidates: &[(String, Span)], line: u32, col: u32) -> Option<String> {
     let mut best: Option<(String, (u32, u32))> = None;
     for (id, span) in candidates {
@@ -516,11 +518,11 @@ fn innermost_enclosing(candidates: &[(String, Span)], line: u32, col: u32) -> Op
     best.map(|(id, _)| id)
 }
 
-/// Фаза 3: узлы BOUNDARY и рёбра EXPOSES / CONSUMES.
+/// Phase 3: BOUNDARY nodes and EXPOSES / CONSUMES edges.
 ///
-/// ID границы выводится только из `mechanism` + `key`, поэтому сервер на
-/// одном языке и клиент на другом дают один и тот же узел и склеиваются
-/// при слиянии графов.
+/// A boundary's ID derives from `mechanism` + `key` alone, so a server in one
+/// language and a client in another produce the same node and join up when
+/// graphs are merged.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, files))]
@@ -562,7 +564,8 @@ fn apply_boundaries_inner(
         return Ok(());
     }
 
-    // Объемлющие объявления — по файлам, один проход по графу.
+    // Enclosing declarations, grouped per file in a single pass over the
+    // graph.
     let mut enclosers: HashMap<String, Vec<(String, Span)>> = HashMap::new();
     for node in graph.node_map().values() {
         let node = node.get();
@@ -654,17 +657,17 @@ fn add_boundary(
     )
 }
 
-/// Откуда берутся определения символов.
+/// Where symbol definitions come from.
 enum ResolverSlot {
-    /// ty, слинкованный в модуль.
+    /// ty, linked into the module.
     Embedded(EmbeddedTyResolver),
-    /// Python-объект с `prepare` / `resolve_all` / `status`.
+    /// A Python object with `prepare` / `resolve_all` / `status`.
     Custom(Py<PyAny>),
-    /// Резолв-фаза выключена: граф остаётся структурным.
+    /// The resolution phase is off: the graph stays structural.
     Disabled,
 }
 
-/// Приводит ответ произвольного резолвера к нативному ResolvedRef.
+/// Coerces an arbitrary resolver's answer into a native ResolvedRef.
 fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
     if item.is_none() {
         return Ok(None);
@@ -706,11 +709,11 @@ fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
     }))
 }
 
-/// Языковой адаптер для Python-проектов.
+/// The language adapter for Python projects.
 ///
-/// `analyze()` идёт тремя фазами: структура по каждому корню, затем один
-/// резолв на весь вызов, затем границы. Порядок не косметический —
-/// см. комментарии внутри.
+/// `analyze()` runs in three phases: structure per root, then a single
+/// resolution pass for the whole call, then boundaries. The order is not
+/// cosmetic — see the comments inside.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", unsendable)]
 pub struct PythonAdapter {
@@ -719,7 +722,7 @@ pub struct PythonAdapter {
 }
 
 impl PythonAdapter {
-    /// Имена сторонних пакетов: встроенные парсеры либо переданные свои.
+    /// Third-party package names: the built-in parsers, or custom ones.
     fn third_party(&self, py: Python<'_>, py_root: &Path) -> PyResult<HashSet<String>> {
         let Some(parsers) = &self.dep_parsers else {
             return Ok(parse_dependencies(&py_root.to_string_lossy()));
@@ -740,7 +743,7 @@ impl PythonAdapter {
         Ok(names)
     }
 
-    /// Запрашивает у резолвера определения для всех мест использования.
+    /// Asks the resolver for definitions for every use-site.
     #[allow(clippy::too_many_arguments)]
     fn resolve(
         &mut self,
@@ -799,13 +802,13 @@ impl PythonAdapter {
 #[pymethods]
 impl PythonAdapter {
     /// Args:
-    ///     dep_parsers: свои парсеры манифестов (объекты с `can_parse` и
-    ///         `parse`). По умолчанию — встроенные: pyproject.toml,
+    ///     dep_parsers: custom manifest parsers (objects with `can_parse` and
+    ///         `parse`). Defaults to the built-in ones: pyproject.toml,
     ///         requirements*.txt, setup.cfg.
-    ///     resolver: свой резолвер символов (объект с `resolve_all`).
-    ///         По умолчанию — встроенный ty.
-    ///     resolve: False отключает резолв-фазу — граф останется
-    ///         структурным, а `resolver_status` в метаданных станет
+    ///     resolver: a custom symbol resolver (an object with `resolve_all`).
+    ///         Defaults to the embedded ty.
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` in the metadata becomes
     ///         `unavailable`.
     #[new]
     #[pyo3(signature = (dep_parsers = None, resolver = None, *, resolve = true))]
@@ -835,12 +838,12 @@ impl PythonAdapter {
         super::detector::is_python_project(&project_root.to_string_lossy())
     }
 
-    /// Все исходники под корнем, кроме служебных каталогов.
+    /// Every source under the root, excluding service directories.
     fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
         collect_files(&project_root, &PY_EXTENSIONS, &EXCLUDED_DIRS)
     }
 
-    /// Разбирает проект и возвращает граф.
+    /// Analyses the project and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
     fn analyze(
         &mut self,
@@ -881,9 +884,9 @@ impl PythonAdapter {
         let mut graph = Graph::empty(py);
         let stdlib = stdlib_names(py)?;
 
-        // Фаза 1 — структура по каждому корню, без резолва: SpanIndex ниже
-        // должен охватывать весь воркспейс, иначе межкорневые определения
-        // некуда будет привязать.
+        // Phase 1 — structure per root, no resolution: the SpanIndex below
+        // has to span the whole workspace, or cross-root definitions would
+        // have nothing to bind to.
         let mut built = Vec::with_capacity(root_files.len());
         for (py_root, file_list) in &root_files {
             built.push(build_root_structure_inner(
@@ -897,9 +900,9 @@ impl PythonAdapter {
             )?);
         }
 
-        // Фаза 2 — ОДИН резолвер на весь project_root. Именно это позволяет
-        // ссылкам между корнями разрешаться и не переиндексировать
-        // воркспейс по разу на корень.
+        // Phase 2 — ONE resolver for the whole project_root. That is exactly
+        // what lets cross-root references resolve without reindexing the
+        // workspace once per root.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
         if !matches!(self.resolver, ResolverSlot::Disabled) {
@@ -922,8 +925,8 @@ impl PythonAdapter {
             status = self.resolver_status(py)?;
         }
 
-        // Фаза 3 — границы. После резолва, чтобы узлы BOUNDARY ложились
-        // в граф последними.
+        // Phase 3 — boundaries. After resolution, so BOUNDARY nodes land in
+        // the graph last.
         for (_project, _occurrences, boundaries) in &built {
             apply_boundaries_inner(py, &mut graph, boundaries)?;
         }

@@ -1,4 +1,4 @@
-//! Детерминированный структурный diff двух графов.
+//! A deterministic structural diff of two graphs.
 
 use std::collections::BTreeMap;
 
@@ -11,20 +11,20 @@ use crate::node::Node;
 use crate::relation::Relation;
 use crate::serde::encode_metadata;
 
-/// Ключ ребра: пара узлов, вид и канонизированные метаданные.
+/// An edge key: the node pair, the kind, and canonicalized metadata.
 ///
-/// Метаданные входят в ключ, чтобы (а) два разных CALLS между теми же
-/// узлами из разных мест вызова не схлопнулись в одно ребро и (б)
-/// изменение только метаданных ребра всё-таки попало в diff — симметрично
-/// узлам, которые сравниваются целиком.
+/// Metadata is part of the key so that (a) two distinct CALLS between the
+/// same nodes from different call sites do not collapse into one edge, and
+/// (b) a change to an edge's metadata alone still shows up in the diff —
+/// symmetric with nodes, which are compared in full.
 type RelationKey = (String, String, &'static str, String);
 
-/// Стабильное строковое представление значения с сортировкой ключей.
-fn canonical(py: Python<'_>, value: &Bound<'_, PyAny>) -> PyResult<String> {
+/// A stable string representation of a value, with keys sorted.
+fn canonical(value: &Bound<'_, PyAny>) -> PyResult<String> {
     if let Ok(dict) = value.cast::<PyDict>() {
         let mut entries: BTreeMap<String, String> = BTreeMap::new();
         for (key, item) in dict.iter() {
-            entries.insert(key.str()?.to_string(), canonical(py, &item)?);
+            entries.insert(key.str()?.to_string(), canonical(&item)?);
         }
         let body: Vec<String> = entries.into_iter().map(|(k, v)| format!("{k}:{v}")).collect();
         return Ok(format!("{{{}}}", body.join(",")));
@@ -32,7 +32,7 @@ fn canonical(py: Python<'_>, value: &Bound<'_, PyAny>) -> PyResult<String> {
     if let Ok(list) = value.cast::<PyList>() {
         let mut body = Vec::with_capacity(list.len());
         for item in list.iter() {
-            body.push(canonical(py, &item)?);
+            body.push(canonical(&item)?);
         }
         return Ok(format!("[{}]", body.join(",")));
     }
@@ -45,7 +45,7 @@ fn relation_key(py: Python<'_>, relation: &Relation) -> PyResult<RelationKey> {
         relation.source_id.clone(),
         relation.target_id.clone(),
         relation.kind.as_str(),
-        canonical(py, encoded.as_any())?,
+        canonical(encoded.as_any())?,
     ))
 }
 
@@ -62,7 +62,7 @@ pub struct GraphDiff {
 #[gen_stub_pymethods]
 #[pymethods]
 impl GraphDiff {
-    /// True, когда графы структурно идентичны.
+    /// True when the graphs are structurally identical.
     #[getter]
     fn is_empty(&self) -> bool {
         self.added_nodes.is_empty()
@@ -84,8 +84,8 @@ impl GraphDiff {
     }
 }
 
-/// Структурный diff от `old` к `new`. Порядок внутри каждого списка
-/// детерминирован: узлы отсортированы по ID, рёбра — по своему ключу.
+/// The structural diff from `old` to `new`. Ordering within each list is
+/// deterministic: nodes are sorted by ID, edges by their key.
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn diff_graphs(py: Python<'_>, old: &Graph, new: &Graph) -> PyResult<GraphDiff> {

@@ -1,4 +1,4 @@
-//! Разбор Cargo.toml, поиск крейтов и классификация путей `use`.
+//! Parsing Cargo.toml, finding crates, and classifying `use` paths.
 
 use std::collections::HashSet;
 use std::fs;
@@ -13,9 +13,9 @@ const RUST_MARKERS: [&str; 1] = ["Cargo.toml"];
 const RUST_EXCLUDED_DIRS: [&str; 3] = ["target", ".git", "node_modules"];
 
 const DEP_TABLES: [&str; 3] = ["dependencies", "dev-dependencies", "build-dependencies"];
-/// Крейты стандартной поставки Rust.
+/// Crates from the Rust standard distribution.
 const STDLIB_CRATES: [&str; 5] = ["std", "core", "alloc", "proc_macro", "test"];
-/// Корни пути, всегда указывающие внутрь текущего крейта.
+/// Path roots that always point inside the current crate.
 const INTERNAL_ROOTS: [&str; 3] = ["crate", "self", "super"];
 
 fn load_cargo(root: &Path) -> Option<toml::Table> {
@@ -23,17 +23,17 @@ fn load_cargo(root: &Path) -> Option<toml::Table> {
     text.parse::<toml::Table>().ok()
 }
 
-/// Имя крейта из `[package].name`.
+/// The crate name from `[package].name`.
 pub fn crate_name(root: &Path) -> Option<String> {
     let data = load_cargo(root)?;
     let name = data.get("package")?.as_table()?.get("name")?.as_str()?;
     Some(name.to_string())
 }
 
-/// Имена крейтов из всех таблиц зависимостей.
+/// Crate names from every dependency table.
 ///
-/// Дефисы заменяются на подчёркивания: в `Cargo.toml` крейт зовётся
-/// `tree-sitter`, а в коде — `tree_sitter`.
+/// Hyphens become underscores: in `Cargo.toml` a crate is called
+/// `tree-sitter`, in code `tree_sitter`.
 pub fn dependencies(root: &Path) -> HashSet<String> {
     let mut names = HashSet::new();
     let Some(data) = load_cargo(root) else {
@@ -47,22 +47,24 @@ pub fn dependencies(root: &Path) -> HashSet<String> {
     names
 }
 
-/// Есть ли в каталоге Cargo.toml.
+/// Whether the directory holds a Cargo.toml.
 pub fn is_rust(root: &Path) -> bool {
     root.join("Cargo.toml").is_file()
 }
 
-/// Корни крейтов под `root`; Cargo.toml в самом корне не скрывает вложенные.
+/// Crate roots under `root`; a Cargo.toml at the root does not hide nested
+/// ones.
 pub fn rust_roots(root: &Path) -> Vec<PathBuf> {
     let roots = collect_marker_roots(root, &RUST_MARKERS, &RUST_EXCLUDED_DIRS, |_| true);
-    // Общая функция откатывается к самому корню; для Rust этого не нужно.
+    // The shared helper falls back to the root itself; Rust does not want
+    // that.
     if roots.len() == 1 && roots[0] == root && !is_rust(root) {
         return Vec::new();
     }
     roots
 }
 
-/// Имя проекта — имя крейта, иначе имя каталога.
+/// The project name — the crate name, otherwise the directory name.
 pub fn project_name(root: &Path) -> String {
     crate_name(root).unwrap_or_else(|| {
         root.file_name()
@@ -71,11 +73,11 @@ pub fn project_name(root: &Path) -> String {
     })
 }
 
-/// Классификация пути `use`.
+/// Classification of a `use` path.
 ///
-/// `crate`/`self`/`super` и имя самого крейта — внутреннее; `std`/`core`/
-/// `alloc` — стандартная библиотека; перечисленное в таблицах зависимостей —
-/// стороннее. Остальное (например, транзитивная зависимость) — `unknown`.
+/// `crate`/`self`/`super` and the crate's own name are internal; `std`/`core`/
+/// `alloc` are the standard library; anything listed in the dependency tables
+/// is third-party. The rest (a transitive dependency, say) is `unknown`.
 pub fn classify_import(
     import_path: &str,
     crate_name: Option<&str>,
@@ -130,7 +132,7 @@ pub fn rust_parse_dependencies(root: PathBuf) -> HashSet<String> {
     dependencies(&root)
 }
 
-/// Классификация пути `use` — точка входа для проверок.
+/// Classification of a `use` path — the entry point for checks.
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (import_path, crate_name = None, deps = None))]

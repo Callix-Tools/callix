@@ -1,12 +1,13 @@
-//! Статус резолвера, который адаптер кладёт в метаданные графа.
+//! The resolver status an adapter records in the graph metadata.
 //!
-//! Нужен, чтобы вызывающий отличал структурный граф от полного: без него
-//! отсутствие CALLS/REFERENCES/HAS_TYPE неотличимо от «их правда нет».
+//! It lets the caller tell a structural graph from a complete one: without
+//! it, missing CALLS/REFERENCES/HAS_TYPE is indistinguishable from "there
+//! genuinely are none".
 
 use pyo3::prelude::*;
 use pyo3_stub_gen::derive::{gen_stub_pyclass_enum, gen_stub_pymethods};
 
-/// Ключ в `graph.metadata`, под которым лежит статус.
+/// The `graph.metadata` key the status is stored under.
 pub const RESOLVER_STATUS_KEY: &str = "resolver_status";
 
 #[gen_stub_pyclass_enum]
@@ -39,7 +40,7 @@ impl ResolverStatus {
         })
     }
 
-    /// Чем хуже, тем больше — для выбора худшего при слиянии.
+    /// Worse means larger — used to pick the worst status when merging.
     fn severity(self) -> u8 {
         match self {
             Self::Ok => 0,
@@ -48,7 +49,7 @@ impl ResolverStatus {
         }
     }
 
-    /// Приводит хранимое значение обратно к статусу, терпя мусор.
+    /// Coerces a stored value back into a status, tolerating garbage.
     pub fn coerce(value: &Bound<'_, PyAny>, default: Self) -> Self {
         if let Ok(status) = value.extract::<Self>() {
             return status;
@@ -69,7 +70,7 @@ impl ResolverStatus {
         self.as_str()
     }
 
-    /// Худший статус из переданных; пустой список — OK.
+    /// The worst of the given statuses; an empty list is OK.
     #[staticmethod]
     pub fn combine(statuses: Vec<ResolverStatus>) -> ResolverStatus {
         statuses
@@ -78,9 +79,9 @@ impl ResolverStatus {
             .unwrap_or(ResolverStatus::Ok)
     }
 
-    /// Терпимый разбор: нераспознанное значение даёт `default`
-    /// (по умолчанию UNAVAILABLE), а не ValueError — чужой или
-    /// поправленный руками граф не должен ронять чтение.
+    /// Lenient parsing: an unrecognized value yields `default`
+    /// (UNAVAILABLE unless stated otherwise) rather than a ValueError — a
+    /// foreign or hand-edited graph must not break reading.
     #[staticmethod]
     #[pyo3(signature = (value, default = None))]
     fn from_value(value: &Bound<'_, PyAny>, default: Option<ResolverStatus>) -> ResolverStatus {

@@ -1,9 +1,10 @@
-//! Декодер того подмножества SCIP, которое нужно резолверу.
+//! A decoder for the subset of SCIP the resolver consumes.
 //!
-//! SCIP (<https://github.com/sourcegraph/scip>) — protobuf-индекс, который
-//! пишет `rust-analyzer scip`. Из каждого occurrence нужны только три вещи:
-//! символ, битовое поле ролей и начало диапазона, — поэтому вместо
-//! protobuf-рантайма формат разбирается напрямую. Номера полей взяты из
+//! SCIP (<https://github.com/sourcegraph/scip>) is the protobuf index emitted
+//! by `rust-analyzer scip`. Only three things are needed per occurrence — the
+//! symbol, the roles bitfield, and the start of the range — so rather than
+//! pull in a protobuf runtime the wire format is decoded directly. The field
+//! numbers come from
 //! `scip.proto`:
 //!
 //! * `Index.documents` = 2
@@ -11,18 +12,18 @@
 //! * `Occurrence.range` = 1 (packed `int32`), `Occurrence.symbol` = 2,
 //!   `Occurrence.symbol_roles` = 3
 //!
-//! Координаты в SCIP 0-based: `[start_line, start_char, ...]`.
+//! Coordinates in SCIP are 0-based: `[start_line, start_char, ...]`.
 
-/// Бит `Occurrence.symbol_roles`, поднятый на месте определения.
+/// The `Occurrence.symbol_roles` bit set at a definition site.
 pub const ROLE_DEFINITION: u32 = 0x1;
 
-// Типы wire-формата, которые мы разбираем.
+// The wire types we handle.
 const WIRE_VARINT: u8 = 0;
 const WIRE_I64: u8 = 1;
 const WIRE_LEN: u8 = 2;
 const WIRE_I32: u8 = 5;
 
-// Номера полей из scip.proto.
+// Field numbers from scip.proto.
 const INDEX_DOCUMENTS: u32 = 2;
 const DOC_RELATIVE_PATH: u32 = 1;
 const DOC_OCCURRENCES: u32 = 2;
@@ -30,10 +31,10 @@ const OCC_RANGE: u32 = 1;
 const OCC_SYMBOL: u32 = 2;
 const OCC_ROLES: u32 = 3;
 
-/// Диапазон occurrence содержит как минимум `[start_line, start_col]`.
+/// An occurrence range carries at least `[start_line, start_col]`.
 const RANGE_MIN_LEN: usize = 2;
 
-/// Одно вхождение символа в документ. Координаты 0-based.
+/// One occurrence of a symbol in a document. Coordinates are 0-based.
 pub struct ScipOccurrence {
     pub symbol: String,
     pub roles: u32,
@@ -46,7 +47,7 @@ enum Field<'a> {
     Bytes(&'a [u8]),
 }
 
-/// Base-128 varint по смещению `i`; None на обрыве буфера.
+/// A base-128 varint at offset `i`; None when the buffer is truncated.
 fn read_varint(buf: &[u8], i: &mut usize) -> Option<u64> {
     let mut shift = 0;
     let mut result: u64 = 0;
@@ -64,10 +65,10 @@ fn read_varint(buf: &[u8], i: &mut usize) -> Option<u64> {
     }
 }
 
-/// Разбирает поля сообщения, отдавая каждое в `visit`.
+/// Iterates a message's fields, handing each to `visit`.
 ///
-/// Неизвестные, но корректные поля тоже отдаются — их просто пропускают.
-/// Битый буфер обрывает обход, а не роняет процесс.
+/// Unknown-but-well-formed fields are yielded too — callers simply skip them.
+/// A corrupt buffer ends the walk rather than crashing the process.
 fn for_each_field(buf: &[u8], mut visit: impl FnMut(u32, Field<'_>)) {
     let mut i = 0;
     while i < buf.len() {
@@ -94,7 +95,7 @@ fn for_each_field(buf: &[u8], mut visit: impl FnMut(u32, Field<'_>)) {
             }
             WIRE_I64 => i += 8,
             WIRE_I32 => i += 4,
-            // Группы (3/4) в SCIP не используются.
+            // Groups (3/4) are not used by SCIP.
             _ => return,
         }
     }
@@ -116,9 +117,9 @@ fn parse_occurrence(buf: &[u8]) -> Option<ScipOccurrence> {
     let mut range: Vec<u64> = Vec::new();
 
     for_each_field(buf, |field_number, value| match (field_number, value) {
-        // packed — обычный случай
+        // packed — the common case
         (OCC_RANGE, Field::Bytes(bytes)) => packed_varints(bytes, &mut range),
-        // распакованный вариант тоже допустим
+        // the unpacked variant is valid too
         (OCC_RANGE, Field::Varint(value)) => range.push(value),
         (OCC_SYMBOL, Field::Bytes(bytes)) => {
             symbol = String::from_utf8_lossy(bytes).into_owned();
@@ -157,11 +158,11 @@ fn parse_document(buf: &[u8]) -> (String, Vec<ScipOccurrence>) {
     (relative_path, occurrences)
 }
 
-/// Отдаёт `(relative_path, occurrences)` для каждого документа индекса.
+/// Yields `(relative_path, occurrences)` for every document in the index.
 ///
-/// Документы идут по одному, чтобы вызывающий сворачивал каждый в свои
-/// таблицы и сразу отпускал — на больших воркспейсах индекс сам по себе
-/// весит сотни мегабайт.
+/// Documents are streamed one at a time so the caller can fold each into its
+/// lookup tables and drop it — on large workspaces the index alone weighs
+/// hundreds of megabytes.
 pub fn for_each_document(data: &[u8], mut visit: impl FnMut(String, Vec<ScipOccurrence>)) {
     for_each_field(data, |field_number, value| {
         if field_number == INDEX_DOCUMENTS

@@ -1,13 +1,14 @@
-//! Генератор .pyi. Запускается из dev.sh: `cargo run --bin stub_gen`.
-//! Пути и имя модуля берутся из pyproject.toml, файлы кладутся рядом с python-source.
+//! The .pyi generator, run by `task stubs`: `cargo run --bin stub_gen`.
+//! Paths and the module name come from pyproject.toml; files are written
+//! next to python-source.
 
 use std::fs;
 use std::path::Path;
 
 const STUB: &str = "python/callix/_core/__init__.pyi";
 
-/// Константы модуля, объявленные через `m.add(...)`: pyo3-stub-gen их не
-/// видит, поэтому дописываем руками.
+/// Module constants declared via `m.add(...)`: pyo3-stub-gen does not see
+/// them, so they are appended by hand.
 const CONSTANTS: &str = "\n\
 __version__: builtins.str\n\
 SCHEMA_VERSION: builtins.int\n\
@@ -20,9 +21,9 @@ fn main() -> pyo3_stub_gen::Result<()> {
     let path = Path::new(STUB);
     if path.exists() {
         let mut src = fs::read_to_string(path)?;
-        // pyo3-stub-gen 0.23 приписывает базовому классу исключения префикс
-        // `builtins.`, из-за чего `ResolverTimeout(builtins.ParseError)` не
-        // резолвится тайпчекерами.
+        // pyo3-stub-gen 0.23 prefixes an exception's base class with
+        // `builtins.`, which leaves `ResolverTimeout(builtins.ParseError)`
+        // unresolvable for type checkers.
         src = src.replace("builtins.ParseError", "ParseError");
         src = src.replace("builtins.CallixError", "CallixError");
         if !src.contains("__version__:") {

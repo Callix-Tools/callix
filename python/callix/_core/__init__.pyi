@@ -93,38 +93,37 @@ __all__ = [
 
 class AdapterError(CallixError):
     r"""
-    Ошибка на этапе работы адаптера.
+    Error raised while the adapter was running.
     """
     ...
 
 @typing.final
 class BoundaryRef:
     r"""
-    Один *порт* на межъязыковой границе, найденный в исходнике.
+    A single *port* on a cross-language boundary, found in the source.
     
-    Граница — это контракт между сервисами, который не разрешает ни один
-    компилятор: HTTP-маршрут, gRPC-метод, топик очереди, активность
-    Temporal. Каждая сторона контракта (сервер — `exposes`, клиент —
-    `consumes`) и есть порт.
+    A boundary is a contract between services that no compiler resolves: an
+    HTTP route, a gRPC method, a queue topic, a Temporal activity. Each side
+    of the contract (the server `exposes`, the client `consumes`) is a port.
     
-    Координаты 1-based и указывают на место порта (декоратор маршрута,
-    вызов `fetch`, вызов `publish`), чтобы адаптер смог сопоставить его с
-    объемлющим объявлением.
+    Coordinates are 1-based and point at the port's site (a route decorator,
+    a `fetch` call, a `publish` call) so the adapter can match it to the
+    enclosing declaration.
     """
     @property
     def mechanism(self) -> builtins.str:
         r"""
-        Семейство границы: `http` | `grpc` | `queue` | `temporal`.
+        The boundary family: `http` | `grpc` | `queue` | `temporal`.
         """
     @property
     def role(self) -> builtins.str:
         r"""
-        `server` (предоставляет контракт) или `client` (потребляет).
+        `server` (provides the contract) or `client` (consumes it).
         """
     @property
     def key(self) -> builtins.str:
         r"""
-        Нормализованный ключ сопоставления, например `GET /users/{}`.
+        The normalized matching key, for example `GET /users/{}`.
         """
     @property
     def line(self) -> builtins.int: ...
@@ -133,25 +132,26 @@ class BoundaryRef:
     @property
     def confidence(self) -> builtins.float:
         r"""
-        Уверенность экстрактора: 1.0 — литерал, меньше — вывод по контексту.
+        The extractor's confidence: 1.0 for a literal, less when inferred
+        from context.
         """
     @property
     def detail(self) -> builtins.dict[builtins.str, builtins.str]:
         r"""
-        Человекочитаемый контекст: метод, путь, топик, фреймворк.
+        Human-readable context: method, path, topic, framework.
         """
     def __new__(cls, mechanism: builtins.str, role: builtins.str, key: builtins.str, line: builtins.int, col: builtins.int, confidence: builtins.float = ..., detail: typing.Optional[typing.Mapping[builtins.str, builtins.str]] = None) -> BoundaryRef: ...
     def __repr__(self) -> builtins.str: ...
 
 class CallixError(builtins.Exception):
     r"""
-    Базовая ошибка callix.
+    Base callix error.
     """
     ...
 
 class DuplicateNodeError(CallixError):
     r"""
-    Узел с таким ID уже есть в графе.
+    A node with this ID is already in the graph.
     """
     ...
 
@@ -160,17 +160,17 @@ class EmbeddedTyResolver:
     def __new__(cls, base_prefix: builtins.str) -> EmbeddedTyResolver: ...
     def prepare(self, project_root: builtins.str, files: typing.Optional[typing.Sequence[builtins.str]] = None) -> None:
         r"""
-        Поднимает базу ty для проекта. `files` не используется: ty сам
-        обходит проект по своей конфигурации — в отличие от LSP-версии,
-        которой файлы приходилось открывать по одному.
+        Brings up ty's database for the project. `files` is unused: ty walks
+        the project itself according to its own configuration — unlike the LSP
+        version, which had to open files one at a time.
         """
     def resolve_all(self, queries: typing.Sequence[tuple[builtins.str, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]:
         r"""
-        Батч позиций → определения, порядок сохраняется.
+        A batch of positions → definitions, order preserved.
         """
     def definition_at(self, file: builtins.str, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]:
         r"""
-        Одна позиция → определение.
+        One position → a definition.
         """
     def status(self) -> ResolverStatus: ...
     def __repr__(self) -> builtins.str: ...
@@ -178,13 +178,13 @@ class EmbeddedTyResolver:
 @typing.final
 class GoAdapter:
     r"""
-    Языковой адаптер для Go-проектов.
+    The language adapter for Go projects.
     """
     def __new__(cls, *, resolve: builtins.bool = ...) -> GoAdapter:
         r"""
         Args:
-        resolve: False отключает резолв-фазу — граф останется
-            структурным, а `resolver_status` станет `unavailable`.
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
@@ -192,7 +192,7 @@ class GoAdapter:
     def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
     def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
         r"""
-        Разбирает проект и возвращает граф.
+        Analyses the project and returns the graph.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -201,10 +201,10 @@ class GoResolver:
     def __new__(cls) -> GoResolver: ...
     def prepare(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None) -> None:
         r"""
-        Загружает и типизирует пакеты проекта.
+        Loads and type-checks the project's packages.
         
-        Список файлов не нужен: `go/packages` сам разбирает `go.mod` и
-        подтягивает зависимости.
+        No file list is needed: `go/packages` parses `go.mod` and pulls in the
+        dependencies itself.
         """
     def resolve_all(self, queries: typing.Sequence[tuple[builtins.str | os.PathLike | pathlib.Path, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]: ...
     def definition_at(self, file: builtins.str | os.PathLike | pathlib.Path, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]: ...
@@ -222,86 +222,86 @@ class Graph:
     def __new__(cls) -> Graph: ...
     def add_node(self, node: Node) -> None:
         r"""
-        Добавляет узел; DuplicateNodeError при совпадении ID.
+        Adds a node; raises DuplicateNodeError on an ID collision.
         """
     def add_relation(self, relation: Relation) -> None:
         r"""
-        Добавляет ребро и сбрасывает индексы.
+        Adds an edge and invalidates the indices.
         """
     def merge(self, other: Graph, *, allow_shared: builtins.bool = ...) -> None:
         r"""
-        Вливает другой граф.
+        Merges another graph in.
         
-        `allow_shared=True` разрешает совпадение *идентичных* узлов — так
-        объединяются межъязыковые графы, где адаптеры разных языков намеренно
-        порождают один и тот же BOUNDARY-узел. Коллизия двух *разных* узлов
-        остаётся ошибкой и в этом режиме.
+        `allow_shared=True` permits *identical* nodes to coincide — that is
+        how cross-language graphs are combined, where adapters for different
+        languages deliberately produce the same BOUNDARY node. A collision
+        between two *different* nodes stays an error even in this mode.
         """
     def to_dict(self) -> dict:
         r"""
-        Сериализует граф в JSON-совместимый словарь.
+        Serializes the graph into a JSON-compatible dict.
         """
     def to_json(self, *, indent: typing.Optional[builtins.int] = None) -> builtins.str:
         r"""
-        Сериализует граф в строку JSON.
+        Serializes the graph into a JSON string.
         """
     @staticmethod
     def from_dict(data: dict) -> Graph:
         r"""
-        Восстанавливает граф из вывода `to_dict`.
+        Rebuilds a graph from `to_dict` output.
         """
     @staticmethod
     def from_json(text: builtins.str) -> Graph:
         r"""
-        Восстанавливает граф из вывода `to_json`.
+        Rebuilds a graph from `to_json` output.
         """
     def diff(self, other: Graph) -> GraphDiff:
         r"""
-        Структурный diff от этого графа (старого) к `other`.
+        The structural diff from this graph (the old one) to `other`.
         """
     def outgoing(self, node_id: builtins.str, kind: typing.Optional[RelationKind] = None) -> builtins.list[Relation]:
         r"""
-        Рёбра, исходящие из `node_id`.
+        Edges leaving `node_id`.
         """
     def incoming(self, node_id: builtins.str, kind: typing.Optional[RelationKind] = None) -> builtins.list[Relation]:
         r"""
-        Рёбра, входящие в `node_id`.
+        Edges entering `node_id`.
         """
     def callees(self, node_id: builtins.str) -> builtins.list[Node]:
         r"""
-        Кого вызывает `node_id`.
+        What `node_id` calls.
         """
     def callers(self, node_id: builtins.str) -> builtins.list[Node]:
         r"""
-        Кто вызывает `node_id`.
+        What calls `node_id`.
         """
     def references_to(self, node_id: builtins.str) -> builtins.list[Node]:
         r"""
-        Кто ссылается на `node_id`.
+        What references `node_id`.
         """
     def neighbors(self, node_id: builtins.str, depth: builtins.int = ...) -> builtins.list[Node]:
         r"""
-        Различные узлы в пределах `depth` переходов в любую сторону.
+        Distinct nodes within `depth` hops in either direction.
         """
     def nodes_by_kind(self, kind: NodeKind) -> builtins.list[Node]:
         r"""
-        Все узлы данного вида.
+        Every node of the given kind.
         """
     def nodes_in_file(self, file_path: builtins.str) -> builtins.list[Node]:
         r"""
-        Все узлы, объявленные в файле.
+        Every node declared in the file.
         """
     def nodes_by_name(self, name: builtins.str) -> builtins.list[Node]:
         r"""
-        Узлы, у которых короткое или полное имя равно `name`.
+        Nodes whose short or qualified name equals `name`.
         """
     def subgraph(self, node_ids: typing.Sequence[builtins.str]) -> Graph:
         r"""
-        Новый граф из этих узлов и всех инцидентных им рёбер.
+        A new graph from these nodes and every edge incident to them.
         """
     def subgraph_for_file(self, file_path: builtins.str) -> Graph:
         r"""
-        Подграф из всех узлов файла и их рёбер.
+        The subgraph of every node in the file, plus their edges.
         """
     def __len__(self) -> builtins.int: ...
     def __repr__(self) -> builtins.str: ...
@@ -321,23 +321,23 @@ class GraphDiff:
     @property
     def is_empty(self) -> builtins.bool:
         r"""
-        True, когда графы структурно идентичны.
+        True when the graphs are structurally identical.
         """
     def __repr__(self) -> builtins.str: ...
 
 @typing.final
 class ImportClassifier:
     r"""
-    Определяет происхождение импорта по заранее посчитанным наборам имён.
+    Determines an import's origin from precomputed name sets.
     
-    Значения (ложатся в `Node.metadata["origin"]`): `stdlib`, `internal`,
-    `third_party`, `unknown` — последнее означает «ни в одном наборе»
-    (транзитивная зависимость или её отсутствие).
+    The values (stored in `Node.metadata["origin"]`): `stdlib`, `internal`,
+    `third_party`, `unknown` — the last one meaning "in none of the sets"
+    (a transitive dependency, or no dependency at all).
     """
     def __new__(cls, stdlib: typing.Optional[builtins.set[builtins.str]] = None, third_party: typing.Optional[builtins.set[builtins.str]] = None, internal: typing.Optional[builtins.set[builtins.str]] = None) -> ImportClassifier: ...
     def classify(self, top_level: builtins.str) -> builtins.str:
         r"""
-        Происхождение по имени модуля верхнего уровня.
+        The origin for a top-level module name.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -364,12 +364,13 @@ class Node:
 @typing.final
 class OccurrenceRef:
     r"""
-    Место использования, которое резолвер потом привяжет к определению.
+    A use-site the resolution pass will later bind to a definition.
     
-    Координаты 1-based. Роли:
-    `call` — место вызова функции/метода; `read` — чтение идентификатора;
-    `write` — цель присваивания; `annotation` — аннотация типа или правая
-    часть TypeAlias; `base` — базовый класс в списке наследования.
+    Coordinates are 1-based. Roles:
+    `call` — a function/method call site; `read` — an identifier read;
+    `write` — an assignment target; `annotation` — a type annotation or the
+    right-hand side of a TypeAlias; `base` — a base class in an inheritance
+    list.
     """
     @property
     def role(self) -> builtins.str: ...
@@ -386,29 +387,29 @@ class OccurrenceRef:
 
 class ParseError(CallixError):
     r"""
-    Не удалось разобрать исходник.
+    Could not parse the source.
     """
     ...
 
 @typing.final
 class PythonAdapter:
     r"""
-    Языковой адаптер для Python-проектов.
+    The language adapter for Python projects.
     
-    `analyze()` идёт тремя фазами: структура по каждому корню, затем один
-    резолв на весь вызов, затем границы. Порядок не косметический —
-    см. комментарии внутри.
+    `analyze()` runs in three phases: structure per root, then a single
+    resolution pass for the whole call, then boundaries. The order is not
+    cosmetic — see the comments inside.
     """
     def __new__(cls, dep_parsers: typing.Optional[typing.Any] = None, resolver: typing.Optional[typing.Any] = None, *, resolve: builtins.bool = ...) -> PythonAdapter:
         r"""
         Args:
-        dep_parsers: свои парсеры манифестов (объекты с `can_parse` и
-            `parse`). По умолчанию — встроенные: pyproject.toml,
+        dep_parsers: custom manifest parsers (objects with `can_parse` and
+            `parse`). Defaults to the built-in ones: pyproject.toml,
             requirements*.txt, setup.cfg.
-        resolver: свой резолвер символов (объект с `resolve_all`).
-            По умолчанию — встроенный ty.
-        resolve: False отключает резолв-фазу — граф останется
-            структурным, а `resolver_status` в метаданных станет
+        resolver: a custom symbol resolver (an object with `resolve_all`).
+            Defaults to the embedded ty.
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` in the metadata becomes
             `unavailable`.
         """
     def language(self) -> builtins.str: ...
@@ -416,11 +417,11 @@ class PythonAdapter:
     def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
     def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]:
         r"""
-        Все исходники под корнем, кроме служебных каталогов.
+        Every source under the root, excluding service directories.
         """
     def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
         r"""
-        Разбирает проект и возвращает граф.
+        Analyses the project and returns the graph.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -441,7 +442,7 @@ class Relation:
 @typing.final
 class ResolvedRef:
     r"""
-    Символ, привязанный резолвером к своему определению. Координаты 1-based.
+    A symbol the resolver bound to its definition. Coordinates are 1-based.
     """
     @property
     def full_name(self) -> builtins.str: ...
@@ -463,95 +464,95 @@ class ResolverMetrics:
     @property
     def queries(self) -> builtins.int:
         r"""
-        Позиций отдано резолверу — по одной на место использования.
+        Positions handed to the resolver — one per use-site.
         """
     @queries.setter
     def queries(self, value: builtins.int) -> None:
         r"""
-        Позиций отдано резолверу — по одной на место использования.
+        Positions handed to the resolver — one per use-site.
         """
     @property
     def resolved(self) -> builtins.int:
         r"""
-        Запросов, вернувших определение.
+        Queries that returned a definition.
         """
     @resolved.setter
     def resolved(self, value: builtins.int) -> None:
         r"""
-        Запросов, вернувших определение.
+        Queries that returned a definition.
         """
     @property
     def internal(self) -> builtins.int:
         r"""
-        Определений, привязанных к узлу в графе.
+        Definitions bound to a node in the graph.
         """
     @internal.setter
     def internal(self, value: builtins.int) -> None:
         r"""
-        Определений, привязанных к узлу в графе.
+        Definitions bound to a node in the graph.
         """
     @property
     def external(self) -> builtins.int:
         r"""
-        Определений, ушедших в EXTERNAL_SYMBOL.
+        Definitions that fell through to an EXTERNAL_SYMBOL.
         """
     @external.setter
     def external(self, value: builtins.int) -> None:
         r"""
-        Определений, ушедших в EXTERNAL_SYMBOL.
+        Definitions that fell through to an EXTERNAL_SYMBOL.
         """
     @property
     def unresolved(self) -> builtins.int:
         r"""
-        Запросов, не давших ничего.
+        Queries that returned nothing.
         """
     @unresolved.setter
     def unresolved(self, value: builtins.int) -> None:
         r"""
-        Запросов, не давших ничего.
+        Queries that returned nothing.
         """
     @property
     def seconds(self) -> builtins.float:
         r"""
-        Секунд внутри `resolve_all`.
+        Seconds spent inside `resolve_all`.
         """
     @seconds.setter
     def seconds(self, value: builtins.float) -> None:
         r"""
-        Секунд внутри `resolve_all`.
+        Seconds spent inside `resolve_all`.
         """
     @property
     def resolved_pct(self) -> builtins.float:
         r"""
-        Доля запросов, вернувших определение, в процентах.
+        Share of queries that returned a definition, in percent.
         """
     def __new__(cls, queries: builtins.int = ..., resolved: builtins.int = ..., internal: builtins.int = ..., external: builtins.int = ..., unresolved: builtins.int = ..., seconds: builtins.float = ...) -> ResolverMetrics: ...
     def merge(self, other: ResolverMetrics) -> None:
         r"""
-        Складывает счётчики другого прохода в этот.
+        Folds another pass's counters into this one.
         """
     def as_dict(self) -> dict:
         r"""
-        Плоский словарь для хранения в `graph.metadata`.
+        A flat dict for storage in `graph.metadata`.
         """
     def __repr__(self) -> builtins.str: ...
 
 class ResolverTimeout(ParseError):
     r"""
-    Резолвер не уложился в таймаут.
+    The resolver exceeded its timeout.
     """
     ...
 
 @typing.final
 class RustAdapter:
     r"""
-    Языковой адаптер для Rust-крейтов.
+    The language adapter for Rust crates.
     """
     def __new__(cls, *, resolve: builtins.bool = ...) -> RustAdapter:
         r"""
         Args:
-        resolve: False отключает резолв-фазу — граф останется
-            структурным, а `resolver_status` станет `unavailable`.
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
@@ -559,7 +560,7 @@ class RustAdapter:
     def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
     def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
         r"""
-        Разбирает воркспейс и возвращает граф.
+        Analyses the workspace and returns the graph.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -568,10 +569,10 @@ class RustResolver:
     def __new__(cls) -> RustResolver: ...
     def prepare(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None) -> None:
         r"""
-        Строит индекс SCIP для воркспейса.
+        Builds the SCIP index for the workspace.
         
-        Список файлов не нужен: `rust-analyzer` сам разбирает `Cargo.toml` и
-        индексирует весь воркспейс.
+        No file list is needed: `rust-analyzer` parses `Cargo.toml` and indexes
+        the whole workspace itself.
         """
     def resolve_all(self, queries: typing.Sequence[tuple[builtins.str | os.PathLike | pathlib.Path, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]: ...
     def definition_at(self, file: builtins.str | os.PathLike | pathlib.Path, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]: ...
@@ -580,7 +581,7 @@ class RustResolver:
 
 class SerializationError(CallixError):
     r"""
-    Ошибка (де)сериализации графа.
+    Graph (de)serialization error.
     """
     ...
 
@@ -599,7 +600,7 @@ class Span:
     def __new__(cls, start_line: builtins.int, start_col: builtins.int, end_line: builtins.int, end_col: builtins.int) -> Span: ...
     def contains(self, line: builtins.int, col: builtins.int) -> builtins.bool:
         r"""
-        Содержит ли диапазон позицию (1-based).
+        Whether the range contains the (1-based) position.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -608,32 +609,32 @@ class SpanIndex:
     def __new__(cls) -> SpanIndex: ...
     def add_full(self, file_path: builtins.str, node_id: builtins.str, span: Span) -> None:
         r"""
-        Регистрирует полный экстент узла.
+        Registers a node's full extent.
         """
     def add_name(self, file_path: builtins.str, node_id: builtins.str, name_span: Span) -> None:
         r"""
-        Регистрирует спан имени (идентификатора) узла.
+        Registers a node's name (identifier) span.
         """
     @staticmethod
     def from_graph(graph: Graph) -> SpanIndex:
         r"""
-        Собирает индекс по всем узлам графа, у которых есть спан.
+        Builds the index over every graph node that carries a span.
         """
     def enclosing(self, file_path: builtins.str, line: builtins.int, col: builtins.int) -> typing.Optional[builtins.str]:
         r"""
-        Внутренний узел, чей полный экстент содержит позицию (1-based).
+        The innermost node whose full extent contains the (1-based) position.
         """
     def at(self, file_path: builtins.str, line: builtins.int, col: builtins.int) -> typing.Optional[builtins.str]:
         r"""
-        Узел, чей спан имени содержит позицию (1-based).
+        The node whose name span contains the (1-based) position.
         """
 
 @typing.final
 class TsImportClassifier:
     r"""
-    Определяет происхождение импорта по заранее посчитанным наборам имён.
+    Determines an import's origin from precomputed name sets.
     
-    В отличие от Python, ключом служит имя пакета, выведенное из спецификатора:
+    Unlike Python, the key is the package name derived from the specifier:
     `@scope/pkg/sub` → `@scope/pkg`, `lodash/fp` → `lodash`.
     """
     def __new__(cls, stdlib: typing.Optional[builtins.set[builtins.str]] = None, third_party: typing.Optional[builtins.set[builtins.str]] = None, internal: typing.Optional[builtins.set[builtins.str]] = None) -> TsImportClassifier: ...
@@ -645,16 +646,16 @@ class TsResolver:
     def __new__(cls) -> TsResolver: ...
     def prepare(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None) -> None:
         r"""
-        Поднимает проект: typescript-go сам находит tsconfig.json и строит
-        программу, поэтому список файлов ему не передаётся.
+        Brings the project up: typescript-go finds tsconfig.json and builds
+        the program itself, so no file list is passed to it.
         """
     def resolve_all(self, queries: typing.Sequence[tuple[builtins.str | os.PathLike | pathlib.Path, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]:
         r"""
-        Батч позиций → определения, порядок сохраняется.
+        A batch of positions → definitions, order preserved.
         """
     def definition_at(self, file: builtins.str | os.PathLike | pathlib.Path, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]:
         r"""
-        Одна позиция → определение.
+        One position → a definition.
         """
     def status(self) -> ResolverStatus: ...
     def __repr__(self) -> builtins.str: ...
@@ -662,24 +663,24 @@ class TsResolver:
 @typing.final
 class TypeScriptAdapter:
     r"""
-    Языковой адаптер для TypeScript-проектов.
+    The language adapter for TypeScript projects.
     """
     def __new__(cls, *, resolve: builtins.bool = ...) -> TypeScriptAdapter:
         r"""
         Args:
-        resolve: False отключает резолв-фазу — граф останется
-            структурным, а `resolver_status` станет `unavailable`.
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
     def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
     def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]:
         r"""
-        Исходники под корнем, кроме файлов деклараций.
+        Sources under the root, declaration files excluded.
         """
     def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
         r"""
-        Разбирает проект и возвращает граф.
+        Analyses the project and returns the graph.
         """
     def __repr__(self) -> builtins.str: ...
 
@@ -703,12 +704,12 @@ class NodeKind(enum.Enum):
     @property
     def value(self) -> builtins.str:
         r"""
-        Строковое значение — то же, что у `enum.Enum` в graphlens.
+        The string value — the same one `enum.Enum` carries in graphlens.
         """
     @staticmethod
     def from_value(value: builtins.str) -> NodeKind:
         r"""
-        Разбор из строкового значения; ValueError на неизвестном.
+        Parses from a string value; raises ValueError on an unknown one.
         """
     def __str__(self) -> builtins.str: ...
 
@@ -744,109 +745,110 @@ class ResolverStatus(enum.Enum):
     @staticmethod
     def combine(statuses: typing.Sequence[ResolverStatus]) -> ResolverStatus:
         r"""
-        Худший статус из переданных; пустой список — OK.
+        The worst of the given statuses; an empty list is OK.
         """
     @staticmethod
     def from_value(value: typing.Any, default: typing.Optional[ResolverStatus] = None) -> ResolverStatus:
         r"""
-        Терпимый разбор: нераспознанное значение даёт `default`
-        (по умолчанию UNAVAILABLE), а не ValueError — чужой или
-        поправленный руками граф не должен ронять чтение.
+        Lenient parsing: an unrecognized value yields `default`
+        (UNAVAILABLE unless stated otherwise) rather than a ValueError — a
+        foreign or hand-edited graph must not break reading.
         """
     def __str__(self) -> builtins.str: ...
 
 def apply_boundaries(graph: Graph, files: typing.Sequence[tuple[builtins.str, builtins.str, typing.Sequence[BoundaryRef]]]) -> None:
     r"""
-    Фаза 3: узлы BOUNDARY и рёбра EXPOSES / CONSUMES.
+    Phase 3: BOUNDARY nodes and EXPOSES / CONSUMES edges.
     
-    ID границы выводится только из `mechanism` + `key`, поэтому сервер на
-    одном языке и клиент на другом дают один и тот же узел и склеиваются
-    при слиянии графов.
+    A boundary's ID derives from `mechanism` + `key` alone, so a server in one
+    language and a client in another produce the same node and join up when
+    graphs are merged.
     """
 
 def apply_resolutions(graph: Graph, project_name: builtins.str, project_root: builtins.str | os.PathLike | pathlib.Path, span_index: SpanIndex, occurrences: typing.Sequence[tuple[builtins.str, OccurrenceRef]], refs: typing.Sequence[typing.Optional[ResolvedRef]]) -> ResolverMetrics:
     r"""
-    Фаза 2: превращает ответы резолвера в рёбра.
+    Phase 2: turns resolver answers into edges.
     
-    На каждое место использования: внутреннее определение ищется в
-    `SpanIndex`, всё остальное падает в EXTERNAL_SYMBOL — так ребро не
-    пропадает, даже когда цель вне графа.
+    Per use-site: an internal definition is looked up in the `SpanIndex`,
+    everything else falls through to an EXTERNAL_SYMBOL — so the edge is never
+    lost, even when the target lies outside the graph.
     """
 
 def build_root_structure(graph: Graph, project_root: builtins.str, py_root: builtins.str, files: typing.Sequence[builtins.str], stdlib: builtins.set[builtins.str], third_party: builtins.set[builtins.str]) -> tuple[builtins.str, builtins.list[tuple[builtins.str, OccurrenceRef]], builtins.list[tuple[builtins.str, builtins.str, builtins.list[BoundaryRef]]]]:
     r"""
-    Фаза 1: структура и импорты одного корня Python-проекта.
+    Phase 1: structure and imports for one Python project root.
     
-    Возвращает `(project_name, [(абсолютный путь, место использования)])`.
-    Резолв и извлечение границ идут позже и на уровне всего проекта, чтобы
-    один резолвер и полный `SpanIndex` обслуживали все корни сразу.
+    Returns `(project_name, [(absolute path, use-site)])`. Resolution and
+    boundary extraction happen later at project level, so that a single
+    resolver and a full `SpanIndex` serve every root at once.
     """
 
 def classify_go_import(import_path: builtins.str, module_path: typing.Optional[builtins.str] = None, required: typing.Optional[builtins.set[builtins.str]] = None) -> builtins.str:
     r"""
-    Классификация пути импорта Go.
+    Classification of a Go import path.
     """
 
 def classify_rust_import(import_path: builtins.str, crate_name: typing.Optional[builtins.str] = None, deps: typing.Optional[builtins.set[builtins.str]] = None) -> builtins.str:
     r"""
-    Классификация пути `use` — точка входа для проверок.
+    Classification of a `use` path — the entry point for checks.
     """
 
 def collect_python_files(project_root: builtins.str) -> builtins.list[builtins.str]:
     r"""
-    Все Python-файлы под корнем.
+    Every Python file under the root.
     """
 
 def collect_typescript_files_py(project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]:
     r"""
-    Все TypeScript-файлы под корнем, кроме деклараций.
+    Every TypeScript file under the root, declarations excluded.
     """
 
 def detect_project_name(project_root: builtins.str) -> builtins.str: ...
 
 def diff_graphs(old: Graph, new: Graph) -> GraphDiff:
     r"""
-    Структурный diff от `old` к `new`. Порядок внутри каждого списка
-    детерминирован: узлы отсортированы по ID, рёбра — по своему ключу.
+    The structural diff from `old` to `new`. Ordering within each list is
+    deterministic: nodes are sorted by ID, edges by their key.
     """
 
 def ensure_schema_version(data: dict) -> None:
     r"""
-    Падает с SerializationError на неподдерживаемой версии схемы.
+    Fails with SerializationError on an unsupported schema version.
     """
 
 def extract_go_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
     r"""
-    Границы в одном исходнике — точка входа для проверок.
+    Boundaries in a single source — the entry point for checks.
     """
 
 def extract_python_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
     r"""
-    Границы в одном исходнике — точка входа для проверок и внешних вызовов.
+    Boundaries in a single source — the entry point for checks and external
+    callers.
     """
 
 def extract_rust_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
     r"""
-    Границы в одном исходнике — точка входа для проверок.
+    Boundaries in a single source — the entry point for checks.
     """
 
 def extract_typescript_boundaries(source: bytes, tsx: builtins.bool = ...) -> builtins.list[BoundaryRef]:
     r"""
-    Границы в одном исходнике — точка входа для проверок.
+    Boundaries in a single source — the entry point for checks.
     """
 
 def file_to_qualified_name(file_path: builtins.str, source_root: builtins.str) -> builtins.str: ...
 
 def filter_nested_files(files: typing.Sequence[builtins.str], current_root: builtins.str, project_roots: typing.Sequence[builtins.str]) -> builtins.list[builtins.str]:
     r"""
-    Отбрасывает файлы вложенных корней (родитель не разбирает подпроекты).
+    Drops nested roots' files (a parent does not parse its subprojects).
     """
 
 def find_go_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
 
 def find_python_roots(search_root: builtins.str) -> builtins.list[builtins.str]:
     r"""
-    Корни Python-проектов внутри `search_root` (по одному на подпроект).
+    Python project roots inside `search_root` (one per subproject).
     """
 
 def find_rust_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
@@ -867,15 +869,15 @@ def is_go_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.b
 
 def is_package_init(file_path: builtins.str) -> builtins.bool:
     r"""
-    `__init__.py` или `__init__.pyi`.
+    `__init__.py` or `__init__.pyi`.
     """
 
 def is_python_project(project_root: builtins.str) -> builtins.bool:
     r"""
-    Есть ли под корнем Python: сначала маркеры, потом — любой `.py`.
+    Whether there is Python under the root: markers first, then any `.py`.
     
-    Откат по `.py` нужен для многоязычных монорепозиториев, где в корне
-    нет Python-маркеров, но есть Python-подпакеты рядом с JS/Rust.
+    The `.py` fallback exists for polyglot monorepos whose root carries no
+    Python markers but holds Python subpackages next to JS/Rust.
     """
 
 def is_rust_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
@@ -884,64 +886,66 @@ def is_typescript_project(project_root: builtins.str | os.PathLike | pathlib.Pat
 
 def make_boundary_id(mechanism: builtins.str, key: builtins.str) -> builtins.str:
     r"""
-    Стабильный ID границы — не зависит ни от языка, ни от проекта, поэтому
-    сервер на одном языке и клиент на другом дают один и тот же узел.
+    Stable boundary ID — independent of both language and project, so a
+    server in one language and a client in another produce the same node.
     """
 
 def make_node_id(project_name: builtins.str, qualified_name: builtins.str, kind: builtins.str) -> builtins.str:
     r"""
-    Стабильный ID узла: sha256("{project}::{kind}::{qualified_name}")[:16].
+    Stable node ID: sha256("{project}::{kind}::{qualified_name}")[:16].
     """
 
 def node_from_dict(data: dict) -> Node:
     r"""
-    Обратное к [`node_to_dict`].
+    The inverse of [`node_to_dict`].
     """
 
 def node_to_dict(node: Node) -> dict:
     r"""
-    Сериализует узел в JSON-совместимый словарь.
+    Serializes a node into a JSON-compatible dict.
     """
 
 def normalize_http_path(raw: builtins.str) -> builtins.str:
     r"""
-    Приводит маршрут или URL к ключу, не зависящему от хоста и параметров.
+    Reduces a route or URL to a key independent of host and parameters.
     
-    Убирает схему и хост, query и фрагмент; схлопывает параметры пути всех
-    стилей и конкретные числовые id (`/users/1` встречается с `/users/{}`);
-    снимает завершающий слэш, кроме корня.
+    Strips scheme and host, query and fragment; collapses path parameters of
+    every style along with concrete numeric ids (`/users/1` has to meet
+    `/users/{}`); drops the trailing slash except at the root.
     """
 
 def normalize_pkg_name(name: builtins.str) -> builtins.str:
     r"""
-    Приводит имя дистрибутива к виду, сравнимому с именем импорта.
+    Normalizes a distribution name into a form comparable with an import
+    name.
     
-    Отрезает версии и extras (`requests>=2.0 [security]` → `requests`),
-    переводит в нижний регистр, дефисы меняет на подчёркивания.
-    Scoped-имена npm (`@scope/pkg`) остаются как есть.
+    Strips versions and extras (`requests>=2.0 [security]` → `requests`),
+    lowercases, and turns hyphens into underscores. Scoped npm names
+    (`@scope/pkg`) are left as they are.
     """
 
 def parse_dependencies(project_root: builtins.str) -> builtins.set[builtins.str]:
     r"""
-    Имена сторонних пакетов, объявленных в манифестах корня.
+    Third-party package names declared in the root's manifests.
     """
 
 def relation_from_dict(data: dict) -> Relation:
     r"""
-    Обратное к [`relation_to_dict`].
+    The inverse of [`relation_to_dict`].
     """
 
 def relation_to_dict(relation: Relation) -> dict:
     r"""
-    Сериализует ребро в JSON-совместимый словарь.
+    Serializes an edge into a JSON-compatible dict.
     """
 
 def resolve_relative_import(current_module_qname: builtins.str, level: builtins.int, module: typing.Optional[builtins.str] = None) -> builtins.str:
     r"""
-    Приводит относительный импорт к абсолютному имени.
+    Resolves a relative import to an absolute name.
     
-    `level` — число ведущих точек (1 — текущий пакет, 2 — родительский).
-    Пакет текущего модуля — это все части имени, кроме последней.
+    `level` is the number of leading dots (1 for the current package, 2 for
+    the parent). The current module's package is every part of its name but
+    the last.
     """
 
 def rust_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
@@ -952,7 +956,7 @@ def rust_read_crate_name(root: builtins.str | os.PathLike | pathlib.Path) -> typ
 
 def ts_build_root_structure(graph: Graph, project_root: builtins.str | os.PathLike | pathlib.Path, lang_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Sequence[builtins.str | os.PathLike | pathlib.Path]) -> tuple[builtins.str, builtins.list[tuple[builtins.str, OccurrenceRef]], builtins.list[tuple[builtins.str, builtins.str, builtins.list[BoundaryRef]]]]:
     r"""
-    Структурная фаза одного корня — точка входа для проверок.
+    One root's structural phase — the entry point for checks.
     """
 
 def ts_detect_project_name(project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
@@ -971,16 +975,16 @@ def ts_resolve_relative_import(current_module_qname: builtins.str, import_path: 
 
 def visit_python_file(graph: Graph, project_name: builtins.str, file_path: builtins.str, module_qualified_name: builtins.str, file_node_id: builtins.str, source: bytes, classifier: typing.Optional[ImportClassifier] = None) -> builtins.list[OccurrenceRef]:
     r"""
-    Разбирает один файл и наполняет граф его структурой.
+    Parses one file and fills the graph with its structure.
     
-    Рёбра CALLS/REFERENCES/HAS_TYPE/INHERITS_FROM здесь не создаются —
-    вместо них возвращается список мест использования, который резолв-фаза
-    на стороне Python привяжет к определениям.
+    CALLS/REFERENCES/HAS_TYPE/INHERITS_FROM edges are not created here —
+    instead a list of use-sites is returned, which the resolution pass on the
+    Python side binds to definitions.
     """
 
 def visit_typescript_file(graph: Graph, project_name: builtins.str, file_path: builtins.str, module_qualified_name: builtins.str, file_node_id: builtins.str, source: bytes, source_root_name: builtins.str, classifier: typing.Optional[TsImportClassifier] = None, modules: typing.Optional[typing.Mapping[builtins.str, builtins.str]] = None, path_aliases: typing.Optional[typing.Mapping[builtins.str, builtins.str]] = None, tsx: builtins.bool = ...) -> builtins.list[OccurrenceRef]:
     r"""
-    Разбирает один TypeScript-файл и наполняет граф его структурой.
+    Parses one TypeScript file and fills the graph with its structure.
     """
 
 

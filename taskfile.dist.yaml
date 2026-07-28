@@ -1,0 +1,76 @@
+version: "3"
+
+includes:
+  bench:
+    taskfile: benchmarks/Taskfile.yaml
+
+vars:
+  # Сборка релизная не случайно: в debug встроенный ty медленнее примерно
+  # в 15 раз (резолв graphlens — 12.5s против 0.8s), и цикл разработки
+  # превращается в ожидание. DEBUG=1 нужен только под отладчик или для
+  # быстрой проверки компиляции.
+  PROFILE: '{{if eq .DEBUG "1"}}{{else}}--release{{end}}'
+  SCRIPT: '{{default "example/test.py" .CLI_ARGS}}'
+
+tasks:
+  default:
+    desc: Цикл разработки — сборка, стабы, пример (DEBUG=1 для debug-сборки)
+    cmds:
+      - task: build
+      - task: stubs
+      - task: example
+
+  install:
+    desc: Создать venv и поставить maturin
+    cmds:
+      - uv venv
+      - uv pip install maturin
+
+  build:
+    desc: Собрать расширение в venv (DEBUG=1 для debug-сборки)
+    cmds:
+      - |
+        if [[ "{{.DEBUG}}" == "1" ]]; then
+          echo "!! debug-сборка: встроенный ty будет очень медленным"
+        fi
+      - uv run maturin develop --uv {{.PROFILE}}
+
+  stubs:
+    desc: Перегенерировать .pyi из аннотаций pyo3-stub-gen
+    cmds:
+      # Без pyo3/extension-module, иначе бинарь не слинкуется с libpython.
+      - cargo run --quiet --bin stub_gen
+
+  stubs:check:
+    desc: Проверить, что закоммиченные .pyi совпадают со сгенерированными
+    cmds:
+      - task: stubs
+      - git diff --exit-code -- python/callix
+
+  example:
+    desc: Запустить пример (task example -- example/foo.py)
+    cmds:
+      - uv run python {{.SCRIPT}}
+
+  lint:
+    desc: Прогнать clippy
+    # Без `-D warnings`: форматирование местами ручное, а часть подсказок
+    # clippy для этого кода спорна — задача показывает их, но не валит.
+    cmds:
+      - cargo clippy --all-targets
+
+  check:
+    desc: Быстрая проверка компиляции без сборки модуля
+    cmds:
+      - cargo check --all-targets
+
+  test:
+    desc: Тесты Rust плюс smoke-прогон примера
+    cmds:
+      - cargo test
+      - task: example
+
+  clean:
+    desc: Убрать артефакты сборки (клон typescript-go в .ts-go остаётся)
+    cmds:
+      - cargo clean

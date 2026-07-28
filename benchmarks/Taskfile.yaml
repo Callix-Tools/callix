@@ -1,0 +1,67 @@
+version: "3"
+
+vars:
+  RUNNER: '{{.TASKFILE_DIR}}/run_benchmarks.py'
+  MANIFEST: '{{.TASKFILE_DIR}}/projects.json'
+  RESULTS: '{{.TASKFILE_DIR}}/results'
+  WORKDIR: '{{default "/tmp/callix-bench" .WORKDIR}}'
+
+tasks:
+  list:
+    desc: Показать проекты манифеста (LANG=go — только по одному языку)
+    cmds:
+      - python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.LANG}}"
+
+  one:
+    desc: Прогнать один проект (requires PROJECT=owner/name)
+    requires:
+      vars: [PROJECT]
+    cmds:
+      - |
+        name="{{.PROJECT}}"
+        safe="${name//\//__}"
+        mkdir -p {{.RESULTS}}
+        uv run python {{.RUNNER}} analyze \
+          --project "{{.PROJECT}}" \
+          --manifest {{.MANIFEST}} \
+          --workdir {{.WORKDIR}} \
+          --out "{{.RESULTS}}/${safe}.json"
+
+  run:
+    desc: Прогнать все проекты манифеста (LANG=go ограничит одним языком)
+    cmds:
+      - |
+        mkdir -p {{.RESULTS}}
+        python3 {{.RUNNER}} list --manifest {{.MANIFEST}} --lang "{{.LANG}}" |
+        while read -r name; do
+          safe="${name//\//__}"
+          echo "==> $name"
+          # Каждый проект ограничен по времени: один зависший резолвер не
+          # должен съесть прогон и потерять уже собранные результаты.
+          timeout --signal=TERM 1800 uv run python {{.RUNNER}} analyze \
+            --project "$name" \
+            --manifest {{.MANIFEST}} \
+            --workdir {{.WORKDIR}} \
+            --out "{{.RESULTS}}/${safe}.json" \
+            || echo "!! $name не уложился или упал"
+        done
+
+  render:
+    desc: Свести результаты в таблицу README (VERSION=x.y.z для подписи)
+    cmds:
+      - |
+        python3 {{.RUNNER}} render \
+          --results {{.RESULTS}} \
+          --manifest {{.MANIFEST}} \
+          --readme {{.TASKFILE_DIR}}/../README.md \
+          --version "{{default "dev" .VERSION}}"
+
+  show:
+    desc: Напечатать таблицу, не трогая README
+    cmds:
+      - |
+        python3 {{.RUNNER}} render \
+          --results {{.RESULTS}} \
+          --manifest {{.MANIFEST}} \
+          --version "{{default "dev" .VERSION}}" \
+          --print

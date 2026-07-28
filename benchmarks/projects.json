@@ -1,0 +1,61 @@
+{
+  "_comment": "Проекты для нагрузочного бенчмарка: по каждому адаптеру берётся размерный градиент от среднего к большому. Порядок строк в таблице README следует этому файлу, bench.yml проходит по всем записям. 'ref' — тег или ветка; если ссылка пропала, прогон откатывается на ветку по умолчанию и сообщает фактический SHA.",
+  "projects": [
+    {
+      "name": "apache/superset",
+      "repo": "https://github.com/apache/superset",
+      "ref": "6.1.0",
+      "langs": ["python"],
+      "description": "Платформа исследования и визуализации данных (Flask)"
+    },
+    {
+      "name": "colinhacks/zod",
+      "repo": "https://github.com/colinhacks/zod",
+      "ref": "v4.4.3",
+      "langs": ["typescript"],
+      "description": "Схемная валидация, TypeScript-first"
+    },
+    {
+      "name": "gin-gonic/gin",
+      "repo": "https://github.com/gin-gonic/gin",
+      "ref": "v1.12.0",
+      "langs": ["go"],
+      "description": "HTTP-фреймворк (средний, границы HTTP)"
+    },
+    {
+      "name": "casdoor/casdoor",
+      "repo": "https://github.com/casdoor/casdoor",
+      "ref": "v3.98.0",
+      "langs": ["go"],
+      "description": "Управление доступом и SSO (HTTP)"
+    },
+    {
+      "name": "gohugoio/hugo",
+      "repo": "https://github.com/gohugoio/hugo",
+      "ref": "v0.163.3",
+      "langs": ["go"],
+      "description": "Генератор статических сайтов (большой, проверка масштаба)"
+    },
+    {
+      "name": "BurntSushi/ripgrep",
+      "repo": "https://github.com/BurntSushi/ripgrep",
+      "ref": "14.1.1",
+      "langs": ["rust"],
+      "description": "Построчный поиск по дереву (средний CLI)"
+    },
+    {
+      "name": "tokio-rs/axum",
+      "repo": "https://github.com/tokio-rs/axum",
+      "ref": "axum-v0.8.9",
+      "langs": ["rust"],
+      "description": "Асинхронный HTTP-фреймворк (границы HTTP)"
+    },
+    {
+      "name": "astral-sh/ruff",
+      "repo": "https://github.com/astral-sh/ruff",
+      "ref": "0.15.18",
+      "langs": ["rust"],
+      "description": "Линтер и форматтер Python (большой, проверка масштаба)"
+    }
+  ]
+}

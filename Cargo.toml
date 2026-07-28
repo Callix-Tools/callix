@@ -1,0 +1,67 @@
+[package]
+name = "callix"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "callix"
+# rlib нужен, чтобы бинарь-генератор стабов мог слинковаться с библиотекой
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "stub_gen"
+path = "src/bin/stub_gen.rs"
+
+[dependencies]
+indexmap = "2.14.0"
+# indexmap — чтобы graph.nodes отдавался в порядке вставки, как dict в Python
+pyo3 = { version = "0.29.0", features = ["abi3-py313", "indexmap"] }
+pyo3-stub-gen = { version = "0.23.0", default-features = false }
+serde_json = "1.0.151"
+sha2 = "0.11.0"
+streaming-iterator = "0.1.9"
+thiserror = "2.0.19"
+toml = "1.1.3"
+tree-sitter = "0.26.11"
+tree-sitter-go = "0.25.0"
+tree-sitter-python = "0.25.0"
+tree-sitter-rust = "0.24.2"
+tree-sitter-typescript = "0.23.2"
+walkdir = "2.5.0"
+
+# --- ty: тайп-чекер линкуется в модуль, а не поднимается подпроцессом ------
+#
+# Крейты ty_ide / ty_project помечены publish = false и на crates.io не
+# выкладываются, поэтому подключены из git. rev закреплён на коммит,
+# соответствующий тегу ty 0.0.52 — обновление ty требует смены rev во всех
+# записях ниже и сверки результата (см. README).
+
+# Вне workspace ruff фичи get-size2 не наследуются, и ruff_python_ast не
+# собирается: повторяем набор из ruff/Cargo.toml, unification их подтянет.
+[dependencies.get-size2]
+# Ровно 0.10.0: в 0.10.3 get-size2 перешёл на compact_str 0.10, а ruff
+# собран с 0.9 — иначе GetSize не реализуется для CompactString.
+version = "=0.10.0"
+features = ["derive", "smallvec", "hashbrown", "compact-str", "ordermap", "thin-vec"]
+
+[dependencies.ty_ide]
+git = "https://github.com/astral-sh/ruff"
+rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+
+[dependencies.ty_project]
+git = "https://github.com/astral-sh/ruff"
+rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+
+[dependencies.ruff_db]
+git = "https://github.com/astral-sh/ruff"
+rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+# "os" даёт OsSystem — доступ к настоящей файловой системе
+features = ["os"]
+
+[dependencies.ruff_source_file]
+git = "https://github.com/astral-sh/ruff"
+rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+
+[dependencies.ruff_text_size]
+git = "https://github.com/astral-sh/ruff"
+rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["maturin>=1.14,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "callix"
+description = "Polyglot code analysis core"
+requires-python = ">=3.13"
+license = "MIT"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+dependencies = []
+
+[tool.maturin]
+python-source = "python"
+module-name = "callix._core"
+features = ["pyo3/extension-module"]
+strip = true
+include = [{ path = "python/callix/py.typed", format = "wheel" }]

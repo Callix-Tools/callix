@@ -83,7 +83,7 @@ shared machine — indicative, not microbenchmark-grade.
 
 <!-- BENCH:START -->
 
-_Last run: **2026-07-28 09:05 UTC** · callix `0.1.0` · runner `Linux x86_64` · single cold run, indicative only._
+_Last run: **2026-07-28 10:22 UTC** · callix `main` · runner `Linux x86_64` · single cold run, indicative only._
 
 | Project | Lang | Commit | LOC | Files | Nodes | Relations | Time | Peak RSS | KLOC/s | Resolver | Resolved |
 |---|---|---|--:|--:|--:|--:|--:|--:|--:|:--|--:|

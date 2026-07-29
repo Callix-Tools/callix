@@ -156,7 +156,7 @@ fn build_root_structure(
             graph,
             &source,
             &project,
-            &abs_path,
+            &file_rel,
             &module_qname,
             &file_id,
             source_root_name,

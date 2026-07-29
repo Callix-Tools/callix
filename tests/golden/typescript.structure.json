@@ -40,7 +40,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "14b0fbd5fb9a5cf9",
       "kind": "import",
       "metadata": {
@@ -66,7 +66,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "da197e2d16bd93df",
       "kind": "import",
       "metadata": {
@@ -92,7 +92,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "140d285615c1c40a",
       "kind": "import",
       "metadata": {
@@ -118,7 +118,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "d499fec7c4272044",
       "kind": "variable",
       "metadata": {
@@ -142,7 +142,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "f0b2109ffebd6c12",
       "kind": "function",
       "metadata": {
@@ -168,7 +168,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "1f8eb263c893a804",
       "kind": "parameter",
       "metadata": {
@@ -194,7 +194,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "4f4330ec42ff9f50",
       "kind": "variable",
       "metadata": {
@@ -218,7 +218,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "0152fed75d08918b",
       "kind": "function",
       "metadata": {
@@ -244,7 +244,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "74827646143cd909",
       "kind": "parameter",
       "metadata": {
@@ -270,7 +270,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "7c68350bc2566dac",
       "kind": "function",
       "metadata": {
@@ -296,7 +296,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "43f01cae1de3c25e",
       "kind": "parameter",
       "metadata": {
@@ -322,7 +322,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "file_path": "src/service.ts",
       "id": "29754fa897541a63",
       "kind": "variable",
       "metadata": {
@@ -364,7 +364,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "57ae1b858cec9b52",
       "kind": "type_alias",
       "metadata": {
@@ -387,7 +387,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "9a317e6fde3e4f00",
       "kind": "class",
       "metadata": {
@@ -414,7 +414,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "c77f4a5f4e42c089",
       "kind": "method",
       "metadata": {
@@ -437,7 +437,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "5e0c7882ab1da228",
       "kind": "class",
       "metadata": {
@@ -463,7 +463,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "33f5dbfdd3cd064d",
       "kind": "attribute",
       "metadata": {
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "f91e5eb5cadc3f19",
       "kind": "method",
       "metadata": {
@@ -512,7 +512,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "a7fb6dcec4d7b505",
       "kind": "class",
       "metadata": {
@@ -540,7 +540,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "c22ff94437cf7f7d",
       "kind": "attribute",
       "metadata": {
@@ -563,7 +563,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "8d8283edabff3a54",
       "kind": "method",
       "metadata": {
@@ -589,7 +589,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "d6f587cbd34ef290",
       "kind": "parameter",
       "metadata": {
@@ -615,7 +615,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "file_path": "src/store.ts",
       "id": "8ecb3897ce2dcbe5",
       "kind": "method",
       "metadata": {
@@ -870,7 +870,7 @@
         "path": "/engines/{}",
         "role": "client"
       },
-      "source_id": "7c68350bc2566dac",
+      "source_id": "1690a444faecaa80",
       "target_id": "acfc953e2d84d7b4"
     }
   ],

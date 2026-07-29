@@ -12,7 +12,7 @@ node.id              # str, deterministic
 node.kind            # NodeKind
 node.qualified_name  # str, unique within (project, kind)
 node.name            # str, the short name
-node.file_path       # str | None, relative to the project root
+node.file_path       # str | None, always relative to the project root
 node.span            # Span | None
 node.metadata        # dict[str, object]
 ```
@@ -65,6 +65,14 @@ the visitor boundary.
 just the identifier, and that is the one resolution uses: a resolver answers
 with the position of a definition's *name*, so the lookup has to be against
 name spans.
+
+## Paths are relative, always
+
+`file_path` is relative to the root passed to `analyze()`, on every node that
+has one. Nothing machine-specific may enter a graph: an absolute path would make
+two runs of the same source on two machines produce different values, which
+breaks diffing and merging — and would quietly break `nodes_in_file()` for
+callers who pass the relative path the FILE node advertises.
 
 ## Ordering
 

@@ -27,6 +27,7 @@ import argparse
 import collections
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -35,9 +36,32 @@ FIXTURES = HERE / "fixtures"
 GOLDEN = HERE / "golden"
 SUMMARY = GOLDEN / "resolved.summary.json"
 
-#: Language → the executable its resolver needs, if any. YAML has no resolver
-#: at all, so it is absent rather than mapped to None.
-TOOLCHAIN = {"go": "go", "rust": "rust-analyzer"}
+#: Language → the command that proves its resolver's toolchain is usable.
+#: YAML has no resolver at all, so it is absent rather than mapped to None. The
+#: exact argv matters: Go spells it as a subcommand, not a flag.
+TOOLCHAIN = {
+    "go": ["go", "version"],
+    "rust": ["rust-analyzer", "--version"],
+}
+
+
+def toolchain_works(probe: list[str]) -> bool:
+    """
+    Whether the toolchain is not just present but usable.
+
+    Presence on PATH is not enough. `rust-analyzer` there is usually a rustup
+    proxy, which exists whenever any Rust toolchain does and exits with
+    "Unknown binary" when the component itself was never installed — as on a CI
+    runner that set up Rust but not rust-analyzer. Running it tells the two
+    apart.
+    """
+    if shutil.which(probe[0]) is None:
+        return False
+    try:
+        proc = subprocess.run(probe, capture_output=True, timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return proc.returncode == 0
 
 
 def adapters() -> dict:
@@ -125,9 +149,9 @@ def run(update: bool) -> int:
     stored = json.loads(SUMMARY.read_text(encoding="utf-8")) if SUMMARY.exists() else {}
     fresh = dict(stored)
     for lang, cls in langs.items():
-        needs = TOOLCHAIN.get(lang)
-        if needs and shutil.which(needs) is None:
-            print(f"  skipped  {lang} ({needs} not on PATH)")
+        probe = TOOLCHAIN.get(lang)
+        if probe and not toolchain_works(probe):
+            print(f"  skipped  {lang} ({probe[0]} not usable here)")
             continue
         result = summary(lang, cls)
         if update:

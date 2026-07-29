@@ -341,7 +341,7 @@ fn build_root_structure_inner(
             graph,
             &source,
             &project,
-            &abs_path,
+            &file_rel,
             &module_qname,
             &file_id,
             &classifier,
@@ -410,6 +410,20 @@ pub fn apply_resolutions(
     )
 }
 
+/// A resolver's absolute path → a path relative to the project root.
+///
+/// Graph nodes store project-relative paths, so that a graph means the same
+/// thing on another machine. Symlinks are resolved on the way, because a
+/// resolver may answer with a canonicalized path where the walk found a link.
+fn relative_to(file_path: &str, project_root: &Path) -> String {
+    let path = Path::new(file_path);
+    let resolved = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    resolved
+        .strip_prefix(project_root)
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_else(|_| file_path.to_string())
+}
+
 /// The key for an unresolved use-site.
 ///
 /// The file path is mandatory: without it, sites sharing coordinates across
@@ -466,7 +480,11 @@ fn apply_resolutions_inner(
         if reference.origin == "internal"
             && let Some(file_path) = reference.file_path.as_deref()
         {
-            target_id = span_index.lookup_name(file_path, reference.line, reference.col);
+            // The resolver answers with an absolute path while nodes store
+            // project-relative ones, so the lookup has to be converted — the
+            // Go and Rust adapters do the same.
+            let relative = relative_to(file_path, project_root);
+            target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
         match target_id {

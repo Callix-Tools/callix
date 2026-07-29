@@ -39,6 +39,14 @@ Structural graphs (`resolve=False`) of all eight projects, compared per file:
 
 **Every difference is an intentional addition, and there are no others.**
 
+Since that snapshot, one more divergence is deliberate: graphlens stores an
+**absolute** `file_path` on every node its Python and TypeScript visitors
+create, while the FILE node beside it is relative. callix makes all of them
+relative. A graph is supposed to mean the same thing on another machine, and
+`nodes_in_file("pkg/models.py")` is supposed to return the declarations in that
+file rather than only the file itself. Expect Python and TypeScript file hashes
+to differ from graphlens for that reason.
+
 For Python and TypeScript the file-level hashes are identical throughout — not
 one file differs — so parity with graphlens holds exactly where it was
 established. The only extra nodes are the DEPENDENCY nodes callix emits from

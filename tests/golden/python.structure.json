@@ -58,7 +58,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "ef8f88880d32ef06",
       "kind": "import",
       "metadata": {
@@ -85,7 +85,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "d757c2139efb556c",
       "kind": "import",
       "metadata": {
@@ -112,7 +112,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "837a27e6073cc304",
       "kind": "type_alias",
       "metadata": {
@@ -136,7 +136,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "da95eb6421f25446",
       "kind": "variable",
       "metadata": {
@@ -160,7 +160,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "4d9310739e796167",
       "kind": "class",
       "metadata": {
@@ -187,7 +187,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "326c705cb9f3c0c5",
       "kind": "attribute",
       "metadata": {
@@ -211,7 +211,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "9fd9651ff6d557a5",
       "kind": "method",
       "metadata": {
@@ -240,7 +240,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "8c521b86b77eb243",
       "kind": "parameter",
       "metadata": {
@@ -268,7 +268,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "7f60ae75b77ce17c",
       "kind": "class",
       "metadata": {
@@ -297,7 +297,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "e86ccccefa632fb2",
       "kind": "method",
       "metadata": {
@@ -326,7 +326,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "b4ca0fba6eaa26e4",
       "kind": "parameter",
       "metadata": {
@@ -354,7 +354,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "3091b1194e04de2d",
       "kind": "parameter",
       "metadata": {
@@ -382,7 +382,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "6e3ff566f2180332",
       "kind": "attribute",
       "metadata": {
@@ -406,7 +406,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "61af6f92e0da26be",
       "kind": "method",
       "metadata": {
@@ -435,7 +435,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "file_path": "pkg/models.py",
       "id": "645f04ca09f12b7b",
       "kind": "parameter",
       "metadata": {
@@ -481,7 +481,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "f5c15adc484433c2",
       "kind": "import",
       "metadata": {
@@ -508,7 +508,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "13e5a833ee949eaf",
       "kind": "import",
       "metadata": {
@@ -524,7 +524,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "65344dce940e3e99",
       "kind": "import",
       "metadata": {
@@ -540,7 +540,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "a245d18f5ab39e82",
       "kind": "import",
       "metadata": {
@@ -556,7 +556,7 @@
       "span": null
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "1f108108e0840568",
       "kind": "function",
       "metadata": {
@@ -585,7 +585,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "08752d85b13c9139",
       "kind": "parameter",
       "metadata": {
@@ -613,7 +613,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "2ba5c8800b156d6a",
       "kind": "variable",
       "metadata": {
@@ -637,7 +637,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "5edf2ead125bf126",
       "kind": "function",
       "metadata": {
@@ -666,7 +666,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "c9508f5b4b67f4ac",
       "kind": "parameter",
       "metadata": {
@@ -694,7 +694,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "b9f76a47632173c1",
       "kind": "function",
       "metadata": {
@@ -723,7 +723,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "f8f50a6bed31665f",
       "kind": "parameter",
       "metadata": {
@@ -751,7 +751,7 @@
       ]
     },
     {
-      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "file_path": "pkg/service.py",
       "id": "3f19dac69e1b3de8",
       "kind": "variable",
       "metadata": {
@@ -1076,7 +1076,7 @@
         "path": "/engines/{}",
         "role": "client"
       },
-      "source_id": "b9f76a47632173c1",
+      "source_id": "fd99ce866fe5afd6",
       "target_id": "acfc953e2d84d7b4"
     }
   ],

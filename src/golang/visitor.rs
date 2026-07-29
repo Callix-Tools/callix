@@ -95,9 +95,10 @@ pub struct GoExtractor<'a> {
     module_path: Option<&'a str>,
     required: &'a HashSet<String>,
     occurrences: Vec<OccurrenceRef>,
-    /// `(import node id, path)` for internal imports: the adapter substitutes
-    /// the real MODULE node once every package exists.
-    internal_imports: Vec<(String, String)>,
+    /// `(import node id, path, importing file)` for internal imports: the
+    /// adapter substitutes the real MODULE node once every package exists, and
+    /// emits IMPORTS from the file at the same time.
+    internal_imports: Vec<(String, String, String)>,
 }
 
 impl<'a> GoExtractor<'a> {
@@ -128,7 +129,7 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
-    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String)>) {
+    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String, String)>) {
         (self.occurrences, self.internal_imports)
     }
 
@@ -271,6 +272,119 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
+    /// An `annotation` for the leading identifier of a type.
+    ///
+    /// `*S`, `[]S` and `pkg.S` all reduce to the `type_identifier` the
+    /// resolver can bind; a built-in like `string` has none and is skipped.
+    fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
+        if let Some(name_node) = walk_type(type_node, "type_identifier").first() {
+            self.add_occurrence("annotation", *name_node, enclosing_id);
+        }
+    }
+
+    /// PARAMETER nodes for a declaration's parameters, plus their annotations.
+    ///
+    /// Go allows several names per declaration (`a, b int`) and unnamed
+    /// parameters in interfaces; both are handled by walking the names.
+    fn collect_parameters(
+        &mut self,
+        callable: TsNode<'_>,
+        callable_qname: &str,
+        callable_id: &str,
+    ) -> PyResult<()> {
+        let Some(parameters) = callable.child_by_field_name("parameters") else {
+            return Ok(());
+        };
+        for declaration in ts::children(parameters) {
+            if declaration.kind() != "parameter_declaration" {
+                continue;
+            }
+            let type_node = declaration.child_by_field_name("type");
+            let mut cursor = declaration.walk();
+            let names: Vec<TsNode<'_>> = declaration
+                .children_by_field_name("name", &mut cursor)
+                .collect();
+            for name_node in names {
+                let name = self.text(name_node);
+                if name.is_empty() {
+                    continue;
+                }
+                let metadata = PyDict::new(self.py);
+                metadata.set_item("annotation", type_node.map(|n| self.text(n)))?;
+                metadata.set_item("name_span", ts::span(name_node))?;
+
+                let qname = format!("{callable_qname}.{name}");
+                let id = node_id(self.project_name, &qname, NodeKind::Parameter.as_str());
+                if self.graph.has_node(&id) {
+                    continue;
+                }
+                let node = Node {
+                    id: id.clone(),
+                    kind: NodeKind::Parameter,
+                    qualified_name: qname,
+                    name,
+                    file_path: Some(self.file_rel.to_string()),
+                    span: Some(ts::span(declaration)),
+                    metadata: metadata.unbind(),
+                };
+                self.graph.insert_node(id.clone(), Py::new(self.py, node)?);
+                self.push_relation(
+                    callable_id.to_string(),
+                    id.clone(),
+                    RelationKind::Declares,
+                )?;
+                if let Some(type_node) = type_node {
+                    self.record_annotation(type_node, &id);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// The shared tail of a function and a method.
+    fn on_callable(&mut self, node: TsNode<'_>, qname: &str, id: &str) -> PyResult<()> {
+        self.collect_parameters(node, qname, id)?;
+        if let Some(result) = node.child_by_field_name("result") {
+            self.record_annotation(result, id);
+        }
+        self.collect_calls(node, id);
+        self.collect_references(node, id);
+        Ok(())
+    }
+
+    /// ATTRIBUTE nodes for a struct's named fields, plus their annotations.
+    ///
+    /// A field with no name is an embedded type, which `collect_bases` already
+    /// records as a `base` occurrence.
+    fn collect_fields(
+        &mut self,
+        type_node: TsNode<'_>,
+        type_qname: &str,
+        type_id: &str,
+    ) -> PyResult<()> {
+        for list in ts::children(type_node) {
+            if list.kind() != "field_declaration_list" {
+                continue;
+            }
+            for field in ts::children(list) {
+                if field.kind() != "field_declaration" {
+                    continue;
+                }
+                let Some(name_node) = field.child_by_field_name("name") else {
+                    continue;
+                };
+                let name = self.text(name_node);
+                let qname = format!("{type_qname}.{name}");
+                let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
+                self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+                if let Some(field_type) = field.child_by_field_name("type") {
+                    self.record_annotation(field_type, &id);
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn on_function(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name_node) = node.child_by_field_name("name") else {
             return Ok(());
@@ -278,9 +392,7 @@ impl<'a> GoExtractor<'a> {
         let name = self.text(name_node);
         let qname = format!("{}.{name}", self.package_qname);
         let id = self.declare(&qname, &name, NodeKind::Function, node, name_node)?;
-        self.collect_calls(node, &id);
-        self.collect_references(node, &id);
-        Ok(())
+        self.on_callable(node, &qname, &id)
     }
 
     fn on_method(&mut self, node: TsNode<'_>) -> PyResult<()> {
@@ -296,9 +408,7 @@ impl<'a> GoExtractor<'a> {
         };
         let qname = format!("{}.{prefix}{name}", self.package_qname);
         let id = self.declare(&qname, &name, NodeKind::Method, node, name_node)?;
-        self.collect_calls(node, &id);
-        self.collect_references(node, &id);
-        Ok(())
+        self.on_callable(node, &qname, &id)
     }
 
     fn on_type_declaration(&mut self, node: TsNode<'_>) -> PyResult<()> {
@@ -322,6 +432,7 @@ impl<'a> GoExtractor<'a> {
                 && let Some(type_node) = type_node
             {
                 self.collect_bases(type_node, &id);
+                self.collect_fields(type_node, &qname, &id)?;
             }
         }
         Ok(())
@@ -390,9 +501,10 @@ impl<'a> GoExtractor<'a> {
 
         if origin == "internal" {
             // Deferred: bound to the real MODULE node once every package
-            // exists (falling back to an EXTERNAL_SYMBOL otherwise).
+            // exists (falling back to an EXTERNAL_SYMBOL otherwise). IMPORTS
+            // is deferred with it, since it needs the same target.
             self.internal_imports
-                .push((import_id, import_path.to_string()));
+                .push((import_id, import_path.to_string(), self.file_id.to_string()));
             return Ok(());
         }
 
@@ -411,6 +523,7 @@ impl<'a> GoExtractor<'a> {
             };
             self.graph.insert_node(sym_id.clone(), Py::new(self.py, node)?);
         }
+        self.push_relation(self.file_id.to_string(), sym_id.clone(), RelationKind::Imports)?;
         self.push_relation(import_id, sym_id, RelationKind::ResolvesTo)
     }
 

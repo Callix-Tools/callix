@@ -210,7 +210,7 @@ fn build_root_structure(
     let mut packages: IndexMap<String, String> = IndexMap::new();
     let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
-    let mut internal_imports: Vec<(String, String)> = Vec::new();
+    let mut internal_imports: Vec<(String, String, String)> = Vec::new();
 
     for file in files {
         let pkg_qname = package_qname(file, go_root, &module);
@@ -253,11 +253,12 @@ fn build_root_structure(
     // equals the package's qualified name, so a direct lookup suffices.
     // Anything not found falls through to an EXTERNAL_SYMBOL so the edge is
     // never lost.
-    for (import_id, import_path) in internal_imports {
+    for (import_id, import_path, importer_file) in internal_imports {
         let target_id = match packages.get(&import_path) {
             Some(id) => id.clone(),
             None => ensure_external_symbol(py, graph, &project, &import_path, "internal")?,
         };
+        push_relation(py, graph, importer_file, target_id.clone(), RelationKind::Imports)?;
         push_relation(py, graph, import_id, target_id, RelationKind::ResolvesTo)?;
     }
 

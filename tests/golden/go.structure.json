@@ -123,6 +123,30 @@
     },
     {
       "file_path": "service.go",
+      "id": "24bb6123353bf2c5",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "string",
+        "name_span": {
+          "__span__": [
+            13,
+            12,
+            13,
+            18
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "example.com/fixture.Build.region",
+      "span": [
+        13,
+        12,
+        13,
+        25
+      ]
+    },
+    {
+      "file_path": "service.go",
       "id": "39cca0c1a02f9caf",
       "kind": "function",
       "metadata": {
@@ -142,6 +166,30 @@
         1,
         22,
         2
+      ]
+    },
+    {
+      "file_path": "service.go",
+      "id": "1ee7fa95f6c09aa5",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "store.Labeled",
+        "name_span": {
+          "__span__": [
+            20,
+            14,
+            20,
+            18
+          ]
+        }
+      },
+      "name": "item",
+      "qualified_name": "example.com/fixture.Inspect.item",
+      "span": [
+        20,
+        14,
+        20,
+        32
       ]
     },
     {
@@ -273,6 +321,29 @@
     },
     {
       "file_path": "store/store.go",
+      "id": "8fb594ced6d5e405",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            16,
+            2,
+            16,
+            7
+          ]
+        }
+      },
+      "name": "Label",
+      "qualified_name": "example.com/fixture/store.Base.Label",
+      "span": [
+        16,
+        2,
+        16,
+        14
+      ]
+    },
+    {
+      "file_path": "store/store.go",
       "id": "194bc812a3315e31",
       "kind": "method",
       "metadata": {
@@ -315,6 +386,29 @@
         6,
         27,
         2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "5c3b9314b7f1bcf2",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            26,
+            2,
+            26,
+            8
+          ]
+        }
+      },
+      "name": "Region",
+      "qualified_name": "example.com/fixture/store.Engine.Region",
+      "span": [
+        26,
+        2,
+        26,
+        15
       ]
     },
     {
@@ -367,6 +461,12 @@
       "target_id": "33cc48716b1f4a0d"
     },
     {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "13dc1513e51a2e31"
+    },
+    {
       "kind": "resolves_to",
       "metadata": {},
       "source_id": "33cc48716b1f4a0d",
@@ -387,8 +487,20 @@
     {
       "kind": "declares",
       "metadata": {},
+      "source_id": "0448d00da20e0664",
+      "target_id": "24bb6123353bf2c5"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
       "source_id": "cec9e10a50622ace",
       "target_id": "39cca0c1a02f9caf"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "39cca0c1a02f9caf",
+      "target_id": "1ee7fa95f6c09aa5"
     },
     {
       "kind": "declares",
@@ -413,6 +525,12 @@
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
       "target_id": "f6cfce8b5540ec6e"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "13dc1513e51a2e31"
     },
     {
       "kind": "resolves_to",
@@ -442,6 +560,18 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
+      "target_id": "8fb594ced6d5e405"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "31d5b81cc735966e",
+      "target_id": "8fb594ced6d5e405"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
       "target_id": "194bc812a3315e31"
     },
     {
@@ -454,7 +584,25 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
+      "target_id": "5c3b9314b7f1bcf2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "09e9175fa750828c",
+      "target_id": "5c3b9314b7f1bcf2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
       "target_id": "1e4f1fc8faccd845"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "1f7ac2ffecded4f8"
     },
     {
       "kind": "resolves_to",

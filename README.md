@@ -10,8 +10,10 @@ nothing more. It installs with a single `pip install`: Python and TypeScript
 need no external binaries at all, while the Go and Rust resolvers need their
 language's toolchain (see the sections below).
 
-This is a rework of [graphlens](https://github.com/Neko1313/graphlens) that
-moves parsing to Rust. The public API is compatible: the same 14 `NodeKind`s,
+📖 **[Documentation](https://callix-tools.github.io/callix/)**
+
+This is a rework of [graphlens](https://github.com/Neko1313/graphlens) — now
+archived — that moves parsing to Rust. The public API is compatible: the same 14 `NodeKind`s,
 12 `RelationKind`s, the same deterministic IDs (`sha256[:16]`), and the same
 serialization format — a graph from graphlens reads in callix and the other
 way round. The structural part of the graph matches graphlens byte for byte;

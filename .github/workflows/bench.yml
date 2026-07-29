@@ -106,7 +106,13 @@ jobs:
           task build
 
       - name: Benchmark ${{ matrix.lang }}
-        run: task bench:run BENCH_LANG=${{ matrix.lang }}
+        # Only this language's fresh results may go into the artifact. The
+        # checkout also carries the committed ones, and since render merges
+        # every artifact into one directory, a stale copy riding along would
+        # overwrite another language's fresh numbers.
+        run: |
+          rm -rf benchmarks/results
+          task bench:run BENCH_LANG=${{ matrix.lang }}
 
       - name: Report
         if: always()

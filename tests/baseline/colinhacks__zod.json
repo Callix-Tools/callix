@@ -1,0 +1,4040 @@
+{
+  "files": {
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/array.ts": {
+      "hash": "d2dca9c51d5bc5e0",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/benchUtil.ts": {
+      "hash": "674292094408e120",
+      "nodes": 19,
+      "relations": 13
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/boolean.ts": {
+      "hash": "b26ecb3cb47c3412",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/datetime-regex.ts": {
+      "hash": "a301d196e7ab9588",
+      "nodes": 8,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/datetime.ts": {
+      "hash": "e091338474cb3e85",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/discriminated-union.ts": {
+      "hash": "b88cdf629082764d",
+      "nodes": 20,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/error-handling.ts": {
+      "hash": "def692488beb1dcd",
+      "nodes": 8,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/index.ts": {
+      "hash": "04b76308127fec4f",
+      "nodes": 4,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/init.ts": {
+      "hash": "3983b29c8bcbe612",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/instanceof.ts": {
+      "hash": "1fa65b04b55df5aa",
+      "nodes": 31,
+      "relations": 16
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/ipv4-regex.ts": {
+      "hash": "39561b4d1793f0d5",
+      "nodes": 12,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/jit-union.ts": {
+      "hash": "6faba3ec951da848",
+      "nodes": 10,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/key-iteration.ts": {
+      "hash": "f1602b176b553865",
+      "nodes": 5,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/lazy-box.ts": {
+      "hash": "f2d84f02dda5b509",
+      "nodes": 13,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/libs.ts": {
+      "hash": "c5c1e9a7f5f7dc6d",
+      "nodes": 11,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/metabench.ts": {
+      "hash": "84c9dba653a61e5e",
+      "nodes": 47,
+      "relations": 39
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/number.ts": {
+      "hash": "db913322658c7827",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-async.ts": {
+      "hash": "36035116e0cc1312",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-creation.ts": {
+      "hash": "b714381643d366fb",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-fail.ts": {
+      "hash": "98d31b1b5fcb23c7",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-moltar-jitless.ts": {
+      "hash": "9180a6d7f901d10f",
+      "nodes": 9,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-moltar.ts": {
+      "hash": "2d90ba8d51e57451",
+      "nodes": 9,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-safe.ts": {
+      "hash": "d7e3a672157dac5f",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-safeasync.ts": {
+      "hash": "43ff91c23403c56e",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object-setup.ts": {
+      "hash": "bed871a4b2d21e95",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/object.ts": {
+      "hash": "cf66327666f02951",
+      "nodes": 9,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/property-access.ts": {
+      "hash": "42082d2eafd273e0",
+      "nodes": 9,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/safe.ts": {
+      "hash": "db44bee9020b503e",
+      "nodes": 11,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/safeparse.ts": {
+      "hash": "4aad6acba4e4ac96",
+      "nodes": 5,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/single-element-enum.ts": {
+      "hash": "647cbf78b3891a94",
+      "nodes": 7,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/single-item-union.ts": {
+      "hash": "7e33b671f75516a4",
+      "nodes": 8,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/string.ts": {
+      "hash": "c2195e4ef449e26a",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/bench/union.ts": {
+      "hash": "e3776b7eeadf011a",
+      "nodes": 4,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/(doc)/[[...slug]]/page.tsx": {
+      "hash": "2eb76ab12cf22993",
+      "nodes": 31,
+      "relations": 26
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/(doc)/layout.tsx": {
+      "hash": "968719d5e85fd81c",
+      "nodes": 11,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/api/search/route.ts": {
+      "hash": "907180866ba882cb",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/blog/[slug]/page.tsx": {
+      "hash": "e29767e7e702ddbd",
+      "nodes": 19,
+      "relations": 15
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/blog/layout.tsx": {
+      "hash": "eba9a3c9b8628315",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/blog/page.tsx": {
+      "hash": "fdc303c5071ce3c8",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/layout.config.tsx": {
+      "hash": "4f43a94095972ddb",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/layout.tsx": {
+      "hash": "9375d8ab61a489ae",
+      "nodes": 12,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/llms-full.txt/route.ts": {
+      "hash": "6d8dbed571ffecda",
+      "nodes": 12,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/llms.txt/route.ts": {
+      "hash": "9fde109de0a75530",
+      "nodes": 14,
+      "relations": 11
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/not-found.tsx": {
+      "hash": "88a798933b282452",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/app/og.png/route.tsx": {
+      "hash": "214d00e1314bbb9f",
+      "nodes": 7,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/accordion.tsx": {
+      "hash": "09335fbacb510fc2",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/bronze.tsx": {
+      "hash": "ff475857dd0d6537",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/codec-image.tsx": {
+      "hash": "3415122e6b81c09c",
+      "nodes": 7,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/copy-markdown-button.tsx": {
+      "hash": "86bc7ce36cf544fd",
+      "nodes": 8,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/ecosystem.tsx": {
+      "hash": "565c1ea2472c04d8",
+      "nodes": 26,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/featured.tsx": {
+      "hash": "b710fea8223a0fdc",
+      "nodes": 4,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/gold.tsx": {
+      "hash": "4c3f55f3c7db39a2",
+      "nodes": 3,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/heading.tsx": {
+      "hash": "f9997381bfae0407",
+      "nodes": 7,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/hero-logo.tsx": {
+      "hash": "b908fd0480df7ac2",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/if.tsx": {
+      "hash": "77b90ad89ad5253c",
+      "nodes": 3,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/inkeep-bubble.tsx": {
+      "hash": "291daf6a434944fc",
+      "nodes": 6,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/inkeep-search.tsx": {
+      "hash": "5efd8b4e7562609c",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/platinum.tsx": {
+      "hash": "1c95566794c55170",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/scroller.tsx": {
+      "hash": "794b85c401bdbbc2",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/sidebar-item.tsx": {
+      "hash": "ad2c502681694977",
+      "nodes": 8,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/sidebar-logo.tsx": {
+      "hash": "f2fb8d30c611b979",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/silver.tsx": {
+      "hash": "11280cf37621e582",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/tabs.tsx": {
+      "hash": "09779d9bb1d4fc1b",
+      "nodes": 10,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/components/themed-image.tsx": {
+      "hash": "9b7d1c55978fa2f6",
+      "nodes": 7,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/content/api.test.ts": {
+      "hash": "e75844c9bb6c3aa7",
+      "nodes": 77,
+      "relations": 62
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/loaders/get-llm-text.ts": {
+      "hash": "14e31d331834f0c1",
+      "nodes": 18,
+      "relations": 16
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/loaders/source.ts": {
+      "hash": "2b85bd379c2860cf",
+      "nodes": 8,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/loaders/stars.ts": {
+      "hash": "5882c8d3f4aac784",
+      "nodes": 11,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/pages/api/_og.tsx": {
+      "hash": "45372e3e6548b987",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/source.config.ts": {
+      "hash": "15bf7eb1e4b34305",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/docs/vitest.config.ts": {
+      "hash": "d5cf41edb62085d2",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/integration/fixtures/ai-sdk/index.ts": {
+      "hash": "aaf8ff041ff68470",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/integration/fixtures/drizzle-zod/index.ts": {
+      "hash": "8ef1225e50ed618c",
+      "nodes": 8,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/integration/fixtures/internal-types/cjs-test.cts": {
+      "hash": "344662f1d8ed78ac",
+      "nodes": 12,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/integration/fixtures/internal-types/index.ts": {
+      "hash": "dc378289a6963015",
+      "nodes": 12,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/resolution/attw.test.ts": {
+      "hash": "83eb6c2d3e263831",
+      "nodes": 9,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/resolution/src/index.cts": {
+      "hash": "359cdfce084a5620",
+      "nodes": 12,
+      "relations": 27
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/resolution/test-resolution.ts": {
+      "hash": "8cbd8db9a7c7c15d",
+      "nodes": 11,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/resolution/vitest.config.ts": {
+      "hash": "f1c0811c4cca0f78",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/example-mini.ts": {
+      "hash": "7401126910e29354",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/example.ts": {
+      "hash": "3c709a63ca01380c",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/valibot-boolean.ts": {
+      "hash": "f362d16fd734837a",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/valibot-object.ts": {
+      "hash": "81ea51b4805d526d",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/valibot-simple-object.ts": {
+      "hash": "3f5dec00cab0e350",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/valibot-string.ts": {
+      "hash": "2f911685bf312f13",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-boolean.ts": {
+      "hash": "b5adaa95fa2fddf8",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-full.ts": {
+      "hash": "b9a73d0d6fd0bf39",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-locale.ts": {
+      "hash": "bcb8064f849ad5e1",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-locales.ts": {
+      "hash": "7edda1a884e948fd",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-mini-boolean.ts": {
+      "hash": "a10c0dedddd79be4",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-mini-full.ts": {
+      "hash": "1d60b0b3bb756d41",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-mini-object.ts": {
+      "hash": "b3b91a203de58c1a",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-mini-simple-object.ts": {
+      "hash": "28fb3e71dd95d553",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-mini-string.ts": {
+      "hash": "e9a18164f5f218c3",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-object.ts": {
+      "hash": "07e6c774f271bc2f",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod-string.ts": {
+      "hash": "ab5686cb29432fb8",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod3-boolean.ts": {
+      "hash": "938830ff2ae0f004",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod3-full.ts": {
+      "hash": "ae55076daf52a820",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod3-object.ts": {
+      "hash": "00f28d8e05cd6c3c",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/treeshake/zod3-string.ts": {
+      "hash": "ae870188a2e9eaef",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/index.ts": {
+      "hash": "0eb96ca299147f4b",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/lots-of-objects.ts": {
+      "hash": "6eca565722d5b703",
+      "nodes": 4,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/object-with-extend.ts": {
+      "hash": "a753c2ef668a6b37",
+      "nodes": 3,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/omit-extend.ts": {
+      "hash": "a7b20ca8b3256a57",
+      "nodes": 3,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/string.ts": {
+      "hash": "d183935dc9135bc4",
+      "nodes": 3,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bench/strongly-connected.ts": {
+      "hash": "fea4c433748bc6b8",
+      "nodes": 3,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/bisect.ts": {
+      "hash": "a082bce9676acd3c",
+      "nodes": 11,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/tsc/generate.ts": {
+      "hash": "25ee69c31684c18a",
+      "nodes": 74,
+      "relations": 70
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/index.ts": {
+      "hash": "68f4591014ab3e71",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/mini/index.ts": {
+      "hash": "d3ff8c17804da642",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/ZodError.ts": {
+      "hash": "ca103aafa8e909a8",
+      "nodes": 110,
+      "relations": 80
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/datetime.ts": {
+      "hash": "0593c175d5f214cc",
+      "nodes": 8,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/discriminatedUnion.ts": {
+      "hash": "7c4a49d3b04402fb",
+      "nodes": 13,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/index.ts": {
+      "hash": "accf3de8beb48638",
+      "nodes": 11,
+      "relations": 9
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/ipv4.ts": {
+      "hash": "b5a0a9f4a8b06273",
+      "nodes": 12,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/object.ts": {
+      "hash": "7edcb9a08933e64d",
+      "nodes": 8,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/primitives.ts": {
+      "hash": "070c6e046b2a5237",
+      "nodes": 21,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/realworld.ts": {
+      "hash": "e5379b2ceede6dd9",
+      "nodes": 10,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/string.ts": {
+      "hash": "4496d3b3a015626e",
+      "nodes": 12,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/benchmarks/union.ts": {
+      "hash": "522ccc43955a0e8a",
+      "nodes": 13,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/errors.ts": {
+      "hash": "cd5f817aa0850863",
+      "nodes": 6,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/helpers/parseUtil.ts": {
+      "hash": "abb21ab24f7d6685",
+      "nodes": 72,
+      "relations": 48
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/helpers/partialUtil.ts": {
+      "hash": "745429018575c51b",
+      "nodes": 8,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/helpers/typeAliases.ts": {
+      "hash": "186cdc8e2f40d972",
+      "nodes": 2,
+      "relations": 0
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/helpers/util.ts": {
+      "hash": "090dcc28bd401e04",
+      "nodes": 5,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/index.ts": {
+      "hash": "c9c06d7d408b866f",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/locales/en.ts": {
+      "hash": "637eb74fcbafa3c8",
+      "nodes": 8,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/standard-schema.ts": {
+      "hash": "ac20c8acbafce6d9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/Mocker.ts": {
+      "hash": "ac853f016297f4ce",
+      "nodes": 19,
+      "relations": 16
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/all-errors.test.ts": {
+      "hash": "ae0f6d23ff12d2c3",
+      "nodes": 7,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/anyunknown.test.ts": {
+      "hash": "249a657389d8f35d",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/array.test.ts": {
+      "hash": "e13bb75b52b1afc5",
+      "nodes": 11,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/async-parsing.test.ts": {
+      "hash": "fae438214acb5b94",
+      "nodes": 24,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/async-refinements.test.ts": {
+      "hash": "9524996560d93b91",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/base.test.ts": {
+      "hash": "5a40b94c59ed544f",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/bigint.test.ts": {
+      "hash": "8fd3248f8c1041e5",
+      "nodes": 12,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/branded.test.ts": {
+      "hash": "ce0bf385cc560195",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/catch.test.ts": {
+      "hash": "2dc0f3cdaa6fee4b",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/coerce.test.ts": {
+      "hash": "cab90489187c3eb4",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/complex.test.ts": {
+      "hash": "1b647240376ae9ec",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/custom.test.ts": {
+      "hash": "3bc880c43985a22f",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/date.test.ts": {
+      "hash": "56116550a957758a",
+      "nodes": 8,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/deepmasking.test.ts": {
+      "hash": "0868fcd72244fffe",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/default.test.ts": {
+      "hash": "7d90cf20851fbffd",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/description.test.ts": {
+      "hash": "ca65e63ad8f0ee3c",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/discriminated-unions.test.ts": {
+      "hash": "ffc0eae3af952eed",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/enum.test.ts": {
+      "hash": "ed7bcb760699a2e7",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/error.test.ts": {
+      "hash": "fd8756684e75bc1f",
+      "nodes": 11,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/firstparty.test.ts": {
+      "hash": "a16ffd5dd34747bc",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/firstpartyschematypes.test.ts": {
+      "hash": "41418120aec13a81",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/function.test.ts": {
+      "hash": "940c2342b67af03d",
+      "nodes": 10,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/generics.test.ts": {
+      "hash": "f71496a762e78194",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/instanceof.test.ts": {
+      "hash": "96f584e14d3a1317",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/intersection.test.ts": {
+      "hash": "88c8c1a1da86de61",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/language-server.source.ts": {
+      "hash": "cc959fba02a3d194",
+      "nodes": 20,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/language-server.test.ts": {
+      "hash": "d6c2d0b6321f9558",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/literal.test.ts": {
+      "hash": "de3177e91172b87c",
+      "nodes": 8,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/map.test.ts": {
+      "hash": "c3856e5061af3e83",
+      "nodes": 7,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/masking.test.ts": {
+      "hash": "55fc2b044c6545e3",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/mocker.test.ts": {
+      "hash": "f08a9f90edb39879",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/nan.test.ts": {
+      "hash": "08fd677729b5ffca",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/nativeEnum.test.ts": {
+      "hash": "2d0282c32d770cf5",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/nullable.test.ts": {
+      "hash": "d8c799d94f52617f",
+      "nodes": 7,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/number.test.ts": {
+      "hash": "4942911983418937",
+      "nodes": 21,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/object-augmentation.test.ts": {
+      "hash": "f404c21f48e43837",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/object-in-es5-env.test.ts": {
+      "hash": "61c0bff880559701",
+      "nodes": 6,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/object.test.ts": {
+      "hash": "2a2025e529be4c47",
+      "nodes": 7,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/optional.test.ts": {
+      "hash": "7dfea97e761a6e9c",
+      "nodes": 7,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/parseUtil.test.ts": {
+      "hash": "4bd46b4e37647b91",
+      "nodes": 6,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/parser.test.ts": {
+      "hash": "beb7df32ea5ec1bd",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/partials.test.ts": {
+      "hash": "3a9f6cce632306f1",
+      "nodes": 7,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/pickomit.test.ts": {
+      "hash": "fc07deb7ba4569f4",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/pipeline.test.ts": {
+      "hash": "28c3beb62a77f60b",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/preprocess.test.ts": {
+      "hash": "053503324d9e72c8",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/primitive.test.ts": {
+      "hash": "bd247e55ef40b069",
+      "nodes": 32,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/promise.test.ts": {
+      "hash": "f2c94eacb781b65b",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/readonly.test.ts": {
+      "hash": "98ba876ef51ef0bd",
+      "nodes": 8,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/record.test.ts": {
+      "hash": "7b601b4476533442",
+      "nodes": 10,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/recursive.test.ts": {
+      "hash": "59f7ec8cfbd040b4",
+      "nodes": 8,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/refine.test.ts": {
+      "hash": "032dcbfd0277f8f8",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/safeparse.test.ts": {
+      "hash": "871008c2e150c27e",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/set.test.ts": {
+      "hash": "75ae83b8ed7e65bc",
+      "nodes": 12,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/standard-schema.test.ts": {
+      "hash": "3412a91dd79b8999",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/string.test.ts": {
+      "hash": "7f4c763b4daea84c",
+      "nodes": 22,
+      "relations": 9
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/transformer.test.ts": {
+      "hash": "3fcce37e830276d4",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/tuple.test.ts": {
+      "hash": "5e15faf81108162d",
+      "nodes": 8,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/unions.test.ts": {
+      "hash": "434a74379d91b3b8",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/validations.test.ts": {
+      "hash": "2a358f5e9e753823",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/tests/void.test.ts": {
+      "hash": "153db251337d01cd",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v3/types.ts": {
+      "hash": "ca9ed8a62db7174e",
+      "nodes": 1071,
+      "relations": 913
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4-mini/index.ts": {
+      "hash": "c8e75d7dc39bb462",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/checks.ts": {
+      "hash": "b8cda2323e6fc3f9",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/coerce.ts": {
+      "hash": "95b5ed53c6e06ced",
+      "nodes": 17,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/compat.ts": {
+      "hash": "dff1feef0292b749",
+      "nodes": 12,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/errors.ts": {
+      "hash": "305bfa07e8b28a1d",
+      "nodes": 21,
+      "relations": 17
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/external.ts": {
+      "hash": "877886102d12ee18",
+      "nodes": 8,
+      "relations": 9
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/from-json-schema.ts": {
+      "hash": "6c60b911c082fb78",
+      "nodes": 87,
+      "relations": 83
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/index.ts": {
+      "hash": "972d71c39e1599cb",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/iso.ts": {
+      "hash": "56787f218fcf0da7",
+      "nodes": 22,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/parse.ts": {
+      "hash": "7eed69f15dfbb22b",
+      "nodes": 18,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/schemas.ts": {
+      "hash": "bece16753ade30e5",
+      "nodes": 819,
+      "relations": 579
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/anyunknown.test.ts": {
+      "hash": "28f4fbeb63f8c6dc",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/apply.test.ts": {
+      "hash": "12409e257d56345d",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/array.test.ts": {
+      "hash": "431ed861d37bc73b",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/assignability.test.ts": {
+      "hash": "3ef290c0818aacc0",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/async-parsing.test.ts": {
+      "hash": "8e232dad89944278",
+      "nodes": 23,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/async-refinements.test.ts": {
+      "hash": "edaffdae5321feb1",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/base.test.ts": {
+      "hash": "b3ff22203f9e17c8",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/bigint.test.ts": {
+      "hash": "ea8b34a5bf229c67",
+      "nodes": 12,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/brand.test.ts": {
+      "hash": "ae9b6a707fd129f3",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/catch.test.ts": {
+      "hash": "c2c2db5793ebb0d0",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/coalesce.test.ts": {
+      "hash": "e606c9983463d149",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/codec-examples.test.ts": {
+      "hash": "ac2b6365ccc9dd4a",
+      "nodes": 22,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/codec.test.ts": {
+      "hash": "3e278f9b8dbe084b",
+      "nodes": 6,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/coerce.test.ts": {
+      "hash": "9ce976b920ed5c96",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/continuability.test.ts": {
+      "hash": "5925cbab64ccb40a",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/custom.test.ts": {
+      "hash": "eb0f2a19ade44bf0",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/date.test.ts": {
+      "hash": "6db14bb89dc77d62",
+      "nodes": 8,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/datetime.test.ts": {
+      "hash": "3dd7a37bd5d4d05d",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/default.test.ts": {
+      "hash": "fcd5c9512595e63a",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/describe-meta-checks.test.ts": {
+      "hash": "a09b577aa8739b3e",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/description.test.ts": {
+      "hash": "f83de6f49097a3da",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/detached-methods.test.ts": {
+      "hash": "5511d7b2683ebab7",
+      "nodes": 4,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/discriminated-unions.test.ts": {
+      "hash": "3294ade569d69ca2",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/enum.test.ts": {
+      "hash": "afdd9780b4e05b0b",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/error-utils.test.ts": {
+      "hash": "e30a3da8f038504c",
+      "nodes": 10,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/error.test.ts": {
+      "hash": "72bf88e893506597",
+      "nodes": 8,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/file.test.ts": {
+      "hash": "4998a97132ae99d8",
+      "nodes": 11,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/firstparty.test.ts": {
+      "hash": "64d84e84f2a11190",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/fix-json-issue.test.ts": {
+      "hash": "2f5e53826d0c314c",
+      "nodes": 12,
+      "relations": 9
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/from-json-schema.test.ts": {
+      "hash": "0bca9a95f29cb42a",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/function.test.ts": {
+      "hash": "38b5bfc24a6231ed",
+      "nodes": 13,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/generics.test.ts": {
+      "hash": "afe8e68806b07c41",
+      "nodes": 6,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/global-config.test.ts": {
+      "hash": "5e96f2b037a63c6d",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/hash.test.ts": {
+      "hash": "338a57e767cc262e",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/index.test.ts": {
+      "hash": "062aa46c1cd89343",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/instanceof.test.ts": {
+      "hash": "a24c91f0e690cd51",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/intersection.test.ts": {
+      "hash": "c71aa092c6906105",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/jitless-allows-eval.test.ts": {
+      "hash": "f6c6fcb7332f6d31",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/json.test.ts": {
+      "hash": "0656960fdbc00093",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/lazy.test.ts": {
+      "hash": "469ca7d0cc52019e",
+      "nodes": 16,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/literal.test.ts": {
+      "hash": "b8e72279ff7574a3",
+      "nodes": 7,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/locales_ka.test.ts": {
+      "hash": "eb286c6991c9522f",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/locales_ro.test.ts": {
+      "hash": "7e005d7e7e73f81e",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/map.test.ts": {
+      "hash": "2984c67377fe5b5f",
+      "nodes": 11,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/nan.test.ts": {
+      "hash": "892c5d4f288207bc",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/nested-refine.test.ts": {
+      "hash": "decba27eef2cb4e7",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/nonoptional.test.ts": {
+      "hash": "8ce84308dba481ca",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/nullable.test.ts": {
+      "hash": "a6d4b13ed0e39fe5",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/number.test.ts": {
+      "hash": "4ccbd0b6adcf93e0",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/object.test.ts": {
+      "hash": "37a52f31dee8081f",
+      "nodes": 9,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/optional.test.ts": {
+      "hash": "0ecb4d4ceae27f11",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/partial.test.ts": {
+      "hash": "78f5e688de7faf0d",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/pickomit.test.ts": {
+      "hash": "7fea21b880b6d4b6",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/pipe.test.ts": {
+      "hash": "8e57f2bc62364698",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/prefault.test.ts": {
+      "hash": "e7d3716a44b16c0b",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/preprocess-types.test.ts": {
+      "hash": "a027ca3aeb0c3250",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/preprocess.test.ts": {
+      "hash": "14c6833905d2903f",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/primitive.test.ts": {
+      "hash": "b8399792a48efe90",
+      "nodes": 28,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/promise.test.ts": {
+      "hash": "78b6e1e812bdbd19",
+      "nodes": 6,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/prototypes.test.ts": {
+      "hash": "3b41b226d9007ae8",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/readonly.test.ts": {
+      "hash": "e8d67a42fc9333fa",
+      "nodes": 7,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/record.test.ts": {
+      "hash": "c645e185fabe8d9c",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/recursive-types.test.ts": {
+      "hash": "d2747574fd69f597",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/refine.test.ts": {
+      "hash": "d52088d88e949d6e",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/registries.test.ts": {
+      "hash": "633812a079c29b84",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/set.test.ts": {
+      "hash": "7d9d88c592d2ff3c",
+      "nodes": 11,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/standard-schema.test.ts": {
+      "hash": "7f710467fd1a9b6d",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/string-formats.test.ts": {
+      "hash": "c709b21ded020146",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/string.test.ts": {
+      "hash": "c663cb26b30deaee",
+      "nodes": 18,
+      "relations": 9
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/stringbool.test.ts": {
+      "hash": "835e83c69cb82c3b",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/template-literal.test.ts": {
+      "hash": "9853c737f6fb27f5",
+      "nodes": 54,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/to-json-schema-methods.test.ts": {
+      "hash": "54152032ddc46f47",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/to-json-schema.test.ts": {
+      "hash": "17cb571daa83e921",
+      "nodes": 9,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/transform.test.ts": {
+      "hash": "1f341c1b7782ab3a",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/tuple.test.ts": {
+      "hash": "7f407fe91d422ad2",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/union.test.ts": {
+      "hash": "22185f946574589f",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/url.test.ts": {
+      "hash": "f47207e71dbd738c",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/validations.test.ts": {
+      "hash": "fe8f25be99f595e7",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/classic/tests/void.test.ts": {
+      "hash": "b55ef3dafe61435f",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/api.ts": {
+      "hash": "82d5d4b6dc1dd22b",
+      "nodes": 518,
+      "relations": 274
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/checks.ts": {
+      "hash": "eec54558c92791ee",
+      "nodes": 217,
+      "relations": 122
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/config.ts": {
+      "hash": "8635650a2bd64632",
+      "nodes": 7,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/core.ts": {
+      "hash": "673d6bedf6fdae2e",
+      "nodes": 43,
+      "relations": 29
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/doc.ts": {
+      "hash": "1379c6c27e83701b",
+      "nodes": 22,
+      "relations": 22
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/errors.ts": {
+      "hash": "03aee2fface918e6",
+      "nodes": 155,
+      "relations": 112
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/index.ts": {
+      "hash": "4a96b970cbbd0347",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/json-schema-generator.ts": {
+      "hash": "e95d3bf9f9847ea7",
+      "nodes": 34,
+      "relations": 32
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/json-schema-processors.ts": {
+      "hash": "9ad24b60b1b4fd3d",
+      "nodes": 289,
+      "relations": 249
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/json-schema.ts": {
+      "hash": "a8973d0b841aa892",
+      "nodes": 18,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/parse.ts": {
+      "hash": "f67096c4ad855299",
+      "nodes": 53,
+      "relations": 16
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/regexes.ts": {
+      "hash": "aff4832b1c3777da",
+      "nodes": 81,
+      "relations": 17
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/registries.ts": {
+      "hash": "76ee8f97091debd8",
+      "nodes": 38,
+      "relations": 26
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/schemas.ts": {
+      "hash": "ecbe2910c51dac77",
+      "nodes": 924,
+      "relations": 558
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/standard-schema.ts": {
+      "hash": "d20f1560b768094c",
+      "nodes": 5,
+      "relations": 0
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/extend.test.ts": {
+      "hash": "5fdb44fb6056d469",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/index.test.ts": {
+      "hash": "6f46ffe980f4882f",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/be.test.ts": {
+      "hash": "a1ca44e9ded41388",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/el.test.ts": {
+      "hash": "154b7c7cf6d71b61",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/en.test.ts": {
+      "hash": "c84108de9e4d420f",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/es.test.ts": {
+      "hash": "59be84787354df8a",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/fr.test.ts": {
+      "hash": "609c8b345ead70d8",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/he.test.ts": {
+      "hash": "26f070bbdeb40dca",
+      "nodes": 6,
+      "relations": 6
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/hr.test.ts": {
+      "hash": "be3e5e496cda3677",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/nl.test.ts": {
+      "hash": "bed88739373a5872",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/ru.test.ts": {
+      "hash": "6caaf0ca448fd435",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/tr.test.ts": {
+      "hash": "b9a4c167f9eef712",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/locales/uz.test.ts": {
+      "hash": "452c63024f5b4c39",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/record-constructor.test.ts": {
+      "hash": "7a3e9e6942f76eee",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/tests/recursive-tuples.test.ts": {
+      "hash": "b68ce456e14263fd",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/to-json-schema.ts": {
+      "hash": "54fa368de86ac0c0",
+      "nodes": 121,
+      "relations": 106
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/util.ts": {
+      "hash": "444b76e2d2bdbe01",
+      "nodes": 275,
+      "relations": 145
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/versions.ts": {
+      "hash": "9c5ecde065466dd8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/core/zsf.ts": {
+      "hash": "1cc3bfc98242e665",
+      "nodes": 60,
+      "relations": 41
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/index.ts": {
+      "hash": "5479eb31837150fb",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ar.ts": {
+      "hash": "a8f0187fee403ee2",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/az.ts": {
+      "hash": "066b8034d622d5cd",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/be.ts": {
+      "hash": "fea8f5a9fe36a214",
+      "nodes": 20,
+      "relations": 17
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/bg.ts": {
+      "hash": "77dfb38bdde1efde",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ca.ts": {
+      "hash": "11202b1200086882",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/cs.ts": {
+      "hash": "07dcdf0580d0e2bf",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/da.ts": {
+      "hash": "758a97d0cbc4135a",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/de.ts": {
+      "hash": "985b80731709fcae",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/el.ts": {
+      "hash": "8827b6f27385cfee",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/en.ts": {
+      "hash": "becbde4b6b7782e0",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/eo.ts": {
+      "hash": "1abb2b6adab9aae6",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/es.ts": {
+      "hash": "90ab8265a6555200",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/fa.ts": {
+      "hash": "6d21f66139e85a84",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/fi.ts": {
+      "hash": "501e86dbbfeb3a2e",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/fr-CA.ts": {
+      "hash": "321e76a87bc15978",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/fr.ts": {
+      "hash": "94d511f70cf20859",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/he.ts": {
+      "hash": "43b964d30df06887",
+      "nodes": 21,
+      "relations": 20
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/hr.ts": {
+      "hash": "386153290dd007dc",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/hu.ts": {
+      "hash": "25acc06306174de3",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/hy.ts": {
+      "hash": "6a1947dbbf119ac9",
+      "nodes": 20,
+      "relations": 16
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/id.ts": {
+      "hash": "ca9e5abfc761a5b1",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/index.ts": {
+      "hash": "3fc20220257931f5",
+      "nodes": 52,
+      "relations": 52
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/is.ts": {
+      "hash": "04c2173d2bbec218",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/it.ts": {
+      "hash": "d3885f062e8efe48",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ja.ts": {
+      "hash": "a4c6ffca4caaed34",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ka.ts": {
+      "hash": "93a904f6463637ff",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/kh.ts": {
+      "hash": "7293959a05b99f12",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/km.ts": {
+      "hash": "551c6148026539d5",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ko.ts": {
+      "hash": "b554d9631ba71a13",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/lt.ts": {
+      "hash": "e94505151b8f1353",
+      "nodes": 22,
+      "relations": 17
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/mk.ts": {
+      "hash": "5218bd4d2a8fe382",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ms.ts": {
+      "hash": "fe512bbbc5e6b36b",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/nl.ts": {
+      "hash": "d585a4e2745d5341",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/no.ts": {
+      "hash": "88affd29da40f36a",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ota.ts": {
+      "hash": "d2f2ca1eb265da22",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/pl.ts": {
+      "hash": "6c73449f3938a230",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ps.ts": {
+      "hash": "551d193b8f742565",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/pt.ts": {
+      "hash": "541ea3e54f05f6ec",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ro.ts": {
+      "hash": "7af19b1e93461122",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ru.ts": {
+      "hash": "94c4010ea20cc0db",
+      "nodes": 20,
+      "relations": 17
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/sl.ts": {
+      "hash": "e6efc583c739eb22",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/sv.ts": {
+      "hash": "7cba66ccccf8188e",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ta.ts": {
+      "hash": "d54eef74d0537d79",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/th.ts": {
+      "hash": "0caed7284c6cf1d3",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/tr.ts": {
+      "hash": "78a6e43cb1e05887",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ua.ts": {
+      "hash": "0db455a79520f914",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/uk.ts": {
+      "hash": "0de78cb4c96d0bf2",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/ur.ts": {
+      "hash": "50d59c34049ea5cd",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/uz.ts": {
+      "hash": "ac5ecf5a27c4fe05",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/vi.ts": {
+      "hash": "6942c36285ecf2c8",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/yo.ts": {
+      "hash": "ac3f3c2a537fb357",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/zh-CN.ts": {
+      "hash": "4450738759486bdf",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/locales/zh-TW.ts": {
+      "hash": "4b1dc5672d70a2de",
+      "nodes": 9,
+      "relations": 8
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/checks.ts": {
+      "hash": "975290ac112d9f51",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/coerce.ts": {
+      "hash": "b9ae03bf227edb77",
+      "nodes": 12,
+      "relations": 7
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/external.ts": {
+      "hash": "272cc783fb631e8c",
+      "nodes": 4,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/index.ts": {
+      "hash": "25206d034eeaf80f",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/iso.ts": {
+      "hash": "639a1662d75b61d6",
+      "nodes": 22,
+      "relations": 10
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/parse.ts": {
+      "hash": "7a3da856e4652463",
+      "nodes": 1,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/schemas.ts": {
+      "hash": "55e457101d637f9c",
+      "nodes": 459,
+      "relations": 214
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/apply.test.ts": {
+      "hash": "8fd0345981eca3e5",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/assignability.test.ts": {
+      "hash": "e35e9d9550854b47",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/brand.test.ts": {
+      "hash": "cf9b2856393e7b89",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/checks.test.ts": {
+      "hash": "0690157f10f05e9e",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/codec.test.ts": {
+      "hash": "916f1aded25af661",
+      "nodes": 6,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/computed.test.ts": {
+      "hash": "685125d9a44552c8",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/error.test.ts": {
+      "hash": "3381a1e5f0bc6584",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/functions.test.ts": {
+      "hash": "b52f6ed2e0bf4d2b",
+      "nodes": 2,
+      "relations": 2
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/index.test.ts": {
+      "hash": "6f551256e9b47c5b",
+      "nodes": 5,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/number.test.ts": {
+      "hash": "1a0fbb011e8086c1",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/object.test.ts": {
+      "hash": "3de260baa014db90",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/prototypes.test.ts": {
+      "hash": "c6c0598bc197b272",
+      "nodes": 7,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/recursive-types.test.ts": {
+      "hash": "aa57a9a83b464f64",
+      "nodes": 4,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/standard-schema.test.ts": {
+      "hash": "4a77b38e0de940f9",
+      "nodes": 6,
+      "relations": 5
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/src/v4/mini/tests/string.test.ts": {
+      "hash": "8c37d435c65141e5",
+      "nodes": 5,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/packages/zod/vitest.config.ts": {
+      "hash": "d5cf41edb62085d2",
+      "nodes": 3,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/play.ts": {
+      "hash": "ba429ff8834def3a",
+      "nodes": 2,
+      "relations": 1
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/scripts/check-semver.ts": {
+      "hash": "8cf28415fc17a2ce",
+      "nodes": 9,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/scripts/check-versions.ts": {
+      "hash": "17f7529eb381b2a9",
+      "nodes": 17,
+      "relations": 4
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/scripts/fail-on-console.ts": {
+      "hash": "67478b075f122422",
+      "nodes": 5,
+      "relations": 3
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/scripts/write-stub-package-jsons.ts": {
+      "hash": "c359bd59485897b6",
+      "nodes": 18,
+      "relations": 15
+    },
+    "/home/neko/.cache/callix-work/baseline/colinhacks__zod/vitest.config.ts": {
+      "hash": "ffc3a38bbf4a15cf",
+      "nodes": 6,
+      "relations": 5
+    },
+    "packages/bench/array.ts": {
+      "hash": "9d9def5047fb3404",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/bench/benchUtil.ts": {
+      "hash": "b6539bb94fccb8b8",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/bench/boolean.ts": {
+      "hash": "9777319b939f8ea9",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/bench/datetime-regex.ts": {
+      "hash": "2c70e2b357260790",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/bench/datetime.ts": {
+      "hash": "7773ecff0b55f873",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/bench/discriminated-union.ts": {
+      "hash": "85bf979078432cef",
+      "nodes": 1,
+      "relations": 24
+    },
+    "packages/bench/error-handling.ts": {
+      "hash": "3f0db379beed4f20",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/bench/index.ts": {
+      "hash": "fbaffb2aab8edc36",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/bench/init.ts": {
+      "hash": "10af1eff60a7d36e",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/bench/instanceof.ts": {
+      "hash": "aff1649c6bc06b0a",
+      "nodes": 1,
+      "relations": 19
+    },
+    "packages/bench/ipv4-regex.ts": {
+      "hash": "a3da6b29f7997fb5",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/bench/jit-union.ts": {
+      "hash": "71be28e4398b8ad0",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/bench/key-iteration.ts": {
+      "hash": "6a09daf1c42a9381",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/bench/lazy-box.ts": {
+      "hash": "fe60d7995379fe9b",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/bench/libs.ts": {
+      "hash": "3becae0ca1c3ca3d",
+      "nodes": 1,
+      "relations": 17
+    },
+    "packages/bench/metabench.ts": {
+      "hash": "6e228de08914e720",
+      "nodes": 1,
+      "relations": 22
+    },
+    "packages/bench/number.ts": {
+      "hash": "6557295e920a4ca6",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/bench/object-async.ts": {
+      "hash": "515301a2c0453453",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/bench/object-creation.ts": {
+      "hash": "46269a97fd2350c9",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/bench/object-fail.ts": {
+      "hash": "cf2d23aa2c8db98f",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/bench/object-moltar-jitless.ts": {
+      "hash": "746a37b7cc54a0f5",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/bench/object-moltar.ts": {
+      "hash": "120b3548f632f2ae",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/bench/object-safe.ts": {
+      "hash": "1c1a2dc6791ccf41",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/bench/object-safeasync.ts": {
+      "hash": "b523fc73c21fa8f0",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/bench/object-setup.ts": {
+      "hash": "79e21f23c0f1493b",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/bench/object.ts": {
+      "hash": "361e3850442d7fa5",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/bench/property-access.ts": {
+      "hash": "9b019f6d6106a8e1",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/bench/safe.ts": {
+      "hash": "160efbb8bb9942d5",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/bench/safeparse.ts": {
+      "hash": "18a80f1d4240b826",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/bench/single-element-enum.ts": {
+      "hash": "581f6f8da7f8b76e",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/bench/single-item-union.ts": {
+      "hash": "1e2831474da0fe67",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/bench/string.ts": {
+      "hash": "6efad2a853b498f3",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/bench/union.ts": {
+      "hash": "9ac78aa4e6d0e9b1",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/docs/app/(doc)/[[...slug]]/page.tsx": {
+      "hash": "8c419485a6a79a41",
+      "nodes": 1,
+      "relations": 31
+    },
+    "packages/docs/app/(doc)/layout.tsx": {
+      "hash": "07d68d89f73a8e17",
+      "nodes": 1,
+      "relations": 19
+    },
+    "packages/docs/app/api/search/route.ts": {
+      "hash": "10e1c04334cc72ad",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/docs/app/blog/[slug]/page.tsx": {
+      "hash": "8f8e11694ec0cf91",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/docs/app/blog/layout.tsx": {
+      "hash": "97489424ebf8e054",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/docs/app/blog/page.tsx": {
+      "hash": "570b0e341ed7e3ae",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/docs/app/layout.config.tsx": {
+      "hash": "f42d93a3869dbcbc",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/docs/app/layout.tsx": {
+      "hash": "8f9caace9298812b",
+      "nodes": 1,
+      "relations": 22
+    },
+    "packages/docs/app/llms-full.txt/route.ts": {
+      "hash": "80d5e70bec6e705f",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/docs/app/llms.txt/route.ts": {
+      "hash": "dcf830119be63054",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/docs/app/not-found.tsx": {
+      "hash": "4e56c466cc657caa",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/docs/app/og.png/route.tsx": {
+      "hash": "1f721e9addb32765",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/docs/components/accordion.tsx": {
+      "hash": "5ac57caf8817fadd",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/docs/components/bronze.tsx": {
+      "hash": "78c324ab5479dcdd",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/docs/components/codec-image.tsx": {
+      "hash": "9633084e76230375",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/docs/components/copy-markdown-button.tsx": {
+      "hash": "68bea1f2a1bde91c",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/docs/components/ecosystem.tsx": {
+      "hash": "03bbd62ab8b2ba61",
+      "nodes": 1,
+      "relations": 22
+    },
+    "packages/docs/components/featured.tsx": {
+      "hash": "65fd2a959cb5fbbd",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/docs/components/gold.tsx": {
+      "hash": "bab3e5a49d5006e1",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/docs/components/heading.tsx": {
+      "hash": "dd50d7f894d3e1fd",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/docs/components/hero-logo.tsx": {
+      "hash": "beced1e0766473cb",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/docs/components/if.tsx": {
+      "hash": "aeb6dcc78640c4be",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/docs/components/inkeep-bubble.tsx": {
+      "hash": "048263a399e9b51f",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/docs/components/inkeep-search.tsx": {
+      "hash": "4f03eb2fc51a903d",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/docs/components/platinum.tsx": {
+      "hash": "78ba650fc59433eb",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/docs/components/scroller.tsx": {
+      "hash": "3ac003459cd640fc",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/docs/components/sidebar-item.tsx": {
+      "hash": "384895533be992ac",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/docs/components/sidebar-logo.tsx": {
+      "hash": "514f0c0f9b6a6127",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/docs/components/silver.tsx": {
+      "hash": "5ad49d4fcc5226c3",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/docs/components/tabs.tsx": {
+      "hash": "911d09ddddfd0ac6",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/docs/components/themed-image.tsx": {
+      "hash": "44edfab51ca828d8",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/docs/content/api.test.ts": {
+      "hash": "aa76b42b3b02401c",
+      "nodes": 1,
+      "relations": 27
+    },
+    "packages/docs/loaders/get-llm-text.ts": {
+      "hash": "44d573e4f3684d41",
+      "nodes": 1,
+      "relations": 22
+    },
+    "packages/docs/loaders/source.ts": {
+      "hash": "df34137f59967505",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/docs/loaders/stars.ts": {
+      "hash": "dca163ba89731f86",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/docs/pages/api/_og.tsx": {
+      "hash": "bdc0ac2d03349f4d",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/docs/source.config.ts": {
+      "hash": "6af68f2676a06655",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/docs/vitest.config.ts": {
+      "hash": "dad04bbf80b2a47e",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/integration/fixtures/ai-sdk/index.ts": {
+      "hash": "4e2deb5eb507ab92",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/integration/fixtures/drizzle-zod/index.ts": {
+      "hash": "a22fb1f247ed3669",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/integration/fixtures/internal-types/cjs-test.cts": {
+      "hash": "b772ed19ec4ee9ee",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/integration/fixtures/internal-types/index.ts": {
+      "hash": "0b7d0a3fc1419fe6",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/resolution/attw.test.ts": {
+      "hash": "0be3721e67ccc871",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/resolution/src/index.cts": {
+      "hash": "d2b5269d603daaa8",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/resolution/src/index.mts": {
+      "hash": "48a6fd9e98bc002a",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/resolution/src/index.ts": {
+      "hash": "642d8008bb214630",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/resolution/test-resolution.ts": {
+      "hash": "11bbe53eb5396303",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/resolution/vitest.config.ts": {
+      "hash": "4043273bb5c60764",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/treeshake/example-mini.ts": {
+      "hash": "6aaea963ba156a43",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/treeshake/example.ts": {
+      "hash": "8f36efe62909cf74",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/treeshake/valibot-boolean.ts": {
+      "hash": "08861fe632604fee",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/valibot-object.ts": {
+      "hash": "98f7d1cf9efdacdb",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/valibot-simple-object.ts": {
+      "hash": "3507ad75b8ec8c0e",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/valibot-string.ts": {
+      "hash": "72e756713ceea719",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-boolean.ts": {
+      "hash": "45a8ede8b230d641",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-full.ts": {
+      "hash": "d356460462d600a6",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-locale.ts": {
+      "hash": "606402f5f5552cd9",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/treeshake/zod-locales.ts": {
+      "hash": "81da0589ab913e73",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/treeshake/zod-mini-boolean.ts": {
+      "hash": "a45a94c4a6634329",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-mini-full.ts": {
+      "hash": "d09b82161e12fda0",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-mini-object.ts": {
+      "hash": "0683ec66848449ae",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-mini-simple-object.ts": {
+      "hash": "38ca3fcdbbd280aa",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-mini-string.ts": {
+      "hash": "eee9bb9067b81ef4",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-object.ts": {
+      "hash": "2199247bba27bd71",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod-string.ts": {
+      "hash": "23d933aa7000a316",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod3-boolean.ts": {
+      "hash": "5779d75ef54150eb",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod3-full.ts": {
+      "hash": "5c5a9648e23ed27c",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod3-object.ts": {
+      "hash": "8bb2dd470374e1fd",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/treeshake/zod3-string.ts": {
+      "hash": "88a54106b34ae447",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/tsc/bench/index.ts": {
+      "hash": "898d9c971d896816",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/tsc/bench/lots-of-objects.ts": {
+      "hash": "9d79b45c6b402bee",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/tsc/bench/object-with-extend.ts": {
+      "hash": "8c2f01422d2a309a",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/tsc/bench/omit-extend.ts": {
+      "hash": "534c27bfd10e19d0",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/tsc/bench/string.ts": {
+      "hash": "da63835197653878",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/tsc/bench/strongly-connected.ts": {
+      "hash": "6d5bf1bb9c904a2b",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/tsc/bisect.ts": {
+      "hash": "bc26c32e5cacf1c4",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/tsc/extend.ts": {
+      "hash": "bbfb139c1051960a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "packages/tsc/generate.ts": {
+      "hash": "70792b7bb69339fb",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/index.ts": {
+      "hash": "299361e98e482621",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/locales/index.ts": {
+      "hash": "2a3e4335f21d106a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "packages/zod/src/mini/index.ts": {
+      "hash": "6007bf85b4c23e41",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v3/ZodError.ts": {
+      "hash": "e35f58f8c8f76b1f",
+      "nodes": 1,
+      "relations": 45
+    },
+    "packages/zod/src/v3/benchmarks/datetime.ts": {
+      "hash": "408b5fa8f8e398ba",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v3/benchmarks/discriminatedUnion.ts": {
+      "hash": "24da10c82a0b0232",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v3/benchmarks/index.ts": {
+      "hash": "96c3b97bce4b3b85",
+      "nodes": 1,
+      "relations": 20
+    },
+    "packages/zod/src/v3/benchmarks/ipv4.ts": {
+      "hash": "cef8b7fdba6a7a03",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/zod/src/v3/benchmarks/object.ts": {
+      "hash": "4f20d6d6112d5e5b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/benchmarks/primitives.ts": {
+      "hash": "0ab1c6427d6295cd",
+      "nodes": 1,
+      "relations": 24
+    },
+    "packages/zod/src/v3/benchmarks/realworld.ts": {
+      "hash": "b573c5fec0f1c42b",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v3/benchmarks/string.ts": {
+      "hash": "b3953763e1ba788d",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/zod/src/v3/benchmarks/union.ts": {
+      "hash": "6b16c090a536e005",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v3/errors.ts": {
+      "hash": "59d8c25c5c63618a",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/external.ts": {
+      "hash": "835705957d17157c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "packages/zod/src/v3/helpers/enumUtil.ts": {
+      "hash": "1c6aa51f13b74013",
+      "nodes": 1,
+      "relations": 0
+    },
+    "packages/zod/src/v3/helpers/errorUtil.ts": {
+      "hash": "9e95684b8c273f5e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "packages/zod/src/v3/helpers/parseUtil.ts": {
+      "hash": "45ad313f21d4a9b8",
+      "nodes": 1,
+      "relations": 36
+    },
+    "packages/zod/src/v3/helpers/partialUtil.ts": {
+      "hash": "a49d9e8d73282487",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/v3/helpers/typeAliases.ts": {
+      "hash": "4b527abee7089ca4",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v3/helpers/util.ts": {
+      "hash": "bdfa94ff1b823d94",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/zod/src/v3/index.ts": {
+      "hash": "48860ecb229af78c",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v3/locales/en.ts": {
+      "hash": "360156c4fd65c5b3",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v3/standard-schema.ts": {
+      "hash": "51b4437d1bd1d0b0",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/zod/src/v3/tests/Mocker.ts": {
+      "hash": "069d0eb1a3f7242d",
+      "nodes": 1,
+      "relations": 3
+    },
+    "packages/zod/src/v3/tests/all-errors.test.ts": {
+      "hash": "b4048c5b06d7b5df",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v3/tests/anyunknown.test.ts": {
+      "hash": "c8bfdac2e93df394",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/array.test.ts": {
+      "hash": "9e118d0920ee3cfe",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v3/tests/async-parsing.test.ts": {
+      "hash": "f9f877c7c3670d09",
+      "nodes": 1,
+      "relations": 26
+    },
+    "packages/zod/src/v3/tests/async-refinements.test.ts": {
+      "hash": "8749ebdacbc809ac",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/base.test.ts": {
+      "hash": "eccc50a8f8feb3b1",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/bigint.test.ts": {
+      "hash": "638e360e799b9800",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v3/tests/branded.test.ts": {
+      "hash": "bc64b555197f74c3",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/catch.test.ts": {
+      "hash": "66d5c2a10dc9637b",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/coerce.test.ts": {
+      "hash": "231bdcbf3b2ba265",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/complex.test.ts": {
+      "hash": "bfec03a1b9c0ef7a",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/custom.test.ts": {
+      "hash": "1568e384511f6209",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/date.test.ts": {
+      "hash": "5f389ec58a979410",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v3/tests/deepmasking.test.ts": {
+      "hash": "91e887f659eae9f8",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v3/tests/default.test.ts": {
+      "hash": "5160a708f2c8411a",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/description.test.ts": {
+      "hash": "7f28cdf223f8e023",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/discriminated-unions.test.ts": {
+      "hash": "50a0e82f5fd63a91",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/enum.test.ts": {
+      "hash": "5394cc9da3eff196",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/error.test.ts": {
+      "hash": "75f8ae4e8b1ebe37",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v3/tests/firstparty.test.ts": {
+      "hash": "51223385fe459158",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/firstpartyschematypes.test.ts": {
+      "hash": "ec7585882d4f7bc3",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/function.test.ts": {
+      "hash": "c0e10008163203c9",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v3/tests/generics.test.ts": {
+      "hash": "27321f8f63aca0a5",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/instanceof.test.ts": {
+      "hash": "7e708feab80c5493",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/intersection.test.ts": {
+      "hash": "316b2531d1d57c2c",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/language-server.source.ts": {
+      "hash": "8747228c402e1cb6",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/zod/src/v3/tests/language-server.test.ts": {
+      "hash": "4917a0ab425a22a4",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v3/tests/literal.test.ts": {
+      "hash": "456688bd0efd6cf2",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v3/tests/map.test.ts": {
+      "hash": "8d07072741145a31",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/zod/src/v3/tests/masking.test.ts": {
+      "hash": "d543ed9d9543c389",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v3/tests/mocker.test.ts": {
+      "hash": "3d0e8b3491b0333d",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v3/tests/nan.test.ts": {
+      "hash": "e84722b031551789",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/nativeEnum.test.ts": {
+      "hash": "b9a4ac733abea95b",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/nullable.test.ts": {
+      "hash": "d41ad8bcd86eeec9",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/number.test.ts": {
+      "hash": "227db5406c62d83b",
+      "nodes": 1,
+      "relations": 24
+    },
+    "packages/zod/src/v3/tests/object-augmentation.test.ts": {
+      "hash": "e98f1f27e96ce366",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/object-in-es5-env.test.ts": {
+      "hash": "75c84ad6688f9df7",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v3/tests/object.test.ts": {
+      "hash": "4cde84b9545878e7",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v3/tests/optional.test.ts": {
+      "hash": "e924b3099a96fc65",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/parseUtil.test.ts": {
+      "hash": "242ba610ad488d4d",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/zod/src/v3/tests/parser.test.ts": {
+      "hash": "3682cde972045b76",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/partials.test.ts": {
+      "hash": "83d9e0d5d6c592e2",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/zod/src/v3/tests/pickomit.test.ts": {
+      "hash": "7861572b726551cd",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v3/tests/pipeline.test.ts": {
+      "hash": "f45171d9b2a5044b",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/preprocess.test.ts": {
+      "hash": "75e311431ba567f3",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/primitive.test.ts": {
+      "hash": "983c5a044473f147",
+      "nodes": 1,
+      "relations": 37
+    },
+    "packages/zod/src/v3/tests/promise.test.ts": {
+      "hash": "cdd2f23055b1d21b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/tests/readonly.test.ts": {
+      "hash": "a2a8234f434243b9",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/tests/record.test.ts": {
+      "hash": "597c9ff458c7314b",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v3/tests/recursive.test.ts": {
+      "hash": "fc3bda4e54d8cd89",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/tests/refine.test.ts": {
+      "hash": "77148072b5ebab41",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/tests/safeparse.test.ts": {
+      "hash": "b07d6f7757a02ab8",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v3/tests/set.test.ts": {
+      "hash": "f29376395c13d9cf",
+      "nodes": 1,
+      "relations": 17
+    },
+    "packages/zod/src/v3/tests/standard-schema.test.ts": {
+      "hash": "6f9d729e688b6989",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/tests/string.test.ts": {
+      "hash": "102651f8ef558b28",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/zod/src/v3/tests/transformer.test.ts": {
+      "hash": "76f2396b933136b6",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v3/tests/tuple.test.ts": {
+      "hash": "de7c8832c842374a",
+      "nodes": 1,
+      "relations": 13
+    },
+    "packages/zod/src/v3/tests/unions.test.ts": {
+      "hash": "7bd1ccbae137de31",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/validations.test.ts": {
+      "hash": "429e4c6aa49ab529",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v3/tests/void.test.ts": {
+      "hash": "3ad468c37df0ab0f",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v3/types.ts": {
+      "hash": "036a3a7e5a8bcd5a",
+      "nodes": 1,
+      "relations": 289
+    },
+    "packages/zod/src/v4-mini/index.ts": {
+      "hash": "060785ce12e3d366",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/classic/checks.ts": {
+      "hash": "621919f444b900ed",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/classic/coerce.ts": {
+      "hash": "087238a2ff796ff9",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v4/classic/compat.ts": {
+      "hash": "7b8365987d5744a7",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/v4/classic/errors.ts": {
+      "hash": "07f0afe09fdac509",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v4/classic/external.ts": {
+      "hash": "b959e79f5f9a337b",
+      "nodes": 1,
+      "relations": 18
+    },
+    "packages/zod/src/v4/classic/from-json-schema.ts": {
+      "hash": "23df73f0bd8cb506",
+      "nodes": 1,
+      "relations": 28
+    },
+    "packages/zod/src/v4/classic/index.ts": {
+      "hash": "e9b487a8622779c9",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/classic/iso.ts": {
+      "hash": "8301ec7e16ae6219",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/v4/classic/parse.ts": {
+      "hash": "9820406870f5132e",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/zod/src/v4/classic/schemas.ts": {
+      "hash": "191e345069280579",
+      "nodes": 1,
+      "relations": 273
+    },
+    "packages/zod/src/v4/classic/tests/anyunknown.test.ts": {
+      "hash": "b5245857343d1be5",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/apply.test.ts": {
+      "hash": "a564cdc5736bcc8f",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/array.test.ts": {
+      "hash": "c4c1e79b52e88153",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/assignability.test.ts": {
+      "hash": "cc0f2f7dcbafb865",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/async-parsing.test.ts": {
+      "hash": "ec0828f5eb5a5248",
+      "nodes": 1,
+      "relations": 25
+    },
+    "packages/zod/src/v4/classic/tests/async-refinements.test.ts": {
+      "hash": "faf890d75e8ce849",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/base.test.ts": {
+      "hash": "6a27e7194d66d67a",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/bigint.test.ts": {
+      "hash": "a3d3de3ebc3ff2f1",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v4/classic/tests/brand.test.ts": {
+      "hash": "50a4337e8e52b8d6",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/catch.test.ts": {
+      "hash": "997da15ab393ed60",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/coalesce.test.ts": {
+      "hash": "d66d823c81b55b11",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/classic/tests/codec-examples.test.ts": {
+      "hash": "16f72804686a10a4",
+      "nodes": 1,
+      "relations": 23
+    },
+    "packages/zod/src/v4/classic/tests/codec.test.ts": {
+      "hash": "a98b2ce339d8bc84",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/classic/tests/coerce.test.ts": {
+      "hash": "fe352ee15ce52a0c",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/continuability.test.ts": {
+      "hash": "81aa3ccc89a307dc",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/custom.test.ts": {
+      "hash": "8dd23017e40aece9",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/date.test.ts": {
+      "hash": "e99423b1792f74aa",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/classic/tests/datetime.test.ts": {
+      "hash": "0af6a6a7f24c749c",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/default.test.ts": {
+      "hash": "255bc414b54e3c46",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/describe-meta-checks.test.ts": {
+      "hash": "81140b3d1b041a7b",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/description.test.ts": {
+      "hash": "1a3d6abaa43a301f",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/classic/tests/detached-methods.test.ts": {
+      "hash": "2a7be3e097e1f0a6",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/classic/tests/discriminated-unions.test.ts": {
+      "hash": "f71ea933a9112c69",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/enum.test.ts": {
+      "hash": "845848c01c88526e",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/error-utils.test.ts": {
+      "hash": "ad318d1fe7c8ced6",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v4/classic/tests/error.test.ts": {
+      "hash": "f80a5e6c530f547e",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/classic/tests/file.test.ts": {
+      "hash": "d5d47426b12c0d28",
+      "nodes": 1,
+      "relations": 18
+    },
+    "packages/zod/src/v4/classic/tests/firstparty.test.ts": {
+      "hash": "b7c40bef9e1b46aa",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/fix-json-issue.test.ts": {
+      "hash": "645dfeb47789182d",
+      "nodes": 1,
+      "relations": 21
+    },
+    "packages/zod/src/v4/classic/tests/from-json-schema.test.ts": {
+      "hash": "626534f90fe1f330",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/function.test.ts": {
+      "hash": "e103bf67b02b569a",
+      "nodes": 1,
+      "relations": 17
+    },
+    "packages/zod/src/v4/classic/tests/generics.test.ts": {
+      "hash": "25c5e79e5653aa07",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/global-config.test.ts": {
+      "hash": "1e3df5fc24f2838b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/hash.test.ts": {
+      "hash": "2389afd397e7850a",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/index.test.ts": {
+      "hash": "f39bdb917b59b241",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/instanceof.test.ts": {
+      "hash": "310b720079504ff7",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/intersection.test.ts": {
+      "hash": "b6cf5f310b18898e",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/jitless-allows-eval.test.ts": {
+      "hash": "aaf7782518391c73",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/json.test.ts": {
+      "hash": "f2c3bcf15b95251c",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/classic/tests/lazy.test.ts": {
+      "hash": "192614c4aa00d193",
+      "nodes": 1,
+      "relations": 14
+    },
+    "packages/zod/src/v4/classic/tests/literal.test.ts": {
+      "hash": "68b1ea77090a9f15",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/locales_ka.test.ts": {
+      "hash": "bd1ded9be56411d2",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/locales_ro.test.ts": {
+      "hash": "c4068a0f4e4dcc49",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/map.test.ts": {
+      "hash": "7f189a684acd9b12",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v4/classic/tests/nan.test.ts": {
+      "hash": "9dc28ee3b9503985",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/nested-refine.test.ts": {
+      "hash": "9915e5379b83a821",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/nonoptional.test.ts": {
+      "hash": "d6b1d4e7e2f8e90c",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/nullable.test.ts": {
+      "hash": "ff837aa8c70f1056",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/number.test.ts": {
+      "hash": "8b4354987c87e00b",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/object.test.ts": {
+      "hash": "c5785c7b48b18817",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v4/classic/tests/optional.test.ts": {
+      "hash": "a1646a403af3f281",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/partial.test.ts": {
+      "hash": "cb7cc03d540fc7e4",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/pickomit.test.ts": {
+      "hash": "9933e449374507f6",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/pipe.test.ts": {
+      "hash": "7a0854729be6e494",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/prefault.test.ts": {
+      "hash": "d2dbf3ebfeca2296",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/preprocess-types.test.ts": {
+      "hash": "cb38446a28e96e74",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/preprocess.test.ts": {
+      "hash": "a8800a749bbe1386",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/primitive.test.ts": {
+      "hash": "b2160a9858ac4a89",
+      "nodes": 1,
+      "relations": 32
+    },
+    "packages/zod/src/v4/classic/tests/promise.test.ts": {
+      "hash": "fe6590b93ac6f60b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/prototypes.test.ts": {
+      "hash": "c6a0e68a576e15c0",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/classic/tests/readonly.test.ts": {
+      "hash": "305c27e927623492",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/record.test.ts": {
+      "hash": "2188c31c5de8b6bb",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/recursive-types.test.ts": {
+      "hash": "09b956e8d6a53aec",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/refine.test.ts": {
+      "hash": "9c0780f43e165cfd",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/classic/tests/registries.test.ts": {
+      "hash": "9624a15d90cf6711",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/set.test.ts": {
+      "hash": "e92326ab85fe3275",
+      "nodes": 1,
+      "relations": 15
+    },
+    "packages/zod/src/v4/classic/tests/standard-schema.test.ts": {
+      "hash": "b1a72e3546fa1675",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/string-formats.test.ts": {
+      "hash": "457b6b8928041808",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/string.test.ts": {
+      "hash": "ff8489ce1600e3f1",
+      "nodes": 1,
+      "relations": 17
+    },
+    "packages/zod/src/v4/classic/tests/stringbool.test.ts": {
+      "hash": "9b09ccd53f0b20f1",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/template-literal.test.ts": {
+      "hash": "0834b9a0ae07132d",
+      "nodes": 1,
+      "relations": 58
+    },
+    "packages/zod/src/v4/classic/tests/to-json-schema-methods.test.ts": {
+      "hash": "18ba9f8d1fe072b8",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/classic/tests/to-json-schema.test.ts": {
+      "hash": "954eadfe5ae81fc9",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/zod/src/v4/classic/tests/transform.test.ts": {
+      "hash": "f3057af781ef3f5d",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/tuple.test.ts": {
+      "hash": "84a8dd63c4161dab",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/union.test.ts": {
+      "hash": "3555030a6e612452",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/url.test.ts": {
+      "hash": "26905192b179974b",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/classic/tests/validations.test.ts": {
+      "hash": "0858171bda9fcbcd",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/classic/tests/void.test.ts": {
+      "hash": "6a8cd2a3f0ab9e50",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/api.ts": {
+      "hash": "c78a64ae63174709",
+      "nodes": 1,
+      "relations": 256
+    },
+    "packages/zod/src/v4/core/checks.ts": {
+      "hash": "9340948874def64e",
+      "nodes": 1,
+      "relations": 105
+    },
+    "packages/zod/src/v4/core/config.ts": {
+      "hash": "3026f93831710fd4",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/zod/src/v4/core/core.ts": {
+      "hash": "79c6ba5b55a94c8d",
+      "nodes": 1,
+      "relations": 22
+    },
+    "packages/zod/src/v4/core/doc.ts": {
+      "hash": "e188d3a7dab07137",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/core/errors.ts": {
+      "hash": "8fc3b446dd2ae506",
+      "nodes": 1,
+      "relations": 55
+    },
+    "packages/zod/src/v4/core/index.ts": {
+      "hash": "294727ff5b17d9f1",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/core/json-schema-generator.ts": {
+      "hash": "0da5dfeaae773805",
+      "nodes": 1,
+      "relations": 27
+    },
+    "packages/zod/src/v4/core/json-schema-processors.ts": {
+      "hash": "7c1dee22e158a759",
+      "nodes": 1,
+      "relations": 68
+    },
+    "packages/zod/src/v4/core/json-schema.ts": {
+      "hash": "72725f3a369dc66c",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/core/parse.ts": {
+      "hash": "e6e36ea6647ba15d",
+      "nodes": 1,
+      "relations": 45
+    },
+    "packages/zod/src/v4/core/regexes.ts": {
+      "hash": "7ae3c5e0310134fb",
+      "nodes": 1,
+      "relations": 66
+    },
+    "packages/zod/src/v4/core/registries.ts": {
+      "hash": "7789edda3d01ea83",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/v4/core/schemas.ts": {
+      "hash": "828e8af0cb11a4cd",
+      "nodes": 1,
+      "relations": 408
+    },
+    "packages/zod/src/v4/core/standard-schema.ts": {
+      "hash": "547729a377753465",
+      "nodes": 1,
+      "relations": 5
+    },
+    "packages/zod/src/v4/core/tests/extend.test.ts": {
+      "hash": "1f4634a9ab971bce",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/core/tests/index.test.ts": {
+      "hash": "d6f2c61ebdbd88ce",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/be.test.ts": {
+      "hash": "21f368ce138d5f86",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/core/tests/locales/el.test.ts": {
+      "hash": "f5a73d2520be61a8",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/en.test.ts": {
+      "hash": "d950e0c518c892db",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/core/tests/locales/es.test.ts": {
+      "hash": "f01678a002d77fcb",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/fr.test.ts": {
+      "hash": "1a2594fbcaab079b",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/he.test.ts": {
+      "hash": "fe2c414a3701c431",
+      "nodes": 1,
+      "relations": 12
+    },
+    "packages/zod/src/v4/core/tests/locales/hr.test.ts": {
+      "hash": "5828ef0824eeee71",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/nl.test.ts": {
+      "hash": "e4af295174e57391",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/core/tests/locales/ru.test.ts": {
+      "hash": "38c9555f3649e6b6",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/core/tests/locales/tr.test.ts": {
+      "hash": "37803cb666388fb0",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/tests/locales/uz.test.ts": {
+      "hash": "4b6f1920f03a86a8",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/core/tests/record-constructor.test.ts": {
+      "hash": "80e7518921aff3e6",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/core/tests/recursive-tuples.test.ts": {
+      "hash": "fc60f382e2152090",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/core/to-json-schema.ts": {
+      "hash": "d2b0d976e40abef7",
+      "nodes": 1,
+      "relations": 31
+    },
+    "packages/zod/src/v4/core/util.ts": {
+      "hash": "8db2280df3152eef",
+      "nodes": 1,
+      "relations": 140
+    },
+    "packages/zod/src/v4/core/versions.ts": {
+      "hash": "369b6e9c20040475",
+      "nodes": 1,
+      "relations": 1
+    },
+    "packages/zod/src/v4/core/zsf.ts": {
+      "hash": "de3328e526506d68",
+      "nodes": 1,
+      "relations": 19
+    },
+    "packages/zod/src/v4/index.ts": {
+      "hash": "3b01e7537827b5a5",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/locales/ar.ts": {
+      "hash": "90fbb6beb12ea639",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/az.ts": {
+      "hash": "82f4e2560ce179a7",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/be.ts": {
+      "hash": "0bc6dd44986e8348",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/locales/bg.ts": {
+      "hash": "a1789606b868e157",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ca.ts": {
+      "hash": "2d63dd389579ac44",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/cs.ts": {
+      "hash": "0dd75e2b074b8e1c",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/da.ts": {
+      "hash": "204c06c278b94ec1",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/de.ts": {
+      "hash": "96c8f57d20f6c11d",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/el.ts": {
+      "hash": "96127538df8c8661",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/en.ts": {
+      "hash": "07da3ea3c88cee0d",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/eo.ts": {
+      "hash": "d7110438751383db",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/es.ts": {
+      "hash": "b62e84da7713b373",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/fa.ts": {
+      "hash": "a7965da8c5af3192",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/fi.ts": {
+      "hash": "3215e9415bc17a33",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/fr-CA.ts": {
+      "hash": "cb36122173bfd5af",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/fr.ts": {
+      "hash": "57749cb9804645c4",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/he.ts": {
+      "hash": "9cbe6e351516ee05",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/hr.ts": {
+      "hash": "088b6ee8670fe8b2",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/hu.ts": {
+      "hash": "718716be0be3d1f5",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/hy.ts": {
+      "hash": "275b8ff600fb9879",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/locales/id.ts": {
+      "hash": "5b016ab91f98488c",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/index.ts": {
+      "hash": "c14b37d3c22315b0",
+      "nodes": 1,
+      "relations": 104
+    },
+    "packages/zod/src/v4/locales/is.ts": {
+      "hash": "c688850e3f49e3a8",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/it.ts": {
+      "hash": "27b6eaa3ade70928",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ja.ts": {
+      "hash": "216d50cb8a956f59",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ka.ts": {
+      "hash": "477c9cca78ff7f5f",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/kh.ts": {
+      "hash": "b3f65b8ba2ef9a41",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/locales/km.ts": {
+      "hash": "9bf733def72aae8b",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ko.ts": {
+      "hash": "14b4c8cad5bf0bdd",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/lt.ts": {
+      "hash": "a3f06855a1d6a89c",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/locales/mk.ts": {
+      "hash": "2acc8b810a863a86",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ms.ts": {
+      "hash": "1162df189bdb4e37",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/nl.ts": {
+      "hash": "550f6070abd91343",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/no.ts": {
+      "hash": "58fc685e12fa09fd",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ota.ts": {
+      "hash": "f81d55fb442c024e",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/pl.ts": {
+      "hash": "8104ae84aa531e53",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ps.ts": {
+      "hash": "a9759bcef2fc8ddd",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/pt.ts": {
+      "hash": "ca191838ffa10b31",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ro.ts": {
+      "hash": "25c812c61eb24d6c",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ru.ts": {
+      "hash": "09cc9e3f1a2c6516",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/locales/sl.ts": {
+      "hash": "bfc48494d9930391",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/sv.ts": {
+      "hash": "cc503c5c1b29d2c0",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ta.ts": {
+      "hash": "a52e20dd3853e9f5",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/th.ts": {
+      "hash": "8a5646149dcd7db1",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/tr.ts": {
+      "hash": "3aebafc19da5d35a",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ua.ts": {
+      "hash": "363c13ec5fb0286a",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/locales/uk.ts": {
+      "hash": "69fb4a78b2ca41c8",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/ur.ts": {
+      "hash": "569b1ccf030f5027",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/uz.ts": {
+      "hash": "0e98ab56c1398e62",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/vi.ts": {
+      "hash": "3c281b0680daa0a1",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/yo.ts": {
+      "hash": "592213b9b059ae2c",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/zh-CN.ts": {
+      "hash": "4682095be1b5a094",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/locales/zh-TW.ts": {
+      "hash": "799079c42c71ce19",
+      "nodes": 1,
+      "relations": 7
+    },
+    "packages/zod/src/v4/mini/checks.ts": {
+      "hash": "7a8f014f458c906e",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/mini/coerce.ts": {
+      "hash": "73e4007195c8f779",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/mini/external.ts": {
+      "hash": "1a480e95333d3376",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/mini/index.ts": {
+      "hash": "354c1f0b32552e93",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/mini/iso.ts": {
+      "hash": "06fc7062316f8f15",
+      "nodes": 1,
+      "relations": 16
+    },
+    "packages/zod/src/v4/mini/parse.ts": {
+      "hash": "2bfba84264788de6",
+      "nodes": 1,
+      "relations": 2
+    },
+    "packages/zod/src/v4/mini/schemas.ts": {
+      "hash": "b04e9da714416cac",
+      "nodes": 1,
+      "relations": 255
+    },
+    "packages/zod/src/v4/mini/tests/apply.test.ts": {
+      "hash": "1175b0573d543778",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/mini/tests/assignability.test.ts": {
+      "hash": "f6f2e91953ef39fc",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/mini/tests/brand.test.ts": {
+      "hash": "0388ba668ae61ddd",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/mini/tests/checks.test.ts": {
+      "hash": "b1800ea46bfe68a8",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/mini/tests/codec.test.ts": {
+      "hash": "133b57b6a28178ab",
+      "nodes": 1,
+      "relations": 11
+    },
+    "packages/zod/src/v4/mini/tests/computed.test.ts": {
+      "hash": "72c4d85ca29c9436",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/mini/tests/error.test.ts": {
+      "hash": "f7f3f31960673b62",
+      "nodes": 1,
+      "relations": 6
+    },
+    "packages/zod/src/v4/mini/tests/functions.test.ts": {
+      "hash": "921ff29a9d2aa37f",
+      "nodes": 1,
+      "relations": 4
+    },
+    "packages/zod/src/v4/mini/tests/index.test.ts": {
+      "hash": "b9d18dba8f58d96c",
+      "nodes": 1,
+      "relations": 10
+    },
+    "packages/zod/src/v4/mini/tests/number.test.ts": {
+      "hash": "b75845072d2bf3e2",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/mini/tests/object.test.ts": {
+      "hash": "188f46e3cb6d389b",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/mini/tests/prototypes.test.ts": {
+      "hash": "91f6c88775521987",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/mini/tests/recursive-types.test.ts": {
+      "hash": "83bb9cd562abefac",
+      "nodes": 1,
+      "relations": 8
+    },
+    "packages/zod/src/v4/mini/tests/standard-schema.test.ts": {
+      "hash": "97c82a42cef29e04",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/src/v4/mini/tests/string.test.ts": {
+      "hash": "04a0daf6f9bcf7ed",
+      "nodes": 1,
+      "relations": 9
+    },
+    "packages/zod/vitest.config.ts": {
+      "hash": "40cdff35d4d025f7",
+      "nodes": 1,
+      "relations": 6
+    },
+    "play.ts": {
+      "hash": "79fbca39be64d798",
+      "nodes": 1,
+      "relations": 3
+    },
+    "scripts/check-semver.ts": {
+      "hash": "6352de5af599c974",
+      "nodes": 1,
+      "relations": 13
+    },
+    "scripts/check-versions.ts": {
+      "hash": "21dcd217daabd32d",
+      "nodes": 1,
+      "relations": 21
+    },
+    "scripts/fail-on-console.ts": {
+      "hash": "cd108fff54de2cc7",
+      "nodes": 1,
+      "relations": 6
+    },
+    "scripts/write-stub-package-jsons.ts": {
+      "hash": "37cb28c1b9b87467",
+      "nodes": 1,
+      "relations": 11
+    },
+    "vitest.config.ts": {
+      "hash": "f2b7ae576dc00204",
+      "nodes": 1,
+      "relations": 11
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 1104,
+      "class": 673,
+      "dependency": 96,
+      "external_symbol": 199,
+      "file": 404,
+      "function": 782,
+      "import": 1386,
+      "method": 462,
+      "module": 607,
+      "parameter": 1582,
+      "project": 8,
+      "type_alias": 446,
+      "variable": 1950
+    },
+    "relations": {
+      "contains": 1011,
+      "declares": 8530,
+      "depends_on": 96,
+      "imports": 1407,
+      "resolves_to": 1407
+    }
+  },
+  "project": "colinhacks/zod",
+  "ref": "v4.4.3",
+  "totals": {
+    "files": 801,
+    "nodes": 9699,
+    "relations": 12451
+  }
+}

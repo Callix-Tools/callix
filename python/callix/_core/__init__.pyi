@@ -180,11 +180,14 @@ class GoAdapter:
     r"""
     The language adapter for Go projects.
     """
-    def __new__(cls, *, resolve: builtins.bool = ...) -> GoAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> GoAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
@@ -419,7 +422,7 @@ class PythonAdapter:
     resolution pass for the whole call, then boundaries. The order is not
     cosmetic — see the comments inside.
     """
-    def __new__(cls, dep_parsers: typing.Optional[typing.Any] = None, resolver: typing.Optional[typing.Any] = None, *, resolve: builtins.bool = ...) -> PythonAdapter:
+    def __new__(cls, dep_parsers: typing.Optional[typing.Any] = None, resolver: typing.Optional[typing.Any] = None, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> PythonAdapter:
         r"""
         Args:
         dep_parsers: custom manifest parsers (objects with `can_parse` and
@@ -430,6 +433,9 @@ class PythonAdapter:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` in the metadata becomes
             `unavailable`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
@@ -567,11 +573,14 @@ class RustAdapter:
     r"""
     The language adapter for Rust crates.
     """
-    def __new__(cls, *, resolve: builtins.bool = ...) -> RustAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> RustAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
@@ -684,11 +693,14 @@ class TypeScriptAdapter:
     r"""
     The language adapter for TypeScript projects.
     """
-    def __new__(cls, *, resolve: builtins.bool = ...) -> TypeScriptAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> TypeScriptAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
         """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...

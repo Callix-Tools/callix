@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::boundaries::run_extractors;
 use crate::dependencies::declare_dependencies;
 use crate::error::AdapterError;
 use crate::graph::Graph;
@@ -226,6 +227,7 @@ fn build_crate_structure(
     project_root: &Path,
     crate_root: &Path,
     files: &[PathBuf],
+    extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltCrate> {
     let project = crate_name(crate_root).unwrap_or_else(|| {
         crate_root
@@ -286,7 +288,8 @@ fn build_crate_structure(
         }
         internal_imports.extend(file_imports);
 
-        let found = extract_boundaries(tree.root_node(), &source);
+        let mut found = extract_boundaries(tree.root_node(), &source);
+        found.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
         if !found.is_empty() {
             boundaries.push((file_rel, file_id, found));
         }
@@ -348,6 +351,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 pub struct RustAdapter {
+    /// Extra boundary extractors, run in addition to the built-in ones.
+    boundary_extractors: Option<Py<PyAny>>,
     resolver: Option<RustResolver>,
 }
 
@@ -357,10 +362,14 @@ impl RustAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true))]
-    fn new(resolve: bool) -> Self {
+    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
+    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
         Self {
+            boundary_extractors,
             resolver: resolve.then(RustResolver::empty),
         }
     }
@@ -416,7 +425,14 @@ impl RustAdapter {
         // exist by the time the first occurrence is resolved.
         let mut built = Vec::with_capacity(crate_files.len());
         for (crate_root, files) in &crate_files {
-            built.push(build_crate_structure(py, &mut graph, &project_root, crate_root, files)?);
+            built.push(build_crate_structure(
+                py,
+                &mut graph,
+                &project_root,
+                crate_root,
+                files,
+                self.boundary_extractors.as_ref(),
+            )?);
         }
 
         // Phase 2 — ONE index for the whole workspace. Indexing each member

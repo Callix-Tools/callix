@@ -17,6 +17,7 @@ use pyo3::types::{PyDict, PyList};
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::boundaries::run_extractors;
 use crate::dependencies::declare_dependencies;
 use crate::graph::Graph;
 use crate::ids::{boundary_id, node_id};
@@ -229,7 +230,9 @@ pub fn build_root_structure(
     third_party: HashSet<String>,
 ) -> PyResult<BuiltRoot> {
     let mut graph = graph.borrow_mut();
-    build_root_structure_inner(py, &mut graph, project_root, py_root, files, stdlib, third_party)
+    build_root_structure_inner(
+        py, &mut graph, project_root, py_root, files, stdlib, third_party, None,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -241,6 +244,7 @@ fn build_root_structure_inner(
     files: Vec<String>,
     stdlib: HashSet<String>,
     third_party: HashSet<String>,
+    extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let project_root = Path::new(project_root);
     let py_root = Path::new(py_root);
@@ -300,6 +304,7 @@ fn build_root_structure_inner(
             .map(|p| p.to_string_lossy().into_owned())
             .unwrap_or_else(|_| file.to_string_lossy().into_owned());
 
+        let file_rel = relative_path.clone();
         let file_id = node_id(&project, &relative_path, NodeKind::File.as_str());
         if !graph.has_node(&file_id) {
             let node = Node {
@@ -348,7 +353,8 @@ fn build_root_structure_inner(
 
         // Boundaries are read off the same tree but applied later: BOUNDARY
         // nodes must land in the graph after the resolver's edges.
-        let boundaries = extract_boundaries(tree.root_node(), &source);
+        let mut boundaries = extract_boundaries(tree.root_node(), &source);
+        boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
         if !boundaries.is_empty() {
             all_boundaries.push((abs_path, file_id, boundaries));
         }
@@ -722,6 +728,8 @@ fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
 pub struct PythonAdapter {
     dep_parsers: Option<Py<PyAny>>,
     resolver: ResolverSlot,
+    /// Extra boundary extractors, run in addition to the built-in ones.
+    boundary_extractors: Option<Py<PyAny>>,
 }
 
 impl PythonAdapter {
@@ -813,20 +821,30 @@ impl PythonAdapter {
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` in the metadata becomes
     ///         `unavailable`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (dep_parsers = None, resolver = None, *, resolve = true))]
+    #[pyo3(signature = (
+        dep_parsers = None,
+        resolver = None,
+        *,
+        resolve = true,
+        boundary_extractors = None,
+    ))]
     fn new(
         py: Python<'_>,
         dep_parsers: Option<Py<PyAny>>,
         resolver: Option<Py<PyAny>>,
         resolve: bool,
+        boundary_extractors: Option<Py<PyAny>>,
     ) -> PyResult<Self> {
         let resolver = match (resolve, resolver) {
             (false, _) => ResolverSlot::Disabled,
             (true, Some(custom)) => ResolverSlot::Custom(custom),
             (true, None) => ResolverSlot::Embedded(EmbeddedTyResolver::for_running_python(py)?),
         };
-        Ok(Self { dep_parsers, resolver })
+        Ok(Self { dep_parsers, resolver, boundary_extractors })
     }
 
     fn language(&self) -> &'static str {
@@ -900,6 +918,7 @@ impl PythonAdapter {
                 file_list.clone(),
                 stdlib.clone(),
                 self.third_party(py, py_root)?,
+                self.boundary_extractors.as_ref(),
             )?);
         }
 

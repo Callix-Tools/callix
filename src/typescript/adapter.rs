@@ -13,6 +13,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::boundaries::run_extractors;
 use crate::dependencies::declare_dependencies;
 use crate::error::AdapterError;
 use crate::graph::Graph;
@@ -62,6 +63,7 @@ fn build_root_structure(
     project_root: &Path,
     lang_root: &Path,
     files: &[PathBuf],
+    extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let project = project_name(lang_root);
     let roots = source_roots(lang_root, files);
@@ -117,6 +119,7 @@ fn build_root_structure(
             .map(|p| p.to_string_lossy().into_owned())
             .unwrap_or_else(|_| file.to_string_lossy().into_owned());
 
+        let file_rel = relative_path.clone();
         let file_id = node_id(&project, &relative_path, NodeKind::File.as_str());
         if !graph.has_node(&file_id) {
             let node = Node {
@@ -166,7 +169,8 @@ fn build_root_structure(
             all_occurrences.push((abs_path.clone(), occurrence));
         }
 
-        let boundaries = extract_boundaries(tree.root_node(), &source, tsx);
+        let mut boundaries = extract_boundaries(tree.root_node(), &source, tsx);
+        boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
         if !boundaries.is_empty() {
             all_boundaries.push((abs_path, file_id, boundaries));
         }
@@ -239,6 +243,8 @@ fn push_relation(
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", unsendable)]
 pub struct TypeScriptAdapter {
+    /// Extra boundary extractors, run in addition to the built-in ones.
+    boundary_extractors: Option<Py<PyAny>>,
     resolver: Option<TsResolver>,
 }
 
@@ -248,10 +254,14 @@ impl TypeScriptAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true))]
-    fn new(resolve: bool) -> Self {
+    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
+    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
         Self {
+            boundary_extractors,
             resolver: resolve.then(TsResolver::empty),
         }
     }
@@ -310,6 +320,7 @@ impl TypeScriptAdapter {
                 &project_root,
                 lang_root,
                 file_list,
+                self.boundary_extractors.as_ref(),
             )?);
         }
 
@@ -404,7 +415,7 @@ pub fn ts_build_root_structure(
     files: Vec<PathBuf>,
 ) -> PyResult<BuiltRoot> {
     let mut graph = graph.borrow_mut();
-    build_root_structure(py, &mut graph, &project_root, &lang_root, &files)
+    build_root_structure(py, &mut graph, &project_root, &lang_root, &files, None)
 }
 
 /// Every TypeScript file under the root, declarations excluded.

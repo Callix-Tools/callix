@@ -1,0 +1,525 @@
+{
+  "files": {
+    "build.rs": {
+      "hash": "681f560f4d0c403f",
+      "nodes": 4,
+      "relations": 3
+    },
+    "crates/cli/src/decompress.rs": {
+      "hash": "db73884d3dca017e",
+      "nodes": 58,
+      "relations": 73
+    },
+    "crates/cli/src/escape.rs": {
+      "hash": "0733e7b316836c87",
+      "nodes": 25,
+      "relations": 30
+    },
+    "crates/cli/src/hostname.rs": {
+      "hash": "0d212c048a5f5224",
+      "nodes": 6,
+      "relations": 9
+    },
+    "crates/cli/src/human.rs": {
+      "hash": "421cf65236e2dbbf",
+      "nodes": 27,
+      "relations": 30
+    },
+    "crates/cli/src/lib.rs": {
+      "hash": "3d795dcde9c6bd6a",
+      "nodes": 6,
+      "relations": 7
+    },
+    "crates/cli/src/pattern.rs": {
+      "hash": "89ca74f5b24d62da",
+      "nodes": 24,
+      "relations": 33
+    },
+    "crates/cli/src/process.rs": {
+      "hash": "f34aea4cfc49f904",
+      "nodes": 41,
+      "relations": 47
+    },
+    "crates/cli/src/wtr.rs": {
+      "hash": "d1c04a30bfb4bf38",
+      "nodes": 22,
+      "relations": 25
+    },
+    "crates/core/flags/complete/bash.rs": {
+      "hash": "3ea4c150fb8d8cba",
+      "nodes": 6,
+      "relations": 7
+    },
+    "crates/core/flags/complete/fish.rs": {
+      "hash": "cd5f578afcbd206f",
+      "nodes": 5,
+      "relations": 6
+    },
+    "crates/core/flags/complete/mod.rs": {
+      "hash": "e6a4948d44898fd6",
+      "nodes": 2,
+      "relations": 1
+    },
+    "crates/core/flags/complete/powershell.rs": {
+      "hash": "b3d5b1a6a2515c95",
+      "nodes": 5,
+      "relations": 6
+    },
+    "crates/core/flags/complete/zsh.rs": {
+      "hash": "053501202fcc9204",
+      "nodes": 2,
+      "relations": 1
+    },
+    "crates/core/flags/config.rs": {
+      "hash": "a5259f138179bbd8",
+      "nodes": 12,
+      "relations": 19
+    },
+    "crates/core/flags/defs.rs": {
+      "hash": "4107a2259faf5fa2",
+      "nodes": 1205,
+      "relations": 1220
+    },
+    "crates/core/flags/doc/help.rs": {
+      "hash": "9341b8f281c442cd",
+      "nodes": 19,
+      "relations": 22
+    },
+    "crates/core/flags/doc/man.rs": {
+      "hash": "f82d5e050bffe704",
+      "nodes": 8,
+      "relations": 11
+    },
+    "crates/core/flags/doc/mod.rs": {
+      "hash": "9c35be82970306b5",
+      "nodes": 5,
+      "relations": 4
+    },
+    "crates/core/flags/doc/version.rs": {
+      "hash": "fd4467232c67cf7f",
+      "nodes": 11,
+      "relations": 12
+    },
+    "crates/core/flags/hiargs.rs": {
+      "hash": "1b7bee38c3e6159f",
+      "nodes": 163,
+      "relations": 245
+    },
+    "crates/core/flags/lowargs.rs": {
+      "hash": "638e637c39f3856a",
+      "nodes": 139,
+      "relations": 221
+    },
+    "crates/core/flags/mod.rs": {
+      "hash": "94d90b7126bfe364",
+      "nodes": 10,
+      "relations": 13
+    },
+    "crates/core/flags/parse.rs": {
+      "hash": "67067068932a2b0b",
+      "nodes": 50,
+      "relations": 61
+    },
+    "crates/core/haystack.rs": {
+      "hash": "0fea44ae9d9afc54",
+      "nodes": 19,
+      "relations": 23
+    },
+    "crates/core/logger.rs": {
+      "hash": "58dff3457388d471",
+      "nodes": 10,
+      "relations": 11
+    },
+    "crates/core/main.rs": {
+      "hash": "a84cbdeb32a3cd3e",
+      "nodes": 30,
+      "relations": 35
+    },
+    "crates/core/messages.rs": {
+      "hash": "89aa520db6dde4f5",
+      "nodes": 13,
+      "relations": 14
+    },
+    "crates/core/search.rs": {
+      "hash": "399f96952d3dccbf",
+      "nodes": 72,
+      "relations": 91
+    },
+    "crates/globset/benches/bench.rs": {
+      "hash": "00165146c9e63ca9",
+      "nodes": 32,
+      "relations": 33
+    },
+    "crates/globset/src/fnv.rs": {
+      "hash": "0f98e4c9a8248bdf",
+      "nodes": 7,
+      "relations": 6
+    },
+    "crates/globset/src/glob.rs": {
+      "hash": "7b46d15cbb83e9b6",
+      "nodes": 136,
+      "relations": 173
+    },
+    "crates/globset/src/lib.rs": {
+      "hash": "0b289b20a524f320",
+      "nodes": 160,
+      "relations": 191
+    },
+    "crates/globset/src/pathutil.rs": {
+      "hash": "794c77b304e5979a",
+      "nodes": 11,
+      "relations": 18
+    },
+    "crates/globset/src/serde_impl.rs": {
+      "hash": "4510d315633d591e",
+      "nodes": 26,
+      "relations": 33
+    },
+    "crates/grep/examples/simplegrep.rs": {
+      "hash": "ebb27a23c750bd13",
+      "nodes": 8,
+      "relations": 11
+    },
+    "crates/grep/src/lib.rs": {
+      "hash": "46f6f4c23a9c0fad",
+      "nodes": 1,
+      "relations": 0
+    },
+    "crates/ignore/examples/walk.rs": {
+      "hash": "06f99b439a20a8c4",
+      "nodes": 6,
+      "relations": 9
+    },
+    "crates/ignore/src/default_types.rs": {
+      "hash": "6c4083cae5ddceb2",
+      "nodes": 4,
+      "relations": 5
+    },
+    "crates/ignore/src/dir.rs": {
+      "hash": "1a7852148f060700",
+      "nodes": 133,
+      "relations": 170
+    },
+    "crates/ignore/src/gitignore.rs": {
+      "hash": "d7dbe09876a69cc8",
+      "nodes": 88,
+      "relations": 112
+    },
+    "crates/ignore/src/lib.rs": {
+      "hash": "1077fd52b8110a6e",
+      "nodes": 50,
+      "relations": 55
+    },
+    "crates/ignore/src/overrides.rs": {
+      "hash": "6fa0e2edf56fcb2b",
+      "nodes": 37,
+      "relations": 43
+    },
+    "crates/ignore/src/pathutil.rs": {
+      "hash": "99d75c9f410e67b3",
+      "nodes": 12,
+      "relations": 15
+    },
+    "crates/ignore/src/types.rs": {
+      "hash": "00ae6e58537709d9",
+      "nodes": 54,
+      "relations": 71
+    },
+    "crates/ignore/src/walk.rs": {
+      "hash": "9e685bf1ee5c137a",
+      "nodes": 300,
+      "relations": 373
+    },
+    "crates/ignore/tests/gitignore_matched_path_or_any_parents_tests.rs": {
+      "hash": "abfcdfafad6a39e3",
+      "nodes": 10,
+      "relations": 13
+    },
+    "crates/matcher/src/interpolate.rs": {
+      "hash": "1f7ab4fa4603cc8d",
+      "nodes": 22,
+      "relations": 27
+    },
+    "crates/matcher/src/lib.rs": {
+      "hash": "750108bccf5efc0d",
+      "nodes": 146,
+      "relations": 149
+    },
+    "crates/matcher/tests/test_matcher.rs": {
+      "hash": "73a64539775ed9d4",
+      "nodes": 20,
+      "relations": 23
+    },
+    "crates/matcher/tests/tests.rs": {
+      "hash": "911e9a46edb3f33f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "crates/matcher/tests/util.rs": {
+      "hash": "ccfb1f36c4140fd8",
+      "nodes": 29,
+      "relations": 34
+    },
+    "crates/pcre2/src/error.rs": {
+      "hash": "dc360fd7df59a586",
+      "nodes": 10,
+      "relations": 10
+    },
+    "crates/pcre2/src/lib.rs": {
+      "hash": "0f6b399045028e3b",
+      "nodes": 3,
+      "relations": 6
+    },
+    "crates/pcre2/src/matcher.rs": {
+      "hash": "7e4d80aa16a08a44",
+      "nodes": 78,
+      "relations": 95
+    },
+    "crates/printer/src/color.rs": {
+      "hash": "a6b6ea29f67ab127",
+      "nodes": 40,
+      "relations": 47
+    },
+    "crates/printer/src/counter.rs": {
+      "hash": "06b7b1a4a9c8ce0e",
+      "nodes": 25,
+      "relations": 31
+    },
+    "crates/printer/src/hyperlink.rs": {
+      "hash": "252ab059f530eae7",
+      "nodes": 94,
+      "relations": 117
+    },
+    "crates/printer/src/hyperlink_aliases.rs": {
+      "hash": "db0fe8da5d905824",
+      "nodes": 10,
+      "relations": 13
+    },
+    "crates/printer/src/json.rs": {
+      "hash": "4ce40b46cf476f36",
+      "nodes": 90,
+      "relations": 119
+    },
+    "crates/printer/src/jsont.rs": {
+      "hash": "40b41afe11402deb",
+      "nodes": 48,
+      "relations": 68
+    },
+    "crates/printer/src/lib.rs": {
+      "hash": "814e0824e3e29e9f",
+      "nodes": 4,
+      "relations": 7
+    },
+    "crates/printer/src/macros.rs": {
+      "hash": "454bde6791cbb9b7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "crates/printer/src/path.rs": {
+      "hash": "602e03e4966194b1",
+      "nodes": 31,
+      "relations": 44
+    },
+    "crates/printer/src/standard.rs": {
+      "hash": "a77fedb2b29eab43",
+      "nodes": 318,
+      "relations": 377
+    },
+    "crates/printer/src/stats.rs": {
+      "hash": "c22cd05905cade7e",
+      "nodes": 39,
+      "relations": 49
+    },
+    "crates/printer/src/summary.rs": {
+      "hash": "a455cc89426621f9",
+      "nodes": 127,
+      "relations": 161
+    },
+    "crates/printer/src/util.rs": {
+      "hash": "9da8731e86431132",
+      "nodes": 93,
+      "relations": 115
+    },
+    "crates/regex/src/ast.rs": {
+      "hash": "d172de85e53ffb5b",
+      "nodes": 25,
+      "relations": 30
+    },
+    "crates/regex/src/ban.rs": {
+      "hash": "4619b5ca205fe2f4",
+      "nodes": 11,
+      "relations": 16
+    },
+    "crates/regex/src/config.rs": {
+      "hash": "6216e17e194845d0",
+      "nodes": 46,
+      "relations": 68
+    },
+    "crates/regex/src/error.rs": {
+      "hash": "86be7ad1b2f6cadc",
+      "nodes": 13,
+      "relations": 13
+    },
+    "crates/regex/src/lib.rs": {
+      "hash": "7efd63c64167dcfa",
+      "nodes": 2,
+      "relations": 3
+    },
+    "crates/regex/src/literal.rs": {
+      "hash": "d77df6bc515a506a",
+      "nodes": 112,
+      "relations": 124
+    },
+    "crates/regex/src/matcher.rs": {
+      "hash": "dd7e02edb2b6ed17",
+      "nodes": 92,
+      "relations": 103
+    },
+    "crates/regex/src/non_matching.rs": {
+      "hash": "b1bf0003b2023697",
+      "nodes": 18,
+      "relations": 23
+    },
+    "crates/regex/src/strip.rs": {
+      "hash": "51b0418f493ad764",
+      "nodes": 24,
+      "relations": 33
+    },
+    "crates/searcher/examples/search-stdin.rs": {
+      "hash": "2610187dd0dae2e3",
+      "nodes": 10,
+      "relations": 23
+    },
+    "crates/searcher/src/lib.rs": {
+      "hash": "2eb34852f9ac3484",
+      "nodes": 2,
+      "relations": 3
+    },
+    "crates/searcher/src/line_buffer.rs": {
+      "hash": "f7d032ca2a24e473",
+      "nodes": 99,
+      "relations": 120
+    },
+    "crates/searcher/src/lines.rs": {
+      "hash": "56a9364f5bd2d3a8",
+      "nodes": 69,
+      "relations": 77
+    },
+    "crates/searcher/src/macros.rs": {
+      "hash": "a0b89cef4cffc107",
+      "nodes": 1,
+      "relations": 0
+    },
+    "crates/searcher/src/searcher/core.rs": {
+      "hash": "59dde4c1af259215",
+      "nodes": 81,
+      "relations": 100
+    },
+    "crates/searcher/src/searcher/glue.rs": {
+      "hash": "cee234990ba9ef1b",
+      "nodes": 87,
+      "relations": 103
+    },
+    "crates/searcher/src/searcher/mmap.rs": {
+      "hash": "3afa2a8a996ac08f",
+      "nodes": 12,
+      "relations": 15
+    },
+    "crates/searcher/src/searcher/mod.rs": {
+      "hash": "8248c87907444460",
+      "nodes": 124,
+      "relations": 154
+    },
+    "crates/searcher/src/sink.rs": {
+      "hash": "c9b72db35936ac56",
+      "nodes": 88,
+      "relations": 110
+    },
+    "crates/searcher/src/testutil.rs": {
+      "hash": "8431dd2d312904c8",
+      "nodes": 112,
+      "relations": 144
+    },
+    "tests/binary.rs": {
+      "hash": "7f3558142dcdef78",
+      "nodes": 3,
+      "relations": 4
+    },
+    "tests/feature.rs": {
+      "hash": "cd05a72ae84b0bc4",
+      "nodes": 3,
+      "relations": 6
+    },
+    "tests/hay.rs": {
+      "hash": "a48fa0ec7452cda9",
+      "nodes": 3,
+      "relations": 2
+    },
+    "tests/json.rs": {
+      "hash": "a37ef7cdb957ed20",
+      "nodes": 55,
+      "relations": 92
+    },
+    "tests/macros.rs": {
+      "hash": "5c078701565936c8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "tests/misc.rs": {
+      "hash": "823a33b1beb41c2d",
+      "nodes": 5,
+      "relations": 8
+    },
+    "tests/multiline.rs": {
+      "hash": "27a7f367e8c4e52a",
+      "nodes": 3,
+      "relations": 6
+    },
+    "tests/regression.rs": {
+      "hash": "193eadd7877ee747",
+      "nodes": 3,
+      "relations": 6
+    },
+    "tests/tests.rs": {
+      "hash": "3330306f4c91d1ec",
+      "nodes": 1,
+      "relations": 0
+    },
+    "tests/util.rs": {
+      "hash": "939c5412b3e85055",
+      "nodes": 91,
+      "relations": 117
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 687,
+      "class": 369,
+      "dependency": 68,
+      "external_symbol": 180,
+      "file": 98,
+      "function": 669,
+      "import": 259,
+      "method": 1964,
+      "module": 98,
+      "parameter": 1396,
+      "project": 10,
+      "type_alias": 7,
+      "variable": 50
+    },
+    "relations": {
+      "contains": 196,
+      "declares": 6088,
+      "depends_on": 68,
+      "imports": 259,
+      "resolves_to": 259
+    }
+  },
+  "project": "BurntSushi/ripgrep",
+  "ref": "14.1.1",
+  "totals": {
+    "files": 98,
+    "nodes": 5855,
+    "relations": 6870
+  }
+}

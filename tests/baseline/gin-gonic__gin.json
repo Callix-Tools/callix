@@ -1,0 +1,527 @@
+{
+  "files": {
+    "auth.go": {
+      "hash": "f6fb792bb0b26705",
+      "nodes": 28,
+      "relations": 39
+    },
+    "auth_test.go": {
+      "hash": "e3986cd53dd765ce",
+      "nodes": 24,
+      "relations": 36
+    },
+    "benchmarks_test.go": {
+      "hash": "a0f2dc403c8fea35",
+      "nodes": 45,
+      "relations": 70
+    },
+    "binding/binding.go": {
+      "hash": "1a5c04a43031848d",
+      "nodes": 40,
+      "relations": 41
+    },
+    "binding/binding_msgpack_test.go": {
+      "hash": "3ad2e7e9267760f8",
+      "nodes": 19,
+      "relations": 30
+    },
+    "binding/binding_nomsgpack.go": {
+      "hash": "a64caefe8f34eaff",
+      "nodes": 2,
+      "relations": 3
+    },
+    "binding/binding_test.go": {
+      "hash": "3dec0e58f7ae2d6b",
+      "nodes": 400,
+      "relations": 468
+    },
+    "binding/bson.go": {
+      "hash": "ac4206cc2686e586",
+      "nodes": 12,
+      "relations": 17
+    },
+    "binding/default_validator.go": {
+      "hash": "02e028ae1ceed340",
+      "nodes": 18,
+      "relations": 29
+    },
+    "binding/default_validator_benchmark_test.go": {
+      "hash": "0e9925338ea2e9a5",
+      "nodes": 6,
+      "relations": 11
+    },
+    "binding/default_validator_test.go": {
+      "hash": "e71eb165d9985a37",
+      "nodes": 7,
+      "relations": 10
+    },
+    "binding/form.go": {
+      "hash": "10e2a865d0a5e7b8",
+      "nodes": 19,
+      "relations": 22
+    },
+    "binding/form_mapping.go": {
+      "hash": "5f0f45ee3da19bbc",
+      "nodes": 115,
+      "relations": 139
+    },
+    "binding/form_mapping_benchmark_test.go": {
+      "hash": "fb95921db6f6b7ea",
+      "nodes": 17,
+      "relations": 28
+    },
+    "binding/form_mapping_test.go": {
+      "hash": "e04ef232e9ef40db",
+      "nodes": 179,
+      "relations": 209
+    },
+    "binding/header.go": {
+      "hash": "334645ec75554695",
+      "nodes": 18,
+      "relations": 23
+    },
+    "binding/json.go": {
+      "hash": "7d205822e07a23d9",
+      "nodes": 19,
+      "relations": 28
+    },
+    "binding/json_test.go": {
+      "hash": "bff202d1587aa4e5",
+      "nodes": 72,
+      "relations": 97
+    },
+    "binding/msgpack.go": {
+      "hash": "c1b4977363eaeb49",
+      "nodes": 16,
+      "relations": 23
+    },
+    "binding/msgpack_test.go": {
+      "hash": "a2514559e0304c9b",
+      "nodes": 11,
+      "relations": 20
+    },
+    "binding/multipart_form_mapping.go": {
+      "hash": "1ff571b6ee0b55c4",
+      "nodes": 21,
+      "relations": 28
+    },
+    "binding/multipart_form_mapping_test.go": {
+      "hash": "9c51ab4e8bf064c3",
+      "nodes": 24,
+      "relations": 40
+    },
+    "binding/plain.go": {
+      "hash": "72073f9f11814739",
+      "nodes": 17,
+      "relations": 26
+    },
+    "binding/protobuf.go": {
+      "hash": "1bb9ef7fc6e5e9b6",
+      "nodes": 13,
+      "relations": 20
+    },
+    "binding/query.go": {
+      "hash": "c5e8f8e850697746",
+      "nodes": 7,
+      "relations": 8
+    },
+    "binding/toml.go": {
+      "hash": "8f8a5e921a153cd4",
+      "nodes": 16,
+      "relations": 23
+    },
+    "binding/toml_test.go": {
+      "hash": "ad355820bcd5a357",
+      "nodes": 6,
+      "relations": 11
+    },
+    "binding/uri.go": {
+      "hash": "dcf75ecd2466e8d5",
+      "nodes": 6,
+      "relations": 5
+    },
+    "binding/validate_test.go": {
+      "hash": "f1ee320f9eee53c6",
+      "nodes": 83,
+      "relations": 147
+    },
+    "binding/xml.go": {
+      "hash": "5b8bd8a59c1e9730",
+      "nodes": 16,
+      "relations": 23
+    },
+    "binding/xml_test.go": {
+      "hash": "d14cae72978bb785",
+      "nodes": 6,
+      "relations": 11
+    },
+    "binding/yaml.go": {
+      "hash": "940082240ea920ab",
+      "nodes": 16,
+      "relations": 23
+    },
+    "binding/yaml_test.go": {
+      "hash": "4e805390de29e3db",
+      "nodes": 6,
+      "relations": 11
+    },
+    "codec/json/api.go": {
+      "hash": "43565bd1cc23e517",
+      "nodes": 6,
+      "relations": 7
+    },
+    "codec/json/go_json.go": {
+      "hash": "c9cb6b463587a254",
+      "nodes": 19,
+      "relations": 22
+    },
+    "codec/json/json.go": {
+      "hash": "00903fec7d3a1903",
+      "nodes": 17,
+      "relations": 20
+    },
+    "codec/json/jsoniter.go": {
+      "hash": "adffbf970c82040b",
+      "nodes": 18,
+      "relations": 21
+    },
+    "codec/json/sonic.go": {
+      "hash": "83eda55b08929aff",
+      "nodes": 17,
+      "relations": 20
+    },
+    "context.go": {
+      "hash": "b87f8eaadca0b09e",
+      "nodes": 382,
+      "relations": 446
+    },
+    "context_appengine.go": {
+      "hash": "04d7893418fb52f6",
+      "nodes": 2,
+      "relations": 1
+    },
+    "context_file_test.go": {
+      "hash": "5a57f38ac84b7005",
+      "nodes": 9,
+      "relations": 16
+    },
+    "context_test.go": {
+      "hash": "70b355db7aed5407",
+      "nodes": 406,
+      "relations": 477
+    },
+    "debug.go": {
+      "hash": "5b79d3b6c9657308",
+      "nodes": 27,
+      "relations": 38
+    },
+    "debug_test.go": {
+      "hash": "47f920ea6368ffdd",
+      "nodes": 40,
+      "relations": 63
+    },
+    "deprecated.go": {
+      "hash": "f83f67ee55b1c798",
+      "nodes": 6,
+      "relations": 9
+    },
+    "deprecated_test.go": {
+      "hash": "5f94b011cbece419",
+      "nodes": 9,
+      "relations": 20
+    },
+    "doc.go": {
+      "hash": "1e8e4454e305949a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "errors.go": {
+      "hash": "dfec467866d3882f",
+      "nodes": 33,
+      "relations": 43
+    },
+    "errors_test.go": {
+      "hash": "07609402cd2ea769",
+      "nodes": 15,
+      "relations": 26
+    },
+    "fs.go": {
+      "hash": "783e6ac92a0ada76",
+      "nodes": 13,
+      "relations": 17
+    },
+    "fs_test.go": {
+      "hash": "38a9696fb91cd703",
+      "nodes": 21,
+      "relations": 33
+    },
+    "gin.go": {
+      "hash": "9721e1144b0cd89c",
+      "nodes": 152,
+      "relations": 212
+    },
+    "ginS/gins.go": {
+      "hash": "95c6f93ba94a9b13",
+      "nodes": 56,
+      "relations": 63
+    },
+    "ginS/gins_test.go": {
+      "hash": "7e44eae7f698bfa1",
+      "nodes": 44,
+      "relations": 56
+    },
+    "gin_integration_test.go": {
+      "hash": "b6a3c4305145cb35",
+      "nodes": 57,
+      "relations": 139
+    },
+    "gin_test.go": {
+      "hash": "473a5e1f3a172f16",
+      "nodes": 126,
+      "relations": 184
+    },
+    "githubapi_test.go": {
+      "hash": "6b7f6d466d858690",
+      "nodes": 37,
+      "relations": 59
+    },
+    "internal/bytesconv/bytesconv.go": {
+      "hash": "52279f806ce435e1",
+      "nodes": 6,
+      "relations": 7
+    },
+    "internal/bytesconv/bytesconv_test.go": {
+      "hash": "5aa134a52e41f9dd",
+      "nodes": 36,
+      "relations": 47
+    },
+    "internal/fs/fs.go": {
+      "hash": "9b2ef7c11496039e",
+      "nodes": 6,
+      "relations": 9
+    },
+    "internal/fs/fs_test.go": {
+      "hash": "852d7f8a055d94d0",
+      "nodes": 15,
+      "relations": 27
+    },
+    "logger.go": {
+      "hash": "621383128b269c83",
+      "nodes": 58,
+      "relations": 85
+    },
+    "logger_test.go": {
+      "hash": "58e244b00803a4bb",
+      "nodes": 42,
+      "relations": 81
+    },
+    "middleware_test.go": {
+      "hash": "a7c5ba9b06652cb3",
+      "nodes": 23,
+      "relations": 40
+    },
+    "mode.go": {
+      "hash": "1bec7675332777c2",
+      "nodes": 23,
+      "relations": 32
+    },
+    "mode_test.go": {
+      "hash": "6ea23dd34ec1ff84",
+      "nodes": 14,
+      "relations": 23
+    },
+    "path.go": {
+      "hash": "1587653b2a43896a",
+      "nodes": 12,
+      "relations": 11
+    },
+    "path_test.go": {
+      "hash": "efc21e6bea93a347",
+      "nodes": 21,
+      "relations": 29
+    },
+    "recovery.go": {
+      "hash": "723c980831adfd12",
+      "nodes": 41,
+      "relations": 70
+    },
+    "recovery_test.go": {
+      "hash": "3c0095301bb92de5",
+      "nodes": 32,
+      "relations": 53
+    },
+    "render/bson.go": {
+      "hash": "beabe3ae7b49eca6",
+      "nodes": 10,
+      "relations": 14
+    },
+    "render/data.go": {
+      "hash": "e2cd17728dac169a",
+      "nodes": 10,
+      "relations": 15
+    },
+    "render/html.go": {
+      "hash": "6c3b68ac2812318e",
+      "nodes": 34,
+      "relations": 52
+    },
+    "render/json.go": {
+      "hash": "10d0aab1bdd2e1b6",
+      "nodes": 52,
+      "relations": 73
+    },
+    "render/msgpack.go": {
+      "hash": "93fd53e037109d19",
+      "nodes": 14,
+      "relations": 18
+    },
+    "render/protobuf.go": {
+      "hash": "5b5919e2470faba0",
+      "nodes": 10,
+      "relations": 14
+    },
+    "render/reader.go": {
+      "hash": "d964351d74df58cb",
+      "nodes": 15,
+      "relations": 24
+    },
+    "render/reader_test.go": {
+      "hash": "e67074d4399ae3fa",
+      "nodes": 7,
+      "relations": 14
+    },
+    "render/redirect.go": {
+      "hash": "2274989df29315ae",
+      "nodes": 10,
+      "relations": 16
+    },
+    "render/render.go": {
+      "hash": "5ea196cde94275a9",
+      "nodes": 6,
+      "relations": 7
+    },
+    "render/render_msgpack_test.go": {
+      "hash": "0c531c3d3dcbbf6b",
+      "nodes": 16,
+      "relations": 27
+    },
+    "render/render_test.go": {
+      "hash": "6ead0e4ef470ddbe",
+      "nodes": 114,
+      "relations": 146
+    },
+    "render/text.go": {
+      "hash": "5f16454ad8f1b97b",
+      "nodes": 16,
+      "relations": 23
+    },
+    "render/toml.go": {
+      "hash": "2fe260f0bb6a1ccb",
+      "nodes": 10,
+      "relations": 14
+    },
+    "render/xml.go": {
+      "hash": "f145c230ab9c9183",
+      "nodes": 10,
+      "relations": 14
+    },
+    "render/yaml.go": {
+      "hash": "feb9bdfcbdc90350",
+      "nodes": 10,
+      "relations": 14
+    },
+    "response_writer.go": {
+      "hash": "1b1cab11c6898a28",
+      "nodes": 30,
+      "relations": 41
+    },
+    "response_writer_test.go": {
+      "hash": "d49b343e41d71720",
+      "nodes": 40,
+      "relations": 54
+    },
+    "routergroup.go": {
+      "hash": "4758a47a4e9921c8",
+      "nodes": 68,
+      "relations": 79
+    },
+    "routergroup_test.go": {
+      "hash": "8935c86e4aef0ba4",
+      "nodes": 31,
+      "relations": 58
+    },
+    "routes_test.go": {
+      "hash": "aa7c4e292b4c4856",
+      "nodes": 81,
+      "relations": 132
+    },
+    "test_helpers.go": {
+      "hash": "594f9ca9284787aa",
+      "nodes": 12,
+      "relations": 17
+    },
+    "testdata/protoexample/test.pb.go": {
+      "hash": "bc61473df231c37b",
+      "nodes": 58,
+      "relations": 76
+    },
+    "tree.go": {
+      "hash": "bc8b1469eef3b352",
+      "nodes": 79,
+      "relations": 107
+    },
+    "tree_test.go": {
+      "hash": "308ee4e1706ac1fd",
+      "nodes": 77,
+      "relations": 88
+    },
+    "utils.go": {
+      "hash": "ae02048f29d37fc8",
+      "nodes": 48,
+      "relations": 65
+    },
+    "utils_test.go": {
+      "hash": "e7d26062f8e0614b",
+      "nodes": 46,
+      "relations": 67
+    },
+    "version.go": {
+      "hash": "d557109cb71dcf9e",
+      "nodes": 2,
+      "relations": 1
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 292,
+      "boundary": 114,
+      "class": 138,
+      "dependency": 35,
+      "external_symbol": 64,
+      "file": 98,
+      "function": 870,
+      "import": 515,
+      "method": 421,
+      "module": 8,
+      "parameter": 1523,
+      "project": 1,
+      "type_alias": 35,
+      "variable": 170
+    },
+    "relations": {
+      "contains": 106,
+      "declares": 4256,
+      "depends_on": 35,
+      "exposes": 209,
+      "imports": 515,
+      "resolves_to": 515
+    }
+  },
+  "project": "gin-gonic/gin",
+  "ref": "v1.12.0",
+  "totals": {
+    "files": 98,
+    "nodes": 4284,
+    "relations": 5636
+  }
+}

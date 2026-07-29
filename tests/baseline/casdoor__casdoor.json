@@ -1,0 +1,2328 @@
+{
+  "files": {
+    "authz/authz.go": {
+      "hash": "bb15d22c445c0c7b",
+      "nodes": 24,
+      "relations": 35
+    },
+    "captcha/aliyun.go": {
+      "hash": "5a66a31e2cc50c2f",
+      "nodes": 37,
+      "relations": 62
+    },
+    "captcha/default.go": {
+      "hash": "fec8cee61328ebbe",
+      "nodes": 9,
+      "relations": 10
+    },
+    "captcha/geetest.go": {
+      "hash": "d522c587610de2c2",
+      "nodes": 17,
+      "relations": 32
+    },
+    "captcha/hcaptcha.go": {
+      "hash": "baca2855aa32c395",
+      "nodes": 15,
+      "relations": 26
+    },
+    "captcha/provider.go": {
+      "hash": "0bb3de1cf2dd4ad4",
+      "nodes": 11,
+      "relations": 12
+    },
+    "captcha/recaptcha.go": {
+      "hash": "c8e6065be763fea3",
+      "nodes": 15,
+      "relations": 26
+    },
+    "captcha/turnstile.go": {
+      "hash": "4115b0b32f1b9c5a",
+      "nodes": 15,
+      "relations": 26
+    },
+    "certificate/account.go": {
+      "hash": "bd92eb294455829a",
+      "nodes": 22,
+      "relations": 36
+    },
+    "certificate/account_test.go": {
+      "hash": "56ffd85c908696c1",
+      "nodes": 8,
+      "relations": 17
+    },
+    "certificate/conf.go": {
+      "hash": "395c09d8c0b4b208",
+      "nodes": 3,
+      "relations": 2
+    },
+    "certificate/dns.go": {
+      "hash": "21164402cc1e1115",
+      "nodes": 43,
+      "relations": 70
+    },
+    "certificate/ecc.go": {
+      "hash": "02565edf8200a400",
+      "nodes": 12,
+      "relations": 23
+    },
+    "certificate/ecc_test.go": {
+      "hash": "4ac7dfd4178fe35a",
+      "nodes": 6,
+      "relations": 11
+    },
+    "conf/conf.go": {
+      "hash": "1c919fdad3f48d72",
+      "nodes": 23,
+      "relations": 36
+    },
+    "conf/conf_quota.go": {
+      "hash": "3d3c861ba9d5c4b9",
+      "nodes": 11,
+      "relations": 18
+    },
+    "conf/conf_test.go": {
+      "hash": "e709fe404eff9635",
+      "nodes": 15,
+      "relations": 22
+    },
+    "conf/web_config.go": {
+      "hash": "923eeab6b7dabaea",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/account.go": {
+      "hash": "dccd8bfd9a8d8017",
+      "nodes": 55,
+      "relations": 99
+    },
+    "controllers/adapter.go": {
+      "hash": "c36f763a8d02cbf3",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/agent.go": {
+      "hash": "092b1c09e0f25671",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/application.go": {
+      "hash": "4623c6a01b9345fa",
+      "nodes": 14,
+      "relations": 25
+    },
+    "controllers/auth.go": {
+      "hash": "1e2662c7cf2554f0",
+      "nodes": 66,
+      "relations": 111
+    },
+    "controllers/base.go": {
+      "hash": "643dc2bfc991950a",
+      "nodes": 48,
+      "relations": 64
+    },
+    "controllers/cas.go": {
+      "hash": "6bff59ed0bc5ec83",
+      "nodes": 32,
+      "relations": 43
+    },
+    "controllers/casbin_api.go": {
+      "hash": "88ed217df0434458",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/casbin_cli_api.go": {
+      "hash": "d8669d66b09de995",
+      "nodes": 27,
+      "relations": 53
+    },
+    "controllers/casbin_cli_api_cache.go": {
+      "hash": "e9281a173c91b797",
+      "nodes": 24,
+      "relations": 37
+    },
+    "controllers/cert.go": {
+      "hash": "1d5cc758893a0d34",
+      "nodes": 12,
+      "relations": 19
+    },
+    "controllers/cli_downloader.go": {
+      "hash": "6f8493e0db0cbbaa",
+      "nodes": 48,
+      "relations": 83
+    },
+    "controllers/consent.go": {
+      "hash": "fb38047bc487b5c4",
+      "nodes": 5,
+      "relations": 8
+    },
+    "controllers/coupon.go": {
+      "hash": "68383ef8ab47ddad",
+      "nodes": 17,
+      "relations": 29
+    },
+    "controllers/enforcer.go": {
+      "hash": "5600cde48667b0b0",
+      "nodes": 17,
+      "relations": 28
+    },
+    "controllers/entry.go": {
+      "hash": "4d8c1025645107f7",
+      "nodes": 12,
+      "relations": 19
+    },
+    "controllers/entry_opentelemetry.go": {
+      "hash": "7bd9bd27f6cfbcd5",
+      "nodes": 10,
+      "relations": 21
+    },
+    "controllers/entry_util.go": {
+      "hash": "e10b7d10878ff995",
+      "nodes": 20,
+      "relations": 33
+    },
+    "controllers/face.go": {
+      "hash": "5991d17de048b4ff",
+      "nodes": 5,
+      "relations": 10
+    },
+    "controllers/form.go": {
+      "hash": "a4ec0c4bfebacae9",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/get-dashboard.go": {
+      "hash": "03c03f092a2be030",
+      "nodes": 6,
+      "relations": 7
+    },
+    "controllers/group.go": {
+      "hash": "a320983629acc4db",
+      "nodes": 11,
+      "relations": 20
+    },
+    "controllers/group_upload.go": {
+      "hash": "2b568b45be3e14c5",
+      "nodes": 6,
+      "relations": 13
+    },
+    "controllers/invitation.go": {
+      "hash": "0e0dde9d7797d677",
+      "nodes": 15,
+      "relations": 26
+    },
+    "controllers/kerberos.go": {
+      "hash": "b8a065bd615d15e3",
+      "nodes": 7,
+      "relations": 16
+    },
+    "controllers/key.go": {
+      "hash": "02281ab550b532f3",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/ldap.go": {
+      "hash": "188c9aa91b41ff51",
+      "nodes": 18,
+      "relations": 29
+    },
+    "controllers/link.go": {
+      "hash": "1bb0dcd3cc0073d6",
+      "nodes": 8,
+      "relations": 14
+    },
+    "controllers/mcp_server.go": {
+      "hash": "b8fdc9c0a55c856f",
+      "nodes": 9,
+      "relations": 22
+    },
+    "controllers/mfa.go": {
+      "hash": "da2c993c1556eef6",
+      "nodes": 9,
+      "relations": 14
+    },
+    "controllers/model.go": {
+      "hash": "5de73877d36e3f8c",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/oauth_dcr.go": {
+      "hash": "19c5e41d381437c5",
+      "nodes": 12,
+      "relations": 21
+    },
+    "controllers/order.go": {
+      "hash": "6d70bea43521ba68",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/order_pay.go": {
+      "hash": "798bf28e8897fa9a",
+      "nodes": 8,
+      "relations": 15
+    },
+    "controllers/organization.go": {
+      "hash": "a291b825ccede2eb",
+      "nodes": 12,
+      "relations": 19
+    },
+    "controllers/payment.go": {
+      "hash": "4a972ff660722221",
+      "nodes": 13,
+      "relations": 20
+    },
+    "controllers/permission.go": {
+      "hash": "94828d1f081daf2b",
+      "nodes": 12,
+      "relations": 19
+    },
+    "controllers/permission_upload.go": {
+      "hash": "5ea06bd639598422",
+      "nodes": 6,
+      "relations": 13
+    },
+    "controllers/plan.go": {
+      "hash": "eb8a6b66bdb5f780",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/pricing.go": {
+      "hash": "b3658e8f8d5fb48f",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/product.go": {
+      "hash": "8d1bb543e94ce3b7",
+      "nodes": 13,
+      "relations": 24
+    },
+    "controllers/prometheus.go": {
+      "hash": "2c98f1f9e344e946",
+      "nodes": 5,
+      "relations": 8
+    },
+    "controllers/provider.go": {
+      "hash": "db90729e596d44ae",
+      "nodes": 13,
+      "relations": 20
+    },
+    "controllers/record.go": {
+      "hash": "bdcb6d7c06772d6f",
+      "nodes": 8,
+      "relations": 15
+    },
+    "controllers/resource.go": {
+      "hash": "074194d583594e8a",
+      "nodes": 18,
+      "relations": 39
+    },
+    "controllers/role.go": {
+      "hash": "9db8ef94883d35d8",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/role_upload.go": {
+      "hash": "93e88860843f60ca",
+      "nodes": 6,
+      "relations": 13
+    },
+    "controllers/rule.go": {
+      "hash": "5636a06404623146",
+      "nodes": 25,
+      "relations": 40
+    },
+    "controllers/saml.go": {
+      "hash": "918614d797f50579",
+      "nodes": 7,
+      "relations": 14
+    },
+    "controllers/scan.go": {
+      "hash": "104e3c581b93fb9a",
+      "nodes": 7,
+      "relations": 16
+    },
+    "controllers/scim.go": {
+      "hash": "c89e9ae2916885d8",
+      "nodes": 4,
+      "relations": 7
+    },
+    "controllers/server.go": {
+      "hash": "0c96faeffc63fbc6",
+      "nodes": 13,
+      "relations": 22
+    },
+    "controllers/server_online.go": {
+      "hash": "dcbf7c847d5dfeaa",
+      "nodes": 7,
+      "relations": 14
+    },
+    "controllers/server_sync.go": {
+      "hash": "5b7f985eb28921cd",
+      "nodes": 7,
+      "relations": 16
+    },
+    "controllers/service.go": {
+      "hash": "84a1f4846c3f8391",
+      "nodes": 22,
+      "relations": 41
+    },
+    "controllers/service_ip_limit.go": {
+      "hash": "b04b07cecd3b5c9c",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/session.go": {
+      "hash": "b2af64a646f57784",
+      "nodes": 13,
+      "relations": 24
+    },
+    "controllers/site.go": {
+      "hash": "3b51cf8e5df794b8",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/subscription.go": {
+      "hash": "4ebe4cb4747ccfd9",
+      "nodes": 11,
+      "relations": 20
+    },
+    "controllers/syncer.go": {
+      "hash": "47fb5a6704f3cc8b",
+      "nodes": 13,
+      "relations": 22
+    },
+    "controllers/system_info.go": {
+      "hash": "5f4da3fac729d4d4",
+      "nodes": 7,
+      "relations": 12
+    },
+    "controllers/ticket.go": {
+      "hash": "3cabc61e11ca34f0",
+      "nodes": 11,
+      "relations": 18
+    },
+    "controllers/token.go": {
+      "hash": "808e8f967e10bf5a",
+      "nodes": 20,
+      "relations": 31
+    },
+    "controllers/transaction.go": {
+      "hash": "e45a61e1e31a0a85",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/types.go": {
+      "hash": "aa31edfac7b03055",
+      "nodes": 21,
+      "relations": 39
+    },
+    "controllers/user.go": {
+      "hash": "bc824b13ababcbb5",
+      "nodes": 23,
+      "relations": 36
+    },
+    "controllers/user_upload.go": {
+      "hash": "d78836bfe28f06be",
+      "nodes": 12,
+      "relations": 25
+    },
+    "controllers/util.go": {
+      "hash": "16a55ba657619f5c",
+      "nodes": 35,
+      "relations": 48
+    },
+    "controllers/verification.go": {
+      "hash": "4c6e02638b5a6373",
+      "nodes": 23,
+      "relations": 40
+    },
+    "controllers/verification_util.go": {
+      "hash": "c992ff6c2701a438",
+      "nodes": 6,
+      "relations": 9
+    },
+    "controllers/webauthn.go": {
+      "hash": "9de297ddcfcf19d9",
+      "nodes": 14,
+      "relations": 31
+    },
+    "controllers/webhook.go": {
+      "hash": "92271cde6edda03e",
+      "nodes": 10,
+      "relations": 17
+    },
+    "controllers/webhook_event.go": {
+      "hash": "bfcb4f7c15051f84",
+      "nodes": 14,
+      "relations": 21
+    },
+    "controllers/wellknown_oauth_prm.go": {
+      "hash": "483a048293b4b004",
+      "nodes": 4,
+      "relations": 5
+    },
+    "controllers/wellknown_oidc_discovery.go": {
+      "hash": "42cb1586d88fa51f",
+      "nodes": 11,
+      "relations": 14
+    },
+    "cred/argon2id.go": {
+      "hash": "c2e616f8abd40a9c",
+      "nodes": 11,
+      "relations": 12
+    },
+    "cred/bcrypt.go": {
+      "hash": "18cb8a22ecfb15ec",
+      "nodes": 11,
+      "relations": 12
+    },
+    "cred/manager.go": {
+      "hash": "620dfaa43a7ffad7",
+      "nodes": 4,
+      "relations": 3
+    },
+    "cred/md5-user-salt.go": {
+      "hash": "eaa963badb6262bf",
+      "nodes": 16,
+      "relations": 19
+    },
+    "cred/pbkdf2-salt.go": {
+      "hash": "eac12465defcacce",
+      "nodes": 13,
+      "relations": 18
+    },
+    "cred/pbkdf2_django.go": {
+      "hash": "06858e829b9c1a65",
+      "nodes": 15,
+      "relations": 24
+    },
+    "cred/plain.go": {
+      "hash": "b2a412c88c6de60e",
+      "nodes": 10,
+      "relations": 9
+    },
+    "cred/sha256-salt.go": {
+      "hash": "e334641a93f44a52",
+      "nodes": 16,
+      "relations": 19
+    },
+    "cred/sha256-salt_test.go": {
+      "hash": "715d96ae88b8a161",
+      "nodes": 7,
+      "relations": 10
+    },
+    "cred/sha512-salt.go": {
+      "hash": "a03e393b848c5334",
+      "nodes": 16,
+      "relations": 19
+    },
+    "deployment/deploy.go": {
+      "hash": "5c6b02969b7b0a63",
+      "nodes": 16,
+      "relations": 31
+    },
+    "deployment/deploy_test.go": {
+      "hash": "8ed9e2366e18682e",
+      "nodes": 6,
+      "relations": 11
+    },
+    "email/azure_acs.go": {
+      "hash": "3d297abe5839a6b4",
+      "nodes": 72,
+      "relations": 119
+    },
+    "email/custom_http.go": {
+      "hash": "e251729f171026cb",
+      "nodes": 26,
+      "relations": 44
+    },
+    "email/provider.go": {
+      "hash": "07f69c1e41d8625c",
+      "nodes": 15,
+      "relations": 14
+    },
+    "email/resend.go": {
+      "hash": "77156e8a2bb57478",
+      "nodes": 13,
+      "relations": 17
+    },
+    "email/sendgrid.go": {
+      "hash": "4b445c08c0314d01",
+      "nodes": 23,
+      "relations": 36
+    },
+    "email/smtp.go": {
+      "hash": "39ef0c00a9b7c940",
+      "nodes": 20,
+      "relations": 26
+    },
+    "faceId/aliyun.go": {
+      "hash": "bcade3a87cb5d38f",
+      "nodes": 18,
+      "relations": 31
+    },
+    "faceId/local_uniface.go": {
+      "hash": "616ffc584c5b0293",
+      "nodes": 26,
+      "relations": 48
+    },
+    "faceId/local_uniface_test.go": {
+      "hash": "b123eacb424228ca",
+      "nodes": 11,
+      "relations": 18
+    },
+    "faceId/provider.go": {
+      "hash": "491249e812aee166",
+      "nodes": 7,
+      "relations": 6
+    },
+    "faceId/provider_test.go": {
+      "hash": "5786371ae51fccbd",
+      "nodes": 6,
+      "relations": 7
+    },
+    "form/auth.go": {
+      "hash": "dd573c710bc183b2",
+      "nodes": 53,
+      "relations": 101
+    },
+    "form/verification.go": {
+      "hash": "63183c20c8262572",
+      "nodes": 18,
+      "relations": 30
+    },
+    "i18n/deduplicate_test.go": {
+      "hash": "2ab2d30fcbfc44dd",
+      "nodes": 18,
+      "relations": 32
+    },
+    "i18n/generate.go": {
+      "hash": "31c26cf6a2012ae6",
+      "nodes": 29,
+      "relations": 42
+    },
+    "i18n/generate_test.go": {
+      "hash": "7deeb8c01987f494",
+      "nodes": 6,
+      "relations": 7
+    },
+    "i18n/util.go": {
+      "hash": "920dbf867d7e8f91",
+      "nodes": 25,
+      "relations": 34
+    },
+    "idp/adfs.go": {
+      "hash": "79b83af81b4bc83f",
+      "nodes": 34,
+      "relations": 66
+    },
+    "idp/alipay.go": {
+      "hash": "3ba2a32180114eb2",
+      "nodes": 78,
+      "relations": 139
+    },
+    "idp/azuread_b2c.go": {
+      "hash": "64d2d3c6eeee92d6",
+      "nodes": 32,
+      "relations": 55
+    },
+    "idp/baidu.go": {
+      "hash": "5607c19fb40b1e6e",
+      "nodes": 25,
+      "relations": 41
+    },
+    "idp/bilibili.go": {
+      "hash": "ebed663c8a4af5ed",
+      "nodes": 47,
+      "relations": 78
+    },
+    "idp/casdoor.go": {
+      "hash": "3e728147fb1821a0",
+      "nodes": 37,
+      "relations": 64
+    },
+    "idp/custom.go": {
+      "hash": "e9995f89c14ca8c9",
+      "nodes": 43,
+      "relations": 76
+    },
+    "idp/dingtalk.go": {
+      "hash": "8d521a84f447336e",
+      "nodes": 51,
+      "relations": 83
+    },
+    "idp/douyin.go": {
+      "hash": "14db445c3cebf2df",
+      "nodes": 31,
+      "relations": 51
+    },
+    "idp/facebook.go": {
+      "hash": "184b33d81b53e084",
+      "nodes": 42,
+      "relations": 69
+    },
+    "idp/gitee.go": {
+      "hash": "c4536a73d9acf3a5",
+      "nodes": 67,
+      "relations": 123
+    },
+    "idp/github.go": {
+      "hash": "6be93f97a2cb5f05",
+      "nodes": 82,
+      "relations": 149
+    },
+    "idp/gitlab.go": {
+      "hash": "addb828746211579",
+      "nodes": 72,
+      "relations": 133
+    },
+    "idp/google.go": {
+      "hash": "f08fd9d27cceca23",
+      "nodes": 61,
+      "relations": 113
+    },
+    "idp/goth.go": {
+      "hash": "e5026024276e92c8",
+      "nodes": 93,
+      "relations": 232
+    },
+    "idp/infoflow_internal.go": {
+      "hash": "6bfbd43277a2dd62",
+      "nodes": 41,
+      "relations": 66
+    },
+    "idp/infoflow_third_party.go": {
+      "hash": "741e197752089f93",
+      "nodes": 46,
+      "relations": 75
+    },
+    "idp/kwai.go": {
+      "hash": "bc83a4455929f2e4",
+      "nodes": 37,
+      "relations": 61
+    },
+    "idp/lark.go": {
+      "hash": "5ea001d225489f71",
+      "nodes": 40,
+      "relations": 65
+    },
+    "idp/linkedin.go": {
+      "hash": "de2f7efa936a6e79",
+      "nodes": 39,
+      "relations": 63
+    },
+    "idp/metamask.go": {
+      "hash": "131374c2a9a28205",
+      "nodes": 16,
+      "relations": 28
+    },
+    "idp/okta.go": {
+      "hash": "b15e8fc5f690fdf6",
+      "nodes": 41,
+      "relations": 68
+    },
+    "idp/provider.go": {
+      "hash": "045b26b2e7d266de",
+      "nodes": 40,
+      "relations": 73
+    },
+    "idp/qq.go": {
+      "hash": "b5d771b240515ad5",
+      "nodes": 46,
+      "relations": 85
+    },
+    "idp/telegram.go": {
+      "hash": "2ae3b576f1848df8",
+      "nodes": 33,
+      "relations": 58
+    },
+    "idp/twitter.go": {
+      "hash": "25ea0b87d839dfe2",
+      "nodes": 44,
+      "relations": 74
+    },
+    "idp/web3onboard.go": {
+      "hash": "874a16eb39147cff",
+      "nodes": 27,
+      "relations": 47
+    },
+    "idp/wechat.go": {
+      "hash": "a191c520a4f22ac7",
+      "nodes": 69,
+      "relations": 116
+    },
+    "idp/wechat_miniprogram.go": {
+      "hash": "2cf104096e1e2259",
+      "nodes": 25,
+      "relations": 41
+    },
+    "idp/wechat_mobile.go": {
+      "hash": "cfe8fd20cb0069f6",
+      "nodes": 27,
+      "relations": 46
+    },
+    "idp/wecom_internal.go": {
+      "hash": "d836eabae3a0d47a",
+      "nodes": 59,
+      "relations": 103
+    },
+    "idp/wecom_third_party.go": {
+      "hash": "a3c44c6a4ba9b779",
+      "nodes": 43,
+      "relations": 70
+    },
+    "idp/weibo.go": {
+      "hash": "c990172096854aa1",
+      "nodes": 62,
+      "relations": 112
+    },
+    "idv/aliyun.go": {
+      "hash": "35a9a96ba37a10fd",
+      "nodes": 18,
+      "relations": 28
+    },
+    "idv/jumio.go": {
+      "hash": "1ae378147335c1a6",
+      "nodes": 30,
+      "relations": 52
+    },
+    "idv/provider.go": {
+      "hash": "2564f9c3ca0d1e10",
+      "nodes": 7,
+      "relations": 6
+    },
+    "ip/ip.go": {
+      "hash": "f1c2f8f6795e09e8",
+      "nodes": 6,
+      "relations": 9
+    },
+    "ip/ip17mon.go": {
+      "hash": "1c51d03b90412e76",
+      "nodes": 44,
+      "relations": 62
+    },
+    "ldap/server.go": {
+      "hash": "dd7d401b561f3c21",
+      "nodes": 33,
+      "relations": 50
+    },
+    "ldap/util.go": {
+      "hash": "05c754fa43ba8324",
+      "nodes": 54,
+      "relations": 73
+    },
+    "ldap/util_test.go": {
+      "hash": "27c0e1a464e030de",
+      "nodes": 12,
+      "relations": 23
+    },
+    "log/agent_openclaw.go": {
+      "hash": "532440d8d6c64297",
+      "nodes": 26,
+      "relations": 29
+    },
+    "log/casdoor_permission.go": {
+      "hash": "64628b358afebac3",
+      "nodes": 15,
+      "relations": 20
+    },
+    "log/provider.go": {
+      "hash": "756c57781972dbe3",
+      "nodes": 10,
+      "relations": 13
+    },
+    "log/selinux_log.go": {
+      "hash": "b37d3ee22b6cef33",
+      "nodes": 13,
+      "relations": 17
+    },
+    "log/selinux_log_linux.go": {
+      "hash": "afe43b17d9995348",
+      "nodes": 23,
+      "relations": 41
+    },
+    "log/selinux_log_unsupported.go": {
+      "hash": "5facb8a6162ed3ba",
+      "nodes": 5,
+      "relations": 9
+    },
+    "log/system_log.go": {
+      "hash": "c24fd2f049a1ff4f",
+      "nodes": 16,
+      "relations": 21
+    },
+    "log/system_log_unix.go": {
+      "hash": "1740971857f4b54a",
+      "nodes": 21,
+      "relations": 35
+    },
+    "log/system_log_windows.go": {
+      "hash": "a7109a523f7c1162",
+      "nodes": 31,
+      "relations": 48
+    },
+    "main.go": {
+      "hash": "61f9aecb06ddb331",
+      "nodes": 17,
+      "relations": 46
+    },
+    "mcp/util.go": {
+      "hash": "6816335a5eeb128c",
+      "nodes": 59,
+      "relations": 84
+    },
+    "mcpself/application.go": {
+      "hash": "121fe6500522129c",
+      "nodes": 22,
+      "relations": 29
+    },
+    "mcpself/auth.go": {
+      "hash": "af163ccfb0220fc5",
+      "nodes": 18,
+      "relations": 26
+    },
+    "mcpself/base.go": {
+      "hash": "3fc8fcaaaf79f544",
+      "nodes": 119,
+      "relations": 173
+    },
+    "mcpself/permission.go": {
+      "hash": "7312532bc03aadff",
+      "nodes": 10,
+      "relations": 11
+    },
+    "mcpself/user.go": {
+      "hash": "bc6c5de1496bfc1a",
+      "nodes": 21,
+      "relations": 28
+    },
+    "notification/bark.go": {
+      "hash": "78e597e9b3d3ff81",
+      "nodes": 5,
+      "relations": 8
+    },
+    "notification/cucloud.go": {
+      "hash": "01de34dcb92bc7e6",
+      "nodes": 11,
+      "relations": 14
+    },
+    "notification/custom_http.go": {
+      "hash": "26d1ef857989bfc3",
+      "nodes": 19,
+      "relations": 33
+    },
+    "notification/dingtalk.go": {
+      "hash": "de84c8301009d9c1",
+      "nodes": 6,
+      "relations": 9
+    },
+    "notification/discord.go": {
+      "hash": "9e16be6e8dbc70f3",
+      "nodes": 7,
+      "relations": 12
+    },
+    "notification/google_chat.go": {
+      "hash": "649bb80dd7c81a21",
+      "nodes": 9,
+      "relations": 20
+    },
+    "notification/lark.go": {
+      "hash": "8503a0c4329a2d04",
+      "nodes": 5,
+      "relations": 8
+    },
+    "notification/line.go": {
+      "hash": "bc4ea9f911f7b279",
+      "nodes": 8,
+      "relations": 14
+    },
+    "notification/matrix.go": {
+      "hash": "37e96705d2d1f2fc",
+      "nodes": 10,
+      "relations": 17
+    },
+    "notification/microsoft_teams.go": {
+      "hash": "1e3b23199871d774",
+      "nodes": 5,
+      "relations": 8
+    },
+    "notification/provider.go": {
+      "hash": "f835b5950dec0c06",
+      "nodes": 14,
+      "relations": 15
+    },
+    "notification/pushbullet.go": {
+      "hash": "502ef8f0fdcfae5d",
+      "nodes": 6,
+      "relations": 9
+    },
+    "notification/pushover.go": {
+      "hash": "ae4bab8340b7aba9",
+      "nodes": 6,
+      "relations": 9
+    },
+    "notification/reddit.go": {
+      "hash": "bd615c2b50f4653f",
+      "nodes": 9,
+      "relations": 12
+    },
+    "notification/rocket_chat.go": {
+      "hash": "2856694ad628c7a9",
+      "nodes": 10,
+      "relations": 17
+    },
+    "notification/slack.go": {
+      "hash": "0fdbcf676bb2b6c8",
+      "nodes": 6,
+      "relations": 9
+    },
+    "notification/telegram.go": {
+      "hash": "ce3987334e30da92",
+      "nodes": 9,
+      "relations": 18
+    },
+    "notification/twitter.go": {
+      "hash": "a96a1f923d2554ef",
+      "nodes": 10,
+      "relations": 16
+    },
+    "notification/viber.go": {
+      "hash": "1289d56e753ad938",
+      "nodes": 8,
+      "relations": 11
+    },
+    "notification/webpush.go": {
+      "hash": "e11e9861ff7a0195",
+      "nodes": 7,
+      "relations": 10
+    },
+    "notification/wecom.go": {
+      "hash": "683248a7bbe8490b",
+      "nodes": 19,
+      "relations": 35
+    },
+    "object/adapter.go": {
+      "hash": "183abe82b25ef308",
+      "nodes": 54,
+      "relations": 80
+    },
+    "object/adapter_safe.go": {
+      "hash": "592d83d5c02ff904",
+      "nodes": 30,
+      "relations": 35
+    },
+    "object/agent.go": {
+      "hash": "083a68f293f5cb2f",
+      "nodes": 40,
+      "relations": 53
+    },
+    "object/application.go": {
+      "hash": "80d2b3abc8836bbd",
+      "nodes": 193,
+      "relations": 324
+    },
+    "object/application_item.go": {
+      "hash": "4951fedce984e04d",
+      "nodes": 29,
+      "relations": 28
+    },
+    "object/application_util.go": {
+      "hash": "27fcfd498ced323c",
+      "nodes": 59,
+      "relations": 72
+    },
+    "object/application_util_test.go": {
+      "hash": "8138e9ef9bbfbf64",
+      "nodes": 4,
+      "relations": 5
+    },
+    "object/avatar.go": {
+      "hash": "11317bc2210ee7fe",
+      "nodes": 25,
+      "relations": 34
+    },
+    "object/captcha.go": {
+      "hash": "fb5a6197ac3a9600",
+      "nodes": 7,
+      "relations": 10
+    },
+    "object/cert.go": {
+      "hash": "92d811ab421f3088",
+      "nodes": 85,
+      "relations": 113
+    },
+    "object/cert_whois.go": {
+      "hash": "b29509aa3d7eb7f0",
+      "nodes": 10,
+      "relations": 19
+    },
+    "object/check.go": {
+      "hash": "57242eaffb47702a",
+      "nodes": 80,
+      "relations": 101
+    },
+    "object/check_ip.go": {
+      "hash": "2d9fc735b7d67067",
+      "nodes": 19,
+      "relations": 28
+    },
+    "object/check_password_complexity.go": {
+      "hash": "c4646e1ab7572426",
+      "nodes": 32,
+      "relations": 37
+    },
+    "object/check_password_expired.go": {
+      "hash": "c1e7d047a82ebcc0",
+      "nodes": 8,
+      "relations": 15
+    },
+    "object/check_util.go": {
+      "hash": "a645a1b807ddaa46",
+      "nodes": 17,
+      "relations": 26
+    },
+    "object/coupon.go": {
+      "hash": "14f765f3530a531f",
+      "nodes": 64,
+      "relations": 97
+    },
+    "object/coupon_apply.go": {
+      "hash": "56cb6b1fd844cc5f",
+      "nodes": 32,
+      "relations": 41
+    },
+    "object/email.go": {
+      "hash": "7d592d93a71364fe",
+      "nodes": 12,
+      "relations": 13
+    },
+    "object/enforcer.go": {
+      "hash": "9402ee14156847c0",
+      "nodes": 75,
+      "relations": 98
+    },
+    "object/entry.go": {
+      "hash": "cbdd9c5fd7b66949",
+      "nodes": 43,
+      "relations": 59
+    },
+    "object/form.go": {
+      "hash": "5ec4a3277a329b90",
+      "nodes": 51,
+      "relations": 67
+    },
+    "object/get-dashboard-extra.go": {
+      "hash": "f10045f52741e5b9",
+      "nodes": 24,
+      "relations": 39
+    },
+    "object/get-dashboard.go": {
+      "hash": "2e8c96150b653da3",
+      "nodes": 15,
+      "relations": 25
+    },
+    "object/group.go": {
+      "hash": "c94aecbd96fa1143",
+      "nodes": 95,
+      "relations": 128
+    },
+    "object/group_upload.go": {
+      "hash": "9fa0d247f7fbb796",
+      "nodes": 7,
+      "relations": 8
+    },
+    "object/init.go": {
+      "hash": "c59f9b83d16cd459",
+      "nodes": 24,
+      "relations": 35
+    },
+    "object/init_data.go": {
+      "hash": "ec6ca7ee54ff2cc8",
+      "nodes": 94,
+      "relations": 126
+    },
+    "object/init_data_dump.go": {
+      "hash": "7773c39a54d3766d",
+      "nodes": 6,
+      "relations": 7
+    },
+    "object/init_data_dump_test.go": {
+      "hash": "64a054330a6d377e",
+      "nodes": 4,
+      "relations": 5
+    },
+    "object/invitation.go": {
+      "hash": "0c7c008c1ae01ae7",
+      "nodes": 72,
+      "relations": 95
+    },
+    "object/kerberos.go": {
+      "hash": "0f6dad08143389ad",
+      "nodes": 16,
+      "relations": 31
+    },
+    "object/key.go": {
+      "hash": "3bf60767d0c8127f",
+      "nodes": 70,
+      "relations": 90
+    },
+    "object/ldap.go": {
+      "hash": "fdaea4b313b6dccd",
+      "nodes": 39,
+      "relations": 60
+    },
+    "object/ldap_autosync.go": {
+      "hash": "e255da094b610370",
+      "nodes": 22,
+      "relations": 32
+    },
+    "object/ldap_conn.go": {
+      "hash": "8af0c5a8332bebe8",
+      "nodes": 98,
+      "relations": 152
+    },
+    "object/ldap_password_type.go": {
+      "hash": "8e84c498cdeb0043",
+      "nodes": 6,
+      "relations": 11
+    },
+    "object/log_provider.go": {
+      "hash": "339aab64a9392bf3",
+      "nodes": 20,
+      "relations": 25
+    },
+    "object/mfa.go": {
+      "hash": "743f7698143382e4",
+      "nodes": 38,
+      "relations": 49
+    },
+    "object/mfa_push.go": {
+      "hash": "3c5e8bc08e0ab729",
+      "nodes": 25,
+      "relations": 39
+    },
+    "object/mfa_radius.go": {
+      "hash": "cacb2b9f5da276df",
+      "nodes": 23,
+      "relations": 35
+    },
+    "object/mfa_radius_test.go": {
+      "hash": "2b8b30e72c3010f9",
+      "nodes": 8,
+      "relations": 9
+    },
+    "object/mfa_sms.go": {
+      "hash": "3419dd1669759515",
+      "nodes": 17,
+      "relations": 20
+    },
+    "object/mfa_totp.go": {
+      "hash": "e09df0c4bce1c209",
+      "nodes": 21,
+      "relations": 31
+    },
+    "object/mfa_totp_test.go": {
+      "hash": "4bc192b8013ae3a8",
+      "nodes": 11,
+      "relations": 14
+    },
+    "object/model.go": {
+      "hash": "e0ff6cdbd5a38e60",
+      "nodes": 53,
+      "relations": 68
+    },
+    "object/notification.go": {
+      "hash": "047bb71e73f74847",
+      "nodes": 45,
+      "relations": 72
+    },
+    "object/notification_test.go": {
+      "hash": "01ff4a80a58af206",
+      "nodes": 10,
+      "relations": 11
+    },
+    "object/oauth_dcr.go": {
+      "hash": "1ed645bb3d1f5424",
+      "nodes": 54,
+      "relations": 91
+    },
+    "object/openclaw_session_graph.go": {
+      "hash": "c173816bd7a6bf47",
+      "nodes": 143,
+      "relations": 192
+    },
+    "object/openclaw_transcript_storage.go": {
+      "hash": "2d10e5dd88b0a8dd",
+      "nodes": 86,
+      "relations": 108
+    },
+    "object/openclaw_transcript_sync.go": {
+      "hash": "16186e05807c0848",
+      "nodes": 157,
+      "relations": 226
+    },
+    "object/order.go": {
+      "hash": "2b5dc42eab374d4e",
+      "nodes": 64,
+      "relations": 98
+    },
+    "object/order_pay.go": {
+      "hash": "5679338496e5b763",
+      "nodes": 20,
+      "relations": 31
+    },
+    "object/organization.go": {
+      "hash": "a9689ce515900573",
+      "nodes": 139,
+      "relations": 218
+    },
+    "object/ormer.go": {
+      "hash": "616642a3590083ef",
+      "nodes": 61,
+      "relations": 101
+    },
+    "object/ormer_session.go": {
+      "hash": "90ce2f5d7819f1fd",
+      "nodes": 21,
+      "relations": 28
+    },
+    "object/payment.go": {
+      "hash": "90ce4bacec925c5c",
+      "nodes": 82,
+      "relations": 121
+    },
+    "object/permission.go": {
+      "hash": "433b68b20af08862",
+      "nodes": 92,
+      "relations": 121
+    },
+    "object/permission_enforcer.go": {
+      "hash": "f4f66c54786b0df0",
+      "nodes": 78,
+      "relations": 99
+    },
+    "object/permission_enforcer_test.go": {
+      "hash": "82f270eca40afbed",
+      "nodes": 7,
+      "relations": 10
+    },
+    "object/permission_upload.go": {
+      "hash": "6493838d47782fd8",
+      "nodes": 11,
+      "relations": 16
+    },
+    "object/plan.go": {
+      "hash": "3668a77dda9692eb",
+      "nodes": 51,
+      "relations": 72
+    },
+    "object/pricing.go": {
+      "hash": "5fcc73e1975e2a6b",
+      "nodes": 53,
+      "relations": 69
+    },
+    "object/product.go": {
+      "hash": "c56d8bbdbc534e57",
+      "nodes": 83,
+      "relations": 107
+    },
+    "object/product_test.go": {
+      "hash": "a9524deac948a37b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "object/prometheus.go": {
+      "hash": "9472cd5c0d4e3c67",
+      "nodes": 30,
+      "relations": 49
+    },
+    "object/provider.go": {
+      "hash": "0aac0f981b122817",
+      "nodes": 151,
+      "relations": 224
+    },
+    "object/provider_item.go": {
+      "hash": "7c0d5ecbb9463f30",
+      "nodes": 19,
+      "relations": 29
+    },
+    "object/radius.go": {
+      "hash": "928c81c6bf40f65f",
+      "nodes": 55,
+      "relations": 84
+    },
+    "object/record.go": {
+      "hash": "f9a312c2c22f94b8",
+      "nodes": 72,
+      "relations": 106
+    },
+    "object/resource.go": {
+      "hash": "e924343ce51e7c21",
+      "nodes": 52,
+      "relations": 73
+    },
+    "object/resource_direct.go": {
+      "hash": "3d7c1efc4615dca4",
+      "nodes": 10,
+      "relations": 15
+    },
+    "object/role.go": {
+      "hash": "2ef779a4d79c4053",
+      "nodes": 68,
+      "relations": 91
+    },
+    "object/role_upload.go": {
+      "hash": "ccafc720420d0bac",
+      "nodes": 9,
+      "relations": 14
+    },
+    "object/rule.go": {
+      "hash": "db7ce770c3bdb121",
+      "nodes": 47,
+      "relations": 65
+    },
+    "object/rule_cache.go": {
+      "hash": "882c3c3cc228c817",
+      "nodes": 8,
+      "relations": 11
+    },
+    "object/saml_idp.go": {
+      "hash": "1c5b632176b7fe58",
+      "nodes": 93,
+      "relations": 161
+    },
+    "object/saml_sp.go": {
+      "hash": "7fd504a80faab617",
+      "nodes": 31,
+      "relations": 52
+    },
+    "object/server.go": {
+      "hash": "8663688b0e7f31bf",
+      "nodes": 52,
+      "relations": 73
+    },
+    "object/session.go": {
+      "hash": "1035b35e8ac5029c",
+      "nodes": 61,
+      "relations": 78
+    },
+    "object/signin_error.go": {
+      "hash": "3059defbf52f4e9c",
+      "nodes": 14,
+      "relations": 15
+    },
+    "object/site.go": {
+      "hash": "26a5f4a0da38ccfd",
+      "nodes": 85,
+      "relations": 127
+    },
+    "object/site_cache.go": {
+      "hash": "433d3cd4a21bd93b",
+      "nodes": 13,
+      "relations": 18
+    },
+    "object/site_cert.go": {
+      "hash": "62fd28c47c4ae255",
+      "nodes": 16,
+      "relations": 27
+    },
+    "object/site_cert_account.go": {
+      "hash": "965098bc61a30f57",
+      "nodes": 21,
+      "relations": 36
+    },
+    "object/site_cert_ecc.go": {
+      "hash": "aba21f7b457e4478",
+      "nodes": 13,
+      "relations": 26
+    },
+    "object/site_cert_http.go": {
+      "hash": "98e216bce25f5428",
+      "nodes": 16,
+      "relations": 20
+    },
+    "object/site_timer.go": {
+      "hash": "2ac88cef2ce51f4c",
+      "nodes": 9,
+      "relations": 16
+    },
+    "object/site_timer_health.go": {
+      "hash": "d2dfb3eac3ebf61d",
+      "nodes": 4,
+      "relations": 3
+    },
+    "object/sms.go": {
+      "hash": "4713747618c512ef",
+      "nodes": 10,
+      "relations": 17
+    },
+    "object/sms_custom_http.go": {
+      "hash": "82e2562e59395627",
+      "nodes": 28,
+      "relations": 49
+    },
+    "object/sms_pnvs.go": {
+      "hash": "00138bc396e62df8",
+      "nodes": 17,
+      "relations": 27
+    },
+    "object/storage.go": {
+      "hash": "f1ad35ed2d3eb5e7",
+      "nodes": 52,
+      "relations": 73
+    },
+    "object/subscription.go": {
+      "hash": "a661955c52a29a08",
+      "nodes": 68,
+      "relations": 90
+    },
+    "object/syncer.go": {
+      "hash": "4747aa6446ff3eac",
+      "nodes": 97,
+      "relations": 142
+    },
+    "object/syncer_activedirectory.go": {
+      "hash": "892451c5c50fd38d",
+      "nodes": 31,
+      "relations": 43
+    },
+    "object/syncer_affiliation.go": {
+      "hash": "4ffd15d1690a9a5e",
+      "nodes": 6,
+      "relations": 7
+    },
+    "object/syncer_awsiam.go": {
+      "hash": "53e84798bd20a027",
+      "nodes": 26,
+      "relations": 43
+    },
+    "object/syncer_azuread.go": {
+      "hash": "a8e164b926448493",
+      "nodes": 51,
+      "relations": 88
+    },
+    "object/syncer_cron.go": {
+      "hash": "f2b94e37b3297ddb",
+      "nodes": 12,
+      "relations": 15
+    },
+    "object/syncer_database.go": {
+      "hash": "6d292e63bb6bb524",
+      "nodes": 28,
+      "relations": 46
+    },
+    "object/syncer_dingtalk.go": {
+      "hash": "55f368e0b7767125",
+      "nodes": 90,
+      "relations": 142
+    },
+    "object/syncer_googleworkspace.go": {
+      "hash": "699003e4e689af12",
+      "nodes": 37,
+      "relations": 53
+    },
+    "object/syncer_googleworkspace_test.go": {
+      "hash": "c3b6193566bd8eb3",
+      "nodes": 11,
+      "relations": 14
+    },
+    "object/syncer_group.go": {
+      "hash": "af37eb817dc10ca8",
+      "nodes": 8,
+      "relations": 11
+    },
+    "object/syncer_interface.go": {
+      "hash": "b4f10512f23ff609",
+      "nodes": 12,
+      "relations": 18
+    },
+    "object/syncer_keycloak.go": {
+      "hash": "7deb0feac321cccc",
+      "nodes": 6,
+      "relations": 5
+    },
+    "object/syncer_lark.go": {
+      "hash": "121d45c2a84fd125",
+      "nodes": 74,
+      "relations": 120
+    },
+    "object/syncer_okta.go": {
+      "hash": "c55d4ba358cd7b10",
+      "nodes": 34,
+      "relations": 54
+    },
+    "object/syncer_public_api.go": {
+      "hash": "b6fa66ae740d1cf4",
+      "nodes": 10,
+      "relations": 11
+    },
+    "object/syncer_scim.go": {
+      "hash": "9e84bbd838167399",
+      "nodes": 73,
+      "relations": 126
+    },
+    "object/syncer_scim_test.go": {
+      "hash": "320394eb67478eca",
+      "nodes": 8,
+      "relations": 9
+    },
+    "object/syncer_sync.go": {
+      "hash": "f9f300dbbd424e01",
+      "nodes": 5,
+      "relations": 8
+    },
+    "object/syncer_user.go": {
+      "hash": "6bdd4c5f4633b96c",
+      "nodes": 18,
+      "relations": 23
+    },
+    "object/syncer_user_test.go": {
+      "hash": "499281756b5e0ca6",
+      "nodes": 7,
+      "relations": 10
+    },
+    "object/syncer_util.go": {
+      "hash": "a07432d9b02045ee",
+      "nodes": 39,
+      "relations": 56
+    },
+    "object/syncer_wecom.go": {
+      "hash": "bf95481bc3cfbbe4",
+      "nodes": 55,
+      "relations": 91
+    },
+    "object/third_party_link.go": {
+      "hash": "50eef80c1ab719dc",
+      "nodes": 31,
+      "relations": 39
+    },
+    "object/ticket.go": {
+      "hash": "9bb3c78454baf84d",
+      "nodes": 53,
+      "relations": 72
+    },
+    "object/token.go": {
+      "hash": "b202cda3671272a9",
+      "nodes": 80,
+      "relations": 109
+    },
+    "object/token_cas.go": {
+      "hash": "de9c52fcffc37d0a",
+      "nodes": 116,
+      "relations": 200
+    },
+    "object/token_cleanup.go": {
+      "hash": "f3a70df2f24e9849",
+      "nodes": 10,
+      "relations": 17
+    },
+    "object/token_dpop.go": {
+      "hash": "790f1a17c0ec9d43",
+      "nodes": 24,
+      "relations": 45
+    },
+    "object/token_jwt.go": {
+      "hash": "fb6558000a641829",
+      "nodes": 168,
+      "relations": 298
+    },
+    "object/token_jwt_key.go": {
+      "hash": "adf2ee82993ee97c",
+      "nodes": 28,
+      "relations": 47
+    },
+    "object/token_jwt_key_test.go": {
+      "hash": "358428088e828225",
+      "nodes": 10,
+      "relations": 15
+    },
+    "object/token_logout.go": {
+      "hash": "735ed3e1bf4e351d",
+      "nodes": 24,
+      "relations": 39
+    },
+    "object/token_oauth.go": {
+      "hash": "167ea70c913ed235",
+      "nodes": 83,
+      "relations": 92
+    },
+    "object/token_oauth_util.go": {
+      "hash": "5cda925154b653ce",
+      "nodes": 142,
+      "relations": 203
+    },
+    "object/token_standard_jwt.go": {
+      "hash": "9edb361066401907",
+      "nodes": 26,
+      "relations": 43
+    },
+    "object/transaction.go": {
+      "hash": "7768ee21ef83b51a",
+      "nodes": 71,
+      "relations": 98
+    },
+    "object/transaction_test.go": {
+      "hash": "0e9e8657302901b2",
+      "nodes": 4,
+      "relations": 5
+    },
+    "object/transaction_validate.go": {
+      "hash": "04424cadb7ebf10a",
+      "nodes": 21,
+      "relations": 26
+    },
+    "object/user.go": {
+      "hash": "897957caabcf808f",
+      "nodes": 405,
+      "relations": 653
+    },
+    "object/user_avatar.go": {
+      "hash": "64a31df033209610",
+      "nodes": 12,
+      "relations": 25
+    },
+    "object/user_avatar_favicon.go": {
+      "hash": "467d8306ee02d20e",
+      "nodes": 33,
+      "relations": 47
+    },
+    "object/user_avatar_gravatar.go": {
+      "hash": "fb152018ae08522e",
+      "nodes": 15,
+      "relations": 30
+    },
+    "object/user_avatar_identicon.go": {
+      "hash": "e8efebf996885187",
+      "nodes": 14,
+      "relations": 31
+    },
+    "object/user_avatar_test.go": {
+      "hash": "5d83c2bff8f843ae",
+      "nodes": 8,
+      "relations": 13
+    },
+    "object/user_cred.go": {
+      "hash": "c883563ab035cfb8",
+      "nodes": 8,
+      "relations": 11
+    },
+    "object/user_enforcer.go": {
+      "hash": "db4f95870c0a8f36",
+      "nodes": 35,
+      "relations": 45
+    },
+    "object/user_scope.go": {
+      "hash": "2a969c26a2219c5c",
+      "nodes": 20,
+      "relations": 30
+    },
+    "object/user_test.go": {
+      "hash": "4a309ae6b73501a3",
+      "nodes": 25,
+      "relations": 38
+    },
+    "object/user_upload.go": {
+      "hash": "cadfda2b11394855",
+      "nodes": 26,
+      "relations": 37
+    },
+    "object/user_util.go": {
+      "hash": "3c2188a44b942d43",
+      "nodes": 118,
+      "relations": 145
+    },
+    "object/user_webauthn.go": {
+      "hash": "05bf61b6f43dd753",
+      "nodes": 21,
+      "relations": 34
+    },
+    "object/util.go": {
+      "hash": "e0ee32e034593267",
+      "nodes": 13,
+      "relations": 14
+    },
+    "object/verification.go": {
+      "hash": "b333b9b3bdb87a2d",
+      "nodes": 140,
+      "relations": 184
+    },
+    "object/verification_ip.go": {
+      "hash": "8481981c7b6552a8",
+      "nodes": 31,
+      "relations": 42
+    },
+    "object/viaSSHDialer.go": {
+      "hash": "7d950e581f19e642",
+      "nodes": 44,
+      "relations": 62
+    },
+    "object/webhook.go": {
+      "hash": "b3a50d876a78d760",
+      "nodes": 65,
+      "relations": 93
+    },
+    "object/webhook_event.go": {
+      "hash": "5aab8eeee26f05d8",
+      "nodes": 75,
+      "relations": 98
+    },
+    "object/webhook_util.go": {
+      "hash": "28ceff4cba29c0cd",
+      "nodes": 11,
+      "relations": 22
+    },
+    "object/webhook_worker.go": {
+      "hash": "4d55e1e958d3bd29",
+      "nodes": 23,
+      "relations": 34
+    },
+    "object/wellknown_oauth_prm.go": {
+      "hash": "1cc271175a032378",
+      "nodes": 14,
+      "relations": 21
+    },
+    "object/wellknown_oidc_discovery.go": {
+      "hash": "17676fa3d2baf5fe",
+      "nodes": 63,
+      "relations": 108
+    },
+    "pp/adyen.go": {
+      "hash": "a19dfdb853406aff",
+      "nodes": 29,
+      "relations": 42
+    },
+    "pp/airwallex.go": {
+      "hash": "27f6c539e8ba2378",
+      "nodes": 80,
+      "relations": 130
+    },
+    "pp/alipay.go": {
+      "hash": "86cac48c1d497d94",
+      "nodes": 30,
+      "relations": 40
+    },
+    "pp/balance.go": {
+      "hash": "a8ba3c46c59d194d",
+      "nodes": 21,
+      "relations": 24
+    },
+    "pp/dummy.go": {
+      "hash": "c94ad8f1022d2ce7",
+      "nodes": 25,
+      "relations": 31
+    },
+    "pp/fastspring.go": {
+      "hash": "e51d1c7449d80ca5",
+      "nodes": 70,
+      "relations": 115
+    },
+    "pp/gc.go": {
+      "hash": "55bbeb68dc9d1926",
+      "nodes": 99,
+      "relations": 175
+    },
+    "pp/lemonsqueezy.go": {
+      "hash": "9c57bc2aec92a6ab",
+      "nodes": 28,
+      "relations": 39
+    },
+    "pp/paddle.go": {
+      "hash": "57276106d7a027b4",
+      "nodes": 26,
+      "relations": 36
+    },
+    "pp/paypal.go": {
+      "hash": "5e2780713732d924",
+      "nodes": 29,
+      "relations": 43
+    },
+    "pp/polar.go": {
+      "hash": "504d373e659e6d96",
+      "nodes": 25,
+      "relations": 33
+    },
+    "pp/provider.go": {
+      "hash": "b328fa9f36b703fe",
+      "nodes": 40,
+      "relations": 65
+    },
+    "pp/stripe.go": {
+      "hash": "800d2dd0d9a85628",
+      "nodes": 32,
+      "relations": 50
+    },
+    "pp/util.go": {
+      "hash": "46c3bee86b77280f",
+      "nodes": 19,
+      "relations": 26
+    },
+    "pp/wechatpay.go": {
+      "hash": "3e63cc81063d1442",
+      "nodes": 35,
+      "relations": 50
+    },
+    "proxy/proxy.go": {
+      "hash": "e9d5fec87170d4ce",
+      "nodes": 17,
+      "relations": 32
+    },
+    "radius/server.go": {
+      "hash": "1a32e22a86c2f2c5",
+      "nodes": 25,
+      "relations": 45
+    },
+    "radius/server_test.go": {
+      "hash": "3623f43ed4a8bb22",
+      "nodes": 9,
+      "relations": 16
+    },
+    "radius/util.go": {
+      "hash": "0514c2eae031930e",
+      "nodes": 11,
+      "relations": 26
+    },
+    "routers/authz_filter.go": {
+      "hash": "f4a05b7c1b07861f",
+      "nodes": 57,
+      "relations": 83
+    },
+    "routers/auto_signin_filter.go": {
+      "hash": "3123f90cddc1322b",
+      "nodes": 10,
+      "relations": 23
+    },
+    "routers/base.go": {
+      "hash": "416ec3897026217d",
+      "nodes": 54,
+      "relations": 85
+    },
+    "routers/content_type_filter.go": {
+      "hash": "fdbd7aecef825b95",
+      "nodes": 6,
+      "relations": 11
+    },
+    "routers/cors_filter.go": {
+      "hash": "8f9dafcddc8ab8dd",
+      "nodes": 16,
+      "relations": 25
+    },
+    "routers/field_validation_filter.go": {
+      "hash": "49aaddfbbe35046e",
+      "nodes": 9,
+      "relations": 18
+    },
+    "routers/lightweight_auth_filter.go": {
+      "hash": "ec452fade82db882",
+      "nodes": 25,
+      "relations": 40
+    },
+    "routers/mcp_util.go": {
+      "hash": "851e7f09c1382db0",
+      "nodes": 12,
+      "relations": 20
+    },
+    "routers/prometheus_filter.go": {
+      "hash": "c7fa9f745c9d6a4a",
+      "nodes": 11,
+      "relations": 22
+    },
+    "routers/record.go": {
+      "hash": "d6faf757c540038c",
+      "nodes": 13,
+      "relations": 20
+    },
+    "routers/request_body_filter.go": {
+      "hash": "91fb04a7387283eb",
+      "nodes": 7,
+      "relations": 14
+    },
+    "routers/router.go": {
+      "hash": "3ddddeec38a2231a",
+      "nodes": 5,
+      "relations": 10
+    },
+    "routers/static_filter.go": {
+      "hash": "9ae31c71feac266b",
+      "nodes": 37,
+      "relations": 64
+    },
+    "routers/theme_filter.go": {
+      "hash": "34fb8254e089176e",
+      "nodes": 21,
+      "relations": 35
+    },
+    "routers/timeout_filter.go": {
+      "hash": "79ac4ec7bfe0c763",
+      "nodes": 15,
+      "relations": 26
+    },
+    "rule/rule.go": {
+      "hash": "717f8af72d12d33c",
+      "nodes": 13,
+      "relations": 23
+    },
+    "rule/rule_compound.go": {
+      "hash": "e39508ea69638f81",
+      "nodes": 9,
+      "relations": 16
+    },
+    "rule/rule_ip.go": {
+      "hash": "6dc38450fd446a52",
+      "nodes": 14,
+      "relations": 27
+    },
+    "rule/rule_ip_rate.go": {
+      "hash": "71e3368be677a876",
+      "nodes": 26,
+      "relations": 42
+    },
+    "rule/rule_ip_rate_test.go": {
+      "hash": "46c19c6d55124405",
+      "nodes": 6,
+      "relations": 11
+    },
+    "rule/rule_ua.go": {
+      "hash": "154dc672e4a6fdd0",
+      "nodes": 10,
+      "relations": 19
+    },
+    "rule/rule_waf.go": {
+      "hash": "c000c1c4da942858",
+      "nodes": 17,
+      "relations": 30
+    },
+    "scan/intranet_server.go": {
+      "hash": "5db09a99c6ff8712",
+      "nodes": 42,
+      "relations": 67
+    },
+    "scan/provider.go": {
+      "hash": "63a49ebf2aa6cabe",
+      "nodes": 6,
+      "relations": 9
+    },
+    "scan/security.go": {
+      "hash": "06f1aa92e66ab3d5",
+      "nodes": 70,
+      "relations": 126
+    },
+    "scan/util.go": {
+      "hash": "c7e18c81a23d7a41",
+      "nodes": 80,
+      "relations": 103
+    },
+    "scim/group_handler.go": {
+      "hash": "8c2ba3e75c4d9ed2",
+      "nodes": 58,
+      "relations": 71
+    },
+    "scim/server.go": {
+      "hash": "af50a6bd1008f942",
+      "nodes": 11,
+      "relations": 16
+    },
+    "scim/user_handler.go": {
+      "hash": "8572dc5953fc2f64",
+      "nodes": 37,
+      "relations": 46
+    },
+    "scim/util.go": {
+      "hash": "713f6aa221ef442e",
+      "nodes": 43,
+      "relations": 56
+    },
+    "service/oauth.go": {
+      "hash": "453325a82b78a8bb",
+      "nodes": 18,
+      "relations": 29
+    },
+    "service/proxy.go": {
+      "hash": "0117f36c3997d625",
+      "nodes": 37,
+      "relations": 62
+    },
+    "service/util.go": {
+      "hash": "edeb925395369c89",
+      "nodes": 33,
+      "relations": 48
+    },
+    "storage/aliyun_oss.go": {
+      "hash": "2e3052dff9b4fea9",
+      "nodes": 12,
+      "relations": 21
+    },
+    "storage/aws_s3.go": {
+      "hash": "2f4a476592c08b0a",
+      "nodes": 10,
+      "relations": 15
+    },
+    "storage/azure.go": {
+      "hash": "aab736f9f1f3f440",
+      "nodes": 9,
+      "relations": 12
+    },
+    "storage/casdoor.go": {
+      "hash": "75b9f4ffee688a6d",
+      "nodes": 12,
+      "relations": 15
+    },
+    "storage/cucloud_oss.go": {
+      "hash": "c3a534eb6f87ed17",
+      "nodes": 10,
+      "relations": 15
+    },
+    "storage/google_cloud.go": {
+      "hash": "7ee92a58187773ca",
+      "nodes": 7,
+      "relations": 10
+    },
+    "storage/local_file_system.go": {
+      "hash": "c7ae58e00f99124a",
+      "nodes": 26,
+      "relations": 38
+    },
+    "storage/minio_s3.go": {
+      "hash": "7c27fe943519a58a",
+      "nodes": 10,
+      "relations": 15
+    },
+    "storage/qiniu_cloud.go": {
+      "hash": "117d49872fd18ac5",
+      "nodes": 9,
+      "relations": 12
+    },
+    "storage/storage.go": {
+      "hash": "fb616eb490501ed4",
+      "nodes": 11,
+      "relations": 12
+    },
+    "storage/synology_nas.go": {
+      "hash": "386aa42dde3fc2b0",
+      "nodes": 7,
+      "relations": 10
+    },
+    "storage/tencent_cloud_cos.go": {
+      "hash": "b3f0ddf19a1420b7",
+      "nodes": 9,
+      "relations": 12
+    },
+    "sync/database.go": {
+      "hash": "e6b491649c4d3f00",
+      "nodes": 23,
+      "relations": 37
+    },
+    "sync/database_canal.go": {
+      "hash": "b8104d92b3051a81",
+      "nodes": 17,
+      "relations": 28
+    },
+    "sync/sync.go": {
+      "hash": "6c4304192aff2f96",
+      "nodes": 5,
+      "relations": 6
+    },
+    "sync/sync_test.go": {
+      "hash": "138ec9fb9d8cd01d",
+      "nodes": 5,
+      "relations": 8
+    },
+    "sync/util.go": {
+      "hash": "f77b1dfc4ec692bc",
+      "nodes": 33,
+      "relations": 38
+    },
+    "sync_v2/cmd_test.go": {
+      "hash": "5bcba025cb9052c1",
+      "nodes": 16,
+      "relations": 19
+    },
+    "sync_v2/db.go": {
+      "hash": "b2c2b5d3a343a918",
+      "nodes": 19,
+      "relations": 32
+    },
+    "sync_v2/master.go": {
+      "hash": "f349d3374ee56e56",
+      "nodes": 9,
+      "relations": 12
+    },
+    "sync_v2/slave.go": {
+      "hash": "8c3b77dd42a6e104",
+      "nodes": 9,
+      "relations": 10
+    },
+    "sync_v2/table_test.go": {
+      "hash": "e7a3ed78ef049cf5",
+      "nodes": 17,
+      "relations": 29
+    },
+    "util/casbin.go": {
+      "hash": "c775cecdc2dd1536",
+      "nodes": 10,
+      "relations": 11
+    },
+    "util/cert.go": {
+      "hash": "28a55eb38fc8ab11",
+      "nodes": 11,
+      "relations": 22
+    },
+    "util/cookie.go": {
+      "hash": "f18073195dc5a9a7",
+      "nodes": 6,
+      "relations": 11
+    },
+    "util/crypto.go": {
+      "hash": "fd85f53a67c1470b",
+      "nodes": 12,
+      "relations": 21
+    },
+    "util/json.go": {
+      "hash": "ea5d5e44a20698ba",
+      "nodes": 14,
+      "relations": 17
+    },
+    "util/log.go": {
+      "hash": "7ef7efc77e805a3e",
+      "nodes": 17,
+      "relations": 28
+    },
+    "util/network.go": {
+      "hash": "fb82bec3cec2cd33",
+      "nodes": 18,
+      "relations": 29
+    },
+    "util/obfuscator.go": {
+      "hash": "39cb85bfeaf7e12f",
+      "nodes": 15,
+      "relations": 24
+    },
+    "util/path.go": {
+      "hash": "fde5d97cb6cca2dc",
+      "nodes": 24,
+      "relations": 33
+    },
+    "util/process.go": {
+      "hash": "965443a3490ca47a",
+      "nodes": 11,
+      "relations": 22
+    },
+    "util/random.go": {
+      "hash": "99312365c0167dac",
+      "nodes": 18,
+      "relations": 25
+    },
+    "util/request.go": {
+      "hash": "9141911a56e71378",
+      "nodes": 6,
+      "relations": 11
+    },
+    "util/routine.go": {
+      "hash": "84021ff6aa01f1ab",
+      "nodes": 5,
+      "relations": 8
+    },
+    "util/rule.go": {
+      "hash": "1e29ba87b36c9a42",
+      "nodes": 6,
+      "relations": 7
+    },
+    "util/setting.go": {
+      "hash": "876feb9563a7cba2",
+      "nodes": 4,
+      "relations": 5
+    },
+    "util/slice.go": {
+      "hash": "cb8ccf3356c097d9",
+      "nodes": 20,
+      "relations": 23
+    },
+    "util/stacks.go": {
+      "hash": "cbbb42563b03c311",
+      "nodes": 10,
+      "relations": 10
+    },
+    "util/string.go": {
+      "hash": "ecdabded58d0e8ea",
+      "nodes": 90,
+      "relations": 115
+    },
+    "util/string_test.go": {
+      "hash": "0d98a2eaf93a65f6",
+      "nodes": 22,
+      "relations": 27
+    },
+    "util/system.go": {
+      "hash": "b5daf9027cfcbc9b",
+      "nodes": 33,
+      "relations": 67
+    },
+    "util/system_test.go": {
+      "hash": "c0d893bafb83c5b9",
+      "nodes": 23,
+      "relations": 42
+    },
+    "util/time.go": {
+      "hash": "f5965f665427382e",
+      "nodes": 14,
+      "relations": 17
+    },
+    "util/time_test.go": {
+      "hash": "c0c3de405f413e81",
+      "nodes": 12,
+      "relations": 21
+    },
+    "util/validation.go": {
+      "hash": "a971ef5fe9f176d8",
+      "nodes": 39,
+      "relations": 50
+    },
+    "util/variable.go": {
+      "hash": "bb7430490e013e79",
+      "nodes": 4,
+      "relations": 3
+    },
+    "xlsx/xlsx.go": {
+      "hash": "db9d708c2ca80e6f",
+      "nodes": 4,
+      "relations": 5
+    },
+    "xlsx/xlsx_test.go": {
+      "hash": "52bf1492ad005b24",
+      "nodes": 4,
+      "relations": 5
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 2914,
+      "boundary": 5,
+      "class": 504,
+      "dependency": 309,
+      "external_symbol": 308,
+      "file": 458,
+      "function": 1730,
+      "import": 2394,
+      "method": 1065,
+      "module": 34,
+      "parameter": 4162,
+      "project": 1,
+      "type_alias": 12,
+      "variable": 258
+    },
+    "relations": {
+      "consumes": 2,
+      "contains": 492,
+      "declares": 15953,
+      "depends_on": 309,
+      "exposes": 4,
+      "imports": 2394,
+      "resolves_to": 2394
+    }
+  },
+  "project": "casdoor/casdoor",
+  "ref": "v3.98.0",
+  "totals": {
+    "files": 458,
+    "nodes": 14154,
+    "relations": 21548
+  }
+}

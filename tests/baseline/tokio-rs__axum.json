@@ -1,0 +1,1518 @@
+{
+  "files": {
+    "axum-core/src/body.rs": {
+      "hash": "2551f48ccb7dc7a9",
+      "nodes": 44,
+      "relations": 62
+    },
+    "axum-core/src/error.rs": {
+      "hash": "128724ab756ce2ad",
+      "nodes": 11,
+      "relations": 15
+    },
+    "axum-core/src/ext_traits/mod.rs": {
+      "hash": "3208f6c93cefee72",
+      "nodes": 12,
+      "relations": 17
+    },
+    "axum-core/src/ext_traits/request.rs": {
+      "hash": "dbbdbd6ad9914b8b",
+      "nodes": 29,
+      "relations": 43
+    },
+    "axum-core/src/ext_traits/request_parts.rs": {
+      "hash": "d5bb6d7bb955818e",
+      "nodes": 21,
+      "relations": 36
+    },
+    "axum-core/src/extract/default_body_limit.rs": {
+      "hash": "ee2630d7ba83e2d8",
+      "nodes": 24,
+      "relations": 38
+    },
+    "axum-core/src/extract/from_ref.rs": {
+      "hash": "8c16e9eaa0974530",
+      "nodes": 4,
+      "relations": 3
+    },
+    "axum-core/src/extract/mod.rs": {
+      "hash": "ed1e60d915b4a012",
+      "nodes": 21,
+      "relations": 32
+    },
+    "axum-core/src/extract/option.rs": {
+      "hash": "5c2902e3fb4e425d",
+      "nodes": 13,
+      "relations": 20
+    },
+    "axum-core/src/extract/rejection.rs": {
+      "hash": "87e870f0a6c83f7b",
+      "nodes": 6,
+      "relations": 11
+    },
+    "axum-core/src/extract/request_parts.rs": {
+      "hash": "c2e8d0fdff0e4ab1",
+      "nodes": 46,
+      "relations": 63
+    },
+    "axum-core/src/extract/tuple.rs": {
+      "hash": "2a25f951ec8827cf",
+      "nodes": 16,
+      "relations": 29
+    },
+    "axum-core/src/lib.rs": {
+      "hash": "4c93d31e6d6d525c",
+      "nodes": 6,
+      "relations": 13
+    },
+    "axum-core/src/macros.rs": {
+      "hash": "ccae6a263a3a4a16",
+      "nodes": 5,
+      "relations": 10
+    },
+    "axum-core/src/response/append_headers.rs": {
+      "hash": "f97bc404570bcae7",
+      "nodes": 8,
+      "relations": 13
+    },
+    "axum-core/src/response/into_response.rs": {
+      "hash": "f8f91b274168fad4",
+      "nodes": 38,
+      "relations": 51
+    },
+    "axum-core/src/response/into_response_parts.rs": {
+      "hash": "27c222af17894317",
+      "nodes": 32,
+      "relations": 39
+    },
+    "axum-core/src/response/mod.rs": {
+      "hash": "7b9a79397aacffb3",
+      "nodes": 9,
+      "relations": 12
+    },
+    "axum-extra/src/body/async_read_body.rs": {
+      "hash": "8092e8584ca71d0f",
+      "nodes": 16,
+      "relations": 29
+    },
+    "axum-extra/src/body/mod.rs": {
+      "hash": "2fc530759890d2c3",
+      "nodes": 2,
+      "relations": 3
+    },
+    "axum-extra/src/either.rs": {
+      "hash": "30715fce719b985a",
+      "nodes": 19,
+      "relations": 28
+    },
+    "axum-extra/src/extract/cached.rs": {
+      "hash": "844ddf9bd3a01242",
+      "nodes": 13,
+      "relations": 23
+    },
+    "axum-extra/src/extract/cookie/mod.rs": {
+      "hash": "d458f48ecd37df7e",
+      "nodes": 48,
+      "relations": 73
+    },
+    "axum-extra/src/extract/cookie/private.rs": {
+      "hash": "f5a74208276058e3",
+      "nodes": 39,
+      "relations": 53
+    },
+    "axum-extra/src/extract/cookie/signed.rs": {
+      "hash": "84b99eeeb2289912",
+      "nodes": 40,
+      "relations": 56
+    },
+    "axum-extra/src/extract/form.rs": {
+      "hash": "dcc7b793f6729637",
+      "nodes": 20,
+      "relations": 49
+    },
+    "axum-extra/src/extract/host.rs": {
+      "hash": "04c34beeb74f253f",
+      "nodes": 31,
+      "relations": 51
+    },
+    "axum-extra/src/extract/json_deserializer.rs": {
+      "hash": "ba6cc77812bb8e96",
+      "nodes": 38,
+      "relations": 95
+    },
+    "axum-extra/src/extract/mod.rs": {
+      "hash": "4528c70cb80d3546",
+      "nodes": 16,
+      "relations": 45
+    },
+    "axum-extra/src/extract/multipart.rs": {
+      "hash": "1cf0e43229b04e92",
+      "nodes": 48,
+      "relations": 73
+    },
+    "axum-extra/src/extract/optional_path.rs": {
+      "hash": "0d6f7e383c72faba",
+      "nodes": 12,
+      "relations": 29
+    },
+    "axum-extra/src/extract/query.rs": {
+      "hash": "ee5859305dfc3d7c",
+      "nodes": 32,
+      "relations": 65
+    },
+    "axum-extra/src/extract/rejection.rs": {
+      "hash": "b765c31de01d021a",
+      "nodes": 2,
+      "relations": 3
+    },
+    "axum-extra/src/extract/scheme.rs": {
+      "hash": "77ec9aa521cf2e04",
+      "nodes": 20,
+      "relations": 34
+    },
+    "axum-extra/src/extract/with_rejection.rs": {
+      "hash": "7e1b18764cebf784",
+      "nodes": 27,
+      "relations": 48
+    },
+    "axum-extra/src/handler/mod.rs": {
+      "hash": "01be4dd5edcb65c6",
+      "nodes": 15,
+      "relations": 28
+    },
+    "axum-extra/src/handler/or.rs": {
+      "hash": "dcf05c2323cefedf",
+      "nodes": 20,
+      "relations": 44
+    },
+    "axum-extra/src/json_lines.rs": {
+      "hash": "407adcf21a0fd9ce",
+      "nodes": 32,
+      "relations": 68
+    },
+    "axum-extra/src/lib.rs": {
+      "hash": "7dab8133df993e1a",
+      "nodes": 10,
+      "relations": 21
+    },
+    "axum-extra/src/middleware.rs": {
+      "hash": "242c1a137e3128c6",
+      "nodes": 13,
+      "relations": 30
+    },
+    "axum-extra/src/protobuf.rs": {
+      "hash": "cf66edbf38b87beb",
+      "nodes": 21,
+      "relations": 46
+    },
+    "axum-extra/src/response/attachment.rs": {
+      "hash": "088340881e1755c8",
+      "nodes": 22,
+      "relations": 36
+    },
+    "axum-extra/src/response/content_disposition.rs": {
+      "hash": "6956821571689e73",
+      "nodes": 9,
+      "relations": 12
+    },
+    "axum-extra/src/response/erased_json.rs": {
+      "hash": "bb33c8d3f70e1d6e",
+      "nodes": 13,
+      "relations": 24
+    },
+    "axum-extra/src/response/error_response.rs": {
+      "hash": "e04934a3bf565ef3",
+      "nodes": 10,
+      "relations": 21
+    },
+    "axum-extra/src/response/file_stream.rs": {
+      "hash": "53deed83fc3a0da5",
+      "nodes": 49,
+      "relations": 88
+    },
+    "axum-extra/src/response/mod.rs": {
+      "hash": "03aff7aa131a8140",
+      "nodes": 8,
+      "relations": 21
+    },
+    "axum-extra/src/response/multiple.rs": {
+      "hash": "586a15ab2e01f4b7",
+      "nodes": 39,
+      "relations": 64
+    },
+    "axum-extra/src/routing/mod.rs": {
+      "hash": "25c7100d6dd859f1",
+      "nodes": 53,
+      "relations": 85
+    },
+    "axum-extra/src/routing/resource.rs": {
+      "hash": "822c7f9e45f562bc",
+      "nodes": 38,
+      "relations": 51
+    },
+    "axum-extra/src/routing/typed.rs": {
+      "hash": "438e767a5d8672b9",
+      "nodes": 24,
+      "relations": 43
+    },
+    "axum-extra/src/typed_header.rs": {
+      "hash": "698f07997c28e631",
+      "nodes": 28,
+      "relations": 47
+    },
+    "axum-macros/src/attr_parsing.rs": {
+      "hash": "6af90e1cbd93efad",
+      "nodes": 21,
+      "relations": 24
+    },
+    "axum-macros/src/axum_test.rs": {
+      "hash": "267ad48295b21238",
+      "nodes": 16,
+      "relations": 22
+    },
+    "axum-macros/src/debug_handler.rs": {
+      "hash": "e8dda84a166163f2",
+      "nodes": 71,
+      "relations": 81
+    },
+    "axum-macros/src/from_ref.rs": {
+      "hash": "2de38ad39a5d190c",
+      "nodes": 18,
+      "relations": 26
+    },
+    "axum-macros/src/from_request/attr.rs": {
+      "hash": "7089443d98901b40",
+      "nodes": 17,
+      "relations": 24
+    },
+    "axum-macros/src/from_request/mod.rs": {
+      "hash": "cf788f7d0af849fd",
+      "nodes": 69,
+      "relations": 80
+    },
+    "axum-macros/src/lib.rs": {
+      "hash": "b30aa09ba3b75061",
+      "nodes": 36,
+      "relations": 45
+    },
+    "axum-macros/src/typed_path.rs": {
+      "hash": "48205285fbd51af6",
+      "nodes": 45,
+      "relations": 54
+    },
+    "axum-macros/src/with_position.rs": {
+      "hash": "3533a746db07c326",
+      "nodes": 12,
+      "relations": 15
+    },
+    "axum-macros/tests/debug_handler/fail/argument_not_extractor.rs": {
+      "hash": "7576e2ac6b198a1e",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_handler/fail/duplicate_args.rs": {
+      "hash": "58e09d7868de8719",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/extension_not_clone.rs": {
+      "hash": "944c52ca4d25318c",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/debug_handler/fail/extract_self_mut.rs": {
+      "hash": "4060a757f1df6445",
+      "nodes": 9,
+      "relations": 12
+    },
+    "axum-macros/tests/debug_handler/fail/extract_self_ref.rs": {
+      "hash": "616bf8ed2ddea5c2",
+      "nodes": 9,
+      "relations": 12
+    },
+    "axum-macros/tests/debug_handler/fail/generics.rs": {
+      "hash": "a6a3954b16a0d087",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_handler/fail/invalid_attrs.rs": {
+      "hash": "87fe59a406f4cd79",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/json_not_deserialize.rs": {
+      "hash": "9add6378b3b37e49",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/debug_handler/fail/multiple_paths.rs": {
+      "hash": "c060bf215c7a66c8",
+      "nodes": 6,
+      "relations": 9
+    },
+    "axum-macros/tests/debug_handler/fail/multiple_request_consumers.rs": {
+      "hash": "cb7eb946eb360e76",
+      "nodes": 8,
+      "relations": 11
+    },
+    "axum-macros/tests/debug_handler/fail/not_a_function.rs": {
+      "hash": "3e7267eeb9d1248a",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/not_async.rs": {
+      "hash": "591773cfc46c93f2",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/not_send.rs": {
+      "hash": "d7464b4afc670973",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/output_tuple_too_many.rs": {
+      "hash": "d41097e96c3543d3",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/returning_request_parts.rs": {
+      "hash": "06c0dc180304ed46",
+      "nodes": 3,
+      "relations": 2
+    },
+    "axum-macros/tests/debug_handler/fail/single_wrong_return_tuple.rs": {
+      "hash": "00f5fec2dbc8b630",
+      "nodes": 4,
+      "relations": 3
+    },
+    "axum-macros/tests/debug_handler/fail/too_many_extractors.rs": {
+      "hash": "7435305961272786",
+      "nodes": 22,
+      "relations": 25
+    },
+    "axum-macros/tests/debug_handler/fail/wrong_order.rs": {
+      "hash": "1e1f552e7d759de2",
+      "nodes": 8,
+      "relations": 11
+    },
+    "axum-macros/tests/debug_handler/fail/wrong_return_tuple.rs": {
+      "hash": "53bd93658c5f8b5a",
+      "nodes": 6,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/fail/wrong_return_type.rs": {
+      "hash": "285f92fe5a39a8b4",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/debug_handler/pass/associated_fn_without_self.rs": {
+      "hash": "ec196422915f9901",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_handler/pass/deny_unreachable_code.rs": {
+      "hash": "1218b1d47e707f93",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_handler/pass/impl_future.rs": {
+      "hash": "141f5705cd568015",
+      "nodes": 5,
+      "relations": 8
+    },
+    "axum-macros/tests/debug_handler/pass/impl_into_response.rs": {
+      "hash": "a0161ed5582b293d",
+      "nodes": 5,
+      "relations": 8
+    },
+    "axum-macros/tests/debug_handler/pass/infer_state.rs": {
+      "hash": "fbaec0529439bc66",
+      "nodes": 15,
+      "relations": 18
+    },
+    "axum-macros/tests/debug_handler/pass/multiple_extractors.rs": {
+      "hash": "65b870ee7939a56e",
+      "nodes": 8,
+      "relations": 11
+    },
+    "axum-macros/tests/debug_handler/pass/mut_extractor.rs": {
+      "hash": "ebe8dfc95d473612",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_handler/pass/ready.rs": {
+      "hash": "cbf36ee3caa9ae0d",
+      "nodes": 5,
+      "relations": 8
+    },
+    "axum-macros/tests/debug_handler/pass/request_last.rs": {
+      "hash": "e1b605504258d26a",
+      "nodes": 6,
+      "relations": 9
+    },
+    "axum-macros/tests/debug_handler/pass/result_impl_into_response.rs": {
+      "hash": "9442a0736fca93ae",
+      "nodes": 34,
+      "relations": 37
+    },
+    "axum-macros/tests/debug_handler/pass/returns_self.rs": {
+      "hash": "f10a7bf2a82a8dce",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/debug_handler/pass/self_receiver.rs": {
+      "hash": "ffbe99b88152157f",
+      "nodes": 14,
+      "relations": 17
+    },
+    "axum-macros/tests/debug_handler/pass/set_state.rs": {
+      "hash": "bc4096d12d52892d",
+      "nodes": 11,
+      "relations": 14
+    },
+    "axum-macros/tests/debug_handler/pass/state_and_body.rs": {
+      "hash": "9b18fd80425922f9",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/debug_middleware/fail/doesnt_take_next.rs": {
+      "hash": "2b68193a2e520ef9",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/debug_middleware/fail/next_not_last.rs": {
+      "hash": "4f4d5f560cdc1f50",
+      "nodes": 6,
+      "relations": 7
+    },
+    "axum-macros/tests/debug_middleware/fail/takes_next_twice.rs": {
+      "hash": "3268473a83bca453",
+      "nodes": 7,
+      "relations": 8
+    },
+    "axum-macros/tests/debug_middleware/pass/basic.rs": {
+      "hash": "694dce3088f3b095",
+      "nodes": 6,
+      "relations": 7
+    },
+    "axum-macros/tests/from_ref/fail/generics.rs": {
+      "hash": "6a131b376ab96b9d",
+      "nodes": 5,
+      "relations": 7
+    },
+    "axum-macros/tests/from_ref/pass/basic.rs": {
+      "hash": "60a08aaa66608e3d",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/from_ref/pass/reference-types.rs": {
+      "hash": "3b3323da6bd1c703",
+      "nodes": 5,
+      "relations": 7
+    },
+    "axum-macros/tests/from_ref/pass/skip.rs": {
+      "hash": "3be99f1e69781eaa",
+      "nodes": 6,
+      "relations": 9
+    },
+    "axum-macros/tests/from_request/fail/double_via_attr.rs": {
+      "hash": "452ac9d76886b1fa",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/fail/enum_from_request_ident_in_variant.rs": {
+      "hash": "643ebc24ad75ccdf",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/enum_from_request_on_variant.rs": {
+      "hash": "f6946f201bdefe1b",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/enum_no_via.rs": {
+      "hash": "17f19305ff9a5865",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/generic.rs": {
+      "hash": "750b745cd10ea78e",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/generic_without_via.rs": {
+      "hash": "374c4d796a01c52e",
+      "nodes": 7,
+      "relations": 11
+    },
+    "axum-macros/tests/from_request/fail/generic_without_via_rejection.rs": {
+      "hash": "81dbde9b1479b8e7",
+      "nodes": 7,
+      "relations": 11
+    },
+    "axum-macros/tests/from_request/fail/not_enum_or_struct.rs": {
+      "hash": "83c48027ac3ccb10",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/override_rejection_on_enum_without_via.rs": {
+      "hash": "ec378442f89af5ed",
+      "nodes": 13,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/fail/parts_extracting_body.rs": {
+      "hash": "32931688b1e588cd",
+      "nodes": 6,
+      "relations": 8
+    },
+    "axum-macros/tests/from_request/fail/state_infer_multiple_different_types.rs": {
+      "hash": "ac7d09207461489a",
+      "nodes": 10,
+      "relations": 15
+    },
+    "axum-macros/tests/from_request/fail/unknown_attr_container.rs": {
+      "hash": "f89901c5bf063cf9",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/unknown_attr_field.rs": {
+      "hash": "c2994126ad8de9e5",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/from_request/fail/via_on_container_and_field.rs": {
+      "hash": "d862fb4a18b11b6c",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/container.rs": {
+      "hash": "c1868ea3b8fda326",
+      "nodes": 9,
+      "relations": 15
+    },
+    "axum-macros/tests/from_request/pass/container_parts.rs": {
+      "hash": "72464095cc904b6b",
+      "nodes": 8,
+      "relations": 12
+    },
+    "axum-macros/tests/from_request/pass/empty_named.rs": {
+      "hash": "d1c0a3befe2c50f6",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/empty_named_parts.rs": {
+      "hash": "97da90d164b35f84",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/empty_tuple.rs": {
+      "hash": "c9cad832b3477a3c",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/empty_tuple_parts.rs": {
+      "hash": "fbb044a86465c785",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/enum_via.rs": {
+      "hash": "053d30fa8f7dea73",
+      "nodes": 7,
+      "relations": 11
+    },
+    "axum-macros/tests/from_request/pass/enum_via_parts.rs": {
+      "hash": "55dabe3ceb1f8ae5",
+      "nodes": 7,
+      "relations": 11
+    },
+    "axum-macros/tests/from_request/pass/named.rs": {
+      "hash": "dd9968f4558957f8",
+      "nodes": 12,
+      "relations": 21
+    },
+    "axum-macros/tests/from_request/pass/named_parts.rs": {
+      "hash": "35925d357f8cae56",
+      "nodes": 11,
+      "relations": 19
+    },
+    "axum-macros/tests/from_request/pass/named_via.rs": {
+      "hash": "149a27896b74c789",
+      "nodes": 12,
+      "relations": 20
+    },
+    "axum-macros/tests/from_request/pass/named_via_parts.rs": {
+      "hash": "439997964f079a00",
+      "nodes": 12,
+      "relations": 20
+    },
+    "axum-macros/tests/from_request/pass/override_rejection.rs": {
+      "hash": "dd607be3c243c94d",
+      "nodes": 19,
+      "relations": 23
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_non_generic.rs": {
+      "hash": "fb69b00f078f7bf1",
+      "nodes": 15,
+      "relations": 22
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_non_generic_parts.rs": {
+      "hash": "90b1fa51993a8301",
+      "nodes": 15,
+      "relations": 22
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_parts.rs": {
+      "hash": "24d044d3f9d3fe00",
+      "nodes": 19,
+      "relations": 23
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum.rs": {
+      "hash": "d58393418dc3c39e",
+      "nodes": 13,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum_parts.rs": {
+      "hash": "af1a5079631bd1ae",
+      "nodes": 13,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct.rs": {
+      "hash": "e2b3d02c88756b6d",
+      "nodes": 15,
+      "relations": 20
+    },
+    "axum-macros/tests/from_request/pass/override_rejection_with_via_on_struct_parts.rs": {
+      "hash": "ad894b8214c5c687",
+      "nodes": 15,
+      "relations": 20
+    },
+    "axum-macros/tests/from_request/pass/state_cookie.rs": {
+      "hash": "07ada5be76ab4749",
+      "nodes": 12,
+      "relations": 19
+    },
+    "axum-macros/tests/from_request/pass/state_enum_via.rs": {
+      "hash": "d55a7042c8dfbf85",
+      "nodes": 9,
+      "relations": 14
+    },
+    "axum-macros/tests/from_request/pass/state_enum_via_parts.rs": {
+      "hash": "653bff1896891e8f",
+      "nodes": 9,
+      "relations": 15
+    },
+    "axum-macros/tests/from_request/pass/state_explicit.rs": {
+      "hash": "0c868fcaf313148f",
+      "nodes": 18,
+      "relations": 28
+    },
+    "axum-macros/tests/from_request/pass/state_explicit_parts.rs": {
+      "hash": "ab4c21c4829ea375",
+      "nodes": 13,
+      "relations": 22
+    },
+    "axum-macros/tests/from_request/pass/state_field_explicit.rs": {
+      "hash": "5a6c51309ebf3ac3",
+      "nodes": 12,
+      "relations": 19
+    },
+    "axum-macros/tests/from_request/pass/state_field_infer.rs": {
+      "hash": "b933381def0e5d6a",
+      "nodes": 7,
+      "relations": 12
+    },
+    "axum-macros/tests/from_request/pass/state_infer.rs": {
+      "hash": "7db61bb5bb768425",
+      "nodes": 8,
+      "relations": 12
+    },
+    "axum-macros/tests/from_request/pass/state_infer_multiple.rs": {
+      "hash": "51f1895918c77f14",
+      "nodes": 9,
+      "relations": 14
+    },
+    "axum-macros/tests/from_request/pass/state_infer_parts.rs": {
+      "hash": "4d21b6a31ff912c3",
+      "nodes": 8,
+      "relations": 12
+    },
+    "axum-macros/tests/from_request/pass/state_via.rs": {
+      "hash": "d3287b69753bcb7c",
+      "nodes": 9,
+      "relations": 15
+    },
+    "axum-macros/tests/from_request/pass/state_via_infer.rs": {
+      "hash": "7d7abf51e8d43b7c",
+      "nodes": 5,
+      "relations": 9
+    },
+    "axum-macros/tests/from_request/pass/state_via_parts.rs": {
+      "hash": "4faa3f973889af18",
+      "nodes": 9,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/pass/state_with_rejection.rs": {
+      "hash": "05f7bc03c0ae4c4e",
+      "nodes": 12,
+      "relations": 19
+    },
+    "axum-macros/tests/from_request/pass/tuple.rs": {
+      "hash": "5400b6e3ee47acd4",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/tuple_parts.rs": {
+      "hash": "381203ffcdf2000b",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/tuple_same_type_twice.rs": {
+      "hash": "feaf2b54bdfc49a7",
+      "nodes": 8,
+      "relations": 13
+    },
+    "axum-macros/tests/from_request/pass/tuple_same_type_twice_parts.rs": {
+      "hash": "17f5f8a5163abfd8",
+      "nodes": 8,
+      "relations": 13
+    },
+    "axum-macros/tests/from_request/pass/tuple_same_type_twice_via.rs": {
+      "hash": "f171ab8f1f50f1c7",
+      "nodes": 9,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/pass/tuple_same_type_twice_via_parts.rs": {
+      "hash": "d7a265cf2db228dd",
+      "nodes": 9,
+      "relations": 16
+    },
+    "axum-macros/tests/from_request/pass/tuple_via.rs": {
+      "hash": "189638fa5a1215c9",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/from_request/pass/tuple_via_parts.rs": {
+      "hash": "6b3806c6ef3f0738",
+      "nodes": 7,
+      "relations": 10
+    },
+    "axum-macros/tests/from_request/pass/unit.rs": {
+      "hash": "1a836ac2f76d4acd",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/from_request/pass/unit_parts.rs": {
+      "hash": "8ffec59d395682dc",
+      "nodes": 5,
+      "relations": 6
+    },
+    "axum-macros/tests/typed_path/fail/missing_capture.rs": {
+      "hash": "1488ef0a40f7981b",
+      "nodes": 6,
+      "relations": 10
+    },
+    "axum-macros/tests/typed_path/fail/missing_field.rs": {
+      "hash": "3578144ef6cdb812",
+      "nodes": 5,
+      "relations": 8
+    },
+    "axum-macros/tests/typed_path/fail/not_deserialize.rs": {
+      "hash": "b8404498eb028cae",
+      "nodes": 5,
+      "relations": 7
+    },
+    "axum-macros/tests/typed_path/fail/route_not_starting_with_slash.rs": {
+      "hash": "c11d8e3ff55ebe4f",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/typed_path/fail/route_not_starting_with_slash_non_empty.rs": {
+      "hash": "d4761f42c7218135",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/typed_path/fail/unit_with_capture.rs": {
+      "hash": "76d9f3325504dc15",
+      "nodes": 5,
+      "relations": 8
+    },
+    "axum-macros/tests/typed_path/pass/customize_rejection.rs": {
+      "hash": "9b13c24297b482ed",
+      "nodes": 14,
+      "relations": 20
+    },
+    "axum-macros/tests/typed_path/pass/into_uri.rs": {
+      "hash": "be32e5dc3fe79f6f",
+      "nodes": 9,
+      "relations": 15
+    },
+    "axum-macros/tests/typed_path/pass/named_fields_struct.rs": {
+      "hash": "70b8e298a82e5c3c",
+      "nodes": 7,
+      "relations": 12
+    },
+    "axum-macros/tests/typed_path/pass/result_handler.rs": {
+      "hash": "c21462ae1636f8ed",
+      "nodes": 12,
+      "relations": 18
+    },
+    "axum-macros/tests/typed_path/pass/tuple_struct.rs": {
+      "hash": "f888f57b5720e69a",
+      "nodes": 6,
+      "relations": 9
+    },
+    "axum-macros/tests/typed_path/pass/unit_struct.rs": {
+      "hash": "d0beffa18d7ca336",
+      "nodes": 4,
+      "relations": 5
+    },
+    "axum-macros/tests/typed_path/pass/url_encoding.rs": {
+      "hash": "95d609472722ed9e",
+      "nodes": 7,
+      "relations": 11
+    },
+    "axum-macros/tests/typed_path/pass/wildcards.rs": {
+      "hash": "8d23e381ab2c94f3",
+      "nodes": 6,
+      "relations": 10
+    },
+    "axum/benches/benches.rs": {
+      "hash": "af7f8f633fec330c",
+      "nodes": 25,
+      "relations": 48
+    },
+    "axum/src/body/mod.rs": {
+      "hash": "8a1bca64dd9700ab",
+      "nodes": 8,
+      "relations": 15
+    },
+    "axum/src/boxed.rs": {
+      "hash": "dd67227b07935e42",
+      "nodes": 53,
+      "relations": 66
+    },
+    "axum/src/error_handling/mod.rs": {
+      "hash": "988be1a024410f97",
+      "nodes": 37,
+      "relations": 57
+    },
+    "axum/src/extension.rs": {
+      "hash": "f3042faf518eee40",
+      "nodes": 33,
+      "relations": 64
+    },
+    "axum/src/extract/connect_info.rs": {
+      "hash": "cc95a29da75ca70f",
+      "nodes": 38,
+      "relations": 65
+    },
+    "axum/src/extract/matched_path.rs": {
+      "hash": "1a0f46a97e795c6f",
+      "nodes": 36,
+      "relations": 81
+    },
+    "axum/src/extract/mod.rs": {
+      "hash": "4cdfa905e76cfce2",
+      "nodes": 19,
+      "relations": 48
+    },
+    "axum/src/extract/multipart.rs": {
+      "hash": "b1edb76dc47b7e58",
+      "nodes": 49,
+      "relations": 78
+    },
+    "axum/src/extract/nested_path.rs": {
+      "hash": "eef30f5e487cd972",
+      "nodes": 31,
+      "relations": 63
+    },
+    "axum/src/extract/original_uri.rs": {
+      "hash": "7b605565451fcfd2",
+      "nodes": 8,
+      "relations": 13
+    },
+    "axum/src/extract/path/de.rs": {
+      "hash": "96b65cfaa9c60185",
+      "nodes": 139,
+      "relations": 165
+    },
+    "axum/src/extract/path/mod.rs": {
+      "hash": "c1555ea3337f8c14",
+      "nodes": 76,
+      "relations": 160
+    },
+    "axum/src/extract/query.rs": {
+      "hash": "5c9513d0c0b294ec",
+      "nodes": 23,
+      "relations": 42
+    },
+    "axum/src/extract/raw_form.rs": {
+      "hash": "c71da6c817b44246",
+      "nodes": 21,
+      "relations": 36
+    },
+    "axum/src/extract/raw_query.rs": {
+      "hash": "a2dc5c78ede9250c",
+      "nodes": 8,
+      "relations": 13
+    },
+    "axum/src/extract/rejection.rs": {
+      "hash": "f8fd421118ec6b79",
+      "nodes": 5,
+      "relations": 12
+    },
+    "axum/src/extract/state.rs": {
+      "hash": "9a3aa5f9d628a36b",
+      "nodes": 10,
+      "relations": 15
+    },
+    "axum/src/extract/ws.rs": {
+      "hash": "213722b2ab5ed1bf",
+      "nodes": 156,
+      "relations": 209
+    },
+    "axum/src/form.rs": {
+      "hash": "e22ed267a07a99a3",
+      "nodes": 32,
+      "relations": 63
+    },
+    "axum/src/handler/future.rs": {
+      "hash": "5a82f1fce915de2f",
+      "nodes": 13,
+      "relations": 26
+    },
+    "axum/src/handler/mod.rs": {
+      "hash": "28729c051b754e58",
+      "nodes": 38,
+      "relations": 68
+    },
+    "axum/src/handler/service.rs": {
+      "hash": "c69fa79a5cb3e33d",
+      "nodes": 29,
+      "relations": 49
+    },
+    "axum/src/json.rs": {
+      "hash": "a53a86744dc3a500",
+      "nodes": 35,
+      "relations": 77
+    },
+    "axum/src/lib.rs": {
+      "hash": "a0a628ccb4c8743d",
+      "nodes": 11,
+      "relations": 30
+    },
+    "axum/src/macros.rs": {
+      "hash": "6e4e2164df9849bb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "axum/src/middleware/from_extractor.rs": {
+      "hash": "9ac75440966470e9",
+      "nodes": 41,
+      "relations": 72
+    },
+    "axum/src/middleware/from_fn.rs": {
+      "hash": "ed01fdc50d753e22",
+      "nodes": 51,
+      "relations": 84
+    },
+    "axum/src/middleware/map_request.rs": {
+      "hash": "ce1c398c894f1e15",
+      "nodes": 49,
+      "relations": 86
+    },
+    "axum/src/middleware/map_response.rs": {
+      "hash": "ac032f3cb70852e1",
+      "nodes": 40,
+      "relations": 66
+    },
+    "axum/src/middleware/mod.rs": {
+      "hash": "0c276965b57bb215",
+      "nodes": 11,
+      "relations": 30
+    },
+    "axum/src/middleware/response_axum_body.rs": {
+      "hash": "004496d8cb781c18",
+      "nodes": 18,
+      "relations": 29
+    },
+    "axum/src/response/mod.rs": {
+      "hash": "2e5db8d0fceeb4ed",
+      "nodes": 22,
+      "relations": 66
+    },
+    "axum/src/response/redirect.rs": {
+      "hash": "6fcf5432faf6da3f",
+      "nodes": 25,
+      "relations": 36
+    },
+    "axum/src/response/sse.rs": {
+      "hash": "32aeb6d9d6f860ba",
+      "nodes": 95,
+      "relations": 135
+    },
+    "axum/src/routing/future.rs": {
+      "hash": "d245e7513c34f4a4",
+      "nodes": 2,
+      "relations": 3
+    },
+    "axum/src/routing/into_make_service.rs": {
+      "hash": "9ec8dc8523b87d3a",
+      "nodes": 13,
+      "relations": 19
+    },
+    "axum/src/routing/method_filter.rs": {
+      "hash": "36b6e1d9f9e1cca3",
+      "nodes": 20,
+      "relations": 26
+    },
+    "axum/src/routing/method_routing.rs": {
+      "hash": "ced33bacf8ca35ee",
+      "nodes": 129,
+      "relations": 171
+    },
+    "axum/src/routing/mod.rs": {
+      "hash": "555d0667370d3b55",
+      "nodes": 110,
+      "relations": 136
+    },
+    "axum/src/routing/not_found.rs": {
+      "hash": "b90868ed303e9b35",
+      "nodes": 11,
+      "relations": 20
+    },
+    "axum/src/routing/path_router.rs": {
+      "hash": "da2ca975e464ccdc",
+      "nodes": 79,
+      "relations": 99
+    },
+    "axum/src/routing/route.rs": {
+      "hash": "3b779abc5a019c65",
+      "nodes": 50,
+      "relations": 69
+    },
+    "axum/src/routing/strip_prefix.rs": {
+      "hash": "eac46f4c066fd001",
+      "nodes": 42,
+      "relations": 61
+    },
+    "axum/src/routing/tests/fallback.rs": {
+      "hash": "7ecd21f29cd3bcf3",
+      "nodes": 29,
+      "relations": 73
+    },
+    "axum/src/routing/tests/get_to_head.rs": {
+      "hash": "f0c4b4a27822a55f",
+      "nodes": 6,
+      "relations": 12
+    },
+    "axum/src/routing/tests/handle_error.rs": {
+      "hash": "f9cc6fd921293e9e",
+      "nodes": 12,
+      "relations": 23
+    },
+    "axum/src/routing/tests/merge.rs": {
+      "hash": "a60f67a4d6f598a8",
+      "nodes": 24,
+      "relations": 96
+    },
+    "axum/src/routing/tests/mod.rs": {
+      "hash": "43cf5fa0465423c4",
+      "nodes": 63,
+      "relations": 210
+    },
+    "axum/src/routing/tests/nest.rs": {
+      "hash": "c5cd5b94c7e48027",
+      "nodes": 23,
+      "relations": 72
+    },
+    "axum/src/routing/url_params.rs": {
+      "hash": "72cfdaaec7701b09",
+      "nodes": 9,
+      "relations": 16
+    },
+    "axum/src/serve/listener.rs": {
+      "hash": "150b16dac44869f7",
+      "nodes": 20,
+      "relations": 25
+    },
+    "axum/src/serve/mod.rs": {
+      "hash": "bfbccede3c0099c2",
+      "nodes": 69,
+      "relations": 120
+    },
+    "axum/src/service_ext.rs": {
+      "hash": "2563f35509a4f193",
+      "nodes": 8,
+      "relations": 15
+    },
+    "axum/src/test_helpers/counting_cloneable_state.rs": {
+      "hash": "727b7872df8a4539",
+      "nodes": 11,
+      "relations": 15
+    },
+    "axum/src/test_helpers/mod.rs": {
+      "hash": "2dd2f4ea907eafb5",
+      "nodes": 6,
+      "relations": 9
+    },
+    "axum/src/test_helpers/test_client.rs": {
+      "hash": "b68502f3a5d08dae",
+      "nodes": 48,
+      "relations": 69
+    },
+    "axum/src/test_helpers/tracing_helpers.rs": {
+      "hash": "f1acce659834ec65",
+      "nodes": 30,
+      "relations": 47
+    },
+    "axum/src/util.rs": {
+      "hash": "3311bee7446899a2",
+      "nodes": 24,
+      "relations": 32
+    },
+    "axum/tests/panic_location.rs": {
+      "hash": "9982accf171b5323",
+      "nodes": 4,
+      "relations": 9
+    },
+    "examples/anyhow-error-response/src/main.rs": {
+      "hash": "28a383d263781e57",
+      "nodes": 15,
+      "relations": 25
+    },
+    "examples/auto-reload/src/main.rs": {
+      "hash": "3633b27cffaf94c7",
+      "nodes": 6,
+      "relations": 12
+    },
+    "examples/chat/src/main.rs": {
+      "hash": "849105cc04ccc011",
+      "nodes": 21,
+      "relations": 34
+    },
+    "examples/compression/src/main.rs": {
+      "hash": "12bc3e17c322b8a4",
+      "nodes": 10,
+      "relations": 20
+    },
+    "examples/compression/src/tests.rs": {
+      "hash": "84b50a79e7437e61",
+      "nodes": 33,
+      "relations": 50
+    },
+    "examples/consume-body-in-extractor-or-middleware/src/main.rs": {
+      "hash": "6642f66b1885148c",
+      "nodes": 18,
+      "relations": 24
+    },
+    "examples/cors/src/main.rs": {
+      "hash": "59e7ce3c7e0ea61e",
+      "nodes": 10,
+      "relations": 17
+    },
+    "examples/customize-extractor-error/src/custom_extractor.rs": {
+      "hash": "96b549c4fe6efe33",
+      "nodes": 9,
+      "relations": 12
+    },
+    "examples/customize-extractor-error/src/derive_from_request.rs": {
+      "hash": "57b3c9603f66f1ed",
+      "nodes": 14,
+      "relations": 21
+    },
+    "examples/customize-extractor-error/src/main.rs": {
+      "hash": "9197d9952438b69d",
+      "nodes": 4,
+      "relations": 10
+    },
+    "examples/customize-extractor-error/src/with_rejection.rs": {
+      "hash": "46db99abdb9419ac",
+      "nodes": 9,
+      "relations": 16
+    },
+    "examples/customize-path-rejection/src/main.rs": {
+      "hash": "9e63bbf974c7ae44",
+      "nodes": 17,
+      "relations": 27
+    },
+    "examples/dependency-injection/src/main.rs": {
+      "hash": "19d751b68bd75f47",
+      "nodes": 36,
+      "relations": 57
+    },
+    "examples/diesel-async-postgres/src/main.rs": {
+      "hash": "e5be93f55c94d422",
+      "nodes": 26,
+      "relations": 42
+    },
+    "examples/diesel-postgres/src/main.rs": {
+      "hash": "0c5d92103c2dd264",
+      "nodes": 22,
+      "relations": 38
+    },
+    "examples/error-handling/src/main.rs": {
+      "hash": "4eab63e9b0b1073a",
+      "nodes": 34,
+      "relations": 56
+    },
+    "examples/form/src/main.rs": {
+      "hash": "4a17488d5f541f3c",
+      "nodes": 18,
+      "relations": 33
+    },
+    "examples/global-404-handler/src/main.rs": {
+      "hash": "9370796474d8da71",
+      "nodes": 6,
+      "relations": 10
+    },
+    "examples/graceful-shutdown/src/main.rs": {
+      "hash": "0568576bc4240fe4",
+      "nodes": 11,
+      "relations": 28
+    },
+    "examples/handle-head-request/src/main.rs": {
+      "hash": "3a07e12e93d577b4",
+      "nodes": 15,
+      "relations": 29
+    },
+    "examples/hello-world/src/main.rs": {
+      "hash": "e7f7be2a14ff6595",
+      "nodes": 4,
+      "relations": 6
+    },
+    "examples/http-proxy/src/main.rs": {
+      "hash": "c92a5b4b3684854a",
+      "nodes": 17,
+      "relations": 37
+    },
+    "examples/jwt/src/main.rs": {
+      "hash": "d56054f2d2bd5690",
+      "nodes": 39,
+      "relations": 65
+    },
+    "examples/key-value-store/src/main.rs": {
+      "hash": "3f5976a0878a43ab",
+      "nodes": 22,
+      "relations": 35
+    },
+    "examples/low-level-native-tls/src/main.rs": {
+      "hash": "7ee4aebafc921558",
+      "nodes": 16,
+      "relations": 36
+    },
+    "examples/low-level-openssl/src/main.rs": {
+      "hash": "284b17713a88ab86",
+      "nodes": 14,
+      "relations": 36
+    },
+    "examples/low-level-rustls/src/main.rs": {
+      "hash": "2c23a00102cd327a",
+      "nodes": 16,
+      "relations": 36
+    },
+    "examples/mongodb/src/main.rs": {
+      "hash": "b531c7fda03b30a7",
+      "nodes": 27,
+      "relations": 43
+    },
+    "examples/multipart-form/src/main.rs": {
+      "hash": "6cc70d506d437d41",
+      "nodes": 8,
+      "relations": 13
+    },
+    "examples/oauth/src/main.rs": {
+      "hash": "7c5e42ac143d019c",
+      "nodes": 57,
+      "relations": 88
+    },
+    "examples/parse-body-based-on-content-type/src/main.rs": {
+      "hash": "61c4043702f1613d",
+      "nodes": 13,
+      "relations": 20
+    },
+    "examples/print-request-response/src/main.rs": {
+      "hash": "ea4f32af959d1171",
+      "nodes": 11,
+      "relations": 17
+    },
+    "examples/prometheus-metrics/src/main.rs": {
+      "hash": "f928737dcd17af6b",
+      "nodes": 14,
+      "relations": 24
+    },
+    "examples/query-params-with-empty-strings/src/main.rs": {
+      "hash": "e01a9f430f4ec586",
+      "nodes": 20,
+      "relations": 36
+    },
+    "examples/readme/src/main.rs": {
+      "hash": "22b06de8f8623cde",
+      "nodes": 12,
+      "relations": 20
+    },
+    "examples/request-id/src/main.rs": {
+      "hash": "6f17d876e3959fbe",
+      "nodes": 9,
+      "relations": 19
+    },
+    "examples/reqwest-response/src/main.rs": {
+      "hash": "245578d410fe4487",
+      "nodes": 12,
+      "relations": 28
+    },
+    "examples/reverse-proxy/src/main.rs": {
+      "hash": "058e3cb37f3bd137",
+      "nodes": 10,
+      "relations": 17
+    },
+    "examples/routes-and-handlers-close-together/src/main.rs": {
+      "hash": "3ee87a83cfe5513a",
+      "nodes": 9,
+      "relations": 10
+    },
+    "examples/serve-with-hyper/src/main.rs": {
+      "hash": "94c25a38f495cfd8",
+      "nodes": 15,
+      "relations": 34
+    },
+    "examples/simple-router-wasm/src/main.rs": {
+      "hash": "0355b06ad3aa7272",
+      "nodes": 9,
+      "relations": 17
+    },
+    "examples/sqlx-postgres/src/main.rs": {
+      "hash": "aa8119711fbb385e",
+      "nodes": 17,
+      "relations": 26
+    },
+    "examples/sse/src/main.rs": {
+      "hash": "7a1f339a1eaf6181",
+      "nodes": 16,
+      "relations": 36
+    },
+    "examples/static-file-server/src/main.rs": {
+      "hash": "a265bfbe48f333d2",
+      "nodes": 17,
+      "relations": 29
+    },
+    "examples/stream-to-file/src/main.rs": {
+      "hash": "92cac7ac84610fff",
+      "nodes": 20,
+      "relations": 32
+    },
+    "examples/templates-minijinja/src/main.rs": {
+      "hash": "1733ed2e30d9a394",
+      "nodes": 15,
+      "relations": 28
+    },
+    "examples/templates/src/main.rs": {
+      "hash": "719617f0ca29d067",
+      "nodes": 17,
+      "relations": 32
+    },
+    "examples/testing-websockets/src/main.rs": {
+      "hash": "5e01f4945410c09d",
+      "nodes": 19,
+      "relations": 30
+    },
+    "examples/testing/src/main.rs": {
+      "hash": "277aea0d457ac320",
+      "nodes": 19,
+      "relations": 41
+    },
+    "examples/tls-graceful-shutdown/src/main.rs": {
+      "hash": "87237ed4f0cc85dc",
+      "nodes": 16,
+      "relations": 28
+    },
+    "examples/tls-rustls/src/main.rs": {
+      "hash": "80c67d1b26a70bc9",
+      "nodes": 12,
+      "relations": 22
+    },
+    "examples/todos/src/main.rs": {
+      "hash": "1074960c629ed28e",
+      "nodes": 35,
+      "relations": 56
+    },
+    "examples/tokio-postgres/src/main.rs": {
+      "hash": "cfccf0d4acd87887",
+      "nodes": 18,
+      "relations": 27
+    },
+    "examples/tokio-redis/src/main.rs": {
+      "hash": "f747b91aa7a446ec",
+      "nodes": 19,
+      "relations": 30
+    },
+    "examples/tracing-aka-logging/src/main.rs": {
+      "hash": "68ba20a434ccba89",
+      "nodes": 9,
+      "relations": 21
+    },
+    "examples/unix-domain-socket/src/main.rs": {
+      "hash": "876fa8e6c69ad567",
+      "nodes": 16,
+      "relations": 30
+    },
+    "examples/validator/src/main.rs": {
+      "hash": "6da1e687d0686187",
+      "nodes": 29,
+      "relations": 50
+    },
+    "examples/versioning/src/main.rs": {
+      "hash": "e315d7cc890b70d5",
+      "nodes": 18,
+      "relations": 32
+    },
+    "examples/websockets-http2/src/main.rs": {
+      "hash": "e1c54f625b1913cd",
+      "nodes": 12,
+      "relations": 23
+    },
+    "examples/websockets/src/client.rs": {
+      "hash": "0e8826099dfe3b3b",
+      "nodes": 15,
+      "relations": 26
+    },
+    "examples/websockets/src/main.rs": {
+      "hash": "f5e36a2e4a30d9f2",
+      "nodes": 21,
+      "relations": 38
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 390,
+      "boundary": 176,
+      "class": 434,
+      "dependency": 458,
+      "external_symbol": 835,
+      "file": 296,
+      "function": 989,
+      "import": 1375,
+      "method": 836,
+      "module": 296,
+      "parameter": 1195,
+      "project": 61,
+      "type_alias": 13,
+      "variable": 36
+    },
+    "relations": {
+      "consumes": 320,
+      "contains": 592,
+      "declares": 5658,
+      "depends_on": 458,
+      "exposes": 365,
+      "imports": 1375,
+      "resolves_to": 1375
+    }
+  },
+  "project": "tokio-rs/axum",
+  "ref": "axum-v0.8.9",
+  "totals": {
+    "files": 296,
+    "nodes": 7390,
+    "relations": 10143
+  }
+}

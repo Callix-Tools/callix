@@ -8,6 +8,7 @@
 use indexmap::IndexMap;
 
 use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 /// A single *port* on a cross-language boundary, found in the source.
@@ -165,4 +166,40 @@ pub fn normalize_http_path(raw: &str) -> String {
         path = if trimmed.is_empty() { "/".to_string() } else { trimmed.to_string() };
     }
     path
+}
+
+/// Runs user-supplied boundary extractors over one file.
+///
+/// The protocol deliberately differs from graphlens's, which handed the
+/// extractor a tree-sitter node: a Rust CST node cannot cross into Python. An
+/// extractor here receives the source bytes and the project-relative path and
+/// decides for itself how to read them — which is also what a mechanism
+/// expressed by file layout, rather than by a call, actually needs.
+///
+/// ```python
+/// class DjangoUrls:
+///     def extract(self, source: bytes, file_path: str) -> list[BoundaryRef]:
+///         ...
+/// ```
+///
+/// Anything the extractor raises propagates: a broken extractor should be
+/// noticed, not silently produce an empty graph.
+pub(crate) fn run_extractors(
+    py: Python<'_>,
+    extractors: Option<&Py<PyAny>>,
+    source: &[u8],
+    file_path: &str,
+) -> PyResult<Vec<BoundaryRef>> {
+    let Some(extractors) = extractors else {
+        return Ok(Vec::new());
+    };
+    let payload = PyBytes::new(py, source);
+    let mut refs = Vec::new();
+    for extractor in extractors.bind(py).try_iter()? {
+        let found = extractor?.call_method1("extract", (&payload, file_path))?;
+        for item in found.try_iter()? {
+            refs.push(item?.extract::<BoundaryRef>()?);
+        }
+    }
+    Ok(refs)
 }

@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::boundaries::run_extractors;
 use crate::dependencies::declare_dependencies;
 use crate::error::AdapterError;
 use crate::graph::Graph;
@@ -179,6 +180,7 @@ fn build_root_structure(
     project_root: &Path,
     go_root: &Path,
     files: &[PathBuf],
+    extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let module = module_path(go_root).unwrap_or_else(|| {
         go_root
@@ -245,7 +247,8 @@ fn build_root_structure(
         }
         internal_imports.extend(file_imports);
 
-        let found = extract_boundaries(tree.root_node(), &source);
+        let mut found = extract_boundaries(tree.root_node(), &source);
+        found.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
         if !found.is_empty() {
             boundaries.push((file_rel, file_id, found));
         }
@@ -308,6 +311,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", unsendable)]
 pub struct GoAdapter {
+    /// Extra boundary extractors, run in addition to the built-in ones.
+    boundary_extractors: Option<Py<PyAny>>,
     resolver: Option<GoResolver>,
 }
 
@@ -317,10 +322,14 @@ impl GoAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true))]
-    fn new(resolve: bool) -> Self {
+    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
+    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
         Self {
+            boundary_extractors,
             resolver: resolve.then(GoResolver::empty),
         }
     }
@@ -377,6 +386,7 @@ impl GoAdapter {
                 &project_root,
                 go_root,
                 module_files,
+                self.boundary_extractors.as_ref(),
             )?);
         }
 

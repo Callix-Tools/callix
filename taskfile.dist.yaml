@@ -12,6 +12,9 @@ vars:
   # crates — is compiled once rather than once per profile.
   PROFILE: '{{if eq .DEBUG "1"}}{{else}}--release{{end}}'
   SCRIPT: '{{default "example/test.py" .CLI_ARGS}}'
+  # ruff alone is 1.2 GB of checkout, so this is somewhere with room rather
+  # than /tmp. Override per machine.
+  BASELINE_WORKDIR: '{{default "/tmp/callix-baseline" .BASELINE_WORKDIR}}'
 
 env:
   # abi3-py313 demands an interpreter >= 3.13, and pyo3 otherwise picks
@@ -85,6 +88,16 @@ tasks:
     desc: Compare the fixture graphs against tests/golden (UPDATE=1 to rewrite)
     cmds:
       - uv run python tests/test_fixtures.py {{if eq .UPDATE "1"}}--update{{end}}
+
+  baseline:
+    desc: Compare real-project fingerprints (needs ~2GB of clones; not in CI)
+    cmds:
+      - uv run python tests/baseline.py compare --workdir {{.BASELINE_WORKDIR}} {{.CLI_ARGS}}
+
+  baseline:capture:
+    desc: Rewrite the real-project fingerprints, cloning what is missing
+    cmds:
+      - uv run python tests/baseline.py capture --clone --workdir {{.BASELINE_WORKDIR}} {{.CLI_ARGS}}
 
   clean:
     desc: Remove build artifacts (the typescript-go clone in .ts-go stays)

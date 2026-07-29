@@ -74,9 +74,23 @@ and read/write occurrences that graphlens never produced for those languages.
 So a fresh parity run against graphlens will show extra nodes and edges on
 those two — that is the fix, not a regression.
 
-For a wider check there is still the manual procedure: build the same graph
-both ways on a real repository, serialize with `json.dumps(sort_keys=True)`,
-and diff the text.
+The wide half of the net is [`tests/baseline/`](tests/baseline): a
+deterministic fingerprint of each of the eight benchmark projects — totals,
+counts per kind, and a per-file hash over the nodes. Whole graphs cannot be
+frozen at that size, but a fingerprint still points at the file that moved.
+
+```bash
+task baseline                       # compare
+task baseline:capture               # rewrite, cloning what is missing
+task baseline -- --project astral-sh/ruff
+```
+
+Not part of `task test` or CI: it needs ~2 GB of checkouts and several minutes.
+Run it when you touch a visitor, the graph model, or path handling.
+
+[`tests/baseline/README.md`](tests/baseline/README.md) records the cross-check
+against graphlens as of 2026-07-30, project by project — useful because that
+comparison is not reproducible forever.
 
 Every subtle bug found so far surfaced only this way — key ordering, a
 `HashMap` where an `IndexMap` was required, path sorting that has to match

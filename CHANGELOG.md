@@ -7,10 +7,12 @@ All notable changes to this project will be documented in this file.
 
 - ci
 - ci release
+- **build**: unbreak the linux wheel and widen the platform matrix
 
 ### Documentation
 
 - **bench**: refresh benchmark metrics [skip ci] by @github-actions[bot]
+- add CLAUDE.md
 
 ### Features
 

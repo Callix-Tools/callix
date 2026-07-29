@@ -106,6 +106,30 @@
     },
     {
       "file_path": "src/lib.rs",
+      "id": "19e5fc3199a94269",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "String",
+        "name_span": {
+          "__span__": [
+            11,
+            14,
+            11,
+            20
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "fixture::build.region",
+      "span": [
+        11,
+        14,
+        11,
+        28
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
       "id": "5b21469d954ebe7f",
       "kind": "function",
       "metadata": {
@@ -129,6 +153,30 @@
     },
     {
       "file_path": "src/lib.rs",
+      "id": "a0620f43bb5e3e52",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "&dyn Labeled",
+        "name_span": {
+          "__span__": [
+            18,
+            16,
+            18,
+            20
+          ]
+        }
+      },
+      "name": "item",
+      "qualified_name": "fixture::inspect.item",
+      "span": [
+        18,
+        16,
+        18,
+        34
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
       "id": "c8b8dfb44ece22e7",
       "kind": "function",
       "metadata": {
@@ -148,6 +196,30 @@
         1,
         25,
         2
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "80b9f52c051daf32",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "Identifier",
+        "name_span": {
+          "__span__": [
+            23,
+            18,
+            23,
+            23
+          ]
+        }
+      },
+      "name": "ident",
+      "qualified_name": "fixture::fetch_one.ident",
+      "span": [
+        23,
+        18,
+        23,
+        35
       ]
     },
     {
@@ -279,6 +351,29 @@
     },
     {
       "file_path": "src/store.rs",
+      "id": "c21bfd293d34504b",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            13,
+            9,
+            13,
+            14
+          ]
+        }
+      },
+      "name": "label",
+      "qualified_name": "fixture::store::Base.label",
+      "span": [
+        13,
+        5,
+        13,
+        22
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
       "id": "fb8aa0c2bfb33c58",
       "kind": "class",
       "metadata": {
@@ -298,6 +393,52 @@
         1,
         26,
         2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "0c6099dabf7e751f",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            24,
+            9,
+            24,
+            13
+          ]
+        }
+      },
+      "name": "base",
+      "qualified_name": "fixture::store::Engine.base",
+      "span": [
+        24,
+        5,
+        24,
+        19
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "dfca2393242e9be4",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            25,
+            9,
+            25,
+            15
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "fixture::store::Engine.region",
+      "span": [
+        25,
+        5,
+        25,
+        23
       ]
     },
     {
@@ -348,6 +489,30 @@
     },
     {
       "file_path": "src/store.rs",
+      "id": "ab71af274127d767",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "String",
+        "name_span": {
+          "__span__": [
+            29,
+            16,
+            29,
+            22
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "fixture::store::Engine.new.region",
+      "span": [
+        29,
+        16,
+        29,
+        30
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
       "id": "fe063f8f86d3a9ac",
       "kind": "method",
       "metadata": {
@@ -390,6 +555,12 @@
       "target_id": "5f4a81d0976df3f0"
     },
     {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "9afe9e1697ef66d9"
+    },
+    {
       "kind": "resolves_to",
       "metadata": {},
       "source_id": "5f4a81d0976df3f0",
@@ -410,14 +581,32 @@
     {
       "kind": "declares",
       "metadata": {},
+      "source_id": "7d403562af6794af",
+      "target_id": "19e5fc3199a94269"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
       "source_id": "92461134c7015dc1",
       "target_id": "5b21469d954ebe7f"
     },
     {
       "kind": "declares",
       "metadata": {},
+      "source_id": "5b21469d954ebe7f",
+      "target_id": "a0620f43bb5e3e52"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
       "source_id": "92461134c7015dc1",
       "target_id": "c8b8dfb44ece22e7"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c8b8dfb44ece22e7",
+      "target_id": "80b9f52c051daf32"
     },
     {
       "kind": "declares",
@@ -465,7 +654,43 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ee7380c1341919d6",
+      "target_id": "c21bfd293d34504b"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f5efd438c53480a2",
+      "target_id": "c21bfd293d34504b"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
       "target_id": "fb8aa0c2bfb33c58"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "0c6099dabf7e751f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fb8aa0c2bfb33c58",
+      "target_id": "0c6099dabf7e751f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "dfca2393242e9be4"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fb8aa0c2bfb33c58",
+      "target_id": "dfca2393242e9be4"
     },
     {
       "kind": "declares",
@@ -482,8 +707,20 @@
     {
       "kind": "declares",
       "metadata": {},
+      "source_id": "14bd64b90bb47fbd",
+      "target_id": "ab71af274127d767"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
       "source_id": "ee7380c1341919d6",
       "target_id": "fe063f8f86d3a9ac"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "18a7edcf8f6b3257"
     },
     {
       "kind": "resolves_to",

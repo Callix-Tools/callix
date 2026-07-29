@@ -67,6 +67,7 @@
   },
   "rust": {
     "nodes": {
+      "attribute": 3,
       "class": 3,
       "external_symbol": 5,
       "file": 2,
@@ -74,6 +75,7 @@
       "import": 2,
       "method": 3,
       "module": 2,
+      "parameter": 4,
       "project": 1,
       "type_alias": 1,
       "variable": 1
@@ -81,15 +83,18 @@
     "relations": {
       "calls": 6,
       "contains": 4,
-      "declares": 14,
+      "declares": 24,
+      "has_type": 1,
+      "imports": 2,
       "inherits_from": 1,
+      "references": 2,
       "resolves_to": 2
     },
     "resolver": {
       "external": 4,
-      "internal": 3,
-      "queries": 7,
-      "resolved": 7,
+      "internal": 6,
+      "queries": 10,
+      "resolved": 10,
       "unresolved": 0
     },
     "resolver_status": "ok"

@@ -49,6 +49,14 @@ fn leftmost<'tree>(nodes: &[TsNode<'tree>]) -> Option<TsNode<'tree>> {
     nodes.iter().min_by_key(|n| n.start_byte()).copied()
 }
 
+/// Whether the node is the left-hand side of an assignment.
+fn is_assignment_target(node: TsNode<'_>) -> bool {
+    node.parent().is_some_and(|parent| {
+        matches!(parent.kind(), "assignment_expression" | "compound_assignment_expr")
+            && parent.child_by_field_name("left") == Some(node)
+    })
+}
+
 /// The callee's name token; None when an expression result is called.
 fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
     match function.kind() {
@@ -75,9 +83,10 @@ pub struct RustExtractor<'a> {
     crate_name: Option<&'a str>,
     deps: &'a HashSet<String>,
     occurrences: Vec<OccurrenceRef>,
-    /// `(import node id, path, importing module)` for internal imports: the
-    /// adapter substitutes the real MODULE node once every module exists.
-    internal_imports: Vec<(String, String, String)>,
+    /// `(import node id, path, importing module, importing file)` for internal
+    /// imports: the adapter substitutes the real MODULE node once every module
+    /// exists, and emits IMPORTS from the file at the same time.
+    internal_imports: Vec<(String, String, String, String)>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -109,7 +118,7 @@ impl<'a> RustExtractor<'a> {
     }
 
     #[allow(clippy::type_complexity)]
-    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String, String)>) {
+    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String, String, String)>) {
         (self.occurrences, self.internal_imports)
     }
 
@@ -134,13 +143,22 @@ impl<'a> RustExtractor<'a> {
                 "mod_item" => self.on_mod_item(child)?,
                 "function_item" => self.on_function_item(child)?,
                 "struct_item" | "enum_item" | "trait_item" | "union_item" => {
-                    self.declare_named(child, NodeKind::Class)?;
+                    if let Some(id) = self.declare_named(child, NodeKind::Class)?
+                        && let Some(name_node) = child.child_by_field_name("name")
+                    {
+                        let qname = format!("{}::{}", self.module_qname, self.text(name_node));
+                        self.collect_fields(child, &qname, &id)?;
+                    }
                 }
                 "type_item" => {
                     self.declare_named(child, NodeKind::TypeAlias)?;
                 }
                 "const_item" | "static_item" => {
-                    self.declare_named(child, NodeKind::Variable)?;
+                    if let Some(id) = self.declare_named(child, NodeKind::Variable)?
+                        && let Some(type_node) = child.child_by_field_name("type")
+                    {
+                        self.record_annotation(type_node, &id);
+                    }
                 }
                 "use_declaration" => self.on_use_declaration(child)?,
                 _ => {}
@@ -234,6 +252,127 @@ impl<'a> RustExtractor<'a> {
         }
     }
 
+    /// A `read` or `write` for every field access under the scope.
+    ///
+    /// A field in callee position (`obj.method()`) is skipped: `collect_calls`
+    /// already recorded it, and one site must not yield two occurrences.
+    fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
+        for node in descendants(scope) {
+            if node.kind() != "field_expression" {
+                continue;
+            }
+            let is_callee = node.parent().is_some_and(|parent| {
+                parent.kind() == "call_expression"
+                    && parent.child_by_field_name("function") == Some(node)
+            });
+            if is_callee {
+                continue;
+            }
+            if let Some(field) = node.child_by_field_name("field") {
+                let role = if is_assignment_target(node) { "write" } else { "read" };
+                self.add_occurrence(role, field, enclosing_id);
+            }
+        }
+    }
+
+    /// An `annotation` for the leading identifier of a type.
+    ///
+    /// `&dyn Labeled`, `Vec<Engine>` and `store::Engine` all reduce to the
+    /// leftmost `type_identifier`, which is the name the resolver can bind.
+    fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
+        let idents = walk_type(type_node, "type_identifier");
+        if let Some(name_node) = leftmost(&idents) {
+            self.add_occurrence("annotation", name_node, enclosing_id);
+        }
+    }
+
+    /// PARAMETER nodes for a function's parameters, plus their annotations.
+    ///
+    /// `self` is skipped: it names the receiver, not a declared parameter, and
+    /// carries no type of its own.
+    fn collect_parameters(
+        &mut self,
+        function: TsNode<'_>,
+        function_qname: &str,
+        function_id: &str,
+    ) -> PyResult<()> {
+        let Some(parameters) = function.child_by_field_name("parameters") else {
+            return Ok(());
+        };
+        for parameter in ts::children(parameters) {
+            if parameter.kind() != "parameter" {
+                continue;
+            }
+            let Some(pattern) = parameter.child_by_field_name("pattern") else {
+                continue;
+            };
+            let name = self.text(pattern);
+            if name.is_empty() {
+                continue;
+            }
+            let type_node = parameter.child_by_field_name("type");
+            let metadata = PyDict::new(self.py);
+            metadata.set_item("annotation", type_node.map(|n| self.text(n)))?;
+            metadata.set_item("name_span", ts::span(pattern))?;
+
+            let qname = format!("{function_qname}.{name}");
+            let id = node_id(self.project_name, &qname, NodeKind::Parameter.as_str());
+            if self.graph.has_node(&id) {
+                continue;
+            }
+            let node = Node {
+                id: id.clone(),
+                kind: NodeKind::Parameter,
+                qualified_name: qname,
+                name,
+                file_path: Some(self.file_rel.to_string()),
+                span: Some(ts::span(parameter)),
+                metadata: metadata.unbind(),
+            };
+            self.graph.insert_node(id.clone(), Py::new(self.py, node)?);
+            self.push_relation(function_id.to_string(), id.clone(), RelationKind::Declares)?;
+
+            if let Some(type_node) = type_node {
+                self.record_annotation(type_node, &id);
+            }
+        }
+        Ok(())
+    }
+
+    /// ATTRIBUTE nodes for a struct's fields, plus their annotations.
+    fn collect_fields(
+        &mut self,
+        type_node: TsNode<'_>,
+        type_qname: &str,
+        type_id: &str,
+    ) -> PyResult<()> {
+        let Some(body) = type_node.child_by_field_name("body") else {
+            return Ok(());
+        };
+        if body.kind() != "field_declaration_list" {
+            return Ok(());
+        }
+        for field in ts::children(body) {
+            if field.kind() != "field_declaration" {
+                continue;
+            }
+            let (Some(name_node), field_type) = (
+                field.child_by_field_name("name"),
+                field.child_by_field_name("type"),
+            ) else {
+                continue;
+            };
+            let name = self.text(name_node);
+            let qname = format!("{type_qname}.{name}");
+            let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
+            self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+            if let Some(field_type) = field_type {
+                self.record_annotation(field_type, &id);
+            }
+        }
+        Ok(())
+    }
+
     fn on_function_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name_node) = node.child_by_field_name("name") else {
             return Ok(());
@@ -241,7 +380,22 @@ impl<'a> RustExtractor<'a> {
         let name = self.text(name_node);
         let qname = format!("{}::{name}", self.module_qname);
         let id = self.declare(&qname, &name, NodeKind::Function, node, name_node)?;
-        self.collect_calls(node, &id);
+        self.on_callable(node, &qname, &id)
+    }
+
+    /// The parts shared by a free function and a method.
+    fn on_callable(
+        &mut self,
+        node: TsNode<'_>,
+        qname: &str,
+        id: &str,
+    ) -> PyResult<()> {
+        self.collect_parameters(node, qname, id)?;
+        if let Some(return_type) = node.child_by_field_name("return_type") {
+            self.record_annotation(return_type, id);
+        }
+        self.collect_calls(node, id);
+        self.collect_references(node, id);
         Ok(())
     }
 
@@ -266,7 +420,7 @@ impl<'a> RustExtractor<'a> {
             };
             let qname = format!("{}::{prefix}{name}", self.module_qname);
             let id = self.declare(&qname, &name, NodeKind::Method, item, name_node)?;
-            self.collect_calls(item, &id);
+            self.on_callable(item, &qname, &id)?;
         }
         Ok(())
     }
@@ -349,11 +503,14 @@ impl<'a> RustExtractor<'a> {
 
         if origin == "internal" {
             // Deferred: bound to the real MODULE node once every module
-            // exists (falling back to an EXTERNAL_SYMBOL otherwise).
+            // exists (falling back to an EXTERNAL_SYMBOL otherwise). The
+            // IMPORTS edge is deferred with it, since it needs the same
+            // target.
             self.internal_imports.push((
                 import_id,
                 import_path.to_string(),
                 self.module_qname.clone(),
+                self.file_id.to_string(),
             ));
             return Ok(());
         }
@@ -373,6 +530,7 @@ impl<'a> RustExtractor<'a> {
             };
             self.graph.insert_node(sym_id.clone(), Py::new(self.py, symbol)?);
         }
+        self.push_relation(self.file_id.to_string(), sym_id.clone(), RelationKind::Imports)?;
         self.push_relation(import_id, sym_id, RelationKind::ResolvesTo)
     }
 

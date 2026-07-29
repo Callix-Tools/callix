@@ -251,7 +251,7 @@ fn build_crate_structure(
     let mut modules: IndexMap<String, String> = IndexMap::new();
     let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
-    let mut internal_imports: Vec<(String, String, String)> = Vec::new();
+    let mut internal_imports: Vec<(String, String, String, String)> = Vec::new();
 
     for file in files {
         let module = module_qname(file, crate_root, &project);
@@ -293,7 +293,7 @@ fn build_crate_structure(
     // Internal imports are bound once every module of the crate exists.
     // Anything not found falls through to an EXTERNAL_SYMBOL so the
     // RESOLVES_TO edge is never lost.
-    for (import_id, import_path, importer_qname) in internal_imports {
+    for (import_id, import_path, importer_qname, importer_file) in internal_imports {
         let target_id = module_candidates(&import_path, &project, &importer_qname)
             .into_iter()
             .find_map(|candidate| modules.get(&candidate).cloned());
@@ -301,6 +301,7 @@ fn build_crate_structure(
             Some(id) => id,
             None => ensure_external_symbol(py, graph, &project, &import_path, "internal")?,
         };
+        push_relation(py, graph, importer_file, target_id.clone(), RelationKind::Imports)?;
         push_relation(py, graph, import_id, target_id, RelationKind::ResolvesTo)?;
     }
 
@@ -335,6 +336,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
     Some(match role {
         "call" => RelationKind::Calls,
         "base" => RelationKind::InheritsFrom,
+        "annotation" => RelationKind::HasType,
+        "read" | "write" => RelationKind::References,
         _ => return None,
     })
 }
@@ -526,6 +529,9 @@ fn resolve_pass(
 
         let metadata = PyDict::new(py);
         metadata.set_item("span", occurrence.span)?;
+        if occurrence.role == "read" || occurrence.role == "write" {
+            metadata.set_item("access", &occurrence.role)?;
+        }
         let relation = Relation {
             source_id: occurrence.enclosing_id.clone(),
             target_id: target_id.expect("the external symbol is created above"),

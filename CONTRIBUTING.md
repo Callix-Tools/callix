@@ -64,8 +64,15 @@ share that drops, still shows up.
 Those golden files were cross-validated against
 [graphlens](https://github.com/Neko1313/graphlens), the Python implementation
 callix replaces, while that project still ran: all four fixtures matched it
-byte for byte. That is worth knowing because graphlens is archived — the
-baseline was captured while it could still be regenerated.
+byte for byte at the moment they were frozen. That is worth knowing because
+graphlens is archived — the baseline was captured while it could still be
+regenerated.
+
+Since then the Go and Rust adapters have deliberately moved **past** graphlens:
+they now emit PARAMETER and ATTRIBUTE nodes, IMPORTS edges, and the annotation
+and read/write occurrences that graphlens never produced for those languages.
+So a fresh parity run against graphlens will show extra nodes and edges on
+those two — that is the fix, not a regression.
 
 For a wider check there is still the manual procedure: build the same graph
 both ways on a real repository, serialize with `json.dumps(sort_keys=True)`,

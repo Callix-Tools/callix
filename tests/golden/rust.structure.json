@@ -1,0 +1,496 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "0f867cb0416ba557",
+      "kind": "project",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "18a7edcf8f6b3257",
+      "kind": "module",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "fixture",
+      "span": null
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "92461134c7015dc1",
+      "kind": "file",
+      "metadata": {},
+      "name": "lib.rs",
+      "qualified_name": "src/lib.rs",
+      "span": null
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "5f4a81d0976df3f0",
+      "kind": "import",
+      "metadata": {
+        "import_path": "store::{Engine, Identifier, Labeled}",
+        "origin": "unknown"
+      },
+      "name": "store::{Engine, Identifier, Labeled}",
+      "qualified_name": "src/lib.rs::store::{Engine, Identifier, Labeled}",
+      "span": [
+        5,
+        1,
+        5,
+        42
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "9afe9e1697ef66d9",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "{Engine, Identifier, Labeled}",
+      "qualified_name": "store::{Engine, Identifier, Labeled}",
+      "span": null
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "1a3e96574fc8649d",
+      "kind": "variable",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            8,
+            11,
+            8,
+            25
+          ]
+        }
+      },
+      "name": "DEFAULT_REGION",
+      "qualified_name": "fixture::DEFAULT_REGION",
+      "span": [
+        8,
+        1,
+        8,
+        39
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "7d403562af6794af",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            11,
+            8,
+            11,
+            13
+          ]
+        }
+      },
+      "name": "build",
+      "qualified_name": "fixture::build",
+      "span": [
+        11,
+        1,
+        15,
+        2
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "5b21469d954ebe7f",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            18,
+            8,
+            18,
+            15
+          ]
+        }
+      },
+      "name": "inspect",
+      "qualified_name": "fixture::inspect",
+      "span": [
+        18,
+        1,
+        20,
+        2
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "c8b8dfb44ece22e7",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            23,
+            8,
+            23,
+            17
+          ]
+        }
+      },
+      "name": "fetch_one",
+      "qualified_name": "fixture::fetch_one",
+      "span": [
+        23,
+        1,
+        25,
+        2
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "041253d3f9395658",
+      "kind": "import",
+      "metadata": {
+        "import_path": "super::build",
+        "origin": "internal"
+      },
+      "name": "super::build",
+      "qualified_name": "src/lib.rs::super::build",
+      "span": [
+        29,
+        5,
+        29,
+        22
+      ]
+    },
+    {
+      "file_path": "src/lib.rs",
+      "id": "3222cbd4ecc4b28c",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            32,
+            8,
+            32,
+            14
+          ]
+        }
+      },
+      "name": "builds",
+      "qualified_name": "fixture::tests::builds",
+      "span": [
+        32,
+        5,
+        34,
+        6
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "49e63763261229a2",
+      "kind": "module",
+      "metadata": {},
+      "name": "store",
+      "qualified_name": "fixture::store",
+      "span": null
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "ee7380c1341919d6",
+      "kind": "file",
+      "metadata": {},
+      "name": "store.rs",
+      "qualified_name": "src/store.rs",
+      "span": null
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "25f5b0d083e79fbe",
+      "kind": "type_alias",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            20
+          ]
+        }
+      },
+      "name": "Identifier",
+      "qualified_name": "fixture::store::Identifier",
+      "span": [
+        4,
+        1,
+        4,
+        27
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "f9fee88ace817fbc",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            7,
+            11,
+            7,
+            18
+          ]
+        }
+      },
+      "name": "Labeled",
+      "qualified_name": "fixture::store::Labeled",
+      "span": [
+        7,
+        1,
+        9,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "f5efd438c53480a2",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            12,
+            12,
+            12,
+            16
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "fixture::store::Base",
+      "span": [
+        12,
+        1,
+        14,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "fb8aa0c2bfb33c58",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            23,
+            12,
+            23,
+            18
+          ]
+        }
+      },
+      "name": "Engine",
+      "qualified_name": "fixture::store::Engine",
+      "span": [
+        23,
+        1,
+        26,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "8163c43e3017a009",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            17,
+            8,
+            17,
+            16
+          ]
+        }
+      },
+      "name": "describe",
+      "qualified_name": "fixture::store::Base.describe",
+      "span": [
+        17,
+        5,
+        19,
+        6
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "14bd64b90bb47fbd",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            29,
+            12,
+            29,
+            15
+          ]
+        }
+      },
+      "name": "new",
+      "qualified_name": "fixture::store::Engine.new",
+      "span": [
+        29,
+        5,
+        31,
+        6
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "fe063f8f86d3a9ac",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            33,
+            12,
+            33,
+            16
+          ]
+        }
+      },
+      "name": "ping",
+      "qualified_name": "fixture::store::Engine.ping",
+      "span": [
+        33,
+        5,
+        35,
+        6
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "18a7edcf8f6b3257"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "18a7edcf8f6b3257",
+      "target_id": "92461134c7015dc1"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "5f4a81d0976df3f0"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "5f4a81d0976df3f0",
+      "target_id": "9afe9e1697ef66d9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "1a3e96574fc8649d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "7d403562af6794af"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "5b21469d954ebe7f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "c8b8dfb44ece22e7"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "041253d3f9395658"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "92461134c7015dc1",
+      "target_id": "3222cbd4ecc4b28c"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "49e63763261229a2"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "49e63763261229a2",
+      "target_id": "ee7380c1341919d6"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "25f5b0d083e79fbe"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "f9fee88ace817fbc"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "f5efd438c53480a2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "fb8aa0c2bfb33c58"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "8163c43e3017a009"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "14bd64b90bb47fbd"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "fe063f8f86d3a9ac"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "041253d3f9395658",
+      "target_id": "18a7edcf8f6b3257"
+    }
+  ],
+  "schema_version": 1
+}

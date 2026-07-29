@@ -48,10 +48,28 @@ an exception's base class gets a `builtins.` prefix that has to be stripped.
 
 ## Correctness
 
-There is no test suite yet. Correctness is established by **parity runs against
-[graphlens](https://github.com/Neko1313/graphlens)**, the Python implementation
-callix replaces: build the same graph both ways, serialize with
-`json.dumps(sort_keys=True)`, and diff the text.
+```bash
+task golden              # compare the fixture graphs against tests/golden
+task golden UPDATE=1     # rewrite them, once a change is understood
+```
+
+`tests/fixtures/` holds a small project per language, each exercising the parts
+of the contract that language supports. Two levels are frozen in
+`tests/golden/`: the whole structural graph byte for byte — no resolver, no
+toolchain, runs anywhere — and, for the resolved run, counts per node and
+relation kind plus the resolver metrics. Full resolved graphs would be too
+brittle to freeze, but a kind that silently stops being emitted, or a resolved
+share that drops, still shows up.
+
+Those golden files were cross-validated against
+[graphlens](https://github.com/Neko1313/graphlens), the Python implementation
+callix replaces, while that project still ran: all four fixtures matched it
+byte for byte. That is worth knowing because graphlens is archived — the
+baseline was captured while it could still be regenerated.
+
+For a wider check there is still the manual procedure: build the same graph
+both ways on a real repository, serialize with `json.dumps(sort_keys=True)`,
+and diff the text.
 
 Every subtle bug found so far surfaced only this way — key ordering, a
 `HashMap` where an `IndexMap` was required, path sorting that has to match

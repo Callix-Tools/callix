@@ -1,0 +1,1069 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "0f867cb0416ba557",
+      "kind": "project",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "11571c97e7d8ff98",
+      "kind": "module",
+      "metadata": {},
+      "name": "pkg",
+      "qualified_name": "pkg",
+      "span": null
+    },
+    {
+      "file_path": "pkg/__init__.py",
+      "id": "880543a6a14aa23e",
+      "kind": "file",
+      "metadata": {},
+      "name": "__init__.py",
+      "qualified_name": "pkg/__init__.py",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "1bdd980cd6a154be",
+      "kind": "module",
+      "metadata": {},
+      "name": "models",
+      "qualified_name": "pkg.models",
+      "span": null
+    },
+    {
+      "file_path": "pkg/models.py",
+      "id": "f12749ffdc52158d",
+      "kind": "file",
+      "metadata": {},
+      "name": "models.py",
+      "qualified_name": "pkg/models.py",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "ef8f88880d32ef06",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "stdlib",
+        "original_name": "os"
+      },
+      "name": "os",
+      "qualified_name": "pkg.models.os",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "51f0c58040a69b68",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "stdlib"
+      },
+      "name": "os",
+      "qualified_name": "os",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "d757c2139efb556c",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "stdlib",
+        "original_name": "typing.TypeAlias"
+      },
+      "name": "TypeAlias",
+      "qualified_name": "pkg.models.TypeAlias",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "a974c5da40bead73",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "stdlib"
+      },
+      "name": "TypeAlias",
+      "qualified_name": "typing.TypeAlias",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "837a27e6073cc304",
+      "kind": "type_alias",
+      "metadata": {
+        "is_constant": false,
+        "name_span": {
+          "__span__": [
+            6,
+            1,
+            6,
+            11
+          ]
+        }
+      },
+      "name": "Identifier",
+      "qualified_name": "pkg.models.Identifier",
+      "span": [
+        6,
+        1,
+        6,
+        28
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "da95eb6421f25446",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            8,
+            1,
+            8,
+            15
+          ]
+        }
+      },
+      "name": "DEFAULT_REGION",
+      "qualified_name": "pkg.models.DEFAULT_REGION",
+      "span": [
+        8,
+        1,
+        8,
+        48
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "4d9310739e796167",
+      "kind": "class",
+      "metadata": {
+        "bases": [],
+        "decorators": [],
+        "is_abstract": false,
+        "is_enum": false,
+        "name_span": {
+          "__span__": [
+            11,
+            7,
+            11,
+            11
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "pkg.models.Base",
+      "span": [
+        11,
+        1,
+        17,
+        26
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "326c705cb9f3c0c5",
+      "kind": "attribute",
+      "metadata": {
+        "is_constant": false,
+        "name_span": {
+          "__span__": [
+            14,
+            5,
+            14,
+            10
+          ]
+        }
+      },
+      "name": "label",
+      "qualified_name": "pkg.models.Base.label",
+      "span": [
+        14,
+        5,
+        14,
+        24
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "9fd9651ff6d557a5",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            16,
+            9,
+            16,
+            17
+          ]
+        },
+        "return_annotation": "str"
+      },
+      "name": "describe",
+      "qualified_name": "pkg.models.Base.describe",
+      "span": [
+        16,
+        5,
+        17,
+        26
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "8c521b86b77eb243",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": null,
+        "has_default": false,
+        "is_cls": false,
+        "is_self": true,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            16,
+            18,
+            16,
+            22
+          ]
+        }
+      },
+      "name": "self",
+      "qualified_name": "pkg.models.Base.describe.self",
+      "span": [
+        16,
+        18,
+        16,
+        22
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "7f60ae75b77ce17c",
+      "kind": "class",
+      "metadata": {
+        "bases": [
+          "Base"
+        ],
+        "decorators": [],
+        "is_abstract": false,
+        "is_enum": false,
+        "name_span": {
+          "__span__": [
+            20,
+            7,
+            20,
+            13
+          ]
+        }
+      },
+      "name": "Engine",
+      "qualified_name": "pkg.models.Engine",
+      "span": [
+        20,
+        1,
+        25,
+        20
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "e86ccccefa632fb2",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            21,
+            9,
+            21,
+            17
+          ]
+        },
+        "return_annotation": "None"
+      },
+      "name": "__init__",
+      "qualified_name": "pkg.models.Engine.__init__",
+      "span": [
+        21,
+        5,
+        22,
+        29
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "b4ca0fba6eaa26e4",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": null,
+        "has_default": false,
+        "is_cls": false,
+        "is_self": true,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            21,
+            18,
+            21,
+            22
+          ]
+        }
+      },
+      "name": "self",
+      "qualified_name": "pkg.models.Engine.__init__.self",
+      "span": [
+        21,
+        18,
+        21,
+        22
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "3091b1194e04de2d",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "str",
+        "has_default": false,
+        "is_cls": false,
+        "is_self": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            21,
+            24,
+            21,
+            30
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "pkg.models.Engine.__init__.region",
+      "span": [
+        21,
+        24,
+        21,
+        35
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "6e3ff566f2180332",
+      "kind": "attribute",
+      "metadata": {
+        "is_constant": false,
+        "name_span": {
+          "__span__": [
+            22,
+            14,
+            22,
+            20
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "pkg.models.Engine.__init__.region",
+      "span": [
+        22,
+        9,
+        22,
+        29
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "61af6f92e0da26be",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            24,
+            9,
+            24,
+            13
+          ]
+        },
+        "return_annotation": "bool"
+      },
+      "name": "ping",
+      "qualified_name": "pkg.models.Engine.ping",
+      "span": [
+        24,
+        5,
+        25,
+        20
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/models.py",
+      "id": "645f04ca09f12b7b",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": null,
+        "has_default": false,
+        "is_cls": false,
+        "is_self": true,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            24,
+            14,
+            24,
+            18
+          ]
+        }
+      },
+      "name": "self",
+      "qualified_name": "pkg.models.Engine.ping.self",
+      "span": [
+        24,
+        14,
+        24,
+        18
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "d11cd84c31385bd7",
+      "kind": "module",
+      "metadata": {},
+      "name": "service",
+      "qualified_name": "pkg.service",
+      "span": null
+    },
+    {
+      "file_path": "pkg/service.py",
+      "id": "fd99ce866fe5afd6",
+      "kind": "file",
+      "metadata": {},
+      "name": "service.py",
+      "qualified_name": "pkg/service.py",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "f5c15adc484433c2",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "third_party",
+        "original_name": "httpx"
+      },
+      "name": "httpx",
+      "qualified_name": "pkg.service.httpx",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "77d0a15e948d4187",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "third_party"
+      },
+      "name": "httpx",
+      "qualified_name": "httpx",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "13e5a833ee949eaf",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "internal",
+        "original_name": "pkg.models.Base"
+      },
+      "name": "Base",
+      "qualified_name": "pkg.service.Base",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "65344dce940e3e99",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "internal",
+        "original_name": "pkg.models.Engine"
+      },
+      "name": "Engine",
+      "qualified_name": "pkg.service.Engine",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "a245d18f5ab39e82",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "level": 0,
+        "origin": "internal",
+        "original_name": "pkg.models.Identifier"
+      },
+      "name": "Identifier",
+      "qualified_name": "pkg.service.Identifier",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "1f108108e0840568",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            8,
+            5,
+            8,
+            10
+          ]
+        },
+        "return_annotation": "Engine"
+      },
+      "name": "build",
+      "qualified_name": "pkg.service.build",
+      "span": [
+        8,
+        1,
+        11,
+        18
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "08752d85b13c9139",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "str",
+        "has_default": false,
+        "is_cls": false,
+        "is_self": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            8,
+            11,
+            8,
+            17
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "pkg.service.build.region",
+      "span": [
+        8,
+        11,
+        8,
+        22
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "2ba5c8800b156d6a",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": false,
+        "name_span": {
+          "__span__": [
+            9,
+            5,
+            9,
+            11
+          ]
+        }
+      },
+      "name": "engine",
+      "qualified_name": "pkg.service.build.engine",
+      "span": [
+        9,
+        5,
+        9,
+        28
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "5edf2ead125bf126",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            14,
+            5,
+            14,
+            12
+          ]
+        },
+        "return_annotation": "str"
+      },
+      "name": "inspect",
+      "qualified_name": "pkg.service.inspect",
+      "span": [
+        14,
+        1,
+        15,
+        27
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "c9508f5b4b67f4ac",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "Base",
+        "has_default": false,
+        "is_cls": false,
+        "is_self": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            14,
+            13,
+            14,
+            17
+          ]
+        }
+      },
+      "name": "item",
+      "qualified_name": "pkg.service.inspect.item",
+      "span": [
+        14,
+        13,
+        14,
+        23
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "b9f76a47632173c1",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "is_classmethod": false,
+        "is_property": false,
+        "is_staticmethod": false,
+        "name_span": {
+          "__span__": [
+            18,
+            5,
+            18,
+            14
+          ]
+        },
+        "return_annotation": "str"
+      },
+      "name": "fetch_one",
+      "qualified_name": "pkg.service.fetch_one",
+      "span": [
+        18,
+        1,
+        20,
+        25
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "f8f50a6bed31665f",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "Identifier",
+        "has_default": false,
+        "is_cls": false,
+        "is_self": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            18,
+            15,
+            18,
+            20
+          ]
+        }
+      },
+      "name": "ident",
+      "qualified_name": "pkg.service.fetch_one.ident",
+      "span": [
+        18,
+        15,
+        18,
+        32
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/python/pkg/service.py",
+      "id": "3f19dac69e1b3de8",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": false,
+        "name_span": {
+          "__span__": [
+            19,
+            5,
+            19,
+            13
+          ]
+        }
+      },
+      "name": "response",
+      "qualified_name": "pkg.service.fetch_one.response",
+      "span": [
+        19,
+        5,
+        19,
+        46
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "metadata": {
+        "key": "GET /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "GET /engines/{}",
+      "qualified_name": "http:GET /engines/{}",
+      "span": null
+    }
+  ],
+  "relations": [
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "11571c97e7d8ff98",
+      "target_id": "880543a6a14aa23e"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "11571c97e7d8ff98",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "1bdd980cd6a154be",
+      "target_id": "f12749ffdc52158d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "ef8f88880d32ef06"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "51f0c58040a69b68"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "ef8f88880d32ef06",
+      "target_id": "51f0c58040a69b68"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "d757c2139efb556c"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "a974c5da40bead73"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "d757c2139efb556c",
+      "target_id": "a974c5da40bead73"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "837a27e6073cc304"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "da95eb6421f25446"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "4d9310739e796167"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4d9310739e796167",
+      "target_id": "326c705cb9f3c0c5"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4d9310739e796167",
+      "target_id": "9fd9651ff6d557a5"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "9fd9651ff6d557a5",
+      "target_id": "8c521b86b77eb243"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f12749ffdc52158d",
+      "target_id": "7f60ae75b77ce17c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7f60ae75b77ce17c",
+      "target_id": "e86ccccefa632fb2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e86ccccefa632fb2",
+      "target_id": "b4ca0fba6eaa26e4"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e86ccccefa632fb2",
+      "target_id": "3091b1194e04de2d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e86ccccefa632fb2",
+      "target_id": "6e3ff566f2180332"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7f60ae75b77ce17c",
+      "target_id": "61af6f92e0da26be"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "61af6f92e0da26be",
+      "target_id": "645f04ca09f12b7b"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "11571c97e7d8ff98",
+      "target_id": "d11cd84c31385bd7"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "d11cd84c31385bd7",
+      "target_id": "fd99ce866fe5afd6"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "f5c15adc484433c2"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "77d0a15e948d4187"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "f5c15adc484433c2",
+      "target_id": "77d0a15e948d4187"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "13e5a833ee949eaf"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "13e5a833ee949eaf",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "65344dce940e3e99"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "65344dce940e3e99",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "a245d18f5ab39e82"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "a245d18f5ab39e82",
+      "target_id": "1bdd980cd6a154be"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "1f108108e0840568"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1f108108e0840568",
+      "target_id": "08752d85b13c9139"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1f108108e0840568",
+      "target_id": "2ba5c8800b156d6a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "5edf2ead125bf126"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "5edf2ead125bf126",
+      "target_id": "c9508f5b4b67f4ac"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fd99ce866fe5afd6",
+      "target_id": "b9f76a47632173c1"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b9f76a47632173c1",
+      "target_id": "f8f50a6bed31665f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b9f76a47632173c1",
+      "target_id": "3f19dac69e1b3de8"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "11571c97e7d8ff98"
+    },
+    {
+      "kind": "consumes",
+      "metadata": {
+        "col": 22,
+        "confidence": 0.9,
+        "key": "GET /engines/{}",
+        "line": 19,
+        "mechanism": "http",
+        "method": "GET",
+        "path": "/engines/{}",
+        "role": "client"
+      },
+      "source_id": "b9f76a47632173c1",
+      "target_id": "acfc953e2d84d7b4"
+    }
+  ],
+  "schema_version": 1
+}

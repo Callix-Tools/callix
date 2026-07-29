@@ -75,10 +75,16 @@ tasks:
       - cargo check --all-targets {{.PROFILE}}
 
   test:
-    desc: Rust tests plus a smoke run of the example
+    desc: Golden fixture tests, cargo test, and a smoke run of the example
     cmds:
+      - task: golden
       - cargo test {{.PROFILE}}
       - task: example
+
+  golden:
+    desc: Compare the fixture graphs against tests/golden (UPDATE=1 to rewrite)
+    cmds:
+      - uv run python tests/test_fixtures.py {{if eq .UPDATE "1"}}--update{{end}}
 
   clean:
     desc: Remove build artifacts (the typescript-go clone in .ts-go stays)

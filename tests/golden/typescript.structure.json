@@ -1,0 +1,863 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "0f867cb0416ba557",
+      "kind": "project",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "2c6568370f08cc8f",
+      "kind": "module",
+      "metadata": {},
+      "name": "service",
+      "qualified_name": "service",
+      "span": null
+    },
+    {
+      "file_path": "src/service.ts",
+      "id": "1690a444faecaa80",
+      "kind": "file",
+      "metadata": {},
+      "name": "service.ts",
+      "qualified_name": "src/service.ts",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "14b0fbd5fb9a5cf9",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "origin": "internal",
+        "original_name": "store.Base"
+      },
+      "name": "Base",
+      "qualified_name": "service.Base",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "ebdaeab08ddcab18",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "internal"
+      },
+      "name": "Base",
+      "qualified_name": "store.Base",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "da197e2d16bd93df",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "origin": "internal",
+        "original_name": "store.Engine"
+      },
+      "name": "Engine",
+      "qualified_name": "service.Engine",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "8b94f5511064af5f",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "internal"
+      },
+      "name": "Engine",
+      "qualified_name": "store.Engine",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "140d285615c1c40a",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "is_star": false,
+        "origin": "internal",
+        "original_name": "store.Identifier"
+      },
+      "name": "Identifier",
+      "qualified_name": "service.Identifier",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "a88b6ba554af3280",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "internal"
+      },
+      "name": "Identifier",
+      "qualified_name": "store.Identifier",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "d499fec7c4272044",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            5,
+            14,
+            5,
+            28
+          ]
+        }
+      },
+      "name": "DEFAULT_REGION",
+      "qualified_name": "service.DEFAULT_REGION",
+      "span": [
+        5,
+        14,
+        5,
+        43
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "f0b2109ffebd6c12",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "name_span": {
+          "__span__": [
+            7,
+            17,
+            7,
+            22
+          ]
+        },
+        "return_annotation": "Engine"
+      },
+      "name": "build",
+      "qualified_name": "service.build",
+      "span": [
+        7,
+        8,
+        11,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "1f8eb263c893a804",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "string",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            7,
+            23,
+            7,
+            29
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "service.build.region",
+      "span": [
+        7,
+        23,
+        7,
+        37
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "4f4330ec42ff9f50",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            8,
+            9,
+            8,
+            15
+          ]
+        }
+      },
+      "name": "engine",
+      "qualified_name": "service.build.engine",
+      "span": [
+        8,
+        9,
+        8,
+        36
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "0152fed75d08918b",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "name_span": {
+          "__span__": [
+            13,
+            17,
+            13,
+            24
+          ]
+        },
+        "return_annotation": "string"
+      },
+      "name": "inspect",
+      "qualified_name": "service.inspect",
+      "span": [
+        13,
+        8,
+        15,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "74827646143cd909",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "Base",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            13,
+            25,
+            13,
+            29
+          ]
+        }
+      },
+      "name": "item",
+      "qualified_name": "service.inspect.item",
+      "span": [
+        13,
+        25,
+        13,
+        35
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "7c68350bc2566dac",
+      "kind": "function",
+      "metadata": {
+        "decorators": [],
+        "is_async": true,
+        "name_span": {
+          "__span__": [
+            17,
+            23,
+            17,
+            31
+          ]
+        },
+        "return_annotation": "Promise<string>"
+      },
+      "name": "fetchOne",
+      "qualified_name": "service.fetchOne",
+      "span": [
+        17,
+        8,
+        20,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "43f01cae1de3c25e",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "Identifier",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            17,
+            32,
+            17,
+            37
+          ]
+        }
+      },
+      "name": "ident",
+      "qualified_name": "service.fetchOne.ident",
+      "span": [
+        17,
+        32,
+        17,
+        49
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/service.ts",
+      "id": "29754fa897541a63",
+      "kind": "variable",
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            18,
+            9,
+            18,
+            17
+          ]
+        }
+      },
+      "name": "response",
+      "qualified_name": "service.fetchOne.response",
+      "span": [
+        18,
+        9,
+        18,
+        52
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "ec720ad133a23056",
+      "kind": "module",
+      "metadata": {},
+      "name": "store",
+      "qualified_name": "store",
+      "span": null
+    },
+    {
+      "file_path": "src/store.ts",
+      "id": "e46e209b12d7ddd7",
+      "kind": "file",
+      "metadata": {},
+      "name": "store.ts",
+      "qualified_name": "src/store.ts",
+      "span": null
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "57ae1b858cec9b52",
+      "kind": "type_alias",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            3,
+            13,
+            3,
+            23
+          ]
+        }
+      },
+      "name": "Identifier",
+      "qualified_name": "store.Identifier",
+      "span": [
+        3,
+        8,
+        3,
+        33
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "9a317e6fde3e4f00",
+      "kind": "class",
+      "metadata": {
+        "bases": [],
+        "decorators": [],
+        "is_abstract": true,
+        "is_interface": true,
+        "name_span": {
+          "__span__": [
+            5,
+            18,
+            5,
+            25
+          ]
+        }
+      },
+      "name": "Labeled",
+      "qualified_name": "store.Labeled",
+      "span": [
+        5,
+        8,
+        7,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "c77f4a5f4e42c089",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            6,
+            3,
+            6,
+            11
+          ]
+        }
+      },
+      "name": "describe",
+      "qualified_name": "store.Labeled.describe",
+      "span": [
+        6,
+        3,
+        6,
+        21
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "5e0c7882ab1da228",
+      "kind": "class",
+      "metadata": {
+        "bases": [],
+        "decorators": [],
+        "is_abstract": false,
+        "name_span": {
+          "__span__": [
+            9,
+            14,
+            9,
+            18
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "store.Base",
+      "span": [
+        9,
+        8,
+        15,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "33f5dbfdd3cd064d",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            10,
+            3,
+            10,
+            8
+          ]
+        }
+      },
+      "name": "label",
+      "qualified_name": "store.Base.label",
+      "span": [
+        10,
+        3,
+        10,
+        25
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "f91e5eb5cadc3f19",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "name_span": {
+          "__span__": [
+            12,
+            3,
+            12,
+            11
+          ]
+        },
+        "return_annotation": "string"
+      },
+      "name": "describe",
+      "qualified_name": "store.Base.describe",
+      "span": [
+        12,
+        3,
+        14,
+        4
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "a7fb6dcec4d7b505",
+      "kind": "class",
+      "metadata": {
+        "bases": [
+          "Base"
+        ],
+        "decorators": [],
+        "is_abstract": false,
+        "name_span": {
+          "__span__": [
+            17,
+            14,
+            17,
+            20
+          ]
+        }
+      },
+      "name": "Engine",
+      "qualified_name": "store.Engine",
+      "span": [
+        17,
+        8,
+        28,
+        2
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "c22ff94437cf7f7d",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            18,
+            3,
+            18,
+            9
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "store.Engine.region",
+      "span": [
+        18,
+        3,
+        18,
+        17
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "8d8283edabff3a54",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "name_span": {
+          "__span__": [
+            20,
+            3,
+            20,
+            14
+          ]
+        },
+        "return_annotation": null
+      },
+      "name": "constructor",
+      "qualified_name": "store.Engine.constructor",
+      "span": [
+        20,
+        3,
+        23,
+        4
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "d6f587cbd34ef290",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "string",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            20,
+            15,
+            20,
+            21
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "store.Engine.constructor.region",
+      "span": [
+        20,
+        15,
+        20,
+        29
+      ]
+    },
+    {
+      "file_path": "/home/neko/projects/callix/tests/fixtures/typescript/src/store.ts",
+      "id": "8ecb3897ce2dcbe5",
+      "kind": "method",
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "name_span": {
+          "__span__": [
+            25,
+            3,
+            25,
+            7
+          ]
+        },
+        "return_annotation": "boolean"
+      },
+      "name": "ping",
+      "qualified_name": "store.Engine.ping",
+      "span": [
+        25,
+        3,
+        27,
+        4
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "metadata": {
+        "key": "GET /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "GET /engines/{}",
+      "qualified_name": "http:GET /engines/{}",
+      "span": null
+    }
+  ],
+  "relations": [
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "2c6568370f08cc8f",
+      "target_id": "1690a444faecaa80"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "14b0fbd5fb9a5cf9"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "ebdaeab08ddcab18"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "14b0fbd5fb9a5cf9",
+      "target_id": "ebdaeab08ddcab18"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "da197e2d16bd93df"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "8b94f5511064af5f"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "da197e2d16bd93df",
+      "target_id": "8b94f5511064af5f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "140d285615c1c40a"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "a88b6ba554af3280"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "140d285615c1c40a",
+      "target_id": "a88b6ba554af3280"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "d499fec7c4272044"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "f0b2109ffebd6c12"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "1f8eb263c893a804"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "4f4330ec42ff9f50"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "0152fed75d08918b"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0152fed75d08918b",
+      "target_id": "74827646143cd909"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1690a444faecaa80",
+      "target_id": "7c68350bc2566dac"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7c68350bc2566dac",
+      "target_id": "43f01cae1de3c25e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7c68350bc2566dac",
+      "target_id": "29754fa897541a63"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ec720ad133a23056",
+      "target_id": "e46e209b12d7ddd7"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "57ae1b858cec9b52"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "9a317e6fde3e4f00"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "9a317e6fde3e4f00",
+      "target_id": "c77f4a5f4e42c089"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "5e0c7882ab1da228"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "5e0c7882ab1da228",
+      "target_id": "33f5dbfdd3cd064d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "5e0c7882ab1da228",
+      "target_id": "f91e5eb5cadc3f19"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "a7fb6dcec4d7b505"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "c22ff94437cf7f7d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "8d8283edabff3a54"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "8d8283edabff3a54",
+      "target_id": "d6f587cbd34ef290"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "8ecb3897ce2dcbe5"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "2c6568370f08cc8f"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "ec720ad133a23056"
+    },
+    {
+      "kind": "consumes",
+      "metadata": {
+        "col": 26,
+        "confidence": 0.9,
+        "key": "GET /engines/{}",
+        "line": 18,
+        "mechanism": "http",
+        "method": "GET",
+        "path": "/engines/{}",
+        "role": "client"
+      },
+      "source_id": "7c68350bc2566dac",
+      "target_id": "acfc953e2d84d7b4"
+    }
+  ],
+  "schema_version": 1
+}

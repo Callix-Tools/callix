@@ -1,0 +1,467 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "02b71697399e7205",
+      "kind": "project",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "example.com/fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "2c598000ec1631d1",
+      "kind": "module",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "example.com/fixture",
+      "span": null
+    },
+    {
+      "file_path": "service.go",
+      "id": "cec9e10a50622ace",
+      "kind": "file",
+      "metadata": {},
+      "name": "service.go",
+      "qualified_name": "service.go",
+      "span": null
+    },
+    {
+      "file_path": "service.go",
+      "id": "4d591b833e73aaa0",
+      "kind": "import",
+      "metadata": {
+        "import_path": "example.com/fixture/store",
+        "origin": "internal"
+      },
+      "name": "example.com/fixture/store",
+      "qualified_name": "service.go::example.com/fixture/store",
+      "span": [
+        6,
+        2,
+        6,
+        29
+      ]
+    },
+    {
+      "file_path": "service.go",
+      "id": "33cc48716b1f4a0d",
+      "kind": "import",
+      "metadata": {
+        "import_path": "fmt",
+        "origin": "stdlib"
+      },
+      "name": "fmt",
+      "qualified_name": "service.go::fmt",
+      "span": [
+        4,
+        2,
+        4,
+        7
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "13dc1513e51a2e31",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "stdlib"
+      },
+      "name": "fmt",
+      "qualified_name": "fmt",
+      "span": null
+    },
+    {
+      "file_path": "service.go",
+      "id": "5cf5ad13144ac1f2",
+      "kind": "variable",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            10,
+            5,
+            10,
+            18
+          ]
+        }
+      },
+      "name": "DefaultRegion",
+      "qualified_name": "example.com/fixture.DefaultRegion",
+      "span": [
+        10,
+        5,
+        10,
+        25
+      ]
+    },
+    {
+      "file_path": "service.go",
+      "id": "0448d00da20e0664",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            13,
+            6,
+            13,
+            11
+          ]
+        }
+      },
+      "name": "Build",
+      "qualified_name": "example.com/fixture.Build",
+      "span": [
+        13,
+        1,
+        17,
+        2
+      ]
+    },
+    {
+      "file_path": "service.go",
+      "id": "39cca0c1a02f9caf",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            20,
+            6,
+            20,
+            13
+          ]
+        }
+      },
+      "name": "Inspect",
+      "qualified_name": "example.com/fixture.Inspect",
+      "span": [
+        20,
+        1,
+        22,
+        2
+      ]
+    },
+    {
+      "file_path": "service.go",
+      "id": "7e705b15097ac1ef",
+      "kind": "function",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            24,
+            6,
+            24,
+            10
+          ]
+        }
+      },
+      "name": "main",
+      "qualified_name": "example.com/fixture.main",
+      "span": [
+        24,
+        1,
+        26,
+        2
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "1f7ac2ffecded4f8",
+      "kind": "module",
+      "metadata": {},
+      "name": "store",
+      "qualified_name": "example.com/fixture/store",
+      "span": null
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "ddc88afd6510eaff",
+      "kind": "file",
+      "metadata": {},
+      "name": "store.go",
+      "qualified_name": "store/store.go",
+      "span": null
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "f6cfce8b5540ec6e",
+      "kind": "import",
+      "metadata": {
+        "import_path": "fmt",
+        "origin": "stdlib"
+      },
+      "name": "fmt",
+      "qualified_name": "store/store.go::fmt",
+      "span": [
+        4,
+        8,
+        4,
+        13
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "4ad22140893f405e",
+      "kind": "type_alias",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            7,
+            6,
+            7,
+            16
+          ]
+        }
+      },
+      "name": "Identifier",
+      "qualified_name": "example.com/fixture/store.Identifier",
+      "span": [
+        7,
+        6,
+        7,
+        22
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "6386cb55dd3c2cde",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            10,
+            6,
+            10,
+            13
+          ]
+        }
+      },
+      "name": "Labeled",
+      "qualified_name": "example.com/fixture/store.Labeled",
+      "span": [
+        10,
+        6,
+        12,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "31d5b81cc735966e",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            15,
+            6,
+            15,
+            10
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "example.com/fixture/store.Base",
+      "span": [
+        15,
+        6,
+        17,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "194bc812a3315e31",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            19,
+            15,
+            19,
+            23
+          ]
+        }
+      },
+      "name": "Describe",
+      "qualified_name": "example.com/fixture/store.Base.Describe",
+      "span": [
+        19,
+        1,
+        21,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "09e9175fa750828c",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            24,
+            6,
+            24,
+            12
+          ]
+        }
+      },
+      "name": "Engine",
+      "qualified_name": "example.com/fixture/store.Engine",
+      "span": [
+        24,
+        6,
+        27,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "1e4f1fc8faccd845",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            29,
+            17,
+            29,
+            21
+          ]
+        }
+      },
+      "name": "Ping",
+      "qualified_name": "example.com/fixture/store.Engine.Ping",
+      "span": [
+        29,
+        1,
+        31,
+        2
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "02b71697399e7205",
+      "target_id": "2c598000ec1631d1"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "2c598000ec1631d1",
+      "target_id": "cec9e10a50622ace"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "4d591b833e73aaa0"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "33cc48716b1f4a0d"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "33cc48716b1f4a0d",
+      "target_id": "13dc1513e51a2e31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "5cf5ad13144ac1f2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "0448d00da20e0664"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "39cca0c1a02f9caf"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "7e705b15097ac1ef"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "02b71697399e7205",
+      "target_id": "1f7ac2ffecded4f8"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "1f7ac2ffecded4f8",
+      "target_id": "ddc88afd6510eaff"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "f6cfce8b5540ec6e"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "f6cfce8b5540ec6e",
+      "target_id": "13dc1513e51a2e31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "4ad22140893f405e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "6386cb55dd3c2cde"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "31d5b81cc735966e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "194bc812a3315e31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "09e9175fa750828c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "1e4f1fc8faccd845"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "4d591b833e73aaa0",
+      "target_id": "1f7ac2ffecded4f8"
+    }
+  ],
+  "schema_version": 1
+}

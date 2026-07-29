@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "callix"
-description = "Polyglot code analysis core"
+description = "Polyglot code analysis in Rust: Python, TypeScript, Go and Rust into a shared graph IR, with the type checkers linked in"
 requires-python = ">=3.13"
 license = "MIT"
 readme = "README.md"

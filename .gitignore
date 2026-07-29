@@ -73,3 +73,6 @@ docs/_build/
 
 # Pyenv
 .python-version
+
+# Cargo build state inside test fixtures (rust-analyzer creates it)
+tests/fixtures/*/target/

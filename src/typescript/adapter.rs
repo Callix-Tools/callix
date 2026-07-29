@@ -50,7 +50,9 @@ fn is_declaration(path: &Path) -> bool {
 
 /// TypeScript sources under the root, declaration files excluded.
 pub fn collect_typescript_files(root: &Path) -> Vec<PathBuf> {
-    collect_files(root, &TS_EXTENSIONS, &TS_EXCLUDED_DIRS)
+    // Nothing is anchored to the root: nested `node_modules` are real, and
+    // TS_EXCLUDED_DIRS already matches them at any depth.
+    collect_files(root, &TS_EXTENSIONS, &TS_EXCLUDED_DIRS, &[])
         .into_iter()
         .filter(|p| !is_declaration(p))
         .collect()

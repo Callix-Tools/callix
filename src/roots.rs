@@ -31,6 +31,26 @@ fn in_excluded_dir(path: &Path, search_root: &Path, excluded: &[&str]) -> bool {
         .any(|c| excluded.contains(&c.as_os_str().to_string_lossy().as_ref()))
 }
 
+/// Whether the path's FIRST component is excluded.
+///
+/// `vendor` and `target` are written at a project's root by its package
+/// manager and nowhere else, so they are matched there rather than at any
+/// depth: a crate may legitimately hold `src/target/mod.rs`, and a Go package
+/// may be named `vendor` deeper in the tree. Anchoring drops the third-party
+/// tree without hiding first-party code that happens to share the name.
+fn under_excluded_root_dir(path: &Path, search_root: &Path, excluded: &[&str]) -> bool {
+    if excluded.is_empty() {
+        return false;
+    }
+    let Ok(relative) = path.strip_prefix(search_root) else {
+        return false;
+    };
+    relative
+        .components()
+        .next()
+        .is_some_and(|c| excluded.contains(&c.as_os_str().to_string_lossy().as_ref()))
+}
+
 /// Path sorting the way Python's `sorted()` over `pathlib.Path` works.
 ///
 /// Python compares paths COMPONENT BY COMPONENT rather than as whole
@@ -119,7 +139,18 @@ pub fn filter_nested_root_files(
 
 /// Every file with the given extensions under the root, excluding service
 /// directories.
-pub fn collect_files(root: &Path, extensions: &[&str], excluded: &[&str]) -> Vec<PathBuf> {
+///
+/// `excluded` matches a directory name at any depth; `excluded_at_root`
+/// matches only the root's own children, which is where a package manager
+/// puts a third-party tree. Passing the latter is what keeps `vendor/` and
+/// `target/` out of the graph — without it a vendored dependency is reported
+/// as first-party code under a fabricated qualified name.
+pub fn collect_files(
+    root: &Path,
+    extensions: &[&str],
+    excluded: &[&str],
+    excluded_at_root: &[&str],
+) -> Vec<PathBuf> {
     let mut files: Vec<PathBuf> = WalkDir::new(root)
         .into_iter()
         .filter_map(Result::ok)
@@ -133,7 +164,9 @@ pub fn collect_files(root: &Path, extensions: &[&str], excluded: &[&str]) -> Vec
                     extensions.contains(&dotted.as_str())
                 })
                 .unwrap_or(false);
-            matches_ext && !in_excluded_dir(p, root, excluded)
+            matches_ext
+                && !in_excluded_dir(p, root, excluded)
+                && !under_excluded_root_dir(p, root, excluded_at_root)
         })
         .collect();
     sort_paths(&mut files);

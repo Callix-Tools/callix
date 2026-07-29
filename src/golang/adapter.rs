@@ -38,14 +38,27 @@ const GO_EXTENSIONS: [&str; 1] = [".go"];
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
 type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 
+/// `testdata` is invisible to the Go toolchain at every depth, and its
+/// contents are frequently not even valid Go — they are fixtures for a parser
+/// test, not code the module builds.
+const GO_SKIP_ANYWHERE: [&str; 1] = ["testdata"];
+
+/// `go mod vendor` writes the third-party tree at the module root.
+const GO_SKIP_AT_ROOT: [&str; 1] = ["vendor"];
+
 /// Go sources under the root.
 ///
-/// The shared service-directory list is excluded, NOT the one used to find
-/// module roots: `vendor` and `testdata` hide nested go.mod files from root
-/// discovery, but their own files are analysed — the same as in graphlens,
-/// where file collection goes through the base implementation.
+/// graphlens collected `vendor/` and `testdata/` as first-party — its Go
+/// adapter excluded them from root discovery only, then inherited the base
+/// class's file collection. That reported a vendored dependency as project
+/// code under a fabricated import path, so callix diverges here.
 pub fn collect_go_files(root: &Path) -> Vec<PathBuf> {
-    collect_files(root, &GO_EXTENSIONS, &EXCLUDED_DIRS)
+    let excluded: Vec<&str> = EXCLUDED_DIRS
+        .iter()
+        .chain(GO_SKIP_ANYWHERE.iter())
+        .copied()
+        .collect();
+    collect_files(root, &GO_EXTENSIONS, &excluded, &GO_SKIP_AT_ROOT)
 }
 
 /// A package's qualified name: the module path plus the file's directory

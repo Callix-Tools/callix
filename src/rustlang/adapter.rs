@@ -38,8 +38,18 @@ const RUST_EXTENSIONS: [&str; 1] = [".rs"];
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
 type BuiltCrate = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 
+/// Cargo writes `target/` at the workspace root, `cargo vendor` writes
+/// `vendor/` beside it. Both are matched at the root only, so a crate keeps
+/// its own `src/target/` or `src/vendor/` module.
+const RUST_SKIP_AT_ROOT: [&str; 2] = ["target", "vendor"];
+
+/// Rust sources under the root.
+///
+/// Without the root exclusions a built workspace contributes
+/// `target/debug/deps/*.rs` and a vendored one contributes all of its
+/// dependencies, both as first-party modules under invented paths.
 pub fn collect_rust_files(root: &Path) -> Vec<PathBuf> {
-    collect_files(root, &RUST_EXTENSIONS, &EXCLUDED_DIRS)
+    collect_files(root, &RUST_EXTENSIONS, &EXCLUDED_DIRS, &RUST_SKIP_AT_ROOT)
 }
 
 /// A module's qualified name from its file path within the crate.

@@ -190,7 +190,7 @@ fn ensure_external_symbol(
 #[gen_stub_pyfunction]
 #[pyfunction]
 pub fn collect_python_files(project_root: &str) -> Vec<String> {
-    collect_files(Path::new(project_root), &PY_EXTENSIONS, &EXCLUDED_DIRS)
+    collect_files(Path::new(project_root), &PY_EXTENSIONS, &EXCLUDED_DIRS, &[])
         .into_iter()
         .map(|p| p.to_string_lossy().into_owned())
         .collect()
@@ -879,7 +879,7 @@ impl PythonAdapter {
 
     /// Every source under the root, excluding service directories.
     fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
-        collect_files(&project_root, &PY_EXTENSIONS, &EXCLUDED_DIRS)
+        collect_files(&project_root, &PY_EXTENSIONS, &EXCLUDED_DIRS, &[])
     }
 
     /// Analyses the project and returns the graph.
@@ -909,7 +909,7 @@ impl PythonAdapter {
                 roots
                     .iter()
                     .map(|py_root| {
-                        let collected = collect_files(py_root, &PY_EXTENSIONS, &EXCLUDED_DIRS);
+                        let collected = collect_files(py_root, &PY_EXTENSIONS, &EXCLUDED_DIRS, &[]);
                         let kept = filter_nested_root_files(collected, py_root, &roots)
                             .into_iter()
                             .map(|p| p.to_string_lossy().into_owned())

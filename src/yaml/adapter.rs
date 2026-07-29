@@ -31,8 +31,12 @@ use super::detector::{YAML_EXTENSIONS, is_yaml, project_name, yaml_roots};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
 
+/// A vendored or built tree carries plenty of YAML that describes somebody
+/// else's project.
+const YAML_SKIP_AT_ROOT: [&str; 2] = ["vendor", "target"];
+
 pub fn collect_yaml_files(root: &Path) -> Vec<PathBuf> {
-    collect_files(root, &YAML_EXTENSIONS, &EXCLUDED_DIRS)
+    collect_files(root, &YAML_EXTENSIONS, &EXCLUDED_DIRS, &YAML_SKIP_AT_ROOT)
 }
 
 fn push_relation(

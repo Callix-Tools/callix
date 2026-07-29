@@ -28,10 +28,14 @@ relation.metadata    # dict[str, object]
 | `INHERITS_FROM` | type → base type or trait | resolution |
 | `EXPOSES` | function → boundary | boundaries |
 | `CONSUMES` | function → boundary | boundaries |
-| `COMMUNICATES_WITH` | service → service | linking, downstream |
+| `COMMUNICATES_WITH` | service → service | `Graph.link_boundaries()` |
 
 The split matters when reading a graph: the first group exists in any run, the
 second only when resolution ran, the third comes from boundary extraction.
+
+`COMMUNICATES_WITH` is the one edge no adapter produces on its own — it needs
+two services in the same graph. Merge them, then call
+[`link_boundaries()`](../guides/cross-language.md#linking-the-two-sides).
 
 ## Metadata
 

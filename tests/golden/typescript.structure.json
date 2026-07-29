@@ -14,6 +14,15 @@
     },
     {
       "file_path": null,
+      "id": "eece0e3696617097",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "axios",
+      "qualified_name": "axios",
+      "span": null
+    },
+    {
+      "file_path": null,
       "id": "2c6568370f08cc8f",
       "kind": "module",
       "metadata": {},
@@ -645,6 +654,12 @@
     }
   ],
   "relations": [
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "eece0e3696617097"
+    },
     {
       "kind": "contains",
       "metadata": {},

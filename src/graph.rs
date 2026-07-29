@@ -4,7 +4,7 @@
 //! an edge is added — as in graphlens, except they store positions into
 //! `relations` rather than copies of the edges themselves.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use indexmap::IndexMap;
 use pyo3::prelude::*;
@@ -305,6 +305,101 @@ impl Graph {
         self.edges(py, node_id, kind, false)
     }
 
+    /// Adds COMMUNICATES_WITH edges across cross-language boundaries.
+    ///
+    /// Adapters emit a shared BOUNDARY node per contract — its ID comes from
+    /// the mechanism and the normalized key alone — with EXPOSES from servers
+    /// and CONSUMES from clients. This pass pairs, for every boundary, each
+    /// consumer with each provider and adds a directed consumer -> provider
+    /// edge. That is the step that turns several single-service graphs, once
+    /// merged, into one picture of who calls whom across languages.
+    ///
+    /// Confidence on the new edge is the product of the two sides': a route
+    /// read from a literal on both ends stays 1.0, anything inferred decays.
+    /// `min_confidence` drops pairs below a threshold.
+    ///
+    /// Idempotent — a pair already linked through the same boundary is never
+    /// added twice — so it is safe to re-run after re-analysing part of the
+    /// graph. Returns the number of edges added.
+    #[pyo3(signature = (*, min_confidence = 0.0))]
+    fn link_boundaries(&mut self, py: Python<'_>, min_confidence: f64) -> PyResult<usize> {
+        let mut seen: HashSet<(String, String, String)> = self
+            .relations
+            .iter()
+            .map(|r| r.get())
+            .filter(|r| r.kind == RelationKind::CommunicatesWith)
+            .map(|r| {
+                let boundary = r
+                    .metadata
+                    .bind(py)
+                    .get_item("boundary_id")
+                    .ok()
+                    .flatten()
+                    .map(|v| v.to_string())
+                    .unwrap_or_default();
+                (r.source_id.clone(), r.target_id.clone(), boundary)
+            })
+            .collect();
+
+        let boundaries: Vec<(String, String, String)> = self
+            .nodes
+            .values()
+            .map(|n| n.get())
+            .filter(|n| n.kind == NodeKind::Boundary)
+            .map(|n| {
+                let meta = n.metadata.bind(py);
+                let get = |key: &str| {
+                    meta.get_item(key)
+                        .ok()
+                        .flatten()
+                        .map(|v| v.to_string())
+                        .unwrap_or_default()
+                };
+                (n.id.clone(), get("mechanism"), get("key"))
+            })
+            .collect();
+
+        let mut added = 0usize;
+        for (boundary_id, mechanism, key) in boundaries {
+            let consumers = self.side(py, &boundary_id, RelationKind::Consumes);
+            let providers = self.side(py, &boundary_id, RelationKind::Exposes);
+            if consumers.is_empty() || providers.is_empty() {
+                continue;
+            }
+            for (consumer, consumer_confidence) in &consumers {
+                for (provider, provider_confidence) in &providers {
+                    // A service that both exposes and consumes the same
+                    // contract is talking to itself; that is not a link.
+                    if consumer == provider {
+                        continue;
+                    }
+                    let confidence = consumer_confidence * provider_confidence;
+                    if confidence < min_confidence {
+                        continue;
+                    }
+                    let dedupe = (consumer.clone(), provider.clone(), boundary_id.clone());
+                    if !seen.insert(dedupe) {
+                        continue;
+                    }
+                    let metadata = PyDict::new(py);
+                    metadata.set_item("mechanism", &mechanism)?;
+                    metadata.set_item("boundary_id", &boundary_id)?;
+                    metadata.set_item("boundary_key", &key)?;
+                    metadata.set_item("confidence", confidence)?;
+                    let relation = Relation {
+                        source_id: consumer.clone(),
+                        target_id: provider.clone(),
+                        kind: RelationKind::CommunicatesWith,
+                        metadata: metadata.unbind(),
+                    };
+                    self.push_relation(Py::new(py, relation)?);
+                    added += 1;
+                }
+            }
+        }
+        Ok(added)
+    }
+
     // -- queries ---------------------------------------------------------
 
     /// What `node_id` calls.
@@ -444,5 +539,32 @@ impl Graph {
             self.nodes.len(),
             self.relations.len()
         )
+    }
+}
+
+impl Graph {
+    /// `(source id, confidence)` for every edge of `kind` entering `node_id`.
+    fn side(
+        &self,
+        py: Python<'_>,
+        node_id: &str,
+        kind: RelationKind,
+    ) -> Vec<(String, f64)> {
+        self.relations
+            .iter()
+            .map(|r| r.get())
+            .filter(|r| r.kind == kind && r.target_id == node_id)
+            .map(|r| {
+                let confidence = r
+                    .metadata
+                    .bind(py)
+                    .get_item("confidence")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<f64>().ok())
+                    .unwrap_or(1.0);
+                (r.source_id.clone(), confidence)
+            })
+            .collect()
     }
 }

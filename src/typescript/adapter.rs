@@ -13,6 +13,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::dependencies::declare_dependencies;
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -80,6 +81,7 @@ fn build_root_structure(
     internal_tops.retain(|name| !third_party.contains(name));
 
     let aliases = path_aliases(lang_root);
+    let declared = third_party.clone();
     let classifier = TsImportClassifier::from_sets(node_builtins(), third_party, internal_tops);
 
     let project_id = node_id(&project, &project, NodeKind::Project.as_str());
@@ -95,6 +97,7 @@ fn build_root_structure(
         };
         graph.insert_node(project_id.clone(), Py::new(py, node)?);
     }
+    declare_dependencies(py, graph, &project, &project_id, &declared)?;
 
     let mut modules: IndexMap<String, String> = IndexMap::new();
     let mut all_occurrences: Vec<(String, OccurrenceRef)> = Vec::new();

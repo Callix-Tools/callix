@@ -33,7 +33,7 @@ node.metadata        # dict[str, object]
 | `TYPE_ALIAS` | a named alias for a type |
 | `IMPORT` | an import statement |
 | `EXTERNAL_SYMBOL` | a target outside the graph |
-| `DEPENDENCY` | a declared third-party package |
+| `DEPENDENCY` | a package the manifests declare, whether or not anything imports it |
 | `BOUNDARY` | a cross-service port |
 
 ## Identifiers

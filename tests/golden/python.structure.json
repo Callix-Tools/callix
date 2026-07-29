@@ -14,6 +14,15 @@
     },
     {
       "file_path": null,
+      "id": "4164834914096773",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "httpx",
+      "qualified_name": "httpx",
+      "span": null
+    },
+    {
+      "file_path": null,
       "id": "11571c97e7d8ff98",
       "kind": "module",
       "metadata": {},
@@ -779,6 +788,12 @@
     }
   ],
   "relations": [
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "4164834914096773"
+    },
     {
       "kind": "contains",
       "metadata": {},

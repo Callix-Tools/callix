@@ -42,6 +42,35 @@ graph.merge(TypeScriptAdapter().analyze("services/web"), allow_shared=True)
 | `queue` | `subscribe` | `publish`, `produce`, `emit` |
 | `temporal` | `@activity.defn`, `RegisterActivity` | `execute_activity`, `ExecuteActivity` |
 
+## Linking the two sides
+
+A boundary node joins the graphs, but the client function and the server
+function are still only related *through* it. `link_boundaries()` makes the
+relationship direct:
+
+```python
+added = graph.link_boundaries()          # returns the number of edges
+graph.link_boundaries(min_confidence=0.8)  # or drop the weaker guesses
+```
+
+For every boundary it pairs each consumer with each provider and adds a
+directed `consumer -> provider` edge of kind `COMMUNICATES_WITH`, carrying the
+mechanism, the boundary's id and key, and a confidence that is the product of
+the two sides'. A service that both exposes and consumes the same contract is
+not linked to itself.
+
+The pass is idempotent: re-running it after re-analysing part of the graph adds
+nothing that is already there.
+
+```python
+for edge in graph.relations:
+    if edge.kind is RelationKind.COMMUNICATES_WITH:
+        print(graph.nodes[edge.source_id].qualified_name, "->",
+              graph.nodes[edge.target_id].qualified_name,
+              edge.metadata["boundary_key"])
+# client.loadUser -> server.read_user GET /users/{}
+```
+
 ## Reading the result
 
 ```python

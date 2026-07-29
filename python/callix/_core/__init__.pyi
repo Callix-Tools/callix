@@ -267,6 +267,25 @@ class Graph:
         r"""
         Edges entering `node_id`.
         """
+    def link_boundaries(self, *, min_confidence: builtins.float = ...) -> builtins.int:
+        r"""
+        Adds COMMUNICATES_WITH edges across cross-language boundaries.
+        
+        Adapters emit a shared BOUNDARY node per contract — its ID comes from
+        the mechanism and the normalized key alone — with EXPOSES from servers
+        and CONSUMES from clients. This pass pairs, for every boundary, each
+        consumer with each provider and adds a directed consumer -> provider
+        edge. That is the step that turns several single-service graphs, once
+        merged, into one picture of who calls whom across languages.
+        
+        Confidence on the new edge is the product of the two sides': a route
+        read from a literal on both ends stays 1.0, anything inferred decays.
+        `min_confidence` drops pairs below a threshold.
+        
+        Idempotent — a pair already linked through the same boundary is never
+        added twice — so it is safe to re-run after re-analysing part of the
+        graph. Returns the number of edges added.
+        """
     def callees(self, node_id: builtins.str) -> builtins.list[Node]:
         r"""
         What `node_id` calls.

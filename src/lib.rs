@@ -5,6 +5,7 @@ use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 
 mod boundaries;
+mod dependencies;
 mod diffing;
 mod error;
 mod golang;

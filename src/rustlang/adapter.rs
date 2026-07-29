@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
+use crate::dependencies::declare_dependencies;
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -247,6 +248,7 @@ fn build_crate_structure(
         };
         graph.insert_node(project_id.clone(), Py::new(py, node)?);
     }
+    declare_dependencies(py, graph, &project, &project_id, &deps)?;
 
     let mut modules: IndexMap<String, String> = IndexMap::new();
     let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();

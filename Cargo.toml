@@ -23,7 +23,10 @@ streaming-iterator = "0.1.9"
 thiserror = "2.0.19"
 toml = "1.1.3"
 tree-sitter = "0.26.11"
+tree-sitter-c = "0.24.2"
+tree-sitter-cpp = "0.23.4"
 tree-sitter-go = "0.25.0"
+tree-sitter-php = "0.24.2"
 tree-sitter-python = "0.25.0"
 tree-sitter-rust = "0.24.2"
 tree-sitter-typescript = "0.23.2"
@@ -33,37 +36,48 @@ walkdir = "2.5.0"
 # --- ty: the type checker is linked in, not spawned as a subprocess --------
 #
 # The ty_ide / ty_project crates are marked publish = false and never reach
-# crates.io, so they come from git. The rev is pinned to the commit matching
-# the ty 0.0.52 tag — updating ty means changing rev in every entry below and
-# verifying the result (see the README).
+# crates.io, so they come from git. The rev is the commit matching a ty
+# release, which is not guesswork: astral-sh/ty pins astral-sh/ruff as a
+# submodule, so the rev for ty X is the submodule pointer at ty's tag X —
+#
+#   gh api repos/astral-sh/ty/contents/ruff?ref=<tag> --jq .sha
+#
+# Currently ty 0.0.65. Updating means changing rev in every entry below
+# together, re-pinning get-size2 above, and re-verifying (see CONTRIBUTING).
 
-# Outside ruff's workspace the get-size2 features are not inherited and
-# ruff_python_ast fails to build: the set from ruff/Cargo.toml is repeated
-# here, and feature unification pulls it through.
+# The feature set is copied verbatim from ruff's own root Cargo.toml so
+# feature unification pulls the same one through. Whether Cargo would
+# otherwise inherit it here has not actually been established — the failure
+# this guards against was reproduced as a version mismatch, below — but a
+# spelled-out list costs nothing and removes the question.
 [dependencies.get-size2]
-# Exactly 0.10.0: in 0.10.3 get-size2 moved to compact_str 0.10 while ruff is
-# built against 0.9 — otherwise GetSize is not implemented for CompactString.
-version = "=0.10.0"
+# Pinned to exactly the version ruff is built against, because get-size2 and
+# compact_str move together: 0.10.0 implements GetSize for compact_str 0.9,
+# 0.10.3 for 0.10. A range that resolves to the other one leaves
+# ruff_python_ast without a GetSize impl for CompactString and it does not
+# compile. Update this whenever the ty rev below moves — check ruff's own
+# root Cargo.toml at that rev.
+version = "=0.10.3"
 features = ["derive", "smallvec", "hashbrown", "compact-str", "ordermap", "thin-vec"]
 
 [dependencies.ty_ide]
 git = "https://github.com/astral-sh/ruff"
-rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+rev = "7de420ecd242fdecf859c65b8ffdaaae339c9a54"
 
 [dependencies.ty_project]
 git = "https://github.com/astral-sh/ruff"
-rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+rev = "7de420ecd242fdecf859c65b8ffdaaae339c9a54"
 
 [dependencies.ruff_db]
 git = "https://github.com/astral-sh/ruff"
-rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+rev = "7de420ecd242fdecf859c65b8ffdaaae339c9a54"
 # "os" provides OsSystem — access to the real file system
 features = ["os"]
 
 [dependencies.ruff_source_file]
 git = "https://github.com/astral-sh/ruff"
-rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+rev = "7de420ecd242fdecf859c65b8ffdaaae339c9a54"
 
 [dependencies.ruff_text_size]
 git = "https://github.com/astral-sh/ruff"
-rev = "085c5cf8576712a9b161108dff2f9d3ea0d4569d"
+rev = "7de420ecd242fdecf859c65b8ffdaaae339c9a54"

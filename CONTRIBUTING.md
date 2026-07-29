@@ -115,16 +115,36 @@ deliberate trade-offs rather than bugs to fix.
 
 **Pinned to a ruff commit.** `ty_ide` and `ty_project` are marked
 `publish = false` and never reach crates.io, so they are git dependencies with
-`rev` pinned to the commit matching a ty tag (currently ty 0.0.52). Updating ty
-means finding the new commit
-(`gh api repos/astral-sh/ty/contents/ruff?ref=<tag>`), changing `rev` in
-**every** `Cargo.toml` entry together, rebuilding, and verifying the result.
-The API of those crates is internal and changes without notice.
+`rev` pinned to the commit matching a ty tag (currently ty 0.0.65). Finding
+that commit is not guesswork: `astral-sh/ty` is a release wrapper that pins
+`astral-sh/ruff` as a submodule, so the rev for ty *X* is the submodule pointer
+at ty's tag *X*.
 
-**A fragile feature set.** Outside ruff's workspace the features are not
-inherited, so `get-size2` is pinned to exactly `=0.10.0` with a hand-written
-feature list: 0.10.3 moved to `compact_str` 0.10 while ruff is built against
-0.9, and without the pin `ruff_python_ast` does not compile at all.
+```bash
+tag=$(gh api repos/astral-sh/ty/releases/latest --jq .tag_name)
+gh api "repos/astral-sh/ty/contents/ruff?ref=$tag" --jq .sha
+```
+
+Sanity-check the method by re-deriving the rev already in `Cargo.toml` before
+trusting a new one. Then change `rev` in **every** entry together, re-pin
+`get-size2` (below), run `cargo fetch` — which re-resolves in seconds and is
+where a version conflict surfaces without invoking rustc — and only then
+rebuild. The API of those crates is internal and changes without notice, so
+budget for `src/python/ty_embedded.rs` needing edits; going 0.0.52 → 0.0.65,
+641 commits, it happened to need none.
+
+**get-size2 moves with ruff.** It is pinned to exactly the version ruff itself
+uses, because `get-size2` and `compact_str` are released in lockstep: 0.10.0
+implements `GetSize` for `compact_str` 0.9, 0.10.3 for 0.10. Resolve the wrong
+one and `ruff_python_ast` has no `GetSize` impl for `CompactString` and does
+not compile. Read ruff's own root `Cargo.toml` at the new rev and copy both the
+version and the feature list.
+
+**The MSRV is ruff's, not callix's.** ty 0.0.65 raised it to 1.95. CI uses
+`dtolnay/rust-toolchain@stable` so it follows along, but the release wheels are
+built inside manylinux/musllinux containers that ship their own Rust — hence
+the explicit `rust-toolchain: stable` on the `maturin-action` step. Without it
+CI can be green while the wheel matrix fails.
 
 **Size and time.** `_core.abi3.so` is about 21 MB against roughly 2.5 MB
 without ty, and a cold build takes tens of minutes — covered by the cargo cache

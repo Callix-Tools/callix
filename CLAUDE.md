@@ -152,12 +152,20 @@ nodes on apache/superset. Expect diffs confined to those nodes' ids/names.
   picks the first `python3` on PATH.
 - **All cargo tasks share one profile**, release by default. The ty/ruff tree is
   ~200 crates; linting in debug while building in release compiles it twice.
-- **`get-size2` is pinned to `=0.10.0`** with a hand-written feature list.
-  Outside ruff's workspace the features are not inherited, and 0.10.3 moved to
-  `compact_str` 0.10 while ruff is on 0.9 — without the pin `ruff_python_ast`
-  does not compile at all.
-- **ty comes from a git `rev`** pinned across several `Cargo.toml` entries;
-  updating means changing all of them together and re-verifying.
+- **`get-size2` is pinned to exactly the version ruff uses** (`=0.10.3` for ty
+  0.0.65) with a hand-written feature list copied from ruff's root manifest.
+  `get-size2` and `compact_str` move in lockstep — 0.10.0 implements `GetSize`
+  for `compact_str` 0.9, 0.10.3 for 0.10 — so resolving the wrong one leaves
+  `ruff_python_ast` without a `GetSize` impl for `CompactString` and it does
+  not compile.
+- **ty comes from a git `rev`** pinned across several `Cargo.toml` entries. The
+  rev for a ty release is the `ruff` submodule pointer at that tag in
+  `astral-sh/ty` (`gh api repos/astral-sh/ty/contents/ruff?ref=<tag> --jq .sha`);
+  re-derive the rev already pinned to check the method before trusting a new
+  one. Change every entry together, re-pin `get-size2`, `cargo fetch` to catch
+  a conflict without rustc, then rebuild. The MSRV is ruff's — 1.95 as of ty
+  0.0.65 — which is why `release.yml` pins `rust-toolchain: stable` on
+  `maturin-action`: the build containers ship their own Rust.
 - Large SCIP indexes and Go builds respect `TMPDIR`; a small `/tmp` will fill.
 - `cargo fmt` is deliberately not a task — formatting is hand-tuned in places.
 

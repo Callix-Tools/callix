@@ -104,6 +104,10 @@ jobs:
         with:
           target: ${{ matrix.target }}
           args: --release --out dist
+          # Without this the build container's own Rust decides, and it can be
+          # older than the MSRV the embedded ty inherits from ruff (1.95 as of
+          # ty 0.0.65). CI would stay green while the wheel matrix failed.
+          rust-toolchain: stable
           # No Linux build container carries Go, and build.rs cannot build the
           # bridge without it, so Go goes in first. `musllinux_1_2` selects the
           # Alpine-based image; `auto` on macOS means no container at all.

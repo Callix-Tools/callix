@@ -1,0 +1,23 @@
+{
+  "name": "gohugoio/hugo",
+  "langs": [
+    "go"
+  ],
+  "description": "Static site generator (large, scale test)",
+  "requested_ref": "v0.163.3",
+  "commit": "4d22555",
+  "loc": 224821,
+  "files": 897,
+  "nodes": 75619,
+  "relations": 100542,
+  "seconds": 23.118839733000016,
+  "peak_mem_mb": 4396.33203125,
+  "mem_source": "getrusage",
+  "resolver_status": "ok",
+  "resolver_queries": 78036,
+  "resolver_resolved": 76749,
+  "resolver_seconds": 7.001,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

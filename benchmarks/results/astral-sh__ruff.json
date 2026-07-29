@@ -1,0 +1,23 @@
+{
+  "name": "astral-sh/ruff",
+  "langs": [
+    "rust"
+  ],
+  "description": "Python linter & formatter (large, scale test)",
+  "requested_ref": "0.15.18",
+  "commit": "6686f63",
+  "loc": 687409,
+  "files": 1870,
+  "nodes": 70186,
+  "relations": 221119,
+  "seconds": 225.34758206600003,
+  "peak_mem_mb": 282.51953125,
+  "mem_source": "getrusage",
+  "resolver_status": "ok",
+  "resolver_queries": 159277,
+  "resolver_resolved": 158905,
+  "resolver_seconds": 1.779,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

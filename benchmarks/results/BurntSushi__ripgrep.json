@@ -1,0 +1,23 @@
+{
+  "name": "BurntSushi/ripgrep",
+  "langs": [
+    "rust"
+  ],
+  "description": "Recursive line-oriented search tool (medium CLI)",
+  "requested_ref": "14.1.1",
+  "commit": "4649aa9",
+  "loc": 50275,
+  "files": 98,
+  "nodes": 5420,
+  "relations": 15318,
+  "seconds": 16.08377347100003,
+  "peak_mem_mb": 61.98046875,
+  "mem_source": "getrusage",
+  "resolver_status": "ok",
+  "resolver_queries": 11668,
+  "resolver_resolved": 11545,
+  "resolver_seconds": 0.106,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

@@ -1,0 +1,23 @@
+{
+  "name": "tokio-rs/axum",
+  "langs": [
+    "rust"
+  ],
+  "description": "Async HTTP web framework (HTTP boundaries)",
+  "requested_ref": "axum-v0.8.9",
+  "commit": "c59208c",
+  "loc": 43653,
+  "files": 296,
+  "nodes": 8162,
+  "relations": 15095,
+  "seconds": 87.41402805300004,
+  "peak_mem_mb": 60.88671875,
+  "mem_source": "getrusage",
+  "resolver_status": "ok",
+  "resolver_queries": 10030,
+  "resolver_resolved": 8760,
+  "resolver_seconds": 0.093,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

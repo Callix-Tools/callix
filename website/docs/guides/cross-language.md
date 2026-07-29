@@ -37,9 +37,9 @@ graph.merge(TypeScriptAdapter().analyze("services/web"), allow_shared=True)
 
 | Mechanism | Server side | Client side |
 |---|---|---|
-| `http` | FastAPI / Flask / Starlette routes, Express and NestJS routes, gin / chi / echo, axum `.route()`, actix and rocket attributes | requests, httpx, `fetch`, axios, `net/http`, reqwest |
+| `http` | FastAPI / Flask / Starlette routes, Express and NestJS routes, gin / chi / echo, `net/http` and `ServeMux`, axum `.route()`, actix and rocket attributes | requests, httpx, `fetch`, axios, `net/http`, reqwest — and any named client |
 | `grpc` | servicer classes | generated stubs (`<Service>Stub`, `New<Service>Client`, tonic clients) |
-| `queue` | `subscribe` | `publish`, `produce`, `emit` |
+| `queue` | `subscribe`, `consume`, `basic_consume`, `xreadgroup` | `publish`, `produce`, `emit`, `SendMessage`, `basic_publish`, `xadd`, `enqueue`, `delay` |
 | `temporal` | `@activity.defn`, `RegisterActivity` | `execute_activity`, `ExecuteActivity` |
 
 ## Linking the two sides
@@ -100,10 +100,18 @@ actually match. Known gaps, stated plainly:
 | tRPC | a typed proxy; no URL exists in the source |
 | GraphQL clients | one endpoint, meaning lives in operation names |
 | `axios({method, url})` | the verb is inside a config object |
-| Kafka via `send()`, RabbitMQ `basic_publish`, Redis Streams `xadd`, Celery `.delay()` | queue detection matches `publish`, `produce`, `subscribe`, `emit` |
+| Kafka via `send()` — kafka-python, KafkaJS | the verb is also `res.send(...)` in every Express handler and `conn.send(...)` on every socket |
 
 A route built at runtime from a variable, or a topic read from configuration,
 will not be found either.
+
+What *is* recognized no longer depends on naming. A route is told from a request
+by whether the call binds a handler — `app.get(path, handler)` against
+`client.get(url)` — so an Express app called `srv`, an axios instance called
+`api`, Angular's `this.http.get(...)` and a gin router reached through a struct
+field all work. The receiver-name whitelists that used to gate this were both
+too narrow and too loose: they missed every client not named `axios`, and they
+turned `request.Header.Get("X-Forwarded-Prefix")` into a route.
 
 None of this is permanent: [a boundary
 extractor](./custom-resolvers.md#a-boundary-extractor) is a plain Python object,

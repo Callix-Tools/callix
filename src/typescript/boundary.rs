@@ -17,14 +17,17 @@ use crate::boundaries::{BoundaryRef, normalize_http_path};
 use crate::ts;
 
 const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", "options"];
-const SERVER_OBJECTS: [&str; 3] = ["app", "router", "server"];
-const CLIENT_OBJECTS: [&str; 3] = ["axios", "http", "https"];
 
 /// `app.get("/x", handler)` / `axios.post("/x", body)`.
+///
+/// The receiver is `(_)`, not `(identifier)`: Angular writes
+/// `this.http.get(url)` and an axios instance may be reached through any
+/// expression. What the call *is* follows from its arguments, not from the
+/// shape of what it was called on.
 const Q_MEMBER_CALL: &str = r#"
 (call_expression
   function: (member_expression
-    object: (identifier) @obj
+    object: (_) @obj
     property: (property_identifier) @method)
   arguments: (arguments) @args)
 "#;
@@ -106,6 +109,30 @@ impl<'a> Extractor<'a> {
         self.url_template(first)
     }
 
+    /// Whether the argument at `index` reads as a handler function.
+    ///
+    /// `app.get(path, handler)` binds a handler; `client.get(url)` and
+    /// `client.get(url, {headers})` do not. That distinction survives any
+    /// naming, which a whitelist of receiver names does not: an axios instance
+    /// is called `api` as often as `axios`, and an Express app `server` as
+    /// often as `app`.
+    fn is_handler(&self, args: TsNode<'_>, index: usize) -> bool {
+        let Some(argument) = ts::named_children(args).get(index).copied() else {
+            return false;
+        };
+        matches!(
+            argument.kind(),
+            // handler · this.handler · handler() · (req, res) => {} ·
+            // function () {} · ...middleware
+            "identifier"
+                | "member_expression"
+                | "call_expression"
+                | "arrow_function"
+                | "function_expression"
+                | "spread_element"
+        )
+    }
+
     /// The contents of a plain string literal.
     fn string_literal(&self, node: TsNode<'_>) -> Option<String> {
         if node.kind() != "string" {
@@ -180,16 +207,12 @@ impl<'a> Extractor<'a> {
         let mut refs = Vec::new();
 
         for caps in ts::run_query(cached_query(Q_MEMBER_CALL, self.tsx), root, self.source) {
-            let (Some(obj), Some(method_node), Some(args)) = (
-                caps.get("obj").and_then(|v| v.first()),
+            let (Some(method_node), Some(args)) = (
                 caps.get("method").and_then(|v| v.first()),
                 caps.get("args").and_then(|v| v.first()),
             ) else {
                 continue;
             };
-            if !SERVER_OBJECTS.contains(&self.text(*obj).as_str()) {
-                continue;
-            }
             let method = self.text(*method_node).to_lowercase();
             if !HTTP_VERBS.contains(&method.as_str()) {
                 continue;
@@ -200,6 +223,12 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             if !Self::is_http_path(&url) {
+                continue;
+            }
+            // A bound handler is what makes this a route rather than a request,
+            // whatever the receiver happens to be named. Testing the name was
+            // the old rule, and it missed `const api = express()`.
+            if !self.is_handler(*args, 1) {
                 continue;
             }
             refs.push(Self::http_ref(
@@ -256,16 +285,12 @@ impl<'a> Extractor<'a> {
         }
 
         for caps in ts::run_query(cached_query(Q_MEMBER_CALL, self.tsx), root, self.source) {
-            let (Some(obj), Some(method_node), Some(args)) = (
-                caps.get("obj").and_then(|v| v.first()),
+            let (Some(method_node), Some(args)) = (
                 caps.get("method").and_then(|v| v.first()),
                 caps.get("args").and_then(|v| v.first()),
             ) else {
                 continue;
             };
-            if !CLIENT_OBJECTS.contains(&self.text(*obj).as_str()) {
-                continue;
-            }
             let method = self.text(*method_node).to_lowercase();
             if !HTTP_VERBS.contains(&method.as_str()) {
                 continue;
@@ -274,6 +299,10 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             if !Self::is_http_path(&url) {
+                continue;
+            }
+            // A bound handler makes this a route, which http_server took.
+            if self.is_handler(*args, 1) {
                 continue;
             }
             refs.push(Self::http_ref(
@@ -322,8 +351,20 @@ impl<'a> Extractor<'a> {
 fn queue_role(method: &str) -> Option<&'static str> {
     match method {
         // A producer addresses the topic, a consumer serves it.
-        "publish" | "produce" | "emit" => Some("client"),
-        "subscribe" => Some("server"),
+        //
+        // The names span the clients people actually use rather than the two
+        // that read most like English: sarama says `SendMessage`, AMQP
+        // `basic_publish`, Redis Streams `xadd`, task queues `enqueue` and
+        // `delay`.
+        //
+        // A bare `send` is deliberately absent. It is how kafka-python and
+        // KafkaJS spell it, but it is also `res.send(...)` in every Express
+        // handler and `conn.send(...)` on every socket — the verb alone cannot
+        // tell them apart. Those clients need a custom extractor, which the
+        // adapters accept.
+        "publish" | "produce" | "emit" | "basic_publish" | "xadd" | "enqueue"
+        | "delay" => Some("client"),
+        "subscribe" | "consume" | "basic_consume" | "xreadgroup" => Some("server"),
         _ => None,
     }
 }

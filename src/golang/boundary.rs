@@ -16,10 +16,12 @@ const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", 
 const TEMPORAL_EXEC: [&str; 2] = ["executeactivity", "executelocalactivity"];
 
 /// `r.GET("/x", h)` / `http.Get("/x")` — a method call on a receiver.
+/// The operand is `(_)`, not `(identifier)`: a router reached through a field
+/// (`s.router.GET(...)`) is as common as one in a local variable.
 const Q_SELECTOR_CALL: &str = r#"
 (call_expression
   function: (selector_expression
-    operand: (identifier) @obj
+    operand: (_) @obj
     field: (field_identifier) @method)
   arguments: (argument_list) @args)
 "#;
@@ -101,42 +103,61 @@ impl<'a> Extractor<'a> {
     }
 
     /// Routes on gin / chi / echo routers (`r.GET(...)`).
+    /// Whether the argument at `index` reads as a handler function.
+    ///
+    /// This is what separates a route from a client call, and it does so
+    /// without caring what the receiver is named: `r.GET(path, handler)` binds
+    /// a handler, `http.Get(url)` and `client.Get(url)` do not. Naming the
+    /// receiver was the old test, and it missed every router not called `r`.
+    fn is_handler(&self, args: TsNode<'_>, index: usize) -> bool {
+        let Some(argument) = ts::named_children(args).get(index).copied() else {
+            return false;
+        };
+        matches!(
+            argument.kind(),
+            // handler · pkg.Handler · http.HandlerFunc(h) · func(w, r) {...}
+            // · handlers... (a route may bind a whole slice of middleware)
+            "identifier"
+                | "selector_expression"
+                | "call_expression"
+                | "func_literal"
+                | "variadic_argument"
+        )
+    }
+
     fn http_server(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
-            let (Some(obj), Some(method_node), Some(args)) =
-                (cap(caps, "obj"), cap(caps, "method"), cap(caps, "args"))
-            else {
+            let (Some(method_node), Some(args)) = (cap(caps, "method"), cap(caps, "args")) else {
                 continue;
             };
-            // The net/http package is the client side.
-            if self.text(obj) == "http" {
-                continue;
-            }
             let method = self.text(method_node).to_lowercase();
-            if !HTTP_VERBS.contains(&method.as_str()) {
-                continue;
-            }
             let Some(path) = self.first_string(args) else {
                 continue;
             };
-            refs.push(Self::http_ref("server", &method.to_uppercase(), &path, method_node));
+            // A verb plus a bound handler is a route on any router — gin, chi,
+            // echo, or one someone wrote themselves.
+            if HTTP_VERBS.contains(&method.as_str()) && self.is_handler(args, 1) {
+                refs.push(Self::http_ref("server", &method.to_uppercase(), &path, method_node));
+                continue;
+            }
+            // net/http and its ServeMux register by path alone, with no verb
+            // in the call: `http.HandleFunc("/x", h)`, `mux.Handle("/x", h)`.
+            // The route answers any method, so the key says so.
+            if matches!(method.as_str(), "handlefunc" | "handle") && self.is_handler(args, 1) {
+                refs.push(Self::http_ref("server", "ANY", &path, method_node));
+            }
         }
         refs
     }
 
-    /// net/http client calls (`http.Get(url)`).
+    /// HTTP client calls — `http.Get(url)`, and any named client besides.
     fn http_client(&self, calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in calls {
-            let (Some(obj), Some(method_node), Some(args)) =
-                (cap(caps, "obj"), cap(caps, "method"), cap(caps, "args"))
-            else {
+            let (Some(method_node), Some(args)) = (cap(caps, "method"), cap(caps, "args")) else {
                 continue;
             };
-            if self.text(obj) != "http" {
-                continue;
-            }
             let method = self.text(method_node).to_lowercase();
             if !HTTP_VERBS.contains(&method.as_str()) {
                 continue;
@@ -145,6 +166,10 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             if !url.starts_with('/') && !url.contains("://") {
+                continue;
+            }
+            // A bound handler makes this a route, which http_server took.
+            if self.is_handler(args, 1) {
                 continue;
             }
             refs.push(Self::http_ref("client", &method.to_uppercase(), &url, method_node));
@@ -281,8 +306,20 @@ fn cap<'tree>(caps: &Caps<'_, 'tree>, name: &str) -> Option<TsNode<'tree>> {
 fn queue_role(method: &str) -> Option<&'static str> {
     match method {
         // A producer addresses the topic, a consumer serves it.
-        "publish" | "produce" => Some("client"),
-        "subscribe" => Some("server"),
+        //
+        // The names span the clients people actually use rather than the two
+        // that read most like English: sarama says `SendMessage`, AMQP
+        // `basic_publish`, Redis Streams `xadd`, task queues `enqueue` and
+        // `delay`.
+        //
+        // A bare `send` is deliberately absent. It is how kafka-python and
+        // KafkaJS spell it, but it is also `res.send(...)` in every Express
+        // handler and `conn.send(...)` on every socket — the verb alone cannot
+        // tell them apart. Those clients need a custom extractor, which the
+        // adapters accept.
+        "publish" | "produce" | "sendmessage" | "basic_publish" | "xadd" | "enqueue"
+        | "delay" | "emit" => Some("client"),
+        "subscribe" | "consume" | "basic_consume" | "xreadgroup" => Some("server"),
         _ => None,
     }
 }

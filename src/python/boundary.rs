@@ -380,8 +380,18 @@ impl<'a> Extractor<'a> {
     fn queue_role(method: &str) -> Option<&'static str> {
         match method {
             // A producer addresses the topic, a consumer serves it.
-            "publish" | "produce" => Some("client"),
-            "subscribe" => Some("server"),
+            // The names span the clients people actually use rather than the
+            // two that read most like English: sarama says `SendMessage`, AMQP
+            // `basic_publish`, Redis Streams `xadd`, task queues `enqueue` and
+            // `delay`.
+            //
+            // A bare `send` is deliberately absent: it is also `res.send(...)`
+            // in every Express handler and `conn.send(...)` on every socket,
+            // and the verb alone cannot tell them apart. Those clients need a
+            // custom extractor, which the adapters accept.
+            "publish" | "produce" | "sendmessage" | "basic_publish" | "xadd" | "enqueue"
+            | "delay" | "emit" => Some("client"),
+            "subscribe" | "consume" | "basic_consume" | "xreadgroup" => Some("server"),
             _ => None,
         }
     }

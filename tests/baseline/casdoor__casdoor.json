@@ -613,7 +613,7 @@
     "idp/adfs.go": {
       "hash": "79b83af81b4bc83f",
       "nodes": 34,
-      "relations": 66
+      "relations": 63
     },
     "idp/alipay.go": {
       "hash": "3ba2a32180114eb2",
@@ -683,7 +683,7 @@
     "idp/goth.go": {
       "hash": "e5026024276e92c8",
       "nodes": 93,
-      "relations": 232
+      "relations": 231
     },
     "idp/infoflow_internal.go": {
       "hash": "6bfbd43277a2dd62",
@@ -2038,7 +2038,7 @@
     "service/proxy.go": {
       "hash": "0117f36c3997d625",
       "nodes": 37,
-      "relations": 62
+      "relations": 64
     },
     "service/util.go": {
       "hash": "edeb925395369c89",
@@ -2294,7 +2294,7 @@
   "kinds": {
     "nodes": {
       "attribute": 2914,
-      "boundary": 5,
+      "boundary": 3,
       "class": 504,
       "dependency": 309,
       "external_symbol": 308,
@@ -2313,7 +2313,7 @@
       "contains": 492,
       "declares": 15953,
       "depends_on": 309,
-      "exposes": 4,
+      "exposes": 2,
       "imports": 2394,
       "resolves_to": 2394
     }
@@ -2322,7 +2322,7 @@
   "ref": "v3.98.0",
   "totals": {
     "files": 458,
-    "nodes": 14154,
-    "relations": 21548
+    "nodes": 14152,
+    "relations": 21546
   }
 }

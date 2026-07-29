@@ -1,0 +1,30 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* graphlens uses an indigo primary palette. */
+:root {
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #3f33bf;
+  --ifm-color-primary-darker: #372da6;
+  --ifm-color-primary-darkest: #2d2589;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, a lighter palette is used in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #a5b4fc;
+  --ifm-color-primary-dark: #818cf8;
+  --ifm-color-primary-darker: #6366f1;
+  --ifm-color-primary-darkest: #4f46e5;
+  --ifm-color-primary-light: #c7d2fe;
+  --ifm-color-primary-lighter: #dbe1fe;
+  --ifm-color-primary-lightest: #eef2ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}

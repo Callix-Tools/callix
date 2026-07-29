@@ -1,0 +1,8 @@
+{
+  "label": "Graph Model",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "The nodes, relations and identifiers that make up the intermediate representation."
+  }
+}

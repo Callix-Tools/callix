@@ -1,0 +1,15 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="graphlens logo">
+  <!-- edges -->
+  <g stroke="#6366f1" stroke-width="8" stroke-linecap="round">
+    <line x1="60" y1="60" x2="140" y2="55" />
+    <line x1="60" y1="60" x2="55" y2="140" />
+    <line x1="140" y1="55" x2="150" y2="135" />
+    <line x1="55" y1="140" x2="150" y2="135" />
+    <line x1="60" y1="60" x2="150" y2="135" />
+  </g>
+  <!-- nodes -->
+  <circle cx="60" cy="60" r="22" fill="#4f46e5" />
+  <circle cx="140" cy="55" r="18" fill="#818cf8" />
+  <circle cx="55" cy="140" r="18" fill="#818cf8" />
+  <circle cx="150" cy="135" r="24" fill="#4f46e5" />
+</svg>

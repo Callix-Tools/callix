@@ -1,0 +1,8 @@
+{
+  "label": "Adapters",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "How each language is supported and what its resolver needs."
+  }
+}

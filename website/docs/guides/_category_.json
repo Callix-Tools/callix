@@ -1,0 +1,8 @@
+{
+  "label": "Guides",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Working with the graph from Python: building it, querying it, and swapping the parts."
+  }
+}

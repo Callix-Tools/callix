@@ -17,10 +17,12 @@ vars:
   BASELINE_WORKDIR: '{{default "/tmp/callix-baseline" .BASELINE_WORKDIR}}'
 
 env:
-  # abi3-py313 demands an interpreter >= 3.13, and pyo3 otherwise picks
-  # whatever `python3` is first on PATH — on a CI runner that is often older.
-  # `task install` creates this venv, so pointing pyo3 at it directly keeps
-  # cargo independent of whether the venv happens to be activated.
+  # pyo3 otherwise picks whatever `python3` is first on PATH, which makes the
+  # build depend on the machine. `task install` creates this venv, so pointing
+  # pyo3 at it directly keeps cargo independent of whether it is activated.
+  # The wheel is abi3 for >= 3.10; development happens on the newest, because
+  # a stub or a resolver quirk should surface here rather than in a user's
+  # environment.
   PYO3_PYTHON: '{{.TASKFILE_DIR}}/.venv/bin/python'
 
 tasks:
@@ -34,9 +36,9 @@ tasks:
   install:
     desc: Create the venv and install maturin
     cmds:
-      # The version is pinned rather than left to whatever `python3` resolves
-      # to: abi3-py313 refuses to build against anything older, and uv fetches
-      # 3.13 itself when the machine has none.
+      # Pinned rather than left to whatever `python3` resolves to, so the dev
+      # environment is the same everywhere; uv fetches 3.13 if the machine has
+      # none. The wheel itself works on 3.10 and up.
       # --allow-existing keeps a re-run idempotent instead of erroring out.
       - uv venv --python 3.13 --allow-existing
       - uv pip install maturin

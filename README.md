@@ -47,7 +47,8 @@ into a wheel.
 pip install callix
 ```
 
-Python ≥ 3.13. Wheels for Linux (x86_64, aarch64) and macOS (arm64, x86_64);
+Python ≥ 3.10. Wheels for Linux glibc and musl (x86_64, aarch64) and macOS
+(arm64, x86_64);
 [Windows is not supported](https://callix-tools.github.io/callix/docs/getting-started/installation).
 
 ## Usage

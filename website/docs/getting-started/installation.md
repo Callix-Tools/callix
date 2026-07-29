@@ -8,8 +8,9 @@ sidebar_position: 1
 pip install callix
 ```
 
-Python **≥ 3.13** is required. The wheel is built against the stable ABI
-(`abi3-py313`), so one wheel per platform covers 3.13 and everything after it.
+Python **≥ 3.10** is required. The wheel is built against the stable ABI
+(`abi3-py310`), so one wheel per platform covers 3.10 and every version after
+it — including ones released after the wheel was.
 
 ## What is already inside
 
@@ -42,7 +43,8 @@ shortfall in `graph.metadata["resolver_status"]`, rather than failing.
 
 Wheels are published for:
 
-- Linux `x86_64` and `aarch64` (manylinux 2_28)
+- Linux `x86_64` and `aarch64`, glibc (manylinux 2_28) and musl
+  (musllinux 1_2) — so Alpine-based CI images work without building
 - macOS `arm64` and `x86_64`
 
 :::warning Windows is not supported

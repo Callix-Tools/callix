@@ -45,7 +45,9 @@ Dev and test groups are included on purpose: without them, imports that appear
 only in tests would classify as `unknown` rather than `third_party`.
 
 Standard-library names come from `sys.stdlib_module_names` of the running
-interpreter — a property of the Python you are using, not of the build.
+interpreter — a property of the Python you are using, not of the build, and not
+of the project being analysed. A module added to the standard library after your
+interpreter was released classifies as `unknown` rather than `stdlib`.
 
 ## Boundaries
 

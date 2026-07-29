@@ -54,8 +54,9 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # 2. Wheels. One wheel cannot cover every platform: ty and the Go bridge to
-  #    typescript-go are linked inside. Thanks to abi3-py313 the matrix runs
-  #    over platforms only, not over Python versions.
+  #    typescript-go are linked inside. Thanks to abi3 the matrix runs over
+  #    platforms only, not over Python versions — one wheel per platform
+  #    covers 3.10 and everything after it.
   # ---------------------------------------------------------------------------
   wheels:
     needs: version
@@ -67,11 +68,21 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64
+            libc: manylinux
           # A native ARM runner rather than QEMU inside the container: the ty
           # tree alone is ~200 crates, and emulating that would not fit the
           # timeout.
           - os: ubuntu-24.04-arm
             target: aarch64
+            libc: manylinux
+          # Alpine is half of the CI images in circulation, and a manylinux
+          # wheel does not install there.
+          - os: ubuntu-latest
+            target: x86_64
+            libc: musllinux
+          - os: ubuntu-24.04-arm
+            target: aarch64
+            libc: musllinux
           - os: macos-latest
             target: aarch64
           # macos-latest is Apple Silicon, so the Intel wheel is cross-built;
@@ -93,15 +104,23 @@ jobs:
         with:
           target: ${{ matrix.target }}
           args: --release --out dist
-          # The manylinux container carries no Go, and build.rs cannot build
-          # the bridge without it, so Go is installed into the container first.
-          manylinux: ${{ startsWith(matrix.os, 'ubuntu') && '2_28' || 'auto' }}
+          # No Linux build container carries Go, and build.rs cannot build the
+          # bridge without it, so Go goes in first. `musllinux_1_2` selects the
+          # Alpine-based image; `auto` on macOS means no container at all.
+          manylinux: >-
+            ${{ matrix.libc == 'musllinux' && 'musllinux_1_2'
+                || (startsWith(matrix.os, 'ubuntu') && '2_28' || 'auto') }}
           before-script-linux: |
             case "$(uname -m)" in
               x86_64)  goarch=amd64 ;;
               aarch64) goarch=arm64 ;;
               *) echo "unsupported container arch $(uname -m)" >&2; exit 1 ;;
             esac
+            # cgo needs a C toolchain, and which package manager provides it
+            # depends on the image: musllinux is Alpine, manylinux is not.
+            if command -v apk >/dev/null; then
+              apk add --no-cache gcc musl-dev git
+            fi
             curl -sSL "https://go.dev/dl/go1.26.0.linux-${goarch}.tar.gz" \
               | tar -C /usr/local -xz
             export PATH=$PATH:/usr/local/go/bin
@@ -109,7 +128,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-${{ matrix.os }}-${{ matrix.target }}
+          name: wheel-${{ matrix.os }}-${{ matrix.target }}-${{ matrix.libc || 'native' }}
           path: dist/
 
   # ---------------------------------------------------------------------------

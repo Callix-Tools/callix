@@ -483,6 +483,10 @@ impl RustAdapter {
                 status.as_str()
             )));
         }
+        // One structural edge per pair: visitors emit one per
+        // occurrence, and the node they point at is already deduped.
+        graph.dedupe_structural_relations(py);
+        
         Ok(graph)
     }
 

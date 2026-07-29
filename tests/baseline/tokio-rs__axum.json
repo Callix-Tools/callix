@@ -48,7 +48,7 @@
     "axum-core/src/extract/rejection.rs": {
       "hash": "87e870f0a6c83f7b",
       "nodes": 6,
-      "relations": 11
+      "relations": 9
     },
     "axum-core/src/extract/request_parts.rs": {
       "hash": "c2e8d0fdff0e4ab1",
@@ -58,7 +58,7 @@
     "axum-core/src/extract/tuple.rs": {
       "hash": "2a25f951ec8827cf",
       "nodes": 16,
-      "relations": 29
+      "relations": 28
     },
     "axum-core/src/lib.rs": {
       "hash": "4c93d31e6d6d525c",
@@ -143,7 +143,7 @@
     "axum-extra/src/extract/mod.rs": {
       "hash": "4528c70cb80d3546",
       "nodes": 16,
-      "relations": 45
+      "relations": 42
     },
     "axum-extra/src/extract/multipart.rs": {
       "hash": "1cf0e43229b04e92",
@@ -243,7 +243,7 @@
     "axum-extra/src/routing/mod.rs": {
       "hash": "25c7100d6dd859f1",
       "nodes": 53,
-      "relations": 85
+      "relations": 84
     },
     "axum-extra/src/routing/resource.rs": {
       "hash": "822c7f9e45f562bc",
@@ -913,7 +913,7 @@
     "axum/src/extract/mod.rs": {
       "hash": "4cdfa905e76cfce2",
       "nodes": 19,
-      "relations": 48
+      "relations": 47
     },
     "axum/src/extract/multipart.rs": {
       "hash": "b1edb76dc47b7e58",
@@ -1028,7 +1028,7 @@
     "axum/src/middleware/mod.rs": {
       "hash": "0c276965b57bb215",
       "nodes": 11,
-      "relations": 30
+      "relations": 26
     },
     "axum/src/middleware/response_axum_body.rs": {
       "hash": "004496d8cb781c18",
@@ -1038,7 +1038,7 @@
     "axum/src/response/mod.rs": {
       "hash": "2e5db8d0fceeb4ed",
       "nodes": 22,
-      "relations": 66
+      "relations": 65
     },
     "axum/src/response/redirect.rs": {
       "hash": "6fcf5432faf6da3f",
@@ -1138,7 +1138,7 @@
     "axum/src/serve/mod.rs": {
       "hash": "bfbccede3c0099c2",
       "nodes": 69,
-      "relations": 120
+      "relations": 119
     },
     "axum/src/service_ext.rs": {
       "hash": "2563f35509a4f193",
@@ -1504,7 +1504,7 @@
       "declares": 5658,
       "depends_on": 458,
       "exposes": 365,
-      "imports": 1375,
+      "imports": 1361,
       "resolves_to": 1375
     }
   },
@@ -1513,6 +1513,6 @@
   "totals": {
     "files": 296,
     "nodes": 7390,
-    "relations": 10143
+    "relations": 10129
   }
 }

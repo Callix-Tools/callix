@@ -38,7 +38,7 @@
     "crates/ruff/src/cache.rs": {
       "hash": "2b425bdba2e18082",
       "nodes": 149,
-      "relations": 248
+      "relations": 247
     },
     "crates/ruff/src/commands/add_noqa.rs": {
       "hash": "b4b98e99aadbca51",
@@ -383,7 +383,7 @@
     "crates/ruff_db/src/diagnostic/render.rs": {
       "hash": "cd2201346c64133f",
       "nodes": 289,
-      "relations": 381
+      "relations": 380
     },
     "crates/ruff_db/src/diagnostic/render/azure.rs": {
       "hash": "0b2f5feb85677764",
@@ -453,12 +453,12 @@
     "crates/ruff_db/src/files.rs": {
       "hash": "222722ec750a76fb",
       "nodes": 135,
-      "relations": 197
+      "relations": 195
     },
     "crates/ruff_db/src/files/directory.rs": {
       "hash": "df5012a2f1b1b7dd",
       "nodes": 39,
-      "relations": 56
+      "relations": 54
     },
     "crates/ruff_db/src/files/file_root.rs": {
       "hash": "6a3ba2457badc9a1",
@@ -473,7 +473,7 @@
     "crates/ruff_db/src/lib.rs": {
       "hash": "444d6207542dd130",
       "nodes": 45,
-      "relations": 77
+      "relations": 75
     },
     "crates/ruff_db/src/panic.rs": {
       "hash": "eb1d5cf7624db467",
@@ -483,12 +483,12 @@
     "crates/ruff_db/src/parsed.rs": {
       "hash": "53c5e3f61cfd7a11",
       "nodes": 156,
-      "relations": 211
+      "relations": 210
     },
     "crates/ruff_db/src/source.rs": {
       "hash": "a2ce85de659978d3",
       "nodes": 53,
-      "relations": 91
+      "relations": 89
     },
     "crates/ruff_db/src/system.rs": {
       "hash": "9466a896727d86f5",
@@ -498,12 +498,12 @@
     "crates/ruff_db/src/system/memory_fs.rs": {
       "hash": "d44b8d49810f5dcf",
       "nodes": 145,
-      "relations": 181
+      "relations": 179
     },
     "crates/ruff_db/src/system/os.rs": {
       "hash": "b7c7394696bee400",
       "nodes": 91,
-      "relations": 122
+      "relations": 120
     },
     "crates/ruff_db/src/system/path.rs": {
       "hash": "a201aabd26d712ae",
@@ -513,12 +513,12 @@
     "crates/ruff_db/src/system/test.rs": {
       "hash": "554b956773216103",
       "nodes": 113,
-      "relations": 134
+      "relations": 133
     },
     "crates/ruff_db/src/system/walk_directory.rs": {
       "hash": "92db5a957e714be3",
       "nodes": 69,
-      "relations": 99
+      "relations": 97
     },
     "crates/ruff_db/src/testing.rs": {
       "hash": "6f85f1e1554da325",
@@ -548,7 +548,7 @@
     "crates/ruff_dev/src/generate_cli_help.rs": {
       "hash": "6570646c269a9720",
       "nodes": 33,
-      "relations": 55
+      "relations": 54
     },
     "crates/ruff_dev/src/generate_docs.rs": {
       "hash": "a4fb7e12d1778b40",
@@ -558,7 +558,7 @@
     "crates/ruff_dev/src/generate_json_schema.rs": {
       "hash": "c71c30a61327b0c0",
       "nodes": 18,
-      "relations": 42
+      "relations": 41
     },
     "crates/ruff_dev/src/generate_options.rs": {
       "hash": "11461166874fbf91",
@@ -573,7 +573,7 @@
     "crates/ruff_dev/src/generate_ty_cli_reference.rs": {
       "hash": "d09a0b318865cc22",
       "nodes": 33,
-      "relations": 57
+      "relations": 56
     },
     "crates/ruff_dev/src/generate_ty_env_vars_reference.rs": {
       "hash": "b0002055d49dc631",
@@ -588,12 +588,12 @@
     "crates/ruff_dev/src/generate_ty_rules.rs": {
       "hash": "1f5a2b1506fe9e72",
       "nodes": 20,
-      "relations": 46
+      "relations": 45
     },
     "crates/ruff_dev/src/generate_ty_schema.rs": {
       "hash": "e181e8707d840209",
       "nodes": 18,
-      "relations": 42
+      "relations": 41
     },
     "crates/ruff_dev/src/main.rs": {
       "hash": "c54a9f01f1e9c143",
@@ -648,17 +648,17 @@
     "crates/ruff_formatter/src/arguments.rs": {
       "hash": "0a2fe7eae2903942",
       "nodes": 24,
-      "relations": 34
+      "relations": 32
     },
     "crates/ruff_formatter/src/buffer.rs": {
       "hash": "c6aa135212df0e04",
       "nodes": 101,
-      "relations": 129
+      "relations": 128
     },
     "crates/ruff_formatter/src/builders.rs": {
       "hash": "26e564acd56017e2",
       "nodes": 220,
-      "relations": 281
+      "relations": 280
     },
     "crates/ruff_formatter/src/diagnostics.rs": {
       "hash": "0a51edefaa71fca7",
@@ -668,12 +668,12 @@
     "crates/ruff_formatter/src/format_element.rs": {
       "hash": "bd1cfefcbd294cad",
       "nodes": 80,
-      "relations": 108
+      "relations": 107
     },
     "crates/ruff_formatter/src/format_element/document.rs": {
       "hash": "6663e3bc3e4ed80f",
       "nodes": 59,
-      "relations": 87
+      "relations": 84
     },
     "crates/ruff_formatter/src/format_element/tag.rs": {
       "hash": "3750b4293577c37b",
@@ -723,7 +723,7 @@
     "crates/ruff_formatter/src/printer/mod.rs": {
       "hash": "7da6c8492de7a5bf",
       "nodes": 185,
-      "relations": 245
+      "relations": 243
     },
     "crates/ruff_formatter/src/printer/printer_options/mod.rs": {
       "hash": "23db41cf9139f37e",
@@ -733,7 +733,7 @@
     "crates/ruff_formatter/src/printer/queue.rs": {
       "hash": "f8fb63692b0c5cfc",
       "nodes": 53,
-      "relations": 79
+      "relations": 78
     },
     "crates/ruff_formatter/src/printer/stack.rs": {
       "hash": "af06988eabf8e8f4",
@@ -903,7 +903,7 @@
     "crates/ruff_linter/src/checkers/ast/mod.rs": {
       "hash": "ea252dd824b7b1cb",
       "nodes": 330,
-      "relations": 456
+      "relations": 455
     },
     "crates/ruff_linter/src/checkers/filesystem.rs": {
       "hash": "7677834cc5337321",
@@ -933,7 +933,7 @@
     "crates/ruff_linter/src/checkers/physical_lines.rs": {
       "hash": "8ecfd4a629c2245d",
       "nodes": 27,
-      "relations": 62
+      "relations": 61
     },
     "crates/ruff_linter/src/checkers/tokens.rs": {
       "hash": "75b0ce5f03692acb",
@@ -973,7 +973,7 @@
     "crates/ruff_linter/src/directives.rs": {
       "hash": "f0928ca144456f24",
       "nodes": 70,
-      "relations": 115
+      "relations": 114
     },
     "crates/ruff_linter/src/doc_lines.rs": {
       "hash": "92bc12f5bd443e54",
@@ -1018,12 +1018,12 @@
     "crates/ruff_linter/src/fix/edits.rs": {
       "hash": "3646b821511bc347",
       "nodes": 123,
-      "relations": 176
+      "relations": 173
     },
     "crates/ruff_linter/src/fix/mod.rs": {
       "hash": "038fb913958d33c3",
       "nodes": 44,
-      "relations": 80
+      "relations": 78
     },
     "crates/ruff_linter/src/fix/snippet.rs": {
       "hash": "2c34158d19928708",
@@ -1053,7 +1053,7 @@
     "crates/ruff_linter/src/linter.rs": {
       "hash": "7e900a05ca527144",
       "nodes": 170,
-      "relations": 264
+      "relations": 262
     },
     "crates/ruff_linter/src/linter/float.rs": {
       "hash": "ee0b34368eafd3e2",
@@ -1073,22 +1073,22 @@
     "crates/ruff_linter/src/message/grouped.rs": {
       "hash": "6462bcf0d93de0d8",
       "nodes": 57,
-      "relations": 100
+      "relations": 99
     },
     "crates/ruff_linter/src/message/mod.rs": {
       "hash": "6a4a55481c8c066c",
       "nodes": 62,
-      "relations": 106
+      "relations": 105
     },
     "crates/ruff_linter/src/message/sarif.rs": {
       "hash": "084c7d5227da2b01",
       "nodes": 113,
-      "relations": 190
+      "relations": 189
     },
     "crates/ruff_linter/src/noqa.rs": {
       "hash": "27d586568dc3196c",
       "nodes": 294,
-      "relations": 386
+      "relations": 383
     },
     "crates/ruff_linter/src/package.rs": {
       "hash": "655d85a436d155bd",
@@ -1113,12 +1113,12 @@
     "crates/ruff_linter/src/registry.rs": {
       "hash": "c748c8a847080278",
       "nodes": 39,
-      "relations": 64
+      "relations": 63
     },
     "crates/ruff_linter/src/registry/rule_set.rs": {
       "hash": "7e0d67b75becac35",
       "nodes": 49,
-      "relations": 62
+      "relations": 61
     },
     "crates/ruff_linter/src/renamer.rs": {
       "hash": "44d109464d2fe887",
@@ -1133,7 +1133,7 @@
     "crates/ruff_linter/src/rule_selector.rs": {
       "hash": "9a2b94fac9217cb1",
       "nodes": 66,
-      "relations": 103
+      "relations": 101
     },
     "crates/ruff_linter/src/rules/airflow/helpers.rs": {
       "hash": "0f6b1031b84e3949",
@@ -1188,7 +1188,7 @@
     "crates/ruff_linter/src/rules/airflow/rules/suggested_to_update_3_0.rs": {
       "hash": "0211bcbda9c0426c",
       "nodes": 31,
-      "relations": 50
+      "relations": 49
     },
     "crates/ruff_linter/src/rules/airflow/rules/task_branch_as_short_circuit.rs": {
       "hash": "f8993a9cac79f5cc",
@@ -1228,7 +1228,7 @@
     "crates/ruff_linter/src/rules/eradicate/rules/commented_out_code.rs": {
       "hash": "abd106560d1a27a2",
       "nodes": 32,
-      "relations": 55
+      "relations": 54
     },
     "crates/ruff_linter/src/rules/eradicate/rules/mod.rs": {
       "hash": "0346a53a6e895a89",
@@ -1253,7 +1253,7 @@
     "crates/ruff_linter/src/rules/fastapi/rules/fastapi_unused_path_parameter.rs": {
       "hash": "6188ac610c1788e6",
       "nodes": 64,
-      "relations": 95
+      "relations": 94
     },
     "crates/ruff_linter/src/rules/fastapi/rules/mod.rs": {
       "hash": "758309e2bc89007a",
@@ -1463,7 +1463,7 @@
     "crates/ruff_linter/src/rules/flake8_bandit/rules/hardcoded_sql_expression.rs": {
       "hash": "01798e48a4b031ba",
       "nodes": 21,
-      "relations": 38
+      "relations": 37
     },
     "crates/ruff_linter/src/rules/flake8_bandit/rules/hardcoded_tmp_directory.rs": {
       "hash": "00c296c609f9b305",
@@ -1693,7 +1693,7 @@
     "crates/ruff_linter/src/rules/flake8_bugbear/rules/duplicate_exceptions.rs": {
       "hash": "c6683368b2d5836d",
       "nodes": 30,
-      "relations": 56
+      "relations": 55
     },
     "crates/ruff_linter/src/rules/flake8_bugbear/rules/duplicate_value.rs": {
       "hash": "917db2378225f5f4",
@@ -1928,12 +1928,12 @@
     "crates/ruff_linter/src/rules/flake8_commas/rules/trailing_commas.rs": {
       "hash": "049c641cf2162022",
       "nodes": 52,
-      "relations": 71
+      "relations": 69
     },
     "crates/ruff_linter/src/rules/flake8_comprehensions/fixes.rs": {
       "hash": "6eb1ceac3536881c",
       "nodes": 69,
-      "relations": 98
+      "relations": 97
     },
     "crates/ruff_linter/src/rules/flake8_comprehensions/helpers.rs": {
       "hash": "38ed7bd7a2919460",
@@ -1958,7 +1958,7 @@
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_collection_call.rs": {
       "hash": "a56042fe1f0ebd8f",
       "nodes": 21,
-      "relations": 37
+      "relations": 36
     },
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_comprehension.rs": {
       "hash": "c2d4ff72f2e8670a",
@@ -1968,7 +1968,7 @@
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_comprehension_in_call.rs": {
       "hash": "8187842562b4de43",
       "nodes": 28,
-      "relations": 46
+      "relations": 45
     },
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_dict_comprehension_for_iterable.rs": {
       "hash": "0cfb7f5efa4fabf7",
@@ -2038,7 +2038,7 @@
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_map.rs": {
       "hash": "698f1deb2259bbde",
       "nodes": 50,
-      "relations": 75
+      "relations": 74
     },
     "crates/ruff_linter/src/rules/flake8_comprehensions/rules/unnecessary_subscript_reversal.rs": {
       "hash": "31e27afb191f9c33",
@@ -2058,7 +2058,7 @@
     "crates/ruff_linter/src/rules/flake8_copyright/rules/missing_copyright_notice.rs": {
       "hash": "223661322fcfbd7a",
       "nodes": 13,
-      "relations": 24
+      "relations": 23
     },
     "crates/ruff_linter/src/rules/flake8_copyright/rules/mod.rs": {
       "hash": "b9216200400e149f",
@@ -2218,7 +2218,7 @@
     "crates/ruff_linter/src/rules/flake8_errmsg/rules/string_in_exception.rs": {
       "hash": "6475513b6b684b34",
       "nodes": 33,
-      "relations": 56
+      "relations": 55
     },
     "crates/ruff_linter/src/rules/flake8_errmsg/settings.rs": {
       "hash": "4f360d45e5cce850",
@@ -2243,7 +2243,7 @@
     "crates/ruff_linter/src/rules/flake8_executable/rules/shebang_leading_whitespace.rs": {
       "hash": "4dd24fab8b2b1690",
       "nodes": 14,
-      "relations": 25
+      "relations": 24
     },
     "crates/ruff_linter/src/rules/flake8_executable/rules/shebang_missing_executable_file.rs": {
       "hash": "7531ebbcf323b263",
@@ -2263,7 +2263,7 @@
     "crates/ruff_linter/src/rules/flake8_executable/rules/shebang_not_first_line.rs": {
       "hash": "33db3c7af09b1781",
       "nodes": 13,
-      "relations": 24
+      "relations": 23
     },
     "crates/ruff_linter/src/rules/flake8_fixme/mod.rs": {
       "hash": "9e854a4ff6bfd309",
@@ -2348,7 +2348,7 @@
     "crates/ruff_linter/src/rules/flake8_implicit_str_concat/rules/implicit.rs": {
       "hash": "2210f7f5263c4d33",
       "nodes": 32,
-      "relations": 53
+      "relations": 52
     },
     "crates/ruff_linter/src/rules/flake8_implicit_str_concat/rules/mod.rs": {
       "hash": "c32caf42a20f76eb",
@@ -2468,7 +2468,7 @@
     "crates/ruff_linter/src/rules/flake8_no_pep420/rules/implicit_namespace_package.rs": {
       "hash": "17fbc8d6a8f6b440",
       "nodes": 26,
-      "relations": 51
+      "relations": 50
     },
     "crates/ruff_linter/src/rules/flake8_no_pep420/rules/mod.rs": {
       "hash": "7d65739acb947153",
@@ -2493,7 +2493,7 @@
     "crates/ruff_linter/src/rules/flake8_pie/rules/multiple_starts_ends_with.rs": {
       "hash": "fdb15fbcafcfbca8",
       "nodes": 21,
-      "relations": 41
+      "relations": 40
     },
     "crates/ruff_linter/src/rules/flake8_pie/rules/non_unique_enums.rs": {
       "hash": "732d3cf4a245b683",
@@ -2503,7 +2503,7 @@
     "crates/ruff_linter/src/rules/flake8_pie/rules/reimplemented_container_builtin.rs": {
       "hash": "a4a0bdcc67cbf5e7",
       "nodes": 18,
-      "relations": 30
+      "relations": 29
     },
     "crates/ruff_linter/src/rules/flake8_pie/rules/unnecessary_dict_kwargs.rs": {
       "hash": "f374b5ad19596add",
@@ -2513,7 +2513,7 @@
     "crates/ruff_linter/src/rules/flake8_pie/rules/unnecessary_placeholder.rs": {
       "hash": "4da7e5e4c1c6c1e7",
       "nodes": 24,
-      "relations": 40
+      "relations": 39
     },
     "crates/ruff_linter/src/rules/flake8_pie/rules/unnecessary_range_start.rs": {
       "hash": "3f6451daa6936a6f",
@@ -2628,7 +2628,7 @@
     "crates/ruff_linter/src/rules/flake8_pyi/rules/legacy_type_comment.rs": {
       "hash": "07ff5e743559cf80",
       "nodes": 19,
-      "relations": 36
+      "relations": 35
     },
     "crates/ruff_linter/src/rules/flake8_pyi/rules/mod.rs": {
       "hash": "b927ac66b1225e69",
@@ -2683,7 +2683,7 @@
     "crates/ruff_linter/src/rules/flake8_pyi/rules/redundant_final_literal.rs": {
       "hash": "988434cfeee72b2b",
       "nodes": 19,
-      "relations": 33
+      "relations": 32
     },
     "crates/ruff_linter/src/rules/flake8_pyi/rules/redundant_literal_union.rs": {
       "hash": "0d949a95a0634fca",
@@ -2703,7 +2703,7 @@
     "crates/ruff_linter/src/rules/flake8_pyi/rules/simple_defaults.rs": {
       "hash": "05a49065546ed3f6",
       "nodes": 85,
-      "relations": 109
+      "relations": 108
     },
     "crates/ruff_linter/src/rules/flake8_pyi/rules/str_or_repr_defined_in_stub.rs": {
       "hash": "c0322f8c18e1de41",
@@ -2773,7 +2773,7 @@
     "crates/ruff_linter/src/rules/flake8_pytest_style/rules/assertion.rs": {
       "hash": "fca07a9151809e39",
       "nodes": 101,
-      "relations": 154
+      "relations": 152
     },
     "crates/ruff_linter/src/rules/flake8_pytest_style/rules/fail.rs": {
       "hash": "6d57ba7f584491da",
@@ -2783,7 +2783,7 @@
     "crates/ruff_linter/src/rules/flake8_pytest_style/rules/fixture.rs": {
       "hash": "1280d44696ef3885",
       "nodes": 102,
-      "relations": 148
+      "relations": 147
     },
     "crates/ruff_linter/src/rules/flake8_pytest_style/rules/imports.rs": {
       "hash": "99775e65239f70cf",
@@ -2858,7 +2858,7 @@
     "crates/ruff_linter/src/rules/flake8_quotes/rules/check_string_quotes.rs": {
       "hash": "099141ffcad89751",
       "nodes": 52,
-      "relations": 74
+      "relations": 73
     },
     "crates/ruff_linter/src/rules/flake8_quotes/rules/mod.rs": {
       "hash": "64b13d9a42c4c5c3",
@@ -2908,7 +2908,7 @@
     "crates/ruff_linter/src/rules/flake8_return/rules/function.rs": {
       "hash": "2e2943137892f527",
       "nodes": 94,
-      "relations": 146
+      "relations": 143
     },
     "crates/ruff_linter/src/rules/flake8_return/rules/mod.rs": {
       "hash": "17fc7541705a4641",
@@ -2968,12 +2968,12 @@
     "crates/ruff_linter/src/rules/flake8_simplify/rules/ast_with.rs": {
       "hash": "cd8b130ff4e7bf5c",
       "nodes": 24,
-      "relations": 45
+      "relations": 44
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/collapsible_if.rs": {
       "hash": "406676582980b46a",
       "nodes": 46,
-      "relations": 85
+      "relations": 84
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/enumerate_for_loop.rs": {
       "hash": "86c8ce42ab187ee5",
@@ -2983,7 +2983,7 @@
     "crates/ruff_linter/src/rules/flake8_simplify/rules/fix_with.rs": {
       "hash": "dbbe8eb0350f7973",
       "nodes": 16,
-      "relations": 37
+      "relations": 36
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/if_else_block_instead_of_dict_get.rs": {
       "hash": "be628f63ba8cfcf2",
@@ -3003,12 +3003,12 @@
     "crates/ruff_linter/src/rules/flake8_simplify/rules/if_with_same_arms.rs": {
       "hash": "520e775c9d5c93de",
       "nodes": 29,
-      "relations": 54
+      "relations": 53
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/key_in_dict.rs": {
       "hash": "698e3b8a9dfd469b",
       "nodes": 30,
-      "relations": 50
+      "relations": 49
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/mod.rs": {
       "hash": "823d5d52aa39a75f",
@@ -3048,7 +3048,7 @@
     "crates/ruff_linter/src/rules/flake8_simplify/rules/yoda_conditions.rs": {
       "hash": "4bd2e27e350afcca",
       "nodes": 35,
-      "relations": 65
+      "relations": 64
     },
     "crates/ruff_linter/src/rules/flake8_simplify/rules/zip_dict_keys_and_values.rs": {
       "hash": "60208cace670ed78",
@@ -3143,12 +3143,12 @@
     "crates/ruff_linter/src/rules/flake8_todos/rules/todos.rs": {
       "hash": "dee99f8ccd4931b1",
       "nodes": 42,
-      "relations": 61
+      "relations": 60
     },
     "crates/ruff_linter/src/rules/flake8_type_checking/helpers.rs": {
       "hash": "3f4034c97a790a85",
       "nodes": 88,
-      "relations": 118
+      "relations": 117
     },
     "crates/ruff_linter/src/rules/flake8_type_checking/imports.rs": {
       "hash": "f8097cf00c0881d4",
@@ -3448,7 +3448,7 @@
     "crates/ruff_linter/src/rules/isort/mod.rs": {
       "hash": "f154d0c0b838bb07",
       "nodes": 171,
-      "relations": 241
+      "relations": 239
     },
     "crates/ruff_linter/src/rules/isort/normalize.rs": {
       "hash": "a05c114125b68afe",
@@ -3458,12 +3458,12 @@
     "crates/ruff_linter/src/rules/isort/order.rs": {
       "hash": "c44cd5e40793a8a1",
       "nodes": 12,
-      "relations": 25
+      "relations": 24
     },
     "crates/ruff_linter/src/rules/isort/rules/add_required_imports.rs": {
       "hash": "bddb2745bcfa1504",
       "nodes": 33,
-      "relations": 56
+      "relations": 55
     },
     "crates/ruff_linter/src/rules/isort/rules/mod.rs": {
       "hash": "af709088d4cb3b8d",
@@ -3473,12 +3473,12 @@
     "crates/ruff_linter/src/rules/isort/rules/organize_imports.rs": {
       "hash": "ef6fb29d2e843a73",
       "nodes": 41,
-      "relations": 76
+      "relations": 75
     },
     "crates/ruff_linter/src/rules/isort/settings.rs": {
       "hash": "d9b2b0501bf9a1cf",
       "nodes": 60,
-      "relations": 112
+      "relations": 111
     },
     "crates/ruff_linter/src/rules/isort/sorting.rs": {
       "hash": "6eb78d791d80d59c",
@@ -3583,7 +3583,7 @@
     "crates/ruff_linter/src/rules/pandas_vet/rules/inplace_argument.rs": {
       "hash": "2b1d7faeb845e6e5",
       "nodes": 25,
-      "relations": 44
+      "relations": 43
     },
     "crates/ruff_linter/src/rules/pandas_vet/rules/mod.rs": {
       "hash": "7d9bdaa5bed516e9",
@@ -3793,7 +3793,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/compound_statements.rs": {
       "hash": "51eb9e5d4618017c",
       "nodes": 28,
-      "relations": 47
+      "relations": 45
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/doc_line_too_long.rs": {
       "hash": "ce1b1102d8a27958",
@@ -3808,7 +3808,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/invalid_escape_sequence.rs": {
       "hash": "1d5eedc953961811",
       "nodes": 41,
-      "relations": 62
+      "relations": 61
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/lambda_assignment.rs": {
       "hash": "85c2b2236a9965fd",
@@ -3828,7 +3828,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/extraneous_whitespace.rs": {
       "hash": "2bd88e4fb65b9a53",
       "nodes": 27,
-      "relations": 45
+      "relations": 43
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/indentation.rs": {
       "hash": "a5c7139b123fdbb3",
@@ -3838,7 +3838,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/missing_whitespace.rs": {
       "hash": "79c14d8148b6f034",
       "nodes": 15,
-      "relations": 29
+      "relations": 28
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/missing_whitespace_after_keyword.rs": {
       "hash": "d1d232e954d9f43b",
@@ -3858,7 +3858,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/redundant_backslash.rs": {
       "hash": "6d1b5d187c2dfbf9",
       "nodes": 18,
-      "relations": 35
+      "relations": 34
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/space_around_operator.rs": {
       "hash": "d9f7bc84510c0f54",
@@ -3878,7 +3878,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/whitespace_before_comment.rs": {
       "hash": "51a2659be57b751d",
       "nodes": 30,
-      "relations": 47
+      "relations": 46
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/logical_lines/whitespace_before_parameters.rs": {
       "hash": "a537a41f21ece60a",
@@ -3888,7 +3888,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/missing_newline_at_end_of_file.rs": {
       "hash": "57b6369c605ea4c0",
       "nodes": 14,
-      "relations": 25
+      "relations": 24
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/mixed_spaces_and_tabs.rs": {
       "hash": "0bddd97d3f1e0ef7",
@@ -3908,7 +3908,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/multiple_imports_on_one_line.rs": {
       "hash": "dcc455cca7872e57",
       "nodes": 25,
-      "relations": 46
+      "relations": 45
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/not_tests.rs": {
       "hash": "1bd453e0ade89e53",
@@ -3918,7 +3918,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/tab_indentation.rs": {
       "hash": "90098e49b7e96b2f",
       "nodes": 18,
-      "relations": 31
+      "relations": 30
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/too_many_newlines_at_end_of_file.rs": {
       "hash": "16c407d56d51d43c",
@@ -3928,7 +3928,7 @@
     "crates/ruff_linter/src/rules/pycodestyle/rules/trailing_whitespace.rs": {
       "hash": "765eaabbcbf114cf",
       "nodes": 20,
-      "relations": 35
+      "relations": 34
     },
     "crates/ruff_linter/src/rules/pycodestyle/rules/type_comparison.rs": {
       "hash": "59ebfb4acc5b6ff2",
@@ -4018,7 +4018,7 @@
     "crates/ruff_linter/src/rules/pydocstyle/rules/indent.rs": {
       "hash": "55d7948940a4c468",
       "nodes": 22,
-      "relations": 41
+      "relations": 40
     },
     "crates/ruff_linter/src/rules/pydocstyle/rules/mod.rs": {
       "hash": "ee3d7681b5637383",
@@ -4073,7 +4073,7 @@
     "crates/ruff_linter/src/rules/pydocstyle/rules/sections.rs": {
       "hash": "2d49262a98605a59",
       "nodes": 140,
-      "relations": 200
+      "relations": 199
     },
     "crates/ruff_linter/src/rules/pydocstyle/rules/starts_with_this.rs": {
       "hash": "9a4b1962a938ae02",
@@ -4098,7 +4098,7 @@
     "crates/ruff_linter/src/rules/pyflakes/fixes.rs": {
       "hash": "b50b430b0aa2e5e1",
       "nodes": 29,
-      "relations": 48
+      "relations": 47
     },
     "crates/ruff_linter/src/rules/pyflakes/format.rs": {
       "hash": "f561a88fd357d1c9",
@@ -4128,12 +4128,12 @@
     "crates/ruff_linter/src/rules/pyflakes/rules/default_except_not_last.rs": {
       "hash": "e9ce717b8cf56213",
       "nodes": 13,
-      "relations": 24
+      "relations": 23
     },
     "crates/ruff_linter/src/rules/pyflakes/rules/f_string_missing_placeholders.rs": {
       "hash": "3ed74986dd3aea1b",
       "nodes": 19,
-      "relations": 30
+      "relations": 29
     },
     "crates/ruff_linter/src/rules/pyflakes/rules/forward_annotation_syntax_error.rs": {
       "hash": "1181e10d272af1df",
@@ -4248,12 +4248,12 @@
     "crates/ruff_linter/src/rules/pygrep_hooks/rules/blanket_noqa.rs": {
       "hash": "1d2afaa45dcbcdc5",
       "nodes": 18,
-      "relations": 33
+      "relations": 32
     },
     "crates/ruff_linter/src/rules/pygrep_hooks/rules/blanket_type_ignore.rs": {
       "hash": "ee5df12e37afcd2e",
       "nodes": 21,
-      "relations": 40
+      "relations": 39
     },
     "crates/ruff_linter/src/rules/pygrep_hooks/rules/deprecated_log_warn.rs": {
       "hash": "9053b5c031caa0d2",
@@ -4348,7 +4348,7 @@
     "crates/ruff_linter/src/rules/pylint/rules/collapsible_else_if.rs": {
       "hash": "d23fe9607e79ae1f",
       "nodes": 25,
-      "relations": 48
+      "relations": 47
     },
     "crates/ruff_linter/src/rules/pylint/rules/compare_to_empty_string.rs": {
       "hash": "c0173d6cd1b86f5d",
@@ -4388,7 +4388,7 @@
     "crates/ruff_linter/src/rules/pylint/rules/empty_comment.rs": {
       "hash": "b6b0ef9da75f3c25",
       "nodes": 22,
-      "relations": 37
+      "relations": 36
     },
     "crates/ruff_linter/src/rules/pylint/rules/eq_without_hash.rs": {
       "hash": "d005ae97478a3357",
@@ -4483,7 +4483,7 @@
     "crates/ruff_linter/src/rules/pylint/rules/invalid_string_characters.rs": {
       "hash": "eb4be2a4571d8563",
       "nodes": 29,
-      "relations": 42
+      "relations": 41
     },
     "crates/ruff_linter/src/rules/pylint/rules/iteration_over_set.rs": {
       "hash": "dddca11188111311",
@@ -4628,7 +4628,7 @@
     "crates/ruff_linter/src/rules/pylint/rules/repeated_equality_comparison.rs": {
       "hash": "0942a8bce3719480",
       "nodes": 32,
-      "relations": 59
+      "relations": 58
     },
     "crates/ruff_linter/src/rules/pylint/rules/repeated_isinstance_calls.rs": {
       "hash": "4babaa6141432ed9",
@@ -4813,7 +4813,7 @@
     "crates/ruff_linter/src/rules/pylint/rules/useless_else_on_loop.rs": {
       "hash": "bade09f3d88ce91b",
       "nodes": 31,
-      "relations": 56
+      "relations": 55
     },
     "crates/ruff_linter/src/rules/pylint/rules/useless_exception_statement.rs": {
       "hash": "0c77f8275dd31d47",
@@ -4888,12 +4888,12 @@
     "crates/ruff_linter/src/rules/pyupgrade/rules/deprecated_import.rs": {
       "hash": "163168804413bda0",
       "nodes": 84,
-      "relations": 125
+      "relations": 124
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/deprecated_mock_import.rs": {
       "hash": "2514f167822ccb4a",
       "nodes": 44,
-      "relations": 76
+      "relations": 75
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/deprecated_unittest_alias.rs": {
       "hash": "d07e3ef3ac702629",
@@ -4903,17 +4903,17 @@
     "crates/ruff_linter/src/rules/pyupgrade/rules/extraneous_parentheses.rs": {
       "hash": "ef6da5768e1d4c57",
       "nodes": 17,
-      "relations": 30
+      "relations": 29
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/f_strings.rs": {
       "hash": "b6ba4b528c52a710",
       "nodes": 53,
-      "relations": 87
+      "relations": 86
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/format_literals.rs": {
       "hash": "526efc9ae2cd453e",
       "nodes": 37,
-      "relations": 64
+      "relations": 63
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/lru_cache_with_maxsize_none.rs": {
       "hash": "ba6256d62815e5b9",
@@ -4983,7 +4983,7 @@
     "crates/ruff_linter/src/rules/pyupgrade/rules/printf_string_formatting.rs": {
       "hash": "ae5ca33645846d4e",
       "nodes": 47,
-      "relations": 80
+      "relations": 79
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/quoted_annotation.rs": {
       "hash": "c4a1661ed1d4bc3f",
@@ -5048,7 +5048,7 @@
     "crates/ruff_linter/src/rules/pyupgrade/rules/unnecessary_coding_comment.rs": {
       "hash": "0a53a071ab7ef9c1",
       "nodes": 31,
-      "relations": 55
+      "relations": 54
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/unnecessary_default_type_args.rs": {
       "hash": "0c23cb1f7a0761ca",
@@ -5058,7 +5058,7 @@
     "crates/ruff_linter/src/rules/pyupgrade/rules/unnecessary_encode_utf8.rs": {
       "hash": "549f45f23257d1e4",
       "nodes": 39,
-      "relations": 59
+      "relations": 58
     },
     "crates/ruff_linter/src/rules/pyupgrade/rules/unnecessary_future_import.rs": {
       "hash": "dd007636e9ec1e74",
@@ -5143,12 +5143,12 @@
     "crates/ruff_linter/src/rules/refurb/rules/for_loop_set_mutations.rs": {
       "hash": "e6970f5844a996a5",
       "nodes": 16,
-      "relations": 31
+      "relations": 30
     },
     "crates/ruff_linter/src/rules/refurb/rules/for_loop_writes.rs": {
       "hash": "620d15524aa8f12b",
       "nodes": 32,
-      "relations": 50
+      "relations": 49
     },
     "crates/ruff_linter/src/rules/refurb/rules/fromisoformat_replace_z.rs": {
       "hash": "578f94c26e45c438",
@@ -5173,7 +5173,7 @@
     "crates/ruff_linter/src/rules/refurb/rules/if_exp_instead_of_or_operator.rs": {
       "hash": "6355f798fef0cc2c",
       "nodes": 23,
-      "relations": 44
+      "relations": 43
     },
     "crates/ruff_linter/src/rules/refurb/rules/if_expr_min_max.rs": {
       "hash": "e74ff34b129fc174",
@@ -5243,7 +5243,7 @@
     "crates/ruff_linter/src/rules/refurb/rules/reimplemented_operator.rs": {
       "hash": "93dce230695c6d39",
       "nodes": 82,
-      "relations": 113
+      "relations": 112
     },
     "crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs": {
       "hash": "d6861f8ac8793ebf",
@@ -5273,12 +5273,12 @@
     "crates/ruff_linter/src/rules/refurb/rules/slice_to_remove_prefix_or_suffix.rs": {
       "hash": "d1b9396eb8e08cfd",
       "nodes": 51,
-      "relations": 73
+      "relations": 72
     },
     "crates/ruff_linter/src/rules/refurb/rules/sorted_min_max.rs": {
       "hash": "e4017270bb3dd9be",
       "nodes": 22,
-      "relations": 40
+      "relations": 37
     },
     "crates/ruff_linter/src/rules/refurb/rules/subclass_builtin.rs": {
       "hash": "86f148ea276adb1a",
@@ -5328,7 +5328,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/ambiguous_unicode_character.rs": {
       "hash": "88d80d524c2029f0",
       "nodes": 51,
-      "relations": 81
+      "relations": 80
     },
     "crates/ruff_linter/src/rules/ruff/rules/assert_with_print_message.rs": {
       "hash": "4ceb8f41de7ba5ce",
@@ -5368,12 +5368,12 @@
     "crates/ruff_linter/src/rules/ruff/rules/decimal_from_float_literal.rs": {
       "hash": "01b7c3fec48f807f",
       "nodes": 31,
-      "relations": 48
+      "relations": 47
     },
     "crates/ruff_linter/src/rules/ruff/rules/default_factory_kwarg.rs": {
       "hash": "cc8c16d288a5b548",
       "nodes": 27,
-      "relations": 51
+      "relations": 50
     },
     "crates/ruff_linter/src/rules/ruff/rules/duplicate_entry_in_dunder_all.rs": {
       "hash": "76de2696f24d6f05",
@@ -5453,7 +5453,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/invalid_formatter_suppression_comment.rs": {
       "hash": "2ea014885e6cd6a2",
       "nodes": 36,
-      "relations": 62
+      "relations": 61
     },
     "crates/ruff_linter/src/rules/ruff/rules/invalid_index_type.rs": {
       "hash": "06b8527f27f5b0bb",
@@ -5468,7 +5468,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/invalid_rule_code.rs": {
       "hash": "20514ebc0c74c808",
       "nodes": 43,
-      "relations": 67
+      "relations": 65
     },
     "crates/ruff_linter/src/rules/ruff/rules/invalid_suppression_comment.rs": {
       "hash": "006705a573646b77",
@@ -5493,7 +5493,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/missing_fstring_syntax.rs": {
       "hash": "1142e8bd0227ce58",
       "nodes": 35,
-      "relations": 60
+      "relations": 59
     },
     "crates/ruff_linter/src/rules/ruff/rules/mod.rs": {
       "hash": "19280ecd5300c8f5",
@@ -5598,7 +5598,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/sort_dunder_slots.rs": {
       "hash": "1777dcdd7f5c7f29",
       "nodes": 45,
-      "relations": 70
+      "relations": 69
     },
     "crates/ruff_linter/src/rules/ruff/rules/starmap_zip.rs": {
       "hash": "90821fb855cea278",
@@ -5618,7 +5618,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/test_rules.rs": {
       "hash": "97d6bb526d24e5da",
       "nodes": 92,
-      "relations": 105
+      "relations": 104
     },
     "crates/ruff_linter/src/rules/ruff/rules/unmatched_suppression_comment.rs": {
       "hash": "5915e93f02e9c899",
@@ -5633,7 +5633,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/unnecessary_cast_to_int.rs": {
       "hash": "f5437f40b3202151",
       "nodes": 41,
-      "relations": 64
+      "relations": 63
     },
     "crates/ruff_linter/src/rules/ruff/rules/unnecessary_if.rs": {
       "hash": "3fd0ebce4c0049c9",
@@ -5668,7 +5668,7 @@
     "crates/ruff_linter/src/rules/ruff/rules/unnecessary_round.rs": {
       "hash": "45c5bceee04d10af",
       "nodes": 28,
-      "relations": 47
+      "relations": 46
     },
     "crates/ruff_linter/src/rules/ruff/rules/unraw_re_pattern.rs": {
       "hash": "7356358dc9d23696",
@@ -5803,7 +5803,7 @@
     "crates/ruff_linter/src/settings/mod.rs": {
       "hash": "9242540f54b70045",
       "nodes": 99,
-      "relations": 187
+      "relations": 185
     },
     "crates/ruff_linter/src/settings/rule_table.rs": {
       "hash": "d64921059647e2f9",
@@ -5813,7 +5813,7 @@
     "crates/ruff_linter/src/settings/types.rs": {
       "hash": "363651e780c9c513",
       "nodes": 192,
-      "relations": 252
+      "relations": 251
     },
     "crates/ruff_linter/src/source_kind.rs": {
       "hash": "6a332ef68a764906",
@@ -5828,7 +5828,7 @@
     "crates/ruff_linter/src/test.rs": {
       "hash": "2bcc08a2cba85bc5",
       "nodes": 82,
-      "relations": 142
+      "relations": 141
     },
     "crates/ruff_linter/src/text_helpers.rs": {
       "hash": "1c96d5133534b532",
@@ -5958,7 +5958,7 @@
     "crates/ruff_notebook/src/notebook.rs": {
       "hash": "b48c0eebffd3988b",
       "nodes": 87,
-      "relations": 140
+      "relations": 139
     },
     "crates/ruff_notebook/src/schema.rs": {
       "hash": "f88e2845da527005",
@@ -5998,7 +5998,7 @@
     "crates/ruff_python_ast/src/helpers.rs": {
       "hash": "2f0e69f83d9ca489",
       "nodes": 190,
-      "relations": 231
+      "relations": 228
     },
     "crates/ruff_python_ast/src/identifier.rs": {
       "hash": "c13b77a3c9686c00",
@@ -6033,7 +6033,7 @@
     "crates/ruff_python_ast/src/nodes.rs": {
       "hash": "7dfbdeec6354bd80",
       "nodes": 584,
-      "relations": 748
+      "relations": 746
     },
     "crates/ruff_python_ast/src/operator_precedence.rs": {
       "hash": "8e6abff596e6366c",
@@ -6043,7 +6043,7 @@
     "crates/ruff_python_ast/src/parenthesize.rs": {
       "hash": "d5540d0f6fcb22fd",
       "nodes": 15,
-      "relations": 22
+      "relations": 21
     },
     "crates/ruff_python_ast/src/python_version.rs": {
       "hash": "7bf3c81d29176ae2",
@@ -6053,7 +6053,7 @@
     "crates/ruff_python_ast/src/relocate.rs": {
       "hash": "042721807daf3a1b",
       "nodes": 14,
-      "relations": 22
+      "relations": 21
     },
     "crates/ruff_python_ast/src/script.rs": {
       "hash": "d943be32b8b181ab",
@@ -6093,7 +6093,7 @@
     "crates/ruff_python_ast/src/token/tokens.rs": {
       "hash": "0e57c566490933b8",
       "nodes": 75,
-      "relations": 93
+      "relations": 92
     },
     "crates/ruff_python_ast/src/traversal.rs": {
       "hash": "513196d150161784",
@@ -6113,7 +6113,7 @@
     "crates/ruff_python_ast/src/visitor/source_order.rs": {
       "hash": "219a1529b5873547",
       "nodes": 108,
-      "relations": 111
+      "relations": 110
     },
     "crates/ruff_python_ast/src/visitor/transformer.rs": {
       "hash": "ef75e8786d56b97f",
@@ -6173,7 +6173,7 @@
     "crates/ruff_python_codegen/src/generator.rs": {
       "hash": "72e40d63a3983986",
       "nodes": 191,
-      "relations": 221
+      "relations": 220
     },
     "crates/ruff_python_codegen/src/lib.rs": {
       "hash": "4335fe847e552c67",
@@ -6198,7 +6198,7 @@
     "crates/ruff_python_formatter/src/comments/debug.rs": {
       "hash": "69869347f6569ec1",
       "nodes": 47,
-      "relations": 83
+      "relations": 82
     },
     "crates/ruff_python_formatter/src/comments/format.rs": {
       "hash": "f251d92e54b73079",
@@ -6758,7 +6758,7 @@
     "crates/ruff_python_formatter/src/statement/stmt_try.rs": {
       "hash": "5c9713f6193c1f4d",
       "nodes": 34,
-      "relations": 57
+      "relations": 55
     },
     "crates/ruff_python_formatter/src/statement/stmt_type_alias.rs": {
       "hash": "024326cb11e993e2",
@@ -6778,12 +6778,12 @@
     "crates/ruff_python_formatter/src/statement/suite.rs": {
       "hash": "6d758edf4d201df6",
       "nodes": 95,
-      "relations": 133
+      "relations": 132
     },
     "crates/ruff_python_formatter/src/string/docstring.rs": {
       "hash": "5404f05997d947ee",
       "nodes": 146,
-      "relations": 199
+      "relations": 198
     },
     "crates/ruff_python_formatter/src/string/implicit.rs": {
       "hash": "a5c02099de9e08f7",
@@ -6798,7 +6798,7 @@
     "crates/ruff_python_formatter/src/string/normalize.rs": {
       "hash": "bdc0dc0a7fae0bbe",
       "nodes": 104,
-      "relations": 142
+      "relations": 141
     },
     "crates/ruff_python_formatter/src/type_param/mod.rs": {
       "hash": "cb60d60b54f1a9bc",
@@ -6928,12 +6928,12 @@
     "crates/ruff_python_parser/src/lib.rs": {
       "hash": "51fc364677d94848",
       "nodes": 61,
-      "relations": 76
+      "relations": 75
     },
     "crates/ruff_python_parser/src/parser/expression.rs": {
       "hash": "fb0633713db4307a",
       "nodes": 202,
-      "relations": 234
+      "relations": 233
     },
     "crates/ruff_python_parser/src/parser/helpers.rs": {
       "hash": "ff5189617aa919d2",
@@ -6943,7 +6943,7 @@
     "crates/ruff_python_parser/src/parser/mod.rs": {
       "hash": "701bb374c66218da",
       "nodes": 156,
-      "relations": 212
+      "relations": 211
     },
     "crates/ruff_python_parser/src/parser/options.rs": {
       "hash": "c1848afa94a2ef7d",
@@ -6968,7 +6968,7 @@
     "crates/ruff_python_parser/src/parser/statement.rs": {
       "hash": "c0f06e4827c2a3d2",
       "nodes": 133,
-      "relations": 162
+      "relations": 160
     },
     "crates/ruff_python_parser/src/parser/tests.rs": {
       "hash": "8b9d66d36eac4eb0",
@@ -6983,7 +6983,7 @@
     "crates/ruff_python_parser/src/string.rs": {
       "hash": "544e47076522c7a1",
       "nodes": 154,
-      "relations": 176
+      "relations": 175
     },
     "crates/ruff_python_parser/src/token_set.rs": {
       "hash": "b3ce956e3ccc9f96",
@@ -7058,7 +7058,7 @@
     "crates/ruff_python_semantic/src/binding.rs": {
       "hash": "1af65a19af007ac9",
       "nodes": 95,
-      "relations": 136
+      "relations": 135
     },
     "crates/ruff_python_semantic/src/branches.rs": {
       "hash": "05a9ea1860e78148",
@@ -7278,7 +7278,7 @@
     "crates/ruff_server/src/edit/text_document.rs": {
       "hash": "1b6c4609ef7ac0b0",
       "nodes": 37,
-      "relations": 52
+      "relations": 51
     },
     "crates/ruff_server/src/fix.rs": {
       "hash": "8a2f2de612340451",
@@ -7313,7 +7313,7 @@
     "crates/ruff_server/src/server.rs": {
       "hash": "0602a360cab99471",
       "nodes": 66,
-      "relations": 131
+      "relations": 129
     },
     "crates/ruff_server/src/server/api.rs": {
       "hash": "2f0b26669ddea21e",
@@ -7388,12 +7388,12 @@
     "crates/ruff_server/src/server/api/requests/code_action.rs": {
       "hash": "1c40adf6b2dfb783",
       "nodes": 36,
-      "relations": 63
+      "relations": 62
     },
     "crates/ruff_server/src/server/api/requests/code_action_resolve.rs": {
       "hash": "b7d6adc34616841c",
       "nodes": 35,
-      "relations": 58
+      "relations": 56
     },
     "crates/ruff_server/src/server/api/requests/diagnostic.rs": {
       "hash": "92dc3d1c133a9ef4",
@@ -7468,7 +7468,7 @@
     "crates/ruff_server/src/session.rs": {
       "hash": "d3c9286d18c555e9",
       "nodes": 80,
-      "relations": 117
+      "relations": 116
     },
     "crates/ruff_server/src/session/capabilities.rs": {
       "hash": "b2788f4ab2590557",
@@ -7483,7 +7483,7 @@
     "crates/ruff_server/src/session/index.rs": {
       "hash": "9de2d61b409260e3",
       "nodes": 112,
-      "relations": 149
+      "relations": 148
     },
     "crates/ruff_server/src/session/index/ruff_settings.rs": {
       "hash": "1edab905466dd379",
@@ -7558,7 +7558,7 @@
     "crates/ruff_source_file/src/line_index.rs": {
       "hash": "c90337fab74e12c9",
       "nodes": 93,
-      "relations": 119
+      "relations": 118
     },
     "crates/ruff_source_file/src/line_ranges.rs": {
       "hash": "27bef31629839952",
@@ -7638,7 +7638,7 @@
     "crates/ruff_workspace/src/configuration.rs": {
       "hash": "ebbead5812927e83",
       "nodes": 204,
-      "relations": 378
+      "relations": 377
     },
     "crates/ruff_workspace/src/lib.rs": {
       "hash": "f6eeaa388697979e",
@@ -7653,12 +7653,12 @@
     "crates/ruff_workspace/src/pyproject.rs": {
       "hash": "abe9d43f04e3f3bd",
       "nodes": 56,
-      "relations": 95
+      "relations": 94
     },
     "crates/ruff_workspace/src/resolver.rs": {
       "hash": "1c6f93e03a6c57c0",
       "nodes": 164,
-      "relations": 242
+      "relations": 241
     },
     "crates/ruff_workspace/src/settings.rs": {
       "hash": "48ba41f0ecd8eeec",
@@ -7778,7 +7778,7 @@
     "crates/ty_ide/src/all_symbols.rs": {
       "hash": "30c31d6056737510",
       "nodes": 81,
-      "relations": 118
+      "relations": 117
     },
     "crates/ty_ide/src/call_hierarchy.rs": {
       "hash": "f2163f01a0822684",
@@ -7803,7 +7803,7 @@
     "crates/ty_ide/src/completion.rs": {
       "hash": "dabf35cbf59a2161",
       "nodes": 812,
-      "relations": 964
+      "relations": 962
     },
     "crates/ty_ide/src/doc_highlights.rs": {
       "hash": "31b8cb543bce7d0b",
@@ -7843,7 +7843,7 @@
     "crates/ty_ide/src/document_symbols.rs": {
       "hash": "57e83381f895d7b2",
       "nodes": 29,
-      "relations": 46
+      "relations": 45
     },
     "crates/ty_ide/src/find_references.rs": {
       "hash": "bf91de7715740a2b",
@@ -7868,7 +7868,7 @@
     "crates/ty_ide/src/goto_definition.rs": {
       "hash": "0c891c55ec303461",
       "nodes": 98,
-      "relations": 121
+      "relations": 120
     },
     "crates/ty_ide/src/goto_type_definition.rs": {
       "hash": "61e138b453c24747",
@@ -7883,7 +7883,7 @@
     "crates/ty_ide/src/hover.rs": {
       "hash": "2ff2d8b33982e1d9",
       "nodes": 227,
-      "relations": 271
+      "relations": 270
     },
     "crates/ty_ide/src/importer.rs": {
       "hash": "893a245968079e12",
@@ -7893,7 +7893,7 @@
     "crates/ty_ide/src/inlay_hints.rs": {
       "hash": "c0bd76c8e7efb06c",
       "nodes": 298,
-      "relations": 395
+      "relations": 394
     },
     "crates/ty_ide/src/lib.rs": {
       "hash": "338be5c13f4d67b2",
@@ -7908,7 +7908,7 @@
     "crates/ty_ide/src/references.rs": {
       "hash": "ba7d0c9af43d41e0",
       "nodes": 93,
-      "relations": 125
+      "relations": 124
     },
     "crates/ty_ide/src/rename.rs": {
       "hash": "afd8b66a70266dd1",
@@ -7928,7 +7928,7 @@
     "crates/ty_ide/src/signature_help.rs": {
       "hash": "db06bf17bdc515c2",
       "nodes": 84,
-      "relations": 128
+      "relations": 127
     },
     "crates/ty_ide/src/stub_mapping.rs": {
       "hash": "6eb45047c968963b",
@@ -7963,7 +7963,7 @@
     "crates/ty_module_resolver/src/list.rs": {
       "hash": "e71e3b640e2db080",
       "nodes": 116,
-      "relations": 165
+      "relations": 163
     },
     "crates/ty_module_resolver/src/module.rs": {
       "hash": "c148e5e269f6751d",
@@ -7983,12 +7983,12 @@
     "crates/ty_module_resolver/src/path.rs": {
       "hash": "ebb5e5dd7ff3b611",
       "nodes": 159,
-      "relations": 192
+      "relations": 191
     },
     "crates/ty_module_resolver/src/resolve.rs": {
       "hash": "38ce677a2f4c1819",
       "nodes": 257,
-      "relations": 335
+      "relations": 333
     },
     "crates/ty_module_resolver/src/settings.rs": {
       "hash": "2c2e2ebc2129eb26",
@@ -8013,7 +8013,7 @@
     "crates/ty_project/src/db.rs": {
       "hash": "c11ea0c2271cec27",
       "nodes": 131,
-      "relations": 220
+      "relations": 216
     },
     "crates/ty_project/src/db/changes.rs": {
       "hash": "9b66ca2b36ddc280",
@@ -8028,7 +8028,7 @@
     "crates/ty_project/src/files.rs": {
       "hash": "969213f990c36de8",
       "nodes": 60,
-      "relations": 99
+      "relations": 98
     },
     "crates/ty_project/src/glob.rs": {
       "hash": "e91c7336687ca105",
@@ -8053,12 +8053,12 @@
     "crates/ty_project/src/lib.rs": {
       "hash": "34d093a27e811648",
       "nodes": 160,
-      "relations": 228
+      "relations": 227
     },
     "crates/ty_project/src/metadata.rs": {
       "hash": "6fc433e02f8ea11a",
       "nodes": 92,
-      "relations": 139
+      "relations": 137
     },
     "crates/ty_project/src/metadata/configuration_file.rs": {
       "hash": "5301807bb0112729",
@@ -8068,7 +8068,7 @@
     "crates/ty_project/src/metadata/options.rs": {
       "hash": "02f9cc0654573d11",
       "nodes": 219,
-      "relations": 325
+      "relations": 324
     },
     "crates/ty_project/src/metadata/pyproject.rs": {
       "hash": "ccf7ab6487b2930a",
@@ -8113,7 +8113,7 @@
     "crates/ty_python_core/src/ast_ids.rs": {
       "hash": "e2ed3e6a2b105a7a",
       "nodes": 50,
-      "relations": 73
+      "relations": 72
     },
     "crates/ty_python_core/src/ast_node_ref.rs": {
       "hash": "e2b0092f55f97383",
@@ -8123,7 +8123,7 @@
     "crates/ty_python_core/src/builder.rs": {
       "hash": "8bd2afca1e586d85",
       "nodes": 401,
-      "relations": 544
+      "relations": 541
     },
     "crates/ty_python_core/src/builder/except_handlers.rs": {
       "hash": "38c0521bb0051e86",
@@ -8143,7 +8143,7 @@
     "crates/ty_python_core/src/definition.rs": {
       "hash": "a118896cdf8e9a65",
       "nodes": 317,
-      "relations": 441
+      "relations": 440
     },
     "crates/ty_python_core/src/expression.rs": {
       "hash": "02e1547c2bdb2216",
@@ -8228,7 +8228,7 @@
     "crates/ty_python_core/src/unpack.rs": {
       "hash": "d777f27689e6e86c",
       "nodes": 37,
-      "relations": 61
+      "relations": 60
     },
     "crates/ty_python_core/src/use_def.rs": {
       "hash": "17c7b878fe5b2e26",
@@ -8243,7 +8243,7 @@
     "crates/ty_python_semantic/src/db.rs": {
       "hash": "4da7b560baffb8b6",
       "nodes": 64,
-      "relations": 109
+      "relations": 108
     },
     "crates/ty_python_semantic/src/diagnostic/levenshtein.rs": {
       "hash": "6ae63a3ea074f3ac",
@@ -8263,7 +8263,7 @@
     "crates/ty_python_semantic/src/fixes.rs": {
       "hash": "3960eaa62695f5d1",
       "nodes": 157,
-      "relations": 235
+      "relations": 233
     },
     "crates/ty_python_semantic/src/lib.rs": {
       "hash": "da1d95974484b591",
@@ -8278,7 +8278,7 @@
     "crates/ty_python_semantic/src/place.rs": {
       "hash": "b28fe8433ba62b20",
       "nodes": 293,
-      "relations": 373
+      "relations": 370
     },
     "crates/ty_python_semantic/src/pull_types.rs": {
       "hash": "664a8f8e01dea6ee",
@@ -8293,12 +8293,12 @@
     "crates/ty_python_semantic/src/semantic_model.rs": {
       "hash": "fa3075c4fca1b4e2",
       "nodes": 109,
-      "relations": 168
+      "relations": 167
     },
     "crates/ty_python_semantic/src/subscript.rs": {
       "hash": "e03d8085652a10ea",
       "nodes": 47,
-      "relations": 58
+      "relations": 57
     },
     "crates/ty_python_semantic/src/suppression.rs": {
       "hash": "881a162754567a79",
@@ -8313,7 +8313,7 @@
     "crates/ty_python_semantic/src/suppression/parser.rs": {
       "hash": "b21f0ff6bd647cf7",
       "nodes": 66,
-      "relations": 97
+      "relations": 96
     },
     "crates/ty_python_semantic/src/suppression/unused.rs": {
       "hash": "9906814c6afd7bed",
@@ -8323,7 +8323,7 @@
     "crates/ty_python_semantic/src/types.rs": {
       "hash": "6bc995648093ebb8",
       "nodes": 786,
-      "relations": 989
+      "relations": 976
     },
     "crates/ty_python_semantic/src/types/bool.rs": {
       "hash": "1bc44bf02b75f5a3",
@@ -8338,17 +8338,17 @@
     "crates/ty_python_semantic/src/types/call.rs": {
       "hash": "54f7e5bd6e5a560b",
       "nodes": 43,
-      "relations": 60
+      "relations": 59
     },
     "crates/ty_python_semantic/src/types/call/arguments.rs": {
       "hash": "a961ae8cc9836859",
       "nodes": 77,
-      "relations": 109
+      "relations": 107
     },
     "crates/ty_python_semantic/src/types/call/bind.rs": {
       "hash": "51a2ff4522e57355",
       "nodes": 659,
-      "relations": 816
+      "relations": 815
     },
     "crates/ty_python_semantic/src/types/call/bind/constructor.rs": {
       "hash": "66340203afaa01a6",
@@ -8368,7 +8368,7 @@
     "crates/ty_python_semantic/src/types/class.rs": {
       "hash": "f3361b8a71a2da9f",
       "nodes": 372,
-      "relations": 448
+      "relations": 446
     },
     "crates/ty_python_semantic/src/types/class/dynamic_literal.rs": {
       "hash": "eab4900a1efc7ceb",
@@ -8398,7 +8398,7 @@
     "crates/ty_python_semantic/src/types/class/typed_dict.rs": {
       "hash": "002ee7037cd332c3",
       "nodes": 116,
-      "relations": 161
+      "relations": 160
     },
     "crates/ty_python_semantic/src/types/class_base.rs": {
       "hash": "d46c83afe96b1771",
@@ -8408,7 +8408,7 @@
     "crates/ty_python_semantic/src/types/constraints.rs": {
       "hash": "82400e61330d6e13",
       "nodes": 761,
-      "relations": 868
+      "relations": 867
     },
     "crates/ty_python_semantic/src/types/context.rs": {
       "hash": "137d2073de3a9ce3",
@@ -8423,7 +8423,7 @@
     "crates/ty_python_semantic/src/types/cyclic.rs": {
       "hash": "c2a609a91ed7f77c",
       "nodes": 47,
-      "relations": 69
+      "relations": 68
     },
     "crates/ty_python_semantic/src/types/definition.rs": {
       "hash": "be61a728e3dfd074",
@@ -8433,12 +8433,12 @@
     "crates/ty_python_semantic/src/types/diagnostic.rs": {
       "hash": "e19f64f0a11a142f",
       "nodes": 472,
-      "relations": 551
+      "relations": 548
     },
     "crates/ty_python_semantic/src/types/display.rs": {
       "hash": "8d0d53e3171a8e38",
       "nodes": 502,
-      "relations": 688
+      "relations": 687
     },
     "crates/ty_python_semantic/src/types/enums.rs": {
       "hash": "10448169f745f886",
@@ -8453,7 +8453,7 @@
     "crates/ty_python_semantic/src/types/function.rs": {
       "hash": "7cf670d532feb07b",
       "nodes": 330,
-      "relations": 429
+      "relations": 428
     },
     "crates/ty_python_semantic/src/types/generics.rs": {
       "hash": "ef6f82af9a6b59e3",
@@ -8463,7 +8463,7 @@
     "crates/ty_python_semantic/src/types/ide_support.rs": {
       "hash": "1d6c493c1ee368ef",
       "nodes": 246,
-      "relations": 352
+      "relations": 347
     },
     "crates/ty_python_semantic/src/types/ide_support/unreachable_code.rs": {
       "hash": "3fe56efcb5a34450",
@@ -8483,12 +8483,12 @@
     "crates/ty_python_semantic/src/types/infer/builder.rs": {
       "hash": "d1e32a28f70818c6",
       "nodes": 741,
-      "relations": 898
+      "relations": 896
     },
     "crates/ty_python_semantic/src/types/infer/builder/annotation_expression.rs": {
       "hash": "4f4b88d4a7e7fdcc",
       "nodes": 35,
-      "relations": 56
+      "relations": 55
     },
     "crates/ty_python_semantic/src/types/infer/builder/binary_expressions.rs": {
       "hash": "18bf5e09d124b4fb",
@@ -8598,7 +8598,7 @@
     "crates/ty_python_semantic/src/types/infer/builder/subscript.rs": {
       "hash": "d17de43050675519",
       "nodes": 119,
-      "relations": 170
+      "relations": 169
     },
     "crates/ty_python_semantic/src/types/infer/builder/type_call.rs": {
       "hash": "ee942c426b05b677",
@@ -8618,7 +8618,7 @@
     "crates/ty_python_semantic/src/types/infer/builder/typed_dict.rs": {
       "hash": "37feef56eaa5a0f6",
       "nodes": 47,
-      "relations": 74
+      "relations": 73
     },
     "crates/ty_python_semantic/src/types/infer/builder/typevar.rs": {
       "hash": "80c31cdf88a7558d",
@@ -8633,12 +8633,12 @@
     "crates/ty_python_semantic/src/types/infer/tests.rs": {
       "hash": "d8c980035fd8fac7",
       "nodes": 45,
-      "relations": 70
+      "relations": 69
     },
     "crates/ty_python_semantic/src/types/instance.rs": {
       "hash": "03d58366957374ae",
       "nodes": 197,
-      "relations": 241
+      "relations": 237
     },
     "crates/ty_python_semantic/src/types/iteration.rs": {
       "hash": "df18b61aac235be1",
@@ -8683,7 +8683,7 @@
     "crates/ty_python_semantic/src/types/narrow.rs": {
       "hash": "bf0cf0a081e6cfe5",
       "nodes": 302,
-      "relations": 364
+      "relations": 363
     },
     "crates/ty_python_semantic/src/types/newtype.rs": {
       "hash": "2354017ad65656c7",
@@ -8698,7 +8698,7 @@
     "crates/ty_python_semantic/src/types/property_tests.rs": {
       "hash": "84188a69524ac767",
       "nodes": 6,
-      "relations": 15
+      "relations": 14
     },
     "crates/ty_python_semantic/src/types/property_tests/setup.rs": {
       "hash": "649d5cf41aadcaed",
@@ -8728,17 +8728,17 @@
     "crates/ty_python_semantic/src/types/set_theoretic.rs": {
       "hash": "8b3d99e669936494",
       "nodes": 149,
-      "relations": 170
+      "relations": 169
     },
     "crates/ty_python_semantic/src/types/set_theoretic/builder.rs": {
       "hash": "d7d7ffb569f5a788",
       "nodes": 133,
-      "relations": 171
+      "relations": 168
     },
     "crates/ty_python_semantic/src/types/signatures.rs": {
       "hash": "fdec26a734bb55f3",
       "nodes": 426,
-      "relations": 499
+      "relations": 497
     },
     "crates/ty_python_semantic/src/types/special_form.rs": {
       "hash": "c398a175d283e120",
@@ -8758,7 +8758,7 @@
     "crates/ty_python_semantic/src/types/subscript.rs": {
       "hash": "056c2627684c24b8",
       "nodes": 68,
-      "relations": 101
+      "relations": 100
     },
     "crates/ty_python_semantic/src/types/tests.rs": {
       "hash": "4e4377808e22ee33",
@@ -8788,7 +8788,7 @@
     "crates/ty_python_semantic/src/types/typed_dict.rs": {
       "hash": "bc89157a32070e4a",
       "nodes": 353,
-      "relations": 425
+      "relations": 422
     },
     "crates/ty_python_semantic/src/types/typevar.rs": {
       "hash": "05d5fb89dc2e8f04",
@@ -8838,7 +8838,7 @@
     "crates/ty_server/src/document/location.rs": {
       "hash": "386b46728769e4f5",
       "nodes": 22,
-      "relations": 33
+      "relations": 32
     },
     "crates/ty_server/src/document/notebook.rs": {
       "hash": "85ab15ae4bb81486",
@@ -8853,7 +8853,7 @@
     "crates/ty_server/src/document/text_document.rs": {
       "hash": "a22cb93abf54bacd",
       "nodes": 40,
-      "relations": 58
+      "relations": 57
     },
     "crates/ty_server/src/lib.rs": {
       "hash": "038cc0c562e53237",
@@ -8878,7 +8878,7 @@
     "crates/ty_server/src/server/api/diagnostics.rs": {
       "hash": "738b71ed7ce3989b",
       "nodes": 84,
-      "relations": 131
+      "relations": 130
     },
     "crates/ty_server/src/server/api/notifications.rs": {
       "hash": "4789c75c397b772a",
@@ -8973,7 +8973,7 @@
     "crates/ty_server/src/server/api/requests/execute_command.rs": {
       "hash": "0f83f62dd449bf94",
       "nodes": 29,
-      "relations": 61
+      "relations": 60
     },
     "crates/ty_server/src/server/api/requests/folding_range.rs": {
       "hash": "77925ed1a5bdb9d3",
@@ -9133,12 +9133,12 @@
     "crates/ty_server/src/session.rs": {
       "hash": "e118eeb979fdb5fe",
       "nodes": 256,
-      "relations": 358
+      "relations": 357
     },
     "crates/ty_server/src/session/client.rs": {
       "hash": "3b900abdfa281044",
       "nodes": 54,
-      "relations": 69
+      "relations": 68
     },
     "crates/ty_server/src/session/index.rs": {
       "hash": "a01d8ad3f2c13a9b",
@@ -9183,12 +9183,12 @@
     "crates/ty_server/tests/e2e/completions.rs": {
       "hash": "de954dd3df8df851",
       "nodes": 23,
-      "relations": 32
+      "relations": 31
     },
     "crates/ty_server/tests/e2e/configuration.rs": {
       "hash": "88bf99c309b0c637",
       "nodes": 15,
-      "relations": 28
+      "relations": 27
     },
     "crates/ty_server/tests/e2e/folding_range.rs": {
       "hash": "2363f36e418ab3f8",
@@ -9203,12 +9203,12 @@
     "crates/ty_server/tests/e2e/initialize.rs": {
       "hash": "7fa9261f72926ae9",
       "nodes": 23,
-      "relations": 36
+      "relations": 35
     },
     "crates/ty_server/tests/e2e/inlay_hints.rs": {
       "hash": "2eb1b56ab6f4ac51",
       "nodes": 13,
-      "relations": 28
+      "relations": 27
     },
     "crates/ty_server/tests/e2e/main.rs": {
       "hash": "a42dc2270a1bbfab",
@@ -9218,17 +9218,17 @@
     "crates/ty_server/tests/e2e/notebook.rs": {
       "hash": "258cc146b9abbce0",
       "nodes": 35,
-      "relations": 46
+      "relations": 45
     },
     "crates/ty_server/tests/e2e/publish_diagnostics.rs": {
       "hash": "aa28cef4f9728e07",
       "nodes": 24,
-      "relations": 35
+      "relations": 34
     },
     "crates/ty_server/tests/e2e/pull_diagnostics.rs": {
       "hash": "f17a72027b18b0ca",
       "nodes": 56,
-      "relations": 75
+      "relations": 74
     },
     "crates/ty_server/tests/e2e/rename.rs": {
       "hash": "d2a0007b8999cb63",
@@ -9243,7 +9243,7 @@
     "crates/ty_server/tests/e2e/signature_help.rs": {
       "hash": "ba48a555ea679df1",
       "nodes": 7,
-      "relations": 16
+      "relations": 15
     },
     "crates/ty_server/tests/e2e/type_hierarchy.rs": {
       "hash": "70e0195059158ef0",
@@ -9371,7 +9371,7 @@
       "contains": 3737,
       "declares": 79624,
       "depends_on": 868,
-      "imports": 15121,
+      "imports": 14825,
       "resolves_to": 15121
     }
   },
@@ -9380,6 +9380,6 @@
   "totals": {
     "files": 1870,
     "nodes": 82349,
-    "relations": 114471
+    "relations": 114175
   }
 }

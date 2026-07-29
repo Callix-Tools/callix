@@ -158,12 +158,12 @@
     "crates/globset/src/glob.rs": {
       "hash": "7b46d15cbb83e9b6",
       "nodes": 136,
-      "relations": 173
+      "relations": 172
     },
     "crates/globset/src/lib.rs": {
       "hash": "0b289b20a524f320",
       "nodes": 160,
-      "relations": 191
+      "relations": 190
     },
     "crates/globset/src/pathutil.rs": {
       "hash": "794c77b304e5979a",
@@ -173,7 +173,7 @@
     "crates/globset/src/serde_impl.rs": {
       "hash": "4510d315633d591e",
       "nodes": 26,
-      "relations": 33
+      "relations": 32
     },
     "crates/grep/examples/simplegrep.rs": {
       "hash": "ebb27a23c750bd13",
@@ -383,7 +383,7 @@
     "crates/regex/src/strip.rs": {
       "hash": "51b0418f493ad764",
       "nodes": 24,
-      "relations": 33
+      "relations": 32
     },
     "crates/searcher/examples/search-stdin.rs": {
       "hash": "2610187dd0dae2e3",
@@ -511,7 +511,7 @@
       "contains": 196,
       "declares": 6088,
       "depends_on": 68,
-      "imports": 259,
+      "imports": 255,
       "resolves_to": 259
     }
   },
@@ -520,6 +520,6 @@
   "totals": {
     "files": 98,
     "nodes": 5855,
-    "relations": 6870
+    "relations": 6866
   }
 }

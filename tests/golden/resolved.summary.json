@@ -57,7 +57,7 @@
       "declares": 27,
       "depends_on": 1,
       "has_type": 10,
-      "imports": 6,
+      "imports": 4,
       "inherits_from": 1,
       "references": 13,
       "resolves_to": 6

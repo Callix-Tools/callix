@@ -113,6 +113,48 @@ impl Graph {
         self.in_index = None;
     }
 
+    /// Drops exact-duplicate structural edges, keeping the first of each.
+    ///
+    /// Visitors emit a DECLARES or IMPORTS edge per *occurrence* while the
+    /// node it points at is deduplicated by qualified name (`insert_node`
+    /// skips a repeat id). So a local variable assigned eight times produced
+    /// one VARIABLE node and eight identical DECLARES edges, and
+    /// `from x import a, b, c` produced three identical file→module IMPORTS
+    /// edges. On apache/superset that was 10,954 edges, 7.7% of the graph,
+    /// none of them carrying anything to tell them apart.
+    ///
+    /// A structural edge is a fact and has no multiplicity, so the duplicates
+    /// are noise: `outgoing(file, IMPORTS)` returned the same module three
+    /// times. An edge WITH metadata is a different thing — it records where it
+    /// was observed, so two CALLS edges between the same pair are two call
+    /// sites and both are kept. Emptiness of the metadata is the test, rather
+    /// than a list of kinds, because IMPORTS appears in both roles.
+    ///
+    /// Runs once at the end of `analyze`, not per insert: the hot path stays
+    /// allocation-free and this costs one pass.
+    pub(crate) fn dedupe_structural_relations(&mut self, py: Python<'_>) {
+        let mut seen: HashSet<(String, String, RelationKind)> = HashSet::new();
+        let mut kept: Vec<Py<Relation>> = Vec::with_capacity(self.relations.len());
+
+        for relation in self.relations.drain(..) {
+            let keep = {
+                let r = relation.get();
+                if r.metadata.bind(py).is_empty() {
+                    seen.insert((r.source_id.clone(), r.target_id.clone(), r.kind))
+                } else {
+                    true
+                }
+            };
+            if keep {
+                kept.push(relation);
+            }
+        }
+
+        self.relations = kept;
+        self.out_index = None;
+        self.in_index = None;
+    }
+
     /// The `qualified_name` → id mapping for MODULE nodes.
     pub(crate) fn module_index(&self) -> HashMap<&str, &str> {
         let mut index = HashMap::new();

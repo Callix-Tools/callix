@@ -473,6 +473,10 @@ impl YamlAdapter {
         graph.set_metadata_item(py, RESOLVER_STATUS_KEY, status.as_any())?;
         let metrics = ResolverMetrics::default();
         graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
+        // One structural edge per pair: visitors emit one per
+        // occurrence, and the node they point at is already deduped.
+        graph.dedupe_structural_relations(py);
+        
         Ok(graph)
     }
 

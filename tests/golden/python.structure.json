@@ -981,12 +981,6 @@
       "target_id": "65344dce940e3e99"
     },
     {
-      "kind": "imports",
-      "metadata": {},
-      "source_id": "fd99ce866fe5afd6",
-      "target_id": "1bdd980cd6a154be"
-    },
-    {
       "kind": "resolves_to",
       "metadata": {},
       "source_id": "65344dce940e3e99",
@@ -997,12 +991,6 @@
       "metadata": {},
       "source_id": "fd99ce866fe5afd6",
       "target_id": "a245d18f5ab39e82"
-    },
-    {
-      "kind": "imports",
-      "metadata": {},
-      "source_id": "fd99ce866fe5afd6",
-      "target_id": "1bdd980cd6a154be"
     },
     {
       "kind": "resolves_to",

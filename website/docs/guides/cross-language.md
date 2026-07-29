@@ -88,9 +88,24 @@ Each edge carries the mechanism, the key, the role, the source position, and a
 inferred from context. A client-side HTTP call scores `0.85`, a queue topic
 `0.7`.
 
-## Limits
+## What is not recognized
 
-Detection is syntactic. A route built at runtime from a variable, a topic name
-read from configuration, or a client wrapped in three layers of indirection
-will not be found. The confidence value exists so you can filter on how much
-the extractor actually saw.
+Detection is syntactic, and the list above is what the built-in extractors
+actually match. Known gaps, stated plainly:
+
+| Not detected | Why |
+|---|---|
+| Django `urlpatterns` | a list of `path()` calls — no decorator, no verb |
+| Next.js, Remix, SvelteKit route files | the route is the directory tree, not a call |
+| tRPC | a typed proxy; no URL exists in the source |
+| GraphQL clients | one endpoint, meaning lives in operation names |
+| `axios({method, url})` | the verb is inside a config object |
+| Kafka via `send()`, RabbitMQ `basic_publish`, Redis Streams `xadd`, Celery `.delay()` | queue detection matches `publish`, `produce`, `subscribe`, `emit` |
+
+A route built at runtime from a variable, or a topic read from configuration,
+will not be found either.
+
+None of this is permanent: [a boundary
+extractor](./custom-resolvers.md#a-boundary-extractor) is a plain Python object,
+and the first three rows are exactly the cases that need one — they call for a
+different *kind* of extractor, not one more pattern in the same match.

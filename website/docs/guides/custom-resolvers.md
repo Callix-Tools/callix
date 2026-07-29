@@ -65,6 +65,67 @@ resolver.prepare("path/to/project", [])
 resolver.definition_at("src/app.py", 12, 5)
 ```
 
+## A boundary extractor
+
+Boundary detection is an open-ended surface — new frameworks appear faster than
+any built-in list can follow — so it is pluggable too. An extractor is an object
+with one method:
+
+```python
+class DjangoUrls:
+    def extract(self, source: bytes, file_path: str) -> list[BoundaryRef]:
+        ...
+```
+
+It receives the file's bytes and its project-relative path, and decides for
+itself how to read them. That is deliberately unlike graphlens, which handed
+extractors a tree-sitter node: a Rust CST node cannot cross into Python, and a
+mechanism expressed by *file layout* rather than by a call — Django's
+`urlpatterns`, Next.js route files, an OpenAPI document — never wanted a node
+in the first place.
+
+```python
+import re
+from callix import BoundaryRef, PythonAdapter, normalize_http_path
+
+class DjangoUrls:
+    PATTERN = re.compile(rb'path\(\s*["\']([^"\']*)["\']')
+
+    def extract(self, source, file_path):
+        if not file_path.endswith("urls.py"):
+            return []
+        found = []
+        for match in self.PATTERN.finditer(source):
+            route = normalize_http_path("/" + match.group(1).decode())
+            found.append(BoundaryRef(
+                mechanism="http",
+                role="server",
+                key=f"GET {route}",
+                line=source[: match.start()].count(b"\n") + 1,
+                col=1,
+                confidence=0.8,
+                detail={"method": "GET", "path": route, "framework": "django"},
+            ))
+        return found
+
+graph = PythonAdapter(boundary_extractors=[DjangoUrls()]).analyze(root)
+# http:GET /users/{}   ·   http:GET /health
+```
+
+Two things matter for the key to be useful:
+
+- **Normalize it yourself.** `normalize_http_path` is exported and understands
+  every parameter style, Django's `<int:uid>` included. Skip it and your route
+  will not meet the client that calls it, because matching is by exact key.
+- **Set an honest confidence.** A route read from a literal deserves a high
+  one; anything guessed does not.
+
+Extractors run **in addition** to the built-in ones, so adding Django support
+does not mean reimplementing FastAPI. Anything they raise propagates — a broken
+extractor should be noticed, not quietly yield an empty graph.
+
+All four adapters accept the argument.
+
 ## A dependency parser
 
 Manifest parsing is pluggable the same way — an object with `can_parse` and

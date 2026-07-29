@@ -27,6 +27,9 @@ DEBUG=1 task ...                 # switch every cargo task to the debug profile
 There is no test suite yet: `cargo test` compiles but has no tests, and
 correctness is currently established by parity runs against graphlens (below).
 
+`CONTRIBUTING.md` covers the same ground for humans; the README is deliberately
+short and links out to the docs site in `website/`.
+
 Benchmarks (`benchmarks/Taskfile.yaml`, included as `bench:`):
 
 ```bash

@@ -1,24 +1,45 @@
-# callix
+<div align="center">
 
-The core of polyglot code analysis: parses Python, TypeScript, Go, and Rust
-into a shared graph IR (nodes, edges, spans) and hands it to Python code.
-Everything is written in Rust — parsing, the graph models, analysis,
-cross-language boundary extraction, and symbol resolution, including the
-[ty](https://github.com/astral-sh/ty) type checker itself, linked straight
-into the module. The Python part of the package is a facade of re-exports and
-nothing more. It installs with a single `pip install`: Python and TypeScript
-need no external binaries at all, while the Go and Rust resolvers need their
-language's toolchain (see the sections below).
+  <h1>callix</h1>
 
-📖 **[Documentation](https://callix-tools.github.io/callix/)**
+  <p>Polyglot code analysis in Rust. Parses Python, TypeScript, Go and Rust into a shared graph IR — with the type checkers linked in, so there are no language servers to install.</p>
 
-This is a rework of [graphlens](https://github.com/Neko1313/graphlens) — now
-archived — that moves parsing to Rust. The public API is compatible: the same 14 `NodeKind`s,
-12 `RelationKind`s, the same deterministic IDs (`sha256[:16]`), and the same
-serialization format — a graph from graphlens reads in callix and the other
-way round. The structural part of the graph matches graphlens byte for byte;
-the one deliberate divergence is the key of unresolved `EXTERNAL_SYMBOL`s, see
-[Differences from graphlens](#differences-from-graphlens).
+  [![PyPI](https://img.shields.io/pypi/v/callix?color=blue)](https://pypi.org/project/callix/)
+  [![Python](https://img.shields.io/pypi/pyversions/callix)](https://pypi.org/project/callix/)
+  [![License](https://img.shields.io/github/license/Callix-Tools/callix)](LICENSE)
+  [![CI](https://img.shields.io/github/actions/workflow/status/Callix-Tools/callix/CI.yml?label=CI)](https://github.com/Callix-Tools/callix/actions)
+
+  [Documentation](https://callix-tools.github.io/callix/) · [Repository](https://github.com/Callix-Tools/callix) · [Issues](https://github.com/Callix-Tools/callix/issues)
+
+</div>
+
+---
+
+```
+Repository → Language Adapter → Graph (IR) → your code
+```
+
+Nodes and directed relations, typed and deterministic: functions, classes,
+modules, the calls between them, and the HTTP or gRPC boundaries where one
+service meets another.
+
+## Why
+
+Code analysis usually asks you to assemble it — install a language server, put
+it on `PATH`, wire up the transport, keep the versions in step. callix links
+the analysis engines into the module instead:
+
+| Language | Symbol resolution | Extra setup |
+|---|---|---|
+| Python | [ty](https://github.com/astral-sh/ty), linked as a library | none |
+| TypeScript | [typescript-go](https://github.com/microsoft/typescript-go), linked as a Go c-archive | none |
+| Go | `go/packages` + `go/types`, same c-archive | a Go toolchain |
+| Rust | `rust-analyzer scip` index, decoded natively | `rust-analyzer` and Cargo |
+
+Python and TypeScript need nothing beyond the wheel — the checkers and their
+standard-library stubs are inside it. Go and Rust use the toolchain the project
+already has, because a standard library shipped as *sources* cannot be frozen
+into a wheel.
 
 ## Installation
 
@@ -26,17 +47,8 @@ the one deliberate divergence is the key of unresolved `EXTERNAL_SYMBOL`s, see
 pip install callix
 ```
 
-Python >= 3.13 is required. The Python and TypeScript type checkers, along
-with the typeshed stubs and `lib.d.ts`, are already inside the wheel.
-Analysing Go requires Go installed; analysing Rust requires `rust-analyzer`
-and Cargo.
-
-Wheels are published for Linux (x86_64, aarch64) and macOS (arm64, x86_64).
-**Windows is not supported**, and not merely unbuilt: the TypeScript and Go
-resolvers are a Go c-archive, which cgo produces through mingw-w64 in GNU
-archive format, and that does not link into the MSVC target CPython expects.
-Building from the sdist runs into the same wall, so `build.rs` refuses early
-with that explanation rather than leaving you with a linker error. WSL works.
+Python ≥ 3.13. Wheels for Linux (x86_64, aarch64) and macOS (arm64, x86_64);
+[Windows is not supported](https://callix-tools.github.io/callix/docs/getting-started/installation).
 
 ## Usage
 
@@ -53,42 +65,28 @@ graph.to_json(indent=2)          # serialization
 old.diff(new)                    # structural diff
 ```
 
-The symbol resolver is on by default, so cross-file edges
-(CALLS / REFERENCES / HAS_TYPE / INHERITS_FROM) are built right away:
+The same call works for the other three languages — `TypeScriptAdapter`,
+`GoAdapter`, `RustAdapter` — and each discovers its own project roots, so a
+monorepo works without configuration.
 
-```python
-PythonAdapter()                          # the embedded ty
-PythonAdapter(resolve=False)             # no resolution, structure only
-PythonAdapter(resolver=my_resolver)      # a custom resolver
-PythonAdapter(dep_parsers=[my_parser])   # custom manifest parsers
-```
+Symbol resolution is on by default. `resolve=False` gives a structural graph;
+`graph.metadata["resolver_status"]` always says how complete the result is.
 
-Without resolution the graph stays structural and
-`graph.metadata["resolver_status"]` becomes `unavailable`.
+A Python server declaring `@app.get("/users/{id}")` and a TypeScript client
+calling `fetch("/users/1")` produce the **same** boundary node, so merging
+their graphs links the two services. See
+[Cross-language analysis](https://callix-tools.github.io/callix/docs/guides/cross-language).
 
-A custom resolver is any object with `prepare(root, files)`,
-`resolve_all(queries)`, and `status()`; a custom manifest parser is an object
-with `can_parse(root)` and `parse(root)`. Both are called from Rust through
-the ordinary Python protocol.
+## Documentation
 
-## Cross-language boundaries
+<https://callix-tools.github.io/callix/>
 
-Along the way `analyze()` finds the ports where services meet and creates
-`BOUNDARY` nodes for them, with `EXPOSES` / `CONSUMES` edges from the
-enclosing function. It recognizes FastAPI / Flask / Starlette routes and
-requests / httpx clients (`http`), servicer classes and stubs (`grpc`),
-Temporal activities (`temporal`), and publish / subscribe (`queue`).
-
-A node's ID derives from the mechanism and the normalized key alone, so a
-Python server with `@app.get("/users/{id}")` and a client in another language
-with `fetch("/users/1")` produce **the same node** and join up when graphs are
-merged — both keys normalize to `GET /users/{}`.
+- [Installation](https://callix-tools.github.io/callix/docs/getting-started/installation) · [Quick start](https://callix-tools.github.io/callix/docs/getting-started/quick-start) · [Concepts](https://callix-tools.github.io/callix/docs/getting-started/concepts)
+- [Adapters](https://callix-tools.github.io/callix/docs/adapters/overview) and [how the resolvers work](https://callix-tools.github.io/callix/docs/adapters/resolvers)
+- [Graph model](https://callix-tools.github.io/callix/docs/graph-model/nodes) · [API reference](https://callix-tools.github.io/callix/docs/api-reference/callix)
+- [Migrating from graphlens](https://callix-tools.github.io/callix/docs/project/migrating-from-graphlens)
 
 ## Benchmarks
-
-The numbers below are collected by [`benchmarks/`](benchmarks/) on real-world
-projects and refreshed by CI after a release. This is a single cold run on a
-shared machine — indicative, not microbenchmark-grade.
 
 <!-- BENCH:START -->
 
@@ -110,243 +108,15 @@ _Last run: **2026-07-29 13:55 UTC** · callix `main` · runner `Linux x86_64` ·
 
 <!-- BENCH:END -->
 
-## Development
+Speed-ups against [graphlens](https://github.com/Neko1313/graphlens), the
+Python implementation this replaces: **5.2×** on apache/superset, **3.3×** on
+colinhacks/zod, **2.6×** on gin-gonic/gin. Details and method in
+[Benchmarks](https://callix-tools.github.io/callix/docs/project/benchmarks).
 
-Tasks live in `taskfile.dist.yaml` ([Task](https://taskfile.dev)):
+## Contributing
 
-```bash
-task                             # build → generate .pyi → example/test.py
-task example -- example/foo.py   # a different script
-task build DEBUG=1               # debug build, for a debugger only
-task --list                      # the rest: lint, check, test, stubs:check
-```
-
-The first build is slow: the ty/ruff tree is about 200 crates. After that it
-is incremental. Rust >= 1.95 is required.
-
-The release profile is not incidental: in debug the embedded ty is about 15x
-slower (resolving graphlens takes 12.5s against 0.8s), and the dev loop turns
-into waiting.
-
-`task lint` runs clippy with `-D warnings` — CI does the same, so a warning
-equals a failure. `cargo fmt` is deliberately not a task: formatting is
-hand-tuned in places and it would rewrite the code into its own style.
-
-Every cargo task shares one profile, release by default: the ty tree is some
-200 crates, and linting in debug while building in release would compile it
-twice. `DEBUG=1` switches all of them together.
-
-The Taskfile points `PYO3_PYTHON` at `.venv/bin/python`, because abi3-py313
-needs an interpreter >= 3.13 and pyo3 would otherwise pick whatever `python3`
-comes first on PATH — which on a CI runner is regularly older. So run cargo
-through the tasks rather than directly, or export that variable yourself.
-
-The `.pyi` stubs are generated automatically (`pyo3-stub-gen`) into
-`python/callix/_core/` and are committed — CI fails when the generated files
-drift from the committed ones. There is no need to edit them by hand.
-
-### Releasing
-
-The version is derived from conventional commits via
-[git-cliff](https://git-cliff.org): `cliff.toml` defines both the commit
-parsing rules and the `CHANGELOG.md` template. The `Release` workflow
-(`workflow_dispatch`) does all of it, running the same tasks available
-locally:
-
-```bash
-task release:version                # the next version from the commits
-task release:bump VERSION=0.2.0     # Cargo.toml + Cargo.lock
-task release:changelog TAG=v0.2.0   # CHANGELOG.md
-task release:commit TAG=v0.2.0      # commit + annotated tag
-task release:push TAG=v0.2.0
-```
-
-The version lives **only** in `Cargo.toml`: in `pyproject.toml` it is
-`dynamic`, and maturin reads it from there.
-
-Wheels are built by a per-platform matrix — one wheel cannot cover them all,
-since ty and the Go bridge are linked inside. The matrix covers Linux x86_64
-(manylinux 2_28, with Go installed into the container) and macOS arm64; other
-platforms build from the sdist, for which they need Go and network access.
-
-## About the embedded ty
-
-The resolver calls ty as a library (`ty_ide::goto_definition`) instead of
-spawning `ty server` as a subprocess. That removes JSON-RPC and serialization:
-on graphlens, resolving 33k positions takes 0.85s instead of 4.92s, and the
-whole `analyze()` 1.14s instead of 5.40s.
-
-That decision has a price. Everything below is a deliberate trade-off, not a
-list of bugs to fix.
-
-**Pinned to a ruff commit.** The `ty_ide` and `ty_project` crates are marked
-`publish = false` and never reach crates.io, so they are git dependencies with
-`rev` pinned to the commit matching a ty tag (currently ty 0.0.52). Updating
-ty is a manual operation: find the new commit
-(`gh api repos/astral-sh/ty/contents/ruff?ref=<tag>`), change `rev` in every
-`Cargo.toml` entry, rebuild, and verify the result. These crates' API is
-internal and changes without notice.
-
-**A fragile build.** Outside ruff's workspace the features are not inherited,
-so `get-size2` is pinned to exactly `=0.10.0` with a hand-written feature
-list: in 0.10.3 the crate moved to `compact_str` 0.10 while ruff is built
-against 0.9, and without the pin `ruff_python_ast` does not compile at all.
-
-**Module size.** `_core.abi3.so` is about 21 MB instead of 2.5 MB without ty:
-the type checker and the typeshed stubs are inside.
-
-**Build time.** A cold build takes tens of minutes. In CI that is covered by
-the cargo cache, locally by incremental rebuilds.
-
-**Rare divergences from `ty server`.** The embedded resolver occasionally
-points at a different target than the LSP does: `goto_definition` returns a
-file in the bundled typeshed where `ty server` gives a path inside the
-project, and the occurrence falls through to an `EXTERNAL_SYMBOL` instead of
-binding to a graph node. The cause is that ty server marks files as open
-(`is_open_file`) while a directly instantiated `ProjectDatabase` does not.
-The scale: on apache/superset 22 nodes out of 225,706 diverged (0.01%), with
-edges (556,571) and the resolved share (352,634 of 418,944) matching exactly.
-
-## TypeScript
-
-TypeScript is supported on equal footing with Python, through the same API:
-
-```python
-from callix import TypeScriptAdapter
-
-graph = TypeScriptAdapter().analyze("path/to/ts-project")
-TypeScriptAdapter(resolve=False).analyze(root)      # structure only
-```
-
-It handles `.ts`, `.tsx`, `.mts`, `.cts` (declaration files `.d.ts` are
-skipped), monorepos with nested `package.json` and `tsconfig.json`, path
-aliases from `compilerOptions.paths`, dependencies from all four
-`package.json` sections, and Node's built-in modules.
-
-The symbol resolver is built on
-[typescript-go](https://github.com/microsoft/typescript-go), the official Go
-port of the TypeScript compiler. It is linked into the module statically,
-together with `lib.d.ts`, so neither `tsc` nor `tsgo` nor Node is needed on
-the system. It can also be used on its own:
-
-```python
-from callix import TsResolver
-
-resolver = TsResolver()
-resolver.prepare("path/to/ts-project")     # finds tsconfig.json itself
-resolver.definition_at("src/main.ts", 4, 15)
-```
-
-The first query builds the program and takes tens of milliseconds; after that
-it is tens of microseconds.
-
-The bridge lives in `go/bridge.go` and `build.rs` compiles it into a
-c-archive. All of typescript-go sits under `internal/`, which Go forbids other
-modules from importing — so the bridge module is named
-`github.com/microsoft/typescript-go/callixbridge` and pulls the clone in via
-`replace`. Go's rule checks the import path, not the location on disk, so no
-fork of ts-go is needed: updating means changing `TS_GO_REV` in `build.rs`.
-
-### What the build needs
-
-Go >= 1.26 and network access on the first build — `build.rs` clones
-typescript-go into `.ts-go/` (~370 MB, surviving `cargo clean`). All of this
-is only needed by whoever builds: the wheel already carries the statically
-linked code.
-
-## Go
-
-Go is supported through the same API:
-
-```python
-from callix import GoAdapter
-
-graph = GoAdapter().analyze("path/to/go-module")
-GoAdapter(resolve=False).analyze(root)      # structure only
-```
-
-It handles modules found by `go.mod` (monorepos with nested modules
-included), dependencies from both block and single-line `require` directives,
-struct and interface embedding, and methods with receivers. Boundaries:
-gin/chi/echo routes, `net/http` clients, `New<Service>Client` gRPC stubs,
-Temporal, and queues.
-
-The resolver is built on `golang.org/x/tools/go/packages` and `go/types`,
-linked into the same Go bridge. Verified against `gopls`: the answers match
-down to the column.
-
-**This resolver needs Go installed.** Unlike Python and TypeScript, Go's
-standard library cannot be compiled in — it is sources in GOROOT, and
-`packages.Load` shells out to `go list`. For a Go project that is not a
-problem: Go is there anyway, whereas graphlens additionally requires a
-separately installed `gopls`.
-
-## Rust
-
-Rust is supported through the same API:
-
-```python
-from callix import RustAdapter
-
-graph = RustAdapter().analyze("path/to/workspace")
-RustAdapter(resolve=False).analyze(root)    # structure only
-```
-
-It handles crates found by `Cargo.toml` (workspaces with several members
-included), dependencies from `dependencies` / `dev-dependencies` /
-`build-dependencies`, inline `mod foo { ... }` modules, `impl`, and
-`impl Trait for Type`. Boundaries: axum `.route()` routes, actix/rocket
-`#[get("/x")]` attributes, reqwest clients, tonic gRPC stubs, and queues.
-
-The resolver does not use the LSP; it is built on the batch
-`rust-analyzer scip` index. An interactive server keeps the whole workspace's
-analysis state resident and balloons to tens of gigabytes on large projects,
-whereas the index is written once and read statically. The SCIP decoder is our
-own, with no protobuf runtime: only the symbol, the roles, and the start of
-the range are needed from an occurrence.
-
-**This resolver needs `rust-analyzer` (and Cargo) installed.** As with Go, the
-language cannot be compiled in wholesale: type checking relies on the standard
-library's sources and on a real build of the workspace. For a Rust project
-that is not a problem — the toolchain is there anyway. If `rust-analyzer` is
-pinned through `rust-toolchain.toml` and that toolchain lacks the component,
-callix falls back to the default toolchain rather than silently returning an
-empty resolution.
-
-## Differences from graphlens
-
-**Go stdlib classification.** graphlens resolves symlinks on the target path
-only and takes GOROOT as-is from `go env GOROOT`. On Debian-like installs
-`/usr/lib/go-X/src` is a symlink to `/usr/share/go-X/src`, so the entire
-standard library ends up as `unknown`. callix compares the original and the
-resolved path on both sides.
-
-**The key of unresolved `EXTERNAL_SYMBOL`s includes the file.** When the
-resolver finds a definition but cannot name it (`full_name` is empty), the
-node needs a synthetic key. In graphlens that is `{role}@{line}:{col}` — with
-no file path, so sites sharing coordinates across different files collapse
-into one node. On apache/superset that merged 98% of the external nodes:
-75,806 of 77,041. callix adds the file path relative to the project root:
-
-```
-graphlens:  read@399:60
-callix:     read@superset/commands/importers/v1/utils.py:399:60
-```
-
-The path is relative on purpose — an absolute one would stop IDs from matching
-across machines and break incremental updates. The rule is the same for all
-four languages. The consequence: the IDs of such nodes differ between callix
-and graphlens, and on superset the node count becomes 268k instead of 226k.
-Edges, structural nodes, and the resolved share are unchanged.
-
-## Extension points
-
-Everything moved to Rust, manifest parsing and the `analyze()` orchestration
-included. That does not push Python out of the picture: both the resolver and
-the dependency parsers can be swapped for your own objects — Rust calls them
-through the ordinary protocol. The same goes for `callix.TyResolver`, which
-merely wraps the embedded ty and can be replaced by anything with the same
-interface.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development loop, the build
+constraints, and how releases are cut.
 
 ## License
 

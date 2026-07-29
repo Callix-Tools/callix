@@ -53,12 +53,69 @@ consult:
 
 | Recognized by | Produces |
 |---|---|
-| `openapi:` or `swagger:` | one `EXPOSES` per path × verb under `paths:`, confidence `1.0` |
+| `openapi:` or `swagger:` | one `EXPOSES` per path × verb under `paths:`, confidence `1.0`; external `$ref` targets as `IMPORTS` |
 | `apiVersion:` + `kind: Ingress` | one `EXPOSES` per `spec.rules[].http.paths[].path`, method `ANY` |
 | `services:` | a `MODULE` per service, `DEPENDS_ON` between them from `depends_on` |
+| `.gitlab-ci.yml` | a `MODULE` per job, `DEPENDS_ON` from `needs`, `IMPORTS` from `include` |
+| `.github/workflows/*.yml` | a `MODULE` per job, `DEPENDS_ON` from `needs`, a `DEPENDENCY` per external `uses:`, `IMPORTS` for a local one |
+| `Chart.yaml` | a `DEPENDENCY` per subchart under `dependencies:` |
+| `kustomization.yaml` | `IMPORTS` per entry under `resources:` |
 
-Compose's `depends_on` is accepted in both spellings — a plain list, and the
-mapping form whose values carry conditions.
+Both spellings are accepted wherever YAML allows two — a dashed list and a flow
+sequence, a plain list and a mapping whose values carry conditions. That is not
+politeness: `needs: [build]` and a dashed `needs:` appear in the same file
+routinely.
+
+## Multiple files
+
+A reference to another document becomes an `IMPORTS` edge, so multi-file YAML
+stops being a coincidence of two files sharing a directory:
+
+```
+compose.yaml       --imports-->  compose.db.yaml            (file)
+.gitlab-ci.yml     --imports-->  ci/build.yml               (file)
+.gitlab-ci.yml     --imports-->  Security/SAST.gitlab-ci.yml (external symbol)
+workflow:verify    --imports-->  ./.github/workflows/reusable.yml
+```
+
+Paths are resolved relative to the *including* file, and a target that is not a
+local file — a GitLab `template:` or `remote:`, an `http` `$ref` — becomes an
+`EXTERNAL_SYMBOL` rather than being dropped, the same rule the other adapters
+follow for imports.
+
+Job names are qualified by their file (`.github/workflows/ci.yml:test`): two
+pipelines may both have a `test`, and they are not the same job. Compose service
+names are not, because a service is global to its project.
+
+## Helm
+
+Point the adapter at a chart directory and it will read `Chart.yaml` — the
+subcharts under `dependencies:` become `DEPENDENCY` nodes — but it will get
+nothing out of `templates/`.
+
+That is not an omission. A Helm template is not YAML:
+
+```yaml
+path: {{ .Values.ingress.path | quote }}
+```
+
+Tree-sitter parses it into something, and the something is meaningless — the key
+of that boundary would literally be `{{ .Values.ingress.path | quote }}`. So any
+document containing `{{ … }}` is marked `helm-template` and skipped, which is
+more useful than a graph full of unrendered placeholders.
+
+For the real thing, render first:
+
+```bash
+helm template . --output-dir rendered
+```
+
+```python
+YamlAdapter().analyze("rendered")   # http:ANY /engines
+```
+
+The rendered manifests are ordinary Kubernetes YAML, and everything above
+applies to them.
 
 A specification states its contract outright, so nothing about it is inferred
 and the confidence is `1.0`. An Ingress says nothing about the method, so the
@@ -74,6 +131,6 @@ from `unavailable`: nothing failed and nothing is missing, because there was
 nothing to resolve. `resolve=False` is accepted and ignored, so the adapter
 interface stays uniform.
 
-CI configuration files, Helm templates and anything else built from placeholders
-are parsed but produce nothing. A Helm chart is not valid YAML until it is
-rendered; run the adapter on rendered output if you need it.
+Every file carries its recognized flavour in `metadata["flavour"]`, so a
+document callix could make nothing of is visible as `unknown` rather than
+silently absent.

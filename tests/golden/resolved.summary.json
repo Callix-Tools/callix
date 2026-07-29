@@ -146,14 +146,17 @@
   "yaml": {
     "nodes": {
       "boundary": 5,
-      "file": 3,
-      "module": 4,
+      "dependency": 2,
+      "external_symbol": 2,
+      "file": 8,
+      "module": 8,
       "project": 1
     },
     "relations": {
-      "contains": 7,
-      "depends_on": 3,
-      "exposes": 5
+      "contains": 16,
+      "depends_on": 7,
+      "exposes": 5,
+      "imports": 3
     },
     "resolver": {
       "external": 0,

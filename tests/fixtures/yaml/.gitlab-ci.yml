@@ -1,0 +1,13 @@
+include:
+  - local: ci/build.yml
+  - template: Security/SAST.gitlab-ci.yml
+services:
+  - postgres:17
+stages: [build, test]
+lint:
+  stage: build
+  script: ["make lint"]
+verify:
+  stage: test
+  needs: [lint]
+  script: ["make test"]

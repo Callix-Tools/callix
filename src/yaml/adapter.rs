@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::{BoundaryRef, run_extractors};
+use crate::dependencies::declare_dependencies;
 use crate::graph::Graph;
 use crate::ids::node_id;
 use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
@@ -22,7 +23,10 @@ use crate::relation::{Relation, RelationKind};
 use crate::roots::{EXCLUDED_DIRS, collect_files};
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
 
-use super::boundary::{Flavour, extract_boundaries, flavour, items, pairs, root_mapping};
+use super::boundary::{
+    Flavour, Job, chart_dependencies, extract_boundaries, flavour, includes, items, jobs, pairs,
+    refs, root_mapping,
+};
 use super::detector::{YAML_EXTENSIONS, is_yaml, project_name, yaml_roots};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
@@ -48,18 +52,20 @@ fn push_relation(
     Ok(())
 }
 
-/// A MODULE node for one Compose service.
+/// A MODULE node for one Compose service or CI job.
 ///
-/// A service is the closest thing YAML has to a namespace: a deployable unit
-/// that owns an image and depends on others. Modelling it as MODULE keeps the
-/// `depends_on` wiring expressible with the vocabulary that already exists.
-fn ensure_service(
+/// Both are the closest thing YAML has to a namespace: a unit of work that owns
+/// its configuration and waits on others. Modelling them as MODULE keeps the
+/// wiring expressible with the vocabulary that already exists.
+#[allow(clippy::too_many_arguments)]
+fn ensure_unit(
     py: Python<'_>,
     graph: &mut Graph,
     project: &str,
     name: &str,
     project_id: &str,
     file_rel: &str,
+    unit_kind: &str,
     services: &mut IndexMap<String, String>,
 ) -> PyResult<String> {
     if let Some(id) = services.get(name) {
@@ -68,12 +74,12 @@ fn ensure_service(
     let id = node_id(project, name, NodeKind::Module.as_str());
     if !graph.has_node(&id) {
         let metadata = PyDict::new(py);
-        metadata.set_item("kind", "compose-service")?;
+        metadata.set_item("kind", unit_kind)?;
         let node = Node {
             id: id.clone(),
             kind: NodeKind::Module,
             qualified_name: name.to_string(),
-            name: name.to_string(),
+            name: name.rsplit(':').next().unwrap_or(name).to_string(),
             file_path: Some(file_rel.to_string()),
             span: None,
             metadata: metadata.unbind(),
@@ -83,6 +89,39 @@ fn ensure_service(
     }
     services.insert(name.to_string(), id.clone());
     Ok(id)
+}
+
+/// One unresolved reference, held until every file node exists.
+struct DeferredInclude {
+    source_id: String,
+    from_path: String,
+    target: String,
+    external: bool,
+    line: u32,
+}
+
+/// An include target, made relative to the project root.
+///
+/// References are written relative to the including file, so `ci/build.yml`
+/// inside `deploy/pipeline.yml` means `deploy/ci/build.yml`. `.` and `..` are
+/// folded here rather than on the filesystem, because the target may not exist.
+fn resolve_include(from_path: &str, target: &str) -> String {
+    let mut parts: Vec<&str> = Vec::new();
+    if !target.starts_with('/') {
+        let mut base: Vec<&str> = from_path.split('/').collect();
+        base.pop();
+        parts.extend(base);
+    }
+    for segment in target.trim_start_matches('/').split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => {
+                parts.pop();
+            }
+            other => parts.push(other),
+        }
+    }
+    parts.join("/")
 }
 
 /// The context one file's analysis needs, so it travels as one value.
@@ -109,7 +148,9 @@ fn compose(
             continue;
         }
         for (name, definition) in pairs(value, source) {
-            ensure_service(py, graph, project, &name, project_id, file_rel, services)?;
+            ensure_unit(
+                py, graph, project, &name, project_id, file_rel, "compose-service", services,
+            )?;
             for (field, body) in pairs(definition, source) {
                 if field != "depends_on" {
                     continue;
@@ -136,11 +177,65 @@ fn compose(
     }
 
     for (from, to) in wiring {
-        let from_id = ensure_service(py, graph, project, &from, project_id, file_rel, services)?;
-        let to_id = ensure_service(py, graph, project, &to, project_id, file_rel, services)?;
+        let from_id = ensure_unit(
+            py, graph, project, &from, project_id, file_rel, "compose-service", services,
+        )?;
+        let to_id = ensure_unit(
+            py, graph, project, &to, project_id, file_rel, "compose-service", services,
+        )?;
         push_relation(py, graph, from_id, to_id, RelationKind::DependsOn)?;
     }
     Ok(())
+}
+
+/// CI jobs, what they wait on, and the actions they pull in.
+fn ci_jobs(
+    py: Python<'_>,
+    graph: &mut Graph,
+    ctx: &FileContext<'_>,
+    found: &[Job],
+    units: &mut IndexMap<String, String>,
+) -> PyResult<Vec<(String, String, u32)>> {
+    let (project, project_id, file_rel) = (ctx.project, ctx.project_id, ctx.file_rel);
+    let mut local_uses = Vec::new();
+
+    // A job's name is only unique within its pipeline: two workflows may both
+    // have a `test`, and they are not the same job.
+    let qualify = |name: &str| format!("{file_rel}:{name}");
+
+    for job in found {
+        let job_id = ensure_unit(
+            py, graph, project, &qualify(&job.name), project_id, file_rel, "ci-job", units,
+        )?;
+        for other in &job.needs {
+            let other_id = ensure_unit(
+                py, graph, project, &qualify(other), project_id, file_rel, "ci-job", units,
+            )?;
+            push_relation(py, graph, job_id.clone(), other_id, RelationKind::DependsOn)?;
+        }
+        // An external action is a declared dependency, exactly like a package
+        // in a manifest — the version is not part of its identity.
+        for action in &job.uses_external {
+            let id = node_id(project, action, NodeKind::Dependency.as_str());
+            if !graph.has_node(&id) {
+                let node = Node {
+                    id: id.clone(),
+                    kind: NodeKind::Dependency,
+                    qualified_name: action.clone(),
+                    name: action.rsplit('/').next().unwrap_or(action).to_string(),
+                    file_path: None,
+                    span: None,
+                    metadata: PyDict::new(py).unbind(),
+                };
+                graph.insert_node(id.clone(), Py::new(py, node)?);
+            }
+            push_relation(py, graph, job_id.clone(), id, RelationKind::DependsOn)?;
+        }
+        for target in &job.uses_local {
+            local_uses.push((job_id.clone(), target.clone(), 0));
+        }
+    }
+    Ok(local_uses)
 }
 
 /// The language adapter for YAML: specifications and service wiring.
@@ -218,6 +313,8 @@ impl YamlAdapter {
 
         let mut services: IndexMap<String, String> = IndexMap::new();
         let mut boundaries: Vec<FileBoundaries> = Vec::new();
+        let mut deferred: Vec<DeferredInclude> = Vec::new();
+        let mut files_by_path: IndexMap<String, String> = IndexMap::new();
 
         for file in &files {
             let file_rel = file
@@ -231,19 +328,11 @@ impl YamlAdapter {
             };
             let tree = super::parse_tree(&source)?;
             let root = tree.root_node();
-            let shape = flavour(root, &source);
+            let shape = flavour(root, &source, &file_rel);
 
             if !graph.has_node(&file_id) {
                 let metadata = PyDict::new(py);
-                metadata.set_item(
-                    "flavour",
-                    match shape {
-                        Flavour::OpenApi => "openapi",
-                        Flavour::Compose => "compose",
-                        Flavour::Kubernetes => "kubernetes",
-                        Flavour::Unknown => "unknown",
-                    },
-                )?;
+                metadata.set_item("flavour", shape.as_str())?;
                 let node = Node {
                     id: file_id.clone(),
                     kind: NodeKind::File,
@@ -265,17 +354,53 @@ impl YamlAdapter {
                     RelationKind::Contains,
                 )?;
             }
+            files_by_path.insert(file_rel.clone(), file_id.clone());
 
+            let ctx = FileContext {
+                project: &project,
+                project_id: &project_id,
+                file_rel: &file_rel,
+            };
             if shape == Flavour::Compose {
-                let ctx = FileContext {
-                    project: &project,
-                    project_id: &project_id,
-                    file_rel: &file_rel,
-                };
                 compose(py, &mut graph, &ctx, root, &source, &mut services)?;
             }
+            if shape == Flavour::HelmChart {
+                let declared: std::collections::HashSet<String> =
+                    chart_dependencies(root, &source).into_iter().collect();
+                declare_dependencies(py, &mut graph, &project, &project_id, &declared)?;
+            }
+            if matches!(shape, Flavour::GitLabCi | Flavour::GitHubActions) {
+                let found = jobs(root, &source, shape);
+                for (job_id, target, line) in
+                    ci_jobs(py, &mut graph, &ctx, &found, &mut services)?
+                {
+                    deferred.push(DeferredInclude {
+                        source_id: job_id,
+                        from_path: file_rel.clone(),
+                        target,
+                        external: false,
+                        line,
+                    });
+                }
+            }
 
-            let mut found = extract_boundaries(root, &source);
+            // Includes are resolved in a second pass: the file they point at
+            // may not have been walked yet.
+            let mut pulled = includes(root, &source, shape);
+            if shape == Flavour::OpenApi {
+                pulled.extend(refs(root, &source));
+            }
+            for include in pulled {
+                deferred.push(DeferredInclude {
+                    source_id: file_id.clone(),
+                    from_path: file_rel.clone(),
+                    target: include.target,
+                    external: include.external,
+                    line: include.line,
+                });
+            }
+
+            let mut found = extract_boundaries(root, &source, &file_rel);
             found.extend(run_extractors(
                 py,
                 self.boundary_extractors.as_ref(),
@@ -285,6 +410,50 @@ impl YamlAdapter {
             if !found.is_empty() {
                 boundaries.push((file_rel, file_id, found));
             }
+        }
+
+        // An include either lands on a file in this tree or becomes an
+        // external symbol, so the edge is never lost — the same rule the other
+        // adapters follow for imports.
+        for include in deferred {
+            let DeferredInclude { source_id, from_path, target, external, line } = include;
+            let resolved = (!external)
+                .then(|| resolve_include(&from_path, &target))
+                .and_then(|path| files_by_path.get(&path).cloned());
+            let target_id = match resolved {
+                Some(id) => id,
+                None => {
+                    let id = node_id(&project, &target, NodeKind::ExternalSymbol.as_str());
+                    if !graph.has_node(&id) {
+                        let metadata = PyDict::new(py);
+                        metadata.set_item(
+                            "origin",
+                            if external { "third_party" } else { "unknown" },
+                        )?;
+                        let node = Node {
+                            id: id.clone(),
+                            kind: NodeKind::ExternalSymbol,
+                            qualified_name: target.clone(),
+                            name: target.rsplit('/').next().unwrap_or(&target).to_string(),
+                            file_path: None,
+                            span: None,
+                            metadata: metadata.unbind(),
+                        };
+                        graph.insert_node(id.clone(), Py::new(py, node)?);
+                    }
+                    id
+                }
+            };
+            let metadata = PyDict::new(py);
+            metadata.set_item("include", &target)?;
+            metadata.set_item("line", line)?;
+            let relation = Relation {
+                source_id,
+                target_id,
+                kind: RelationKind::Imports,
+                metadata: metadata.unbind(),
+            };
+            graph.push_relation(Py::new(py, relation)?);
         }
 
         for (file_rel, file_id, refs) in &boundaries {

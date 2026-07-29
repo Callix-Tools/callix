@@ -1,0 +1,10 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+  verify:
+    needs: build
+    uses: ./.github/workflows/reusable.yml

@@ -13,6 +13,112 @@
       "span": null
     },
     {
+      "file_path": ".github/workflows/ci.yml",
+      "id": "9e982941438dbfa0",
+      "kind": "file",
+      "metadata": {
+        "flavour": "github-actions"
+      },
+      "name": "ci.yml",
+      "qualified_name": ".github/workflows/ci.yml",
+      "span": null
+    },
+    {
+      "file_path": ".github/workflows/ci.yml",
+      "id": "b8264ee5ee7c1483",
+      "kind": "module",
+      "metadata": {
+        "kind": "ci-job"
+      },
+      "name": "build",
+      "qualified_name": ".github/workflows/ci.yml:build",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "0d779a44cb1122e8",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "checkout",
+      "qualified_name": "actions/checkout",
+      "span": null
+    },
+    {
+      "file_path": ".github/workflows/ci.yml",
+      "id": "795e051176a774ba",
+      "kind": "module",
+      "metadata": {
+        "kind": "ci-job"
+      },
+      "name": "verify",
+      "qualified_name": ".github/workflows/ci.yml:verify",
+      "span": null
+    },
+    {
+      "file_path": ".gitlab-ci.yml",
+      "id": "c7672f37f8bded5d",
+      "kind": "file",
+      "metadata": {
+        "flavour": "gitlab-ci"
+      },
+      "name": ".gitlab-ci.yml",
+      "qualified_name": ".gitlab-ci.yml",
+      "span": null
+    },
+    {
+      "file_path": ".gitlab-ci.yml",
+      "id": "b528bc4a5949aa97",
+      "kind": "module",
+      "metadata": {
+        "kind": "ci-job"
+      },
+      "name": "lint",
+      "qualified_name": ".gitlab-ci.yml:lint",
+      "span": null
+    },
+    {
+      "file_path": ".gitlab-ci.yml",
+      "id": "8d1bdc0964d18950",
+      "kind": "module",
+      "metadata": {
+        "kind": "ci-job"
+      },
+      "name": "verify",
+      "qualified_name": ".gitlab-ci.yml:verify",
+      "span": null
+    },
+    {
+      "file_path": "Chart.yaml",
+      "id": "aa342569ce649d75",
+      "kind": "file",
+      "metadata": {
+        "flavour": "helm-chart"
+      },
+      "name": "Chart.yaml",
+      "qualified_name": "Chart.yaml",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "565ce9f3507eb4c2",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "postgresql",
+      "qualified_name": "postgresql",
+      "span": null
+    },
+    {
+      "file_path": "ci/build.yml",
+      "id": "ecc3e145f0bd1fc8",
+      "kind": "file",
+      "metadata": {
+        "flavour": "unknown"
+      },
+      "name": "build.yml",
+      "qualified_name": "ci/build.yml",
+      "span": null
+    },
+    {
       "file_path": "docker-compose.yml",
       "id": "0512f018827b54de",
       "kind": "file",
@@ -90,6 +196,39 @@
       "span": null
     },
     {
+      "file_path": "templates/deployment.yaml",
+      "id": "91d8b9eda2c8b88b",
+      "kind": "file",
+      "metadata": {
+        "flavour": "helm-template"
+      },
+      "name": "deployment.yaml",
+      "qualified_name": "templates/deployment.yaml",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "ae73f50af03e0ba8",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "reusable.yml",
+      "qualified_name": "./.github/workflows/reusable.yml",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "bb892344ed07fa27",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "third_party"
+      },
+      "name": "SAST.gitlab-ci.yml",
+      "qualified_name": "Security/SAST.gitlab-ci.yml",
+      "span": null
+    },
+    {
       "file_path": null,
       "id": "b1460f5beed80f76",
       "kind": "boundary",
@@ -155,6 +294,78 @@
       "kind": "contains",
       "metadata": {},
       "source_id": "e5098870c3253e50",
+      "target_id": "9e982941438dbfa0"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "b8264ee5ee7c1483"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "b8264ee5ee7c1483",
+      "target_id": "0d779a44cb1122e8"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "795e051176a774ba"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "795e051176a774ba",
+      "target_id": "b8264ee5ee7c1483"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "c7672f37f8bded5d"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "b528bc4a5949aa97"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "8d1bdc0964d18950"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "8d1bdc0964d18950",
+      "target_id": "b528bc4a5949aa97"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "aa342569ce649d75"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "565ce9f3507eb4c2"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "ecc3e145f0bd1fc8"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
       "target_id": "0512f018827b54de"
     },
     {
@@ -210,6 +421,39 @@
       "metadata": {},
       "source_id": "e5098870c3253e50",
       "target_id": "a6c474769949d22e"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "91d8b9eda2c8b88b"
+    },
+    {
+      "kind": "imports",
+      "metadata": {
+        "include": "./.github/workflows/reusable.yml",
+        "line": 0
+      },
+      "source_id": "795e051176a774ba",
+      "target_id": "ae73f50af03e0ba8"
+    },
+    {
+      "kind": "imports",
+      "metadata": {
+        "include": "ci/build.yml",
+        "line": 2
+      },
+      "source_id": "c7672f37f8bded5d",
+      "target_id": "ecc3e145f0bd1fc8"
+    },
+    {
+      "kind": "imports",
+      "metadata": {
+        "include": "Security/SAST.gitlab-ci.yml",
+        "line": 3
+      },
+      "source_id": "c7672f37f8bded5d",
+      "target_id": "bb892344ed07fa27"
     },
     {
       "kind": "exposes",

@@ -17,17 +17,19 @@ permissions:
   contents: read
 
 jobs:
-  changes:
-    if: github.event_name == 'pull_request'
+  # Resolves the language list for both event types. It has to run
+  # unconditionally: a job that `needs` a skipped job is skipped along with it
+  # unless its own `if` carries a status function, and that once left the whole
+  # benchmark silently unrun while the render step still rewrote the README.
+  langs:
     runs-on: ubuntu-latest
     outputs:
-      # paths-filter's `changes` output is already a JSON array of the filters
-      # that matched — exactly what the matrix below needs.
-      langs: ${{ steps.filter.outputs.changes }}
+      list: ${{ steps.resolve.outputs.list }}
     steps:
       - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: filter
+        if: github.event_name == 'pull_request'
         with:
           filters: |
             python:
@@ -49,20 +51,26 @@ jobs:
               - "benchmarks/**"
               - ".github/workflows/bench.yml"
 
+      # paths-filter's `changes` output is already a JSON array of the filters
+      # that matched, which is exactly the shape the matrix needs.
+      - name: Resolve language list
+        id: resolve
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo 'list=["python","typescript","go","rust"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'list=${{ steps.filter.outputs.changes }}' >> "$GITHUB_OUTPUT"
+          fi
+
   benchmark:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (needs.changes.result == 'success' && needs.changes.outputs.langs != '[]')
-    needs: [changes]
+    needs: langs
+    if: needs.langs.outputs.list != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        lang: >-
-          ${{ github.event_name == 'workflow_dispatch'
-              && fromJSON('["python","typescript","go","rust"]')
-              || fromJSON(needs.changes.outputs.langs) }}
+        lang: ${{ fromJSON(needs.langs.outputs.list) }}
     defaults:
       run:
         shell: bash
@@ -118,7 +126,12 @@ jobs:
   # Aggregates every language's results and refreshes the README. Manual runs
   # only: a PR never commits anything.
   render:
-    if: always() && github.event_name == 'workflow_dispatch'
+    # `!= 'skipped'` rather than `== 'success'`: with fail-fast off, one
+    # language failing should still publish the others — but a run where
+    # nothing was benchmarked must not rewrite the table.
+    if: >-
+      always() && github.event_name == 'workflow_dispatch' &&
+      needs.benchmark.result != 'skipped'
     needs: benchmark
     runs-on: ubuntu-latest
     permissions:

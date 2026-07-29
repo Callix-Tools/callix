@@ -27,6 +27,7 @@ tree-sitter-go = "0.25.0"
 tree-sitter-python = "0.25.0"
 tree-sitter-rust = "0.24.2"
 tree-sitter-typescript = "0.23.2"
+tree-sitter-yaml = "0.7.2"
 walkdir = "2.5.0"
 
 # --- ty: the type checker is linked in, not spawned as a subprocess --------

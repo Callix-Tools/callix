@@ -1,0 +1,15 @@
+services:
+  api:
+    image: example/api:1
+    depends_on:
+      - db
+      - cache
+  worker:
+    image: example/worker:1
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17
+  cache:
+    image: redis:8

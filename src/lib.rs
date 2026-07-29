@@ -25,6 +25,7 @@ mod span_index;
 mod status;
 mod ts;
 mod typescript;
+mod yaml;
 
 pub use boundaries::{BoundaryRef, normalize_http_path};
 pub use diffing::{GraphDiff, diff_graphs};
@@ -45,6 +46,7 @@ pub use span::Span;
 pub use span_index::SpanIndex;
 pub use status::ResolverStatus;
 pub use typescript::TsResolver;
+pub use yaml::YamlAdapter;
 
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -89,6 +91,11 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rustlang::rust_parse_dependencies, m)?)?;
     m.add_function(wrap_pyfunction!(rustlang::classify_rust_import, m)?)?;
     m.add_function(wrap_pyfunction!(rustlang::extract_rust_boundaries, m)?)?;
+    m.add_class::<YamlAdapter>()?;
+    m.add_function(wrap_pyfunction!(yaml::is_yaml_project, m)?)?;
+    m.add_function(wrap_pyfunction!(yaml::find_yaml_roots, m)?)?;
+    m.add_function(wrap_pyfunction!(yaml::yaml_detect_project_name, m)?)?;
+    m.add_function(wrap_pyfunction!(yaml::extract_yaml_boundaries, m)?)?;
     m.add_class::<typescript::TsImportClassifier>()?;
     m.add_function(wrap_pyfunction!(typescript::visit_typescript_file, m)?)?;
     m.add_function(wrap_pyfunction!(typescript::extract_typescript_boundaries, m)?)?;

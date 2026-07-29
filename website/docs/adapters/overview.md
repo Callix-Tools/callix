@@ -12,8 +12,13 @@ Four adapters, one interface:
 | TypeScript | `TypeScriptAdapter` | `package.json`, `tsconfig.json` | `.ts`, `.tsx`, `.mts`, `.cts` |
 | Go | `GoAdapter` | `go.mod` | `.go` |
 | Rust | `RustAdapter` | `Cargo.toml` | `.rs` |
+| YAML | `YamlAdapter` | any `.yaml` / `.yml` | `.yaml`, `.yml` |
 
-All of them discover every project root under the path you give them, so a
+[YAML](./yaml.md) is the odd one out: it declares no symbols, so it produces
+boundaries and service wiring rather than functions and calls. It earns its
+place because an OpenAPI document states routes that no source file mentions.
+
+The other four discover every project root under the path you give them, so a
 monorepo with several packages works without configuration. A marker in the
 root you pass does **not** hide nested roots — otherwise a monorepo that is
 itself a package would swallow its own subprojects.

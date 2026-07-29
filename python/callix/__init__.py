@@ -91,6 +91,11 @@ from ._core import (
     rust_read_crate_name,
     rust_parse_dependencies,
     classify_rust_import,
+    YamlAdapter,
+    extract_yaml_boundaries,
+    is_yaml_project,
+    find_yaml_roots,
+    yaml_detect_project_name,
 )
 from .ty import TyResolver
 
@@ -181,4 +186,9 @@ __all__ = [
     "rust_read_crate_name",
     "rust_parse_dependencies",
     "classify_rust_import",
+    "YamlAdapter",
+    "extract_yaml_boundaries",
+    "is_yaml_project",
+    "find_yaml_roots",
+    "yaml_detect_project_name",
 ]

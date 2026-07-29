@@ -36,6 +36,7 @@ __all__ = [
     "TsImportClassifier",
     "TsResolver",
     "TypeScriptAdapter",
+    "YamlAdapter",
     "apply_boundaries",
     "apply_resolutions",
     "build_root_structure",
@@ -50,6 +51,7 @@ __all__ = [
     "extract_python_boundaries",
     "extract_rust_boundaries",
     "extract_typescript_boundaries",
+    "extract_yaml_boundaries",
     "file_to_qualified_name",
     "filter_nested_files",
     "find_go_roots",
@@ -57,6 +59,7 @@ __all__ = [
     "find_rust_roots",
     "find_source_roots",
     "find_typescript_roots",
+    "find_yaml_roots",
     "get_stdlib_names",
     "go_detect_project_name",
     "go_parse_dependencies",
@@ -66,6 +69,7 @@ __all__ = [
     "is_python_project",
     "is_rust_project",
     "is_typescript_project",
+    "is_yaml_project",
     "make_boundary_id",
     "make_node_id",
     "node_from_dict",
@@ -89,6 +93,7 @@ __all__ = [
     "ts_resolve_relative_import",
     "visit_python_file",
     "visit_typescript_file",
+    "yaml_detect_project_name",
 ]
 
 class AdapterError(CallixError):
@@ -716,6 +721,31 @@ class TypeScriptAdapter:
     def __repr__(self) -> builtins.str: ...
 
 @typing.final
+class YamlAdapter:
+    r"""
+    The language adapter for YAML: specifications and service wiring.
+    """
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> YamlAdapter:
+        r"""
+        Args:
+        resolve: accepted and ignored — YAML has no symbols to resolve, so
+            the phase does not exist. Present so the four-adapter interface
+            stays uniform.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
+        """
+    def language(self) -> builtins.str: ...
+    def file_extensions(self) -> builtins.set[builtins.str]: ...
+    def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+    def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+    def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
+        r"""
+        Analyses the tree and returns the graph.
+        """
+    def __repr__(self) -> builtins.str: ...
+
+@typing.final
 class NodeKind(enum.Enum):
     PROJECT = ...
     MODULE = ...
@@ -868,6 +898,11 @@ def extract_typescript_boundaries(source: bytes, tsx: builtins.bool = ...) -> bu
     Boundaries in a single source — the entry point for checks.
     """
 
+def extract_yaml_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
+    r"""
+    Boundaries in a single source — the entry point for checks.
+    """
+
 def file_to_qualified_name(file_path: builtins.str, source_root: builtins.str) -> builtins.str: ...
 
 def filter_nested_files(files: typing.Sequence[builtins.str], current_root: builtins.str, project_roots: typing.Sequence[builtins.str]) -> builtins.list[builtins.str]:
@@ -887,6 +922,8 @@ def find_rust_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins
 def find_source_roots(project_root: builtins.str, files: typing.Sequence[builtins.str]) -> builtins.list[builtins.str]: ...
 
 def find_typescript_roots(search_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+
+def find_yaml_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
 
 def get_stdlib_names() -> builtins.set[builtins.str]: ...
 
@@ -914,6 +951,8 @@ def is_python_project(project_root: builtins.str) -> builtins.bool:
 def is_rust_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
 
 def is_typescript_project(project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+
+def is_yaml_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
 
 def make_boundary_id(mechanism: builtins.str, key: builtins.str) -> builtins.str:
     r"""
@@ -1017,6 +1056,8 @@ def visit_typescript_file(graph: Graph, project_name: builtins.str, file_path: b
     r"""
     Parses one TypeScript file and fills the graph with its structure.
     """
+
+def yaml_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
 
 
 __version__: builtins.str

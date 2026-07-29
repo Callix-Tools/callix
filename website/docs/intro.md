@@ -5,8 +5,8 @@ sidebar_position: 1
 
 # Introduction
 
-**callix** parses Python, TypeScript, Go and Rust projects and normalizes them
-into a shared **graph IR** — typed nodes and directed relations — which it hands
+**callix** parses Python, TypeScript, Go and Rust projects — and the YAML that
+wires them together — normalizing everything into a shared **graph IR** — typed nodes and directed relations — which it hands
 to Python code for dependency analysis, navigation, and code-intelligence
 tooling.
 

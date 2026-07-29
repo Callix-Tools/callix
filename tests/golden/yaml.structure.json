@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "resolver_status": "ok"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "e5098870c3253e50",
+      "kind": "project",
+      "metadata": {},
+      "name": "yaml",
+      "qualified_name": "yaml",
+      "span": null
+    },
+    {
+      "file_path": "docker-compose.yml",
+      "id": "0512f018827b54de",
+      "kind": "file",
+      "metadata": {
+        "flavour": "compose"
+      },
+      "name": "docker-compose.yml",
+      "qualified_name": "docker-compose.yml",
+      "span": null
+    },
+    {
+      "file_path": "docker-compose.yml",
+      "id": "1224a4c0e283a760",
+      "kind": "module",
+      "metadata": {
+        "kind": "compose-service"
+      },
+      "name": "api",
+      "qualified_name": "api",
+      "span": null
+    },
+    {
+      "file_path": "docker-compose.yml",
+      "id": "7e51540cad247800",
+      "kind": "module",
+      "metadata": {
+        "kind": "compose-service"
+      },
+      "name": "worker",
+      "qualified_name": "worker",
+      "span": null
+    },
+    {
+      "file_path": "docker-compose.yml",
+      "id": "7c683323caf034a7",
+      "kind": "module",
+      "metadata": {
+        "kind": "compose-service"
+      },
+      "name": "db",
+      "qualified_name": "db",
+      "span": null
+    },
+    {
+      "file_path": "docker-compose.yml",
+      "id": "e332135381adf70e",
+      "kind": "module",
+      "metadata": {
+        "kind": "compose-service"
+      },
+      "name": "cache",
+      "qualified_name": "cache",
+      "span": null
+    },
+    {
+      "file_path": "ingress.yaml",
+      "id": "537c196d92ed07b7",
+      "kind": "file",
+      "metadata": {
+        "flavour": "kubernetes"
+      },
+      "name": "ingress.yaml",
+      "qualified_name": "ingress.yaml",
+      "span": null
+    },
+    {
+      "file_path": "openapi.yaml",
+      "id": "a6c474769949d22e",
+      "kind": "file",
+      "metadata": {
+        "flavour": "openapi"
+      },
+      "name": "openapi.yaml",
+      "qualified_name": "openapi.yaml",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "b1460f5beed80f76",
+      "kind": "boundary",
+      "metadata": {
+        "key": "ANY /engines",
+        "mechanism": "http"
+      },
+      "name": "ANY /engines",
+      "qualified_name": "http:ANY /engines",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "816fd689d594aff8",
+      "kind": "boundary",
+      "metadata": {
+        "key": "ANY /ingest",
+        "mechanism": "http"
+      },
+      "name": "ANY /ingest",
+      "qualified_name": "http:ANY /ingest",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "metadata": {
+        "key": "GET /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "GET /engines/{}",
+      "qualified_name": "http:GET /engines/{}",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "7988f68e0613c9ac",
+      "kind": "boundary",
+      "metadata": {
+        "key": "DELETE /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "DELETE /engines/{}",
+      "qualified_name": "http:DELETE /engines/{}",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "627c2d463e702c10",
+      "kind": "boundary",
+      "metadata": {
+        "key": "POST /ingest",
+        "mechanism": "http"
+      },
+      "name": "POST /ingest",
+      "qualified_name": "http:POST /ingest",
+      "span": null
+    }
+  ],
+  "relations": [
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "0512f018827b54de"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "1224a4c0e283a760"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "7e51540cad247800"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "7c683323caf034a7"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "e332135381adf70e"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "1224a4c0e283a760",
+      "target_id": "7c683323caf034a7"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "1224a4c0e283a760",
+      "target_id": "e332135381adf70e"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "7e51540cad247800",
+      "target_id": "7c683323caf034a7"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "537c196d92ed07b7"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "e5098870c3253e50",
+      "target_id": "a6c474769949d22e"
+    },
+    {
+      "kind": "exposes",
+      "metadata": {
+        "col": 19,
+        "confidence": 1.0,
+        "key": "ANY /engines",
+        "line": 10,
+        "mechanism": "http",
+        "method": "ANY",
+        "path": "/engines",
+        "role": "server",
+        "source": "kubernetes-ingress"
+      },
+      "source_id": "537c196d92ed07b7",
+      "target_id": "b1460f5beed80f76"
+    },
+    {
+      "kind": "exposes",
+      "metadata": {
+        "col": 19,
+        "confidence": 1.0,
+        "key": "ANY /ingest",
+        "line": 12,
+        "mechanism": "http",
+        "method": "ANY",
+        "path": "/ingest",
+        "role": "server",
+        "source": "kubernetes-ingress"
+      },
+      "source_id": "537c196d92ed07b7",
+      "target_id": "816fd689d594aff8"
+    },
+    {
+      "kind": "exposes",
+      "metadata": {
+        "col": 3,
+        "confidence": 1.0,
+        "key": "GET /engines/{}",
+        "line": 6,
+        "mechanism": "http",
+        "method": "GET",
+        "path": "/engines/{}",
+        "role": "server",
+        "source": "openapi"
+      },
+      "source_id": "a6c474769949d22e",
+      "target_id": "acfc953e2d84d7b4"
+    },
+    {
+      "kind": "exposes",
+      "metadata": {
+        "col": 3,
+        "confidence": 1.0,
+        "key": "DELETE /engines/{}",
+        "line": 6,
+        "mechanism": "http",
+        "method": "DELETE",
+        "path": "/engines/{}",
+        "role": "server",
+        "source": "openapi"
+      },
+      "source_id": "a6c474769949d22e",
+      "target_id": "7988f68e0613c9ac"
+    },
+    {
+      "kind": "exposes",
+      "metadata": {
+        "col": 3,
+        "confidence": 1.0,
+        "key": "POST /ingest",
+        "line": 6,
+        "mechanism": "http",
+        "method": "POST",
+        "path": "/ingest",
+        "role": "server",
+        "source": "openapi"
+      },
+      "source_id": "a6c474769949d22e",
+      "target_id": "627c2d463e702c10"
+    }
+  ],
+  "schema_version": 1
+}

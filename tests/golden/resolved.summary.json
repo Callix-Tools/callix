@@ -142,5 +142,26 @@
       "unresolved": 10
     },
     "resolver_status": "ok"
+  },
+  "yaml": {
+    "nodes": {
+      "boundary": 5,
+      "file": 3,
+      "module": 4,
+      "project": 1
+    },
+    "relations": {
+      "contains": 7,
+      "depends_on": 3,
+      "exposes": 5
+    },
+    "resolver": {
+      "external": 0,
+      "internal": 0,
+      "queries": 0,
+      "resolved": 0,
+      "unresolved": 0
+    },
+    "resolver_status": "ok"
   }
 }

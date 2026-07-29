@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: engines
+  version: 1.0.0
+paths:
+  /engines/{id}:
+    get:
+      operationId: readEngine
+    delete:
+      operationId: dropEngine
+  /ingest:
+    post:
+      operationId: push

@@ -35,7 +35,8 @@ FIXTURES = HERE / "fixtures"
 GOLDEN = HERE / "golden"
 SUMMARY = GOLDEN / "resolved.summary.json"
 
-#: Language → the executable its resolver needs, if any.
+#: Language → the executable its resolver needs, if any. YAML has no resolver
+#: at all, so it is absent rather than mapped to None.
 TOOLCHAIN = {"go": "go", "rust": "rust-analyzer"}
 
 
@@ -48,6 +49,7 @@ def adapters() -> dict:
         "typescript": callix.TypeScriptAdapter,
         "go": callix.GoAdapter,
         "rust": callix.RustAdapter,
+        "yaml": callix.YamlAdapter,
     }
 
 

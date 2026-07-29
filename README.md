@@ -29,6 +29,13 @@ with the typeshed stubs and `lib.d.ts`, are already inside the wheel.
 Analysing Go requires Go installed; analysing Rust requires `rust-analyzer`
 and Cargo.
 
+Wheels are published for Linux (x86_64, aarch64) and macOS (arm64, x86_64).
+**Windows is not supported**, and not merely unbuilt: the TypeScript and Go
+resolvers are a Go c-archive, which cgo produces through mingw-w64 in GNU
+archive format, and that does not link into the MSVC target CPython expects.
+Building from the sdist runs into the same wall, so `build.rs` refuses early
+with that explanation rather than leaving you with a linker error. WSL works.
+
 ## Usage
 
 ```python

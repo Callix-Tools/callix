@@ -10,6 +10,8 @@ license = "MIT"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Rust",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]

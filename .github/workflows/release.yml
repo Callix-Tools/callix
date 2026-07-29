@@ -67,8 +67,17 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64
+          # A native ARM runner rather than QEMU inside the container: the ty
+          # tree alone is ~200 crates, and emulating that would not fit the
+          # timeout.
+          - os: ubuntu-24.04-arm
+            target: aarch64
           - os: macos-latest
             target: aarch64
+          # macos-latest is Apple Silicon, so the Intel wheel is cross-built;
+          # build.rs passes the architecture on to Go and clang.
+          - os: macos-latest
+            target: x86_64
     steps:
       - uses: actions/checkout@v6
         with:
@@ -86,9 +95,14 @@ jobs:
           args: --release --out dist
           # The manylinux container carries no Go, and build.rs cannot build
           # the bridge without it, so Go is installed into the container first.
-          manylinux: ${{ matrix.os == 'ubuntu-latest' && '2_28' || 'auto' }}
+          manylinux: ${{ startsWith(matrix.os, 'ubuntu') && '2_28' || 'auto' }}
           before-script-linux: |
-            curl -sSL https://go.dev/dl/go1.26.0.linux-amd64.tar.gz \
+            case "$(uname -m)" in
+              x86_64)  goarch=amd64 ;;
+              aarch64) goarch=arm64 ;;
+              *) echo "unsupported container arch $(uname -m)" >&2; exit 1 ;;
+            esac
+            curl -sSL "https://go.dev/dl/go1.26.0.linux-${goarch}.tar.gz" \
               | tar -C /usr/local -xz
             export PATH=$PATH:/usr/local/go/bin
             go version

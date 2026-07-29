@@ -242,14 +242,25 @@ def cmd_capture(args: argparse.Namespace) -> int:
 def cmd_compare(args: argparse.Namespace) -> int:
     workdir = Path(args.workdir)
     ok = True
+    compared = 0
+    skipped: list[str] = []
+
     for project in projects(args.project, args.lang):
         path = BASELINE / f"{slug(project['name'])}.json"
         dest = workdir / slug(project["name"])
-        if not path.exists() or not dest.exists():
-            print(f"  skipped  {project['name']}")
+        if not path.exists():
+            skipped.append(f"{project['name']} (no recorded baseline)")
+            print(f"  skipped  {project['name']} (no recorded baseline)")
+            continue
+        if args.clone:
+            clone(project, dest)
+        if not dest.exists():
+            skipped.append(f"{project['name']} (no checkout at {dest})")
+            print(f"  skipped  {project['name']} (no checkout — pass --clone)")
             continue
         expected = json.loads(path.read_text(encoding="utf-8"))
         actual = analyse_callix(project["langs"][0], dest)
+        compared += 1
         notes = _diff(expected, actual)
         if not notes:
             print(f"  ok       {project['name']}")
@@ -258,7 +269,19 @@ def cmd_compare(args: argparse.Namespace) -> int:
         print(f"  MOVED    {project['name']}")
         for note in notes:
             print(f"             {note}")
-    print("\nall good" if ok else "\nfingerprints moved above")
+
+    # A run that compared nothing is not a run that passed. Reporting "all
+    # good" for eight skips is how a broken verification path stays invisible.
+    if compared == 0:
+        print("\nnothing was compared — every project was skipped:")
+        for note in skipped:
+            print(f"  {note}")
+        return 1
+    if skipped:
+        print(f"\n{len(skipped)} of {compared + len(skipped)} projects skipped:")
+        for note in skipped:
+            print(f"  {note}")
+    print(f"\n{'all good' if ok else 'fingerprints moved above'} ({compared} compared)")
     return 0 if ok else 1
 
 
@@ -311,7 +334,11 @@ def main() -> int:
     p_cap.add_argument("--clone", action="store_true", help="clone what is missing")
     p_cap.set_defaults(func=cmd_capture)
 
-    _common(sub, "compare", "check the baselines").set_defaults(func=cmd_compare)
+    # compare clones too: otherwise the only way to obtain the checkouts is a
+    # capture, which rewrites the very baselines the comparison is against.
+    p_cmp = _common(sub, "compare", "check the baselines")
+    p_cmp.add_argument("--clone", action="store_true", help="clone what is missing")
+    p_cmp.set_defaults(func=cmd_compare)
 
     p_cross = _common(sub, "crosscheck", "report divergence from graphlens")
     p_cross.add_argument("--graphlens", default=str(Path.home() / "project/graphlens"))

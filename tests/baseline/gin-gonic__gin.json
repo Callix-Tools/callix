@@ -460,11 +460,6 @@
       "nodes": 12,
       "relations": 17
     },
-    "testdata/protoexample/test.pb.go": {
-      "hash": "bc61473df231c37b",
-      "nodes": 58,
-      "relations": 76
-    },
     "tree.go": {
       "hash": "bc8b1469eef3b352",
       "nodes": 79,
@@ -493,35 +488,35 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 292,
+      "attribute": 281,
       "boundary": 108,
-      "class": 138,
+      "class": 136,
       "dependency": 35,
-      "external_symbol": 64,
-      "file": 98,
-      "function": 870,
-      "import": 515,
-      "method": 421,
-      "module": 8,
-      "parameter": 1523,
+      "external_symbol": 63,
+      "file": 97,
+      "function": 867,
+      "import": 511,
+      "method": 399,
+      "module": 7,
+      "parameter": 1522,
       "project": 1,
-      "type_alias": 35,
-      "variable": 170
+      "type_alias": 34,
+      "variable": 157
     },
     "relations": {
-      "contains": 106,
-      "declares": 4256,
+      "contains": 104,
+      "declares": 4188,
       "depends_on": 35,
       "exposes": 201,
-      "imports": 515,
-      "resolves_to": 515
+      "imports": 511,
+      "resolves_to": 511
     }
   },
   "project": "gin-gonic/gin",
   "ref": "v1.12.0",
   "totals": {
-    "files": 98,
-    "nodes": 4278,
-    "relations": 5628
+    "files": 97,
+    "nodes": 4218,
+    "relations": 5550
   }
 }

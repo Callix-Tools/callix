@@ -493,11 +493,17 @@ impl Graph {
     }
 
     /// A new graph from these nodes and every edge incident to them.
+    ///
+    /// Nodes are taken in the parent's insertion order, not in the caller's
+    /// argument order and emphatically not in a `HashSet`'s: node order is
+    /// part of a graph's serialized output, so iterating the set here made
+    /// `subgraph(...).to_dict()` differ between processes and unusable as a
+    /// cache key, a diff input or a golden file.
     fn subgraph(&self, py: Python<'_>, node_ids: Vec<String>) -> PyResult<Self> {
-        let ids: std::collections::HashSet<String> = node_ids.into_iter().collect();
+        let ids: HashSet<String> = node_ids.into_iter().collect();
         let mut sub = Self::new(py);
-        for id in &ids {
-            if let Some(node) = self.nodes.get(id) {
+        for (id, node) in &self.nodes {
+            if ids.contains(id) {
                 sub.add_node(node.clone_ref(py))?;
             }
         }

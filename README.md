@@ -58,6 +58,10 @@ Python ≥ 3.10. Wheels for Linux glibc and musl (x86_64, aarch64) and macOS
 (arm64, x86_64);
 [Windows is not supported](https://callix-tools.github.io/callix/docs/getting-started/installation).
 
+> **The published release is 0.1.0** — four adapters (Python, TypeScript, Go,
+> Rust) and Python ≥ 3.13. PHP, C, C++ and YAML are on `main` and unreleased;
+> build from source to use them.
+
 ## Usage
 
 ```python

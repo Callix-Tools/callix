@@ -12,6 +12,15 @@ Python **≥ 3.10** is required. The wheel is built against the stable ABI
 (`abi3-py310`), so one wheel per platform covers 3.10 and every version after
 it — including ones released after the wheel was.
 
+:::warning What is on PyPI today is 0.1.0
+That release has **four** adapters — Python, TypeScript, Go and Rust — and needs
+Python ≥ 3.13, because it was built `abi3-py313`. PHP, C, C++ and YAML, the drop
+to 3.10, and the musl wheels below all landed after it and are unreleased.
+
+Everything on this site documents `main`. Until the next release, the four new
+adapters need a [build from source](#building-from-source).
+:::
+
 ## What is already inside
 
 The Python and TypeScript type checkers are linked into the extension module,

@@ -31,9 +31,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+      # The last action here still on the node20 runtime, and its own
+      # latest release: there is no newer major to move to. It only
+      # downloads a binary, so the deprecation warning is all it costs.
       - uses: kenji-miyake/setup-git-cliff@v2
 
       - name: Determine next version
@@ -94,7 +97,7 @@ jobs:
         with:
           ref: ${{ needs.version.outputs.tag }}
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.26"
           cache-dependency-path: go/go.sum
@@ -130,7 +133,7 @@ jobs:
             export PATH=$PATH:/usr/local/go/bin
             go version
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-${{ matrix.os }}-${{ matrix.target }}-${{ matrix.libc || 'native' }}
           path: dist/
@@ -149,7 +152,7 @@ jobs:
         with:
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/
@@ -172,14 +175,14 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: astral-sh/setup-uv@v7
       - uses: kenji-miyake/setup-git-cliff@v2
 
       - name: Collect artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true

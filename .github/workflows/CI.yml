@@ -23,14 +23,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       # Go is only needed at build time: the typescript-go bridge is linked
       # statically, and users get a prebuilt wheel.
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.26"
           cache-dependency-path: go/go.sum
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
-      - uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v3
 
       # Without the cache every run would rebuild all of ty from scratch.
       - uses: Swatinem/rust-cache@v2

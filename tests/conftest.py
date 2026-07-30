@@ -48,6 +48,11 @@ def rust_graph() -> Graph:
 
 
 @pytest.fixture
+def php_graph() -> Graph:
+    return callix.PhpAdapter(resolve=False).analyze(FIXTURES / "php")
+
+
+@pytest.fixture
 def cross_language_graph(python_graph: Graph, yaml_graph: Graph) -> Graph:
     """The Python service and the OpenAPI spec in one graph.
 

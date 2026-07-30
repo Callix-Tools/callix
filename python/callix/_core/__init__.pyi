@@ -21,6 +21,8 @@ __all__ = [
     "NodeKind",
     "OccurrenceRef",
     "ParseError",
+    "PhpAdapter",
+    "PhpResolver",
     "PythonAdapter",
     "Relation",
     "RelationKind",
@@ -41,6 +43,7 @@ __all__ = [
     "apply_resolutions",
     "build_root_structure",
     "classify_go_import",
+    "classify_php_import",
     "classify_rust_import",
     "collect_python_files",
     "collect_typescript_files_py",
@@ -48,6 +51,7 @@ __all__ = [
     "diff_graphs",
     "ensure_schema_version",
     "extract_go_boundaries",
+    "extract_php_boundaries",
     "extract_python_boundaries",
     "extract_rust_boundaries",
     "extract_typescript_boundaries",
@@ -55,6 +59,7 @@ __all__ = [
     "file_to_qualified_name",
     "filter_nested_files",
     "find_go_roots",
+    "find_php_roots",
     "find_python_roots",
     "find_rust_roots",
     "find_source_roots",
@@ -66,6 +71,7 @@ __all__ = [
     "go_read_module_path",
     "is_go_project",
     "is_package_init",
+    "is_php_project",
     "is_python_project",
     "is_rust_project",
     "is_typescript_project",
@@ -77,6 +83,8 @@ __all__ = [
     "normalize_http_path",
     "normalize_pkg_name",
     "parse_dependencies",
+    "php_detect_project_name",
+    "php_parse_dependencies",
     "relation_from_dict",
     "relation_to_dict",
     "resolve_relative_import",
@@ -439,6 +447,49 @@ class ParseError(CallixError):
     Could not parse the source.
     """
     ...
+
+@typing.final
+class PhpAdapter:
+    r"""
+    The language adapter for PHP projects.
+    """
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> PhpAdapter:
+        r"""
+        Args:
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
+        """
+    def language(self) -> builtins.str: ...
+    def file_extensions(self) -> builtins.set[builtins.str]: ...
+    def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+    def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+    def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
+        r"""
+        Analyses the project and returns the graph.
+        """
+    def __repr__(self) -> builtins.str: ...
+
+@typing.final
+class PhpResolver:
+    def __new__(cls) -> PhpResolver: ...
+    def prepare(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None) -> None:
+        r"""
+        Indexes the project's sources.
+        
+        Args:
+            project_root: the root every document path is relative to.
+            files: the sources to index; when omitted, every `.php` file under
+                the root except the vendored tree. `vendor/` is left out
+                deliberately — it is larger than the project itself by an order
+                of magnitude, and a call into it belongs in an EXTERNAL_SYMBOL.
+        """
+    def resolve_all(self, queries: typing.Sequence[tuple[builtins.str | os.PathLike | pathlib.Path, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]: ...
+    def definition_at(self, file: builtins.str | os.PathLike | pathlib.Path, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]: ...
+    def status(self) -> ResolverStatus: ...
+    def __repr__(self) -> builtins.str: ...
 
 @typing.final
 class PythonAdapter:
@@ -877,6 +928,8 @@ def classify_go_import(import_path: builtins.str, module_path: typing.Optional[b
     Classification of a Go import path.
     """
 
+def classify_php_import(import_path: builtins.str, internal: typing.Optional[builtins.set[builtins.str]] = None, vendors: typing.Optional[builtins.set[builtins.str]] = None) -> builtins.str: ...
+
 def classify_rust_import(import_path: builtins.str, crate_name: typing.Optional[builtins.str] = None, deps: typing.Optional[builtins.set[builtins.str]] = None) -> builtins.str:
     r"""
     Classification of a `use` path — the entry point for checks.
@@ -906,6 +959,11 @@ def ensure_schema_version(data: dict) -> None:
     """
 
 def extract_go_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
+    r"""
+    Boundaries in a single source — the entry point for checks.
+    """
+
+def extract_php_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
     r"""
     Boundaries in a single source — the entry point for checks.
     """
@@ -940,6 +998,8 @@ def filter_nested_files(files: typing.Sequence[builtins.str], current_root: buil
 
 def find_go_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
 
+def find_php_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+
 def find_python_roots(search_root: builtins.str) -> builtins.list[builtins.str]:
     r"""
     Python project roots inside `search_root` (one per subproject).
@@ -967,6 +1027,8 @@ def is_package_init(file_path: builtins.str) -> builtins.bool:
     r"""
     `__init__.py` or `__init__.pyi`.
     """
+
+def is_php_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
 
 def is_python_project(project_root: builtins.str) -> builtins.bool:
     r"""
@@ -1026,6 +1088,10 @@ def parse_dependencies(project_root: builtins.str) -> builtins.set[builtins.str]
     r"""
     Third-party package names declared in the root's manifests.
     """
+
+def php_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
+
+def php_parse_dependencies(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[builtins.str]: ...
 
 def relation_from_dict(data: dict) -> Relation:
     r"""

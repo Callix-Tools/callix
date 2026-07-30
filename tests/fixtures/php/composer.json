@@ -1,0 +1,15 @@
+{
+    "name": "fixture/app",
+    "require": {
+        "php": ">=8.2",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fixture\\": "src/"
+        }
+    }
+}

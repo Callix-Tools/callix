@@ -33,6 +33,42 @@
     },
     "resolver_status": "ok"
   },
+  "php": {
+    "nodes": {
+      "attribute": 5,
+      "boundary": 1,
+      "class": 5,
+      "dependency": 2,
+      "external_symbol": 4,
+      "file": 2,
+      "function": 4,
+      "import": 4,
+      "method": 5,
+      "module": 2,
+      "parameter": 4,
+      "project": 1
+    },
+    "relations": {
+      "calls": 6,
+      "consumes": 1,
+      "contains": 4,
+      "declares": 27,
+      "depends_on": 2,
+      "has_type": 7,
+      "imports": 2,
+      "inherits_from": 3,
+      "references": 4,
+      "resolves_to": 4
+    },
+    "resolver": {
+      "external": 4,
+      "internal": 16,
+      "queries": 21,
+      "resolved": 20,
+      "unresolved": 1
+    },
+    "resolver_status": "degraded"
+  },
   "python": {
     "nodes": {
       "attribute": 2,

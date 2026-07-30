@@ -205,6 +205,14 @@ impl RustResolver {
                 let is_local = occurrence.symbol.starts_with("local ");
                 let index = self.intern_symbol(&occurrence.symbol);
                 let position = (occurrence.start_line, occurrence.start_col);
+                // Last one wins here while `defs` below keeps the first, and
+                // the asymmetry is deliberate rather than an oversight. Two
+                // occurrences can share a start position — a derive or a macro
+                // expansion maps several symbols onto one source range — and
+                // there is no principled way to prefer one, so the tie-break is
+                // arbitrary either way. `defs` keeps the first because a
+                // symbol's definition site should not depend on how many
+                // references follow it.
                 self.by_doc[doc as usize].insert(position, index);
                 if occurrence.roles & ROLE_DEFINITION == 0 {
                     continue;

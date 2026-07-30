@@ -1,0 +1,998 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "15b44b867689118e",
+      "kind": "project",
+      "metadata": {},
+      "name": "app",
+      "qualified_name": "fixture/app",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "1ca9487f67f102b0",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "guzzlehttp",
+      "qualified_name": "guzzlehttp",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "dd4af7bd2f73fa09",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "phpunit",
+      "qualified_name": "phpunit",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "a59dc2dd4f58a366",
+      "kind": "module",
+      "metadata": {},
+      "name": "Fixture",
+      "qualified_name": "Fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "0cdaae8b4783a28f",
+      "kind": "module",
+      "metadata": {},
+      "name": "Models",
+      "qualified_name": "Fixture\\Models",
+      "span": null
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "4fc0cb6102e30fd2",
+      "kind": "file",
+      "metadata": {},
+      "name": "Models.php",
+      "qualified_name": "src/Models.php",
+      "span": null
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "4d10bbb0a224746f",
+      "kind": "class",
+      "metadata": {
+        "is_abstract": false,
+        "is_anonymous": false,
+        "is_enum": false,
+        "is_interface": true,
+        "is_trait": false,
+        "name_span": {
+          "__span__": [
+            8,
+            11,
+            8,
+            18
+          ]
+        }
+      },
+      "name": "Labeled",
+      "qualified_name": "Fixture\\Models\\Labeled",
+      "span": [
+        8,
+        1,
+        11,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "ab8587269498d94e",
+      "kind": "method",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            10,
+            21,
+            10,
+            29
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "describe",
+      "qualified_name": "Fixture\\Models\\Labeled\\describe",
+      "span": [
+        10,
+        5,
+        10,
+        40
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "870ee2605bac008e",
+      "kind": "class",
+      "metadata": {
+        "is_abstract": false,
+        "is_anonymous": false,
+        "is_enum": false,
+        "is_interface": false,
+        "is_trait": true,
+        "name_span": {
+          "__span__": [
+            13,
+            7,
+            13,
+            16
+          ]
+        }
+      },
+      "name": "Describes",
+      "qualified_name": "Fixture\\Models\\Describes",
+      "span": [
+        13,
+        1,
+        19,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "9659a0b11afa2268",
+      "kind": "method",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            15,
+            21,
+            15,
+            29
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "describe",
+      "qualified_name": "Fixture\\Models\\Describes\\describe",
+      "span": [
+        15,
+        5,
+        18,
+        6
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "153493b95353cbf9",
+      "kind": "class",
+      "metadata": {
+        "is_abstract": false,
+        "is_anonymous": false,
+        "is_enum": true,
+        "is_interface": false,
+        "is_trait": false,
+        "name_span": {
+          "__span__": [
+            21,
+            6,
+            21,
+            12
+          ]
+        }
+      },
+      "name": "Region",
+      "qualified_name": "Fixture\\Models\\Region",
+      "span": [
+        21,
+        1,
+        25,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "244c87ba557021f8",
+      "kind": "attribute",
+      "metadata": {
+        "is_enum_case": true,
+        "name_span": {
+          "__span__": [
+            23,
+            10,
+            23,
+            16
+          ]
+        }
+      },
+      "name": "Europe",
+      "qualified_name": "Fixture\\Models\\Region\\Europe",
+      "span": [
+        23,
+        5,
+        23,
+        24
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "291ba20e362c8ae2",
+      "kind": "attribute",
+      "metadata": {
+        "is_enum_case": true,
+        "name_span": {
+          "__span__": [
+            24,
+            10,
+            24,
+            17
+          ]
+        }
+      },
+      "name": "America",
+      "qualified_name": "Fixture\\Models\\Region\\America",
+      "span": [
+        24,
+        5,
+        24,
+        25
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "9961ae71eb19f856",
+      "kind": "class",
+      "metadata": {
+        "is_abstract": false,
+        "is_anonymous": false,
+        "is_enum": false,
+        "is_interface": false,
+        "is_trait": false,
+        "name_span": {
+          "__span__": [
+            27,
+            7,
+            27,
+            11
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "Fixture\\Models\\Base",
+      "span": [
+        27,
+        1,
+        34,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "45eeb6761a78e1a4",
+      "kind": "attribute",
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            31,
+            18,
+            31,
+            31
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "DEFAULT_LABEL",
+      "qualified_name": "Fixture\\Models\\Base\\DEFAULT_LABEL",
+      "span": [
+        31,
+        18,
+        31,
+        40
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "04f1b6bbab96cd99",
+      "kind": "attribute",
+      "metadata": {
+        "is_promoted": false,
+        "is_readonly": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            33,
+            23,
+            33,
+            28
+          ]
+        },
+        "visibility": "protected"
+      },
+      "name": "label",
+      "qualified_name": "Fixture\\Models\\Base\\label",
+      "span": [
+        33,
+        22,
+        33,
+        50
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "f05a0a12d5de1389",
+      "kind": "class",
+      "metadata": {
+        "is_abstract": false,
+        "is_anonymous": false,
+        "is_enum": false,
+        "is_interface": false,
+        "is_trait": false,
+        "name_span": {
+          "__span__": [
+            36,
+            13,
+            36,
+            19
+          ]
+        }
+      },
+      "name": "Engine",
+      "qualified_name": "Fixture\\Models\\Engine",
+      "span": [
+        36,
+        1,
+        51,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "2a78d013d2944c38",
+      "kind": "method",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            38,
+            21,
+            38,
+            32
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "__construct",
+      "qualified_name": "Fixture\\Models\\Engine\\__construct",
+      "span": [
+        38,
+        5,
+        40,
+        6
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "27a187d6cf92d3c2",
+      "kind": "parameter",
+      "metadata": {
+        "has_default": false,
+        "is_promoted": true,
+        "is_variadic": false
+      },
+      "name": "region",
+      "qualified_name": "Fixture\\Models\\Engine\\__construct\\region",
+      "span": [
+        38,
+        33,
+        38,
+        55
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "75cf61374267fcbb",
+      "kind": "attribute",
+      "metadata": {
+        "is_promoted": true,
+        "is_readonly": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            38,
+            49,
+            38,
+            55
+          ]
+        },
+        "visibility": "private"
+      },
+      "name": "region",
+      "qualified_name": "Fixture\\Models\\Engine\\region",
+      "span": [
+        38,
+        33,
+        38,
+        55
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "0649f9c0110c71d3",
+      "kind": "method",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            42,
+            21,
+            42,
+            25
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "ping",
+      "qualified_name": "Fixture\\Models\\Engine\\ping",
+      "span": [
+        42,
+        5,
+        45,
+        6
+      ]
+    },
+    {
+      "file_path": "src/Models.php",
+      "id": "4123fc8f590d8aa2",
+      "kind": "method",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            47,
+            21,
+            47,
+            27
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "region",
+      "qualified_name": "Fixture\\Models\\Engine\\region",
+      "span": [
+        47,
+        5,
+        50,
+        6
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "f72dfd5a2a855ea9",
+      "kind": "file",
+      "metadata": {},
+      "name": "Service.php",
+      "qualified_name": "src/Service.php",
+      "span": null
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "8895b548dc1918d9",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "origin": "internal",
+        "original_name": "Fixture\\Models\\Base",
+        "use_kind": "class"
+      },
+      "name": "Base",
+      "qualified_name": "Fixture\\Base",
+      "span": null
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "ecc280e4c642557b",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "origin": "internal",
+        "original_name": "Fixture\\Models\\Engine",
+        "use_kind": "class"
+      },
+      "name": "Engine",
+      "qualified_name": "Fixture\\Engine",
+      "span": null
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "03174db5d6d75f5c",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "origin": "internal",
+        "original_name": "Fixture\\Models\\Region",
+        "use_kind": "class"
+      },
+      "name": "Region",
+      "qualified_name": "Fixture\\Region",
+      "span": null
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "0801f796f8f3d1ce",
+      "kind": "import",
+      "metadata": {
+        "alias": null,
+        "origin": "third_party",
+        "original_name": "GuzzleHttp\\Client",
+        "use_kind": "class"
+      },
+      "name": "Client",
+      "qualified_name": "Fixture\\Client",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "7e048befc5990df5",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "third_party"
+      },
+      "name": "Client",
+      "qualified_name": "GuzzleHttp\\Client",
+      "span": null
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "8b88d6ee6396d7da",
+      "kind": "function",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            12,
+            10,
+            12,
+            15
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "build",
+      "qualified_name": "Fixture\\build",
+      "span": [
+        12,
+        1,
+        18,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "fa81c7aa6da745b8",
+      "kind": "parameter",
+      "metadata": {
+        "has_default": false,
+        "is_promoted": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            12,
+            24,
+            12,
+            30
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "Fixture\\build\\region",
+      "span": [
+        12,
+        16,
+        12,
+        30
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "f6b7cb9b456de283",
+      "kind": "function",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            20,
+            10,
+            20,
+            17
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "inspect",
+      "qualified_name": "Fixture\\inspect",
+      "span": [
+        20,
+        1,
+        23,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "52ae63a09b9e6eb8",
+      "kind": "parameter",
+      "metadata": {
+        "has_default": false,
+        "is_promoted": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            20,
+            24,
+            20,
+            28
+          ]
+        }
+      },
+      "name": "item",
+      "qualified_name": "Fixture\\inspect\\item",
+      "span": [
+        20,
+        18,
+        20,
+        28
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "088ce482bb612a1a",
+      "kind": "function",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            25,
+            10,
+            25,
+            18
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "fetchOne",
+      "qualified_name": "Fixture\\fetchOne",
+      "span": [
+        25,
+        1,
+        31,
+        2
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "8a9ea6ac277b68ce",
+      "kind": "parameter",
+      "metadata": {
+        "has_default": false,
+        "is_promoted": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            25,
+            24,
+            25,
+            29
+          ]
+        }
+      },
+      "name": "ident",
+      "qualified_name": "Fixture\\fetchOne\\ident",
+      "span": [
+        25,
+        19,
+        25,
+        29
+      ]
+    },
+    {
+      "file_path": "src/Service.php",
+      "id": "6dfe908365a7a615",
+      "kind": "function",
+      "metadata": {
+        "is_abstract": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            33,
+            10,
+            33,
+            23
+          ]
+        },
+        "visibility": "public"
+      },
+      "name": "defaultRegion",
+      "qualified_name": "Fixture\\defaultRegion",
+      "span": [
+        33,
+        1,
+        36,
+        2
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "metadata": {
+        "key": "GET /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "GET /engines/{}",
+      "qualified_name": "http:GET /engines/{}",
+      "span": null
+    }
+  ],
+  "relations": [
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "15b44b867689118e",
+      "target_id": "1ca9487f67f102b0"
+    },
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "15b44b867689118e",
+      "target_id": "dd4af7bd2f73fa09"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "15b44b867689118e",
+      "target_id": "a59dc2dd4f58a366"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "a59dc2dd4f58a366",
+      "target_id": "0cdaae8b4783a28f"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0cdaae8b4783a28f",
+      "target_id": "4fc0cb6102e30fd2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4fc0cb6102e30fd2",
+      "target_id": "4d10bbb0a224746f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4d10bbb0a224746f",
+      "target_id": "ab8587269498d94e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4fc0cb6102e30fd2",
+      "target_id": "870ee2605bac008e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "870ee2605bac008e",
+      "target_id": "9659a0b11afa2268"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4fc0cb6102e30fd2",
+      "target_id": "153493b95353cbf9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "153493b95353cbf9",
+      "target_id": "244c87ba557021f8"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "153493b95353cbf9",
+      "target_id": "291ba20e362c8ae2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4fc0cb6102e30fd2",
+      "target_id": "9961ae71eb19f856"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "9961ae71eb19f856",
+      "target_id": "45eeb6761a78e1a4"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "9961ae71eb19f856",
+      "target_id": "04f1b6bbab96cd99"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4fc0cb6102e30fd2",
+      "target_id": "f05a0a12d5de1389"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f05a0a12d5de1389",
+      "target_id": "2a78d013d2944c38"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "2a78d013d2944c38",
+      "target_id": "27a187d6cf92d3c2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f05a0a12d5de1389",
+      "target_id": "75cf61374267fcbb"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f05a0a12d5de1389",
+      "target_id": "0649f9c0110c71d3"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f05a0a12d5de1389",
+      "target_id": "4123fc8f590d8aa2"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "a59dc2dd4f58a366",
+      "target_id": "f72dfd5a2a855ea9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "8895b548dc1918d9"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "0cdaae8b4783a28f"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "8895b548dc1918d9",
+      "target_id": "0cdaae8b4783a28f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "ecc280e4c642557b"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "ecc280e4c642557b",
+      "target_id": "0cdaae8b4783a28f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "03174db5d6d75f5c"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "03174db5d6d75f5c",
+      "target_id": "0cdaae8b4783a28f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "0801f796f8f3d1ce"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "7e048befc5990df5"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "0801f796f8f3d1ce",
+      "target_id": "7e048befc5990df5"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "8b88d6ee6396d7da"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "8b88d6ee6396d7da",
+      "target_id": "fa81c7aa6da745b8"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "f6b7cb9b456de283"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f6b7cb9b456de283",
+      "target_id": "52ae63a09b9e6eb8"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "088ce482bb612a1a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "088ce482bb612a1a",
+      "target_id": "8a9ea6ac277b68ce"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f72dfd5a2a855ea9",
+      "target_id": "6dfe908365a7a615"
+    },
+    {
+      "kind": "consumes",
+      "metadata": {
+        "col": 26,
+        "confidence": 0.9,
+        "key": "GET /engines/{}",
+        "line": 28,
+        "mechanism": "http",
+        "method": "GET",
+        "path": "/engines/{}",
+        "role": "client"
+      },
+      "source_id": "088ce482bb612a1a",
+      "target_id": "acfc953e2d84d7b4"
+    }
+  ],
+  "schema_version": 1
+}

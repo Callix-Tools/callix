@@ -36,6 +36,7 @@ const sidebars: SidebarsConfig = {
         'adapters/typescript',
         'adapters/go',
         'adapters/rust',
+        'adapters/php',
         'adapters/yaml',
       ],
     },

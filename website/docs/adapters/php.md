@@ -45,10 +45,11 @@ parameter  Fixture\Models\Engine\__construct\region
 attribute  Fixture\Models\Engine\region
 ```
 
-A `MODULE` is a **namespace**, not a file — the fourth different meaning of
+A `MODULE` is a **namespace**, not a file — one of five different meanings of
 MODULE across callix's adapters (Python and TypeScript use a dotted path, Go a
-package directory, Rust a module path). A class binds to the MODULE for its
-longest namespace prefix.
+package directory, Rust a module path, C and C++ the directory). A class binds to
+the MODULE for its longest namespace prefix. The full table is in
+[Nodes](../graph-model/nodes.md).
 
 `CLASS` covers class, interface, trait **and** enum, distinguished by metadata
 booleans `is_interface`, `is_trait`, `is_enum` and `is_abstract`. PHP's four

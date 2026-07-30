@@ -37,10 +37,36 @@ graph.merge(TypeScriptAdapter().analyze("services/web"), allow_shared=True)
 
 | Mechanism | Server side | Client side |
 |---|---|---|
-| `http` | FastAPI / Flask / Starlette routes, Express and NestJS routes, gin / chi / echo, `net/http` and `ServeMux`, axum `.route()`, actix and rocket attributes | requests, httpx, `fetch`, axios, `net/http`, reqwest — and any named client |
-| `grpc` | servicer classes | generated stubs (`<Service>Stub`, `New<Service>Client`, tonic clients) |
-| `queue` | `subscribe`, `consume`, `basic_consume`, `xreadgroup` | `publish`, `produce`, `emit`, `SendMessage`, `basic_publish`, `xadd`, `enqueue`, `delay` |
+| `http` | FastAPI / Flask / Starlette routes, Express and NestJS routes, gin / chi / echo, `net/http` and `ServeMux`, axum `.route()`, actix and rocket attributes, Laravel / Symfony / Slim routes, civetweb / libmicrohttpd / cpp-httplib / Crow / Drogon, an OpenAPI document, a Kubernetes Ingress | requests, httpx, `fetch`, axios, `net/http`, reqwest, Guzzle, `file_get_contents`, libcurl — and any named client |
+| `grpc` | servicer classes, a C++ class inheriting `X::Service` | generated stubs (`<Service>Stub`, `New<Service>Client`, tonic clients, `X::NewStub`) |
+| `queue` | `subscribe`, `consume`, `basic_consume`, `xreadgroup` | `publish`, `produce`, `emit`, `SendMessage`, `basic_publish`, `xadd`, `enqueue`, `delay`, Laravel job dispatches |
 | `temporal` | `@activity.defn`, `RegisterActivity` | `execute_activity`, `ExecuteActivity` |
+
+Per-language detail is on each adapter's page. Two of the rows are worth
+expanding on, because they are where a key nearly fails to match:
+
+- **A URL is rarely a literal in C.** `snprintf(url, n, "/engines/%ld", id)`
+  builds it into a buffer, and the format string is reduced *whole* — stopping at
+  the first letter of `%ld` would leave a `d` behind and the key would never meet
+  a route. Same for a C++ `"/engines/" + std::to_string(id)`.
+- **YAML declares boundaries no code states.** An OpenAPI path is a server-side
+  route with confidence `1.0` and no handler to attach it to, which is what makes
+  "does the implementation match the spec" a graph query.
+
+That is not a hypothetical. Merge all eight of the repository's own fixtures and
+one node — `http:GET /engines/{}` — carries six edges from six languages:
+
+```
+c           consumes  0.7   src/main.c::fetch_one
+cpp         consumes  0.7   src/main.cpp::fetch_one(fixture::Identifier)
+php         consumes  0.9   Fixture\fetchOne
+python      consumes  0.9   pkg/service.py
+typescript  consumes  0.9   src/service.ts
+yaml        exposes   1.0   openapi.yaml
+```
+
+Five clients, written five different ways, and the OpenAPI document that
+declares the route none of them names.
 
 ## Linking the two sides
 
@@ -84,9 +110,10 @@ for boundary in graph.nodes_by_kind(NodeKind.BOUNDARY):
 ```
 
 Each edge carries the mechanism, the key, the role, the source position, and a
-**confidence**: `1.0` when the key came from a literal, lower when it was
-inferred from context. A client-side HTTP call scores `0.85`, a queue topic
-`0.7`.
+**confidence**: `1.0` when the contract was stated outright, lower when part of
+it was inferred. A client-side HTTP call is `0.85`–`0.9`, a queue topic `0.7`;
+the bands and what they mean are in
+[Boundaries](../graph-model/boundaries.md#confidence).
 
 ## What is not recognized
 

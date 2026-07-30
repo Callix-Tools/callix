@@ -44,14 +44,18 @@ adapter = PythonAdapter()
 
 **Writing an adapter.** Adapters are Rust modules now, not Python classes, so a
 new language means a change to callix rather than a package of your own. The
-resolver and dependency-parser hooks are still Python objects — see
-[Custom resolvers](../guides/custom-resolvers.md).
+resolver and dependency-parser hooks are still Python objects, and unlike
+graphlens they are accepted by *every* adapter rather than by one — see
+[Custom resolvers and parsers](../guides/custom-resolvers.md).
 
 ## What is not here
 
 `graphlens-cli`, the MCP server, the Neo4j backend, the HTML visualization,
-`graphlens-link`, and the PHP and C# adapters. callix produces the graph; the
-layers above it have not been ported.
+`graphlens-link`, and the C# adapter. callix produces the graph; the layers above
+it have not been ported.
+
+PHP *is* here — it was missing when this page was first written — and C and C++
+are new in callix with no graphlens counterpart. YAML is new too.
 
 ## The one deliberate divergence
 

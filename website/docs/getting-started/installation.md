@@ -19,8 +19,10 @@ together with the standard-library stubs they need — typeshed for Python,
 `lib.d.ts` for TypeScript. Nothing else has to be installed, and no language
 server is spawned.
 
-That is also why the module is large: `_core.abi3.so` is around 21 MB, against
-roughly 2.5 MB without ty.
+That is also why the download is large: the wheel is around 21 MB and the
+extension module inside it about 61 MB. Two type checkers, typeshed and
+`lib.d.ts` are what fill it; eight tree-sitter grammars are a rounding error
+beside them.
 
 ## What you have to provide
 
@@ -30,6 +32,9 @@ roughly 2.5 MB without ty.
 | TypeScript | nothing |
 | Go | a Go toolchain on `PATH` |
 | Rust | `rust-analyzer` and Cargo on `PATH` |
+| PHP | nothing |
+| C, C++ | nothing |
+| YAML | nothing |
 
 Go's and Rust's standard libraries cannot be compiled in: type checking reads
 their sources from GOROOT and from a real Cargo workspace. In practice this
@@ -38,6 +43,11 @@ toolchain.
 
 Without them the adapter still returns a **structural** graph and reports the
 shortfall in `graph.metadata["resolver_status"]`, rather than failing.
+
+PHP, C and C++ need nothing because their resolution is a symbol table built
+from the sources callix already parsed. It reports `degraded`, which is the
+honest label for a table rather than a checker; see
+[Resolvers](../adapters/resolvers.md).
 
 ## Supported platforms
 

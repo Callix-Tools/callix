@@ -15,6 +15,14 @@ colinhacks/zod, gin-gonic/gin, casdoor/casdoor, gohugoio/hugo,
 BurntSushi/ripgrep, tokio-rs/axum, astral-sh/ruff — roughly 1.6 million lines
 in total, and reports lines per second, peak memory and the resolved share.
 
+:::note Four languages, not eight
+The suite covers Python, TypeScript, Go and Rust. PHP, C and C++ have fixtures
+and golden output but no real-project benchmark yet, so no throughput number
+below applies to them. Their resolution is a symbol table built from a parse that
+already happened, so the cost is nearer Python's than Rust's — but that is a
+prediction, and this page is for measurements.
+:::
+
 Throughput splits sharply by how the resolver is wired:
 
 | Language | Order of magnitude | Why |

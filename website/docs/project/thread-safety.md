@@ -41,7 +41,8 @@ touched from a thread other than the one that created it?
 | `ResolverMetrics` | `get_all, set_all` | movable | mutable and unsynchronised |
 | `Graph` | — | movable | see [Graph](#graph) below |
 | `SpanIndex` | — | movable | every lookup mutates it: the per-file span lists are sorted lazily |
-| `RustAdapter`, `YamlAdapter`, `RustResolver` | — | movable | but sharing one still breaks; see [the borrow rule](#the-borrow-rule) |
+| `RustAdapter`, `YamlAdapter`, `PhpAdapter`, `CAdapter`, `CppAdapter` | — | movable | but sharing one still breaks; see [the borrow rule](#the-borrow-rule) |
+| `RustResolver`, `PhpResolver`, `CFamilyResolver` | — | movable | none of them holds a session or a database |
 | `PythonAdapter`, `TypeScriptAdapter`, `GoAdapter` | `unsendable` | **no** | |
 | `EmbeddedTyResolver`, `TsResolver`, `GoResolver` | `unsendable` | **no** | |
 
@@ -51,9 +52,10 @@ mutability and Python cannot assign to its fields. `node.name = "x"` raises
 writable`. The `metadata` dict hanging off a node is not covered by that — it is
 a plain `dict`, with plain `dict` semantics.
 
-That `RustAdapter` and `YamlAdapter` are not `unsendable` while the other three
-adapters are is an artefact of what their resolvers hold, not a guarantee. Treat
-all five the same.
+That five of the eight adapters are not `unsendable` is an artefact of what their
+resolvers hold — a salsa database, a Go session handle — not a guarantee about
+the adapter. Treat all eight the same: one per thread, dropped on the thread that
+built it.
 
 ## `unsendable` is a panic, not an exception
 
@@ -175,8 +177,8 @@ four-file crate fixture let the ticker thread run **once**.
 ## Why the parsers are thread-local
 
 Each adapter keeps its tree-sitter parser in a `thread_local!` holding a
-`RefCell<Parser>` (`src/python/mod.rs`, `src/typescript/mod.rs`,
-`src/golang/mod.rs`, `src/rustlang/mod.rs`, `src/yaml/mod.rs`).
+`RefCell<Parser>` — one per language module, and two in `src/cfamily/mod.rs`,
+since C and C++ are separate grammars behind one implementation.
 
 What that buys: a `tree_sitter::Parser` is not `Sync` and cannot be shared, and
 loading a grammar costs noticeably more than parsing a file. A thread-local
@@ -188,10 +190,9 @@ What it does not buy: parallelism. Today only one thread ever holds the GIL, so
 only one parser is ever in use.
 
 The genuinely shared parsing state is the compiled boundary queries, cached in
-`OnceLock`s per process (`src/python/boundary.rs`, `src/golang/boundary.rs`,
-`src/rustlang/boundary.rs`). TypeScript's cache is a
-`OnceLock<Mutex<HashMap<…>>>` because its query text varies with `.ts` versus
-`.tsx` — the mutex protects the cache, not a parser.
+`OnceLock`s per process — every boundary extractor does this. TypeScript's cache
+is a `OnceLock<Mutex<HashMap<…>>>` because its query text varies with `.ts`
+versus `.tsx`; the mutex protects the cache, not a parser.
 
 ## Resolvers
 
@@ -201,6 +202,8 @@ The genuinely shared parsing state is the compiled boundary queries, cached in
 | `TsResolver` | an `int` handle into a Go-side session map | no — `unsendable` | yes |
 | `GoResolver` | the same, plus a detected `GOROOT` | no — `unsendable` | yes |
 | `RustResolver` | decoded SCIP tables, plain data | movable | yes |
+| `PhpResolver` | an autoload map and symbol tables, plain data | movable | yes |
+| `CFamilyResolver` | nothing — it answers `status()` and the table lives inside `analyze` | movable | yes |
 
 The salsa database behind ty is not `Sync`, which is the reason for the
 `unsendable` marker on `EmbeddedTyResolver` — the comment above the attribute

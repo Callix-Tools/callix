@@ -57,7 +57,9 @@ containment edges, but no `CALLS`, `REFERENCES`, `HAS_TYPE` or `INHERITS_FROM`
 
 ## Check the result before trusting it
 
-A graph always tells you how complete it is:
+A graph always tells you how complete it is — and for three languages the answer
+is never `ok`, because PHP, C and C++ resolve through a symbol table rather than
+a type checker:
 
 ```python
 graph.metadata["resolver_status"]    # 'ok' | 'degraded' | 'unavailable'

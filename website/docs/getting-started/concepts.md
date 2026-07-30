@@ -13,16 +13,24 @@ the same source twice gives identical bytes.
 ## Adapter
 
 An adapter turns a source tree into a graph. It owns project discovery, file
-collection, parsing, and the resolution pass. There is one per language, and
-they share the same surface:
+collection, parsing, and the resolution pass. There is one per language, and they
+share the same surface — the same constructor and the same five methods:
 
 ```python
+Adapter(resolve=True, resolver=None, dep_parsers=None, boundary_extractors=None)
+
 adapter.language()          # 'python'
 adapter.file_extensions()   # {'.py', '.pyi'}
 adapter.can_handle(root)    # bool
 adapter.collect_files(root) # list[Path]
 adapter.analyze(root, files=None, *, strict=False)
 ```
+
+Every constructor argument is keyword-only. `resolver` and `dep_parsers` replace
+the language's built-in backend and manifest reader; `boundary_extractors` runs
+alongside the built-in ones. `YamlAdapter` is the exception and takes the first
+and last only, because YAML declares no symbols to resolve. See
+[Custom resolvers and parsers](../guides/custom-resolvers.md).
 
 ## Occurrence
 
@@ -42,6 +50,11 @@ and it is the only part that needs real type information. The result carries an
 whether the edge lands on a node in the graph or on an `EXTERNAL_SYMBOL`.
 
 An edge is never dropped: a target outside the graph still gets a node.
+
+How much a resolver actually knows varies by language, and the graph says which
+you got in `metadata["resolver_status"]`: a real type checker for Python,
+TypeScript, Go and Rust, a symbol table reporting `degraded` for PHP, C and C++.
+See [Resolvers](../adapters/resolvers.md).
 
 ## Boundary
 

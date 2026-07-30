@@ -14,8 +14,11 @@ from callix import NodeKind
 
 graph.nodes_by_kind(NodeKind.FUNCTION)
 graph.nodes_in_file("src/app/service.py")
-graph.find_by_name("UserService")     # short name or qualified name
+graph.nodes_by_name("UserService")    # matches the short OR the qualified name
 ```
+
+Paths are the project-relative ones the `FILE` nodes advertise, not absolute
+ones — see [Nodes](../graph-model/nodes.md#paths-are-relative-always).
 
 ## Edges
 
@@ -35,7 +38,7 @@ graph.references_to(node_id)
 A worked example — everything that would be affected by changing a function:
 
 ```python
-target = graph.find_by_name("charge_card")[0]
+target = graph.nodes_by_name("charge_card")[0]
 
 for caller in graph.callers(target.id):
     print(caller.qualified_name, caller.file_path)
@@ -46,10 +49,21 @@ for caller in graph.callers(target.id):
 ```python
 graph.neighbors(node_id, depth=2)   # distinct nodes within 2 hops, either way
 graph.subgraph([id1, id2, ...])     # those nodes plus every incident edge
-graph.file_subgraph("src/app/service.py")
+graph.subgraph_for_file("src/app/service.py")
 ```
 
 `subgraph()` returns a real `Graph`, so it serializes and diffs like any other.
+Its nodes keep the parent's insertion order rather than the order of the ids you
+passed, so the result is byte-stable and usable as a cache key or a golden file.
+
+## Across services
+
+```python
+graph.merge(other, allow_shared=True)   # one graph per language, combined
+graph.link_boundaries()                 # -> int, the COMMUNICATES_WITH edges added
+```
+
+See [Cross-language analysis](./cross-language.md).
 
 ## Metadata
 

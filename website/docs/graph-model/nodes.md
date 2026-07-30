@@ -22,7 +22,7 @@ node.metadata        # dict[str, object]
 | Kind | Meaning |
 |---|---|
 | `PROJECT` | one analysed root |
-| `MODULE` | a namespace: dotted name, Go package, or Rust module path |
+| `MODULE` | a namespace — the shape differs per language, see below |
 | `FILE` | a source file |
 | `CLASS` | class, struct, enum, trait, interface |
 | `FUNCTION` | a free function |
@@ -35,6 +35,21 @@ node.metadata        # dict[str, object]
 | `EXTERNAL_SYMBOL` | a target outside the graph |
 | `DEPENDENCY` | a package the manifests declare, whether or not anything imports it |
 | `BOUNDARY` | a cross-service port |
+
+`MODULE` is the kind whose meaning moves most between languages:
+
+| Language | A `MODULE` is |
+|---|---|
+| Python, TypeScript | a dotted name — `app.services.billing` |
+| Go | a package directory, whose `qualified_name` **is** the import path |
+| Rust | a module path — `crate::net::http` |
+| PHP | a namespace — `App\Service` |
+| C, C++ | the directory; a C++ namespace lives in the qualified names instead |
+| YAML | none — a `FILE` hangs off the `PROJECT` directly |
+
+`CLASS` is similarly wide: a PHP interface, trait and enum are all `CLASS` with a
+metadata flag, and so are a C struct, union and enum. The kind is a slot in the
+graph, not a claim that the languages agree.
 
 ## Identifiers
 

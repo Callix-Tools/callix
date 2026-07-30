@@ -59,9 +59,17 @@ relation.metadata["line"], relation.metadata["col"]
 Plus per-mechanism detail: `method` and `path` for HTTP, `service` and `method`
 for gRPC, `topic` for queues, `activity` for Temporal.
 
-## Duplicates are meaningful
+## Duplicates are meaningful — when they carry metadata
 
 Relations are a list, not a set. Two `CALLS` between the same pair of nodes
 from two different call sites are two edges, distinguished by their `span`
 metadata. Diffing respects that: the edge key includes canonicalized metadata,
 so neither the duplicates collapse nor a metadata-only change goes unnoticed.
+
+A **structural** edge is the opposite case, and the rule is exactly one per
+`(source, target, kind)`. It has no metadata, so a second copy would say nothing
+the first did not: a visitor emits one `DECLARES` per occurrence while the node
+it points at is deduplicated by qualified name, which meant a variable assigned
+eight times produced eight identical edges — 7.7% of all edges on real projects.
+Every adapter drops those before returning. An edge that carries metadata is
+exempt, because there the duplicate records *where* it was observed.

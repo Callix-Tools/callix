@@ -112,8 +112,13 @@ already declared in the enums and producing nothing, and removing unused
 vocabulary later would have been the breaking direction.
 
 **Widening a function signature with a keyword-only argument is a minor
-release.** Every adapter constructor is keyword-only past `resolve`, precisely
-so arguments can be added without breaking a positional call.
+release.** Every adapter constructor is keyword-only *entirely* — there is no
+positional argument to shift — precisely so an argument can be added later
+without breaking a call. That is also why they were all made to take the same
+four (`resolve`, `resolver`, `dep_parsers`, `boundary_extractors`) before 1.0
+rather than after: making `PythonAdapter`'s two positional arguments keyword-only
+was a breaking change, and it was free to make while the promise was not yet in
+force.
 
 ## Before 1.0
 
@@ -122,4 +127,5 @@ changes are cheap now and impossible later, which is the reason for the
 deliberate divergences recorded in
 [the migration notes](./migrating-from-graphlens.md) — a vendored dependency
 reported as first-party code, or a duplicated structural edge, is worth fixing
-while fixing it is still free.
+while fixing it is still free. The adapter constructors were aligned in the same
+spirit: the shape of the public API is the one thing 1.0 freezes hardest.

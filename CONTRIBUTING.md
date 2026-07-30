@@ -61,18 +61,23 @@ relation kind plus the resolver metrics. Full resolved graphs would be too
 brittle to freeze, but a kind that silently stops being emitted, or a resolved
 share that drops, still shows up.
 
-Those golden files were cross-validated against
+The Python, TypeScript, Go and Rust golden files were cross-validated against
 [graphlens](https://github.com/Neko1313/graphlens), the Python implementation
-callix replaces, while that project still ran: all four fixtures matched it
-byte for byte at the moment they were frozen. That is worth knowing because
-graphlens is archived — the baseline was captured while it could still be
-regenerated.
+callix replaces, while that project still ran: all four matched it byte for byte
+at the moment they were frozen. That is worth knowing because graphlens is
+archived — the baseline was captured while it could still be regenerated.
 
-Since then the Go and Rust adapters have deliberately moved **past** graphlens:
-they now emit PARAMETER and ATTRIBUTE nodes, IMPORTS edges, and the annotation
-and read/write occurrences that graphlens never produced for those languages.
-So a fresh parity run against graphlens will show extra nodes and edges on
-those two — that is the fix, not a regression.
+PHP, C, C++ and YAML have no such cross-check. C, C++ and YAML have no graphlens
+counterpart at all, and callix's PHP adapter is a fresh implementation rather
+than a port, so their golden files are callix's own output, reviewed by hand
+against the fixture sources. Weaker evidence, and worth knowing which of the two
+you are relying on.
+
+The Go and Rust adapters have since deliberately moved **past** graphlens: they
+now emit PARAMETER and ATTRIBUTE nodes, IMPORTS edges, and the annotation and
+read/write occurrences that graphlens never produced for those languages. So a
+fresh parity run against graphlens will show extra nodes and edges on those two —
+that is the fix, not a regression.
 
 The wide half of the net is [`tests/baseline/`](tests/baseline): a
 deterministic fingerprint of each of the eight benchmark projects — totals,
@@ -103,9 +108,9 @@ because callix skips the pass entirely. And re-snapshot the graphlens baseline
 before believing a diff — a stale dump once produced a fake 448k-line
 regression.
 
-One divergence is intentional and applies to all four languages: an
-unresolvable `EXTERNAL_SYMBOL` key includes the project-relative file path, so
-expect diffs confined to those nodes. The reasoning is in
+One divergence is intentional and applies to every language callix and graphlens
+share: an unresolvable `EXTERNAL_SYMBOL` key includes the project-relative file
+path, so expect diffs confined to those nodes. The reasoning is in
 [the migration notes](https://callix-tools.github.io/callix/docs/project/migrating-from-graphlens).
 
 ## Build constraints
@@ -146,9 +151,10 @@ built inside manylinux/musllinux containers that ship their own Rust — hence
 the explicit `rust-toolchain: stable` on the `maturin-action` step. Without it
 CI can be green while the wheel matrix fails.
 
-**Size and time.** `_core.abi3.so` is about 21 MB against roughly 2.5 MB
-without ty, and a cold build takes tens of minutes — covered by the cargo cache
-in CI and by incremental rebuilds locally.
+**Size and time.** The wheel is about 21 MB and `_core.abi3.so` inside it about
+61 MB — two type checkers, typeshed and `lib.d.ts`, with the eight tree-sitter
+grammars a rounding error beside them. A cold build takes tens of minutes,
+covered by the cargo cache in CI and by incremental rebuilds locally.
 
 **Windows.** The TypeScript and Go resolvers are a Go c-archive, which cgo
 produces through mingw-w64 in GNU archive format; that does not link into the
@@ -171,11 +177,16 @@ task docs           # local preview with hot reload
 task docs:build     # what CI runs
 ```
 
-Run `task docs:build` before pushing a docs change. It fails on two things a
-reader would otherwise hit in production: `onBrokenLinks: 'throw'` rejects a link
-to a heading that no longer exists, and MDX parses `{...}` in a heading as a JSX
-expression — so Docusaurus's own `{#custom-anchor}` syntax breaks the build here
-and the auto-generated slug is what to link to.
+Run `task docs:build` before pushing a docs change. `onBrokenLinks` and
+`onBrokenAnchors` are both `throw`, so a link to a heading that has been reworded
+fails the build rather than rotting. One trap: MDX parses `{...}` in a heading as
+a JSX expression, so Docusaurus's own `{#custom-anchor}` syntax breaks the build
+here — link to the auto-generated slug instead.
+
+`tests/api/test_docs_examples.py` covers the other half. Every ```python block in
+the docs is scanned for attribute access on a known type, and a name the module
+does not have fails the test. It exists because `Graph.find_by_name` and
+`Graph.file_subgraph` were documented for months under names the code never had.
 
 ## Benchmarks
 
@@ -209,9 +220,10 @@ The version lives **only** in `Cargo.toml` — `pyproject.toml` declares it
 `dynamic` and maturin reads it from there.
 
 Wheels are built by a per-platform matrix, because one wheel cannot cover every
-platform with ty and the Go bridge linked inside: Linux x86_64 and aarch64
-(manylinux 2_28, with Go installed into the container) and macOS arm64 and
-x86_64. Everything else builds from the sdist and needs Go plus network access.
+platform with ty and the Go bridge linked inside: Linux x86_64 and aarch64 for
+both glibc (manylinux 2_28) and musl (musllinux 1_2, so Alpine CI images work),
+with Go installed into each container, plus macOS arm64 and x86_64. Everything
+else builds from the sdist and needs Go plus network access.
 
 Publishing needs one secret, `PYPI_TOKEN`, and write permission for the
 workflow so it can push the release commit and tag.

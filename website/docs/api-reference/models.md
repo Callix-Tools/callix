@@ -23,8 +23,8 @@ ATTRIBUTE  PARAMETER  TYPE_ALIAS  IMPORT  EXTERNAL_SYMBOL
 DEPENDENCY  BOUNDARY
 ```
 
-`NodeKind.parse(value)` converts back from a string and raises `ValueError` on
-an unknown one.
+`NodeKind.from_value(value)` converts back from a string and raises
+`ValueError` on an unknown one. `RelationKind` has the same pair.
 
 ## Relation
 
@@ -72,6 +72,11 @@ OccurrenceRef(role, line, col, enclosing_id, span)
 
 `OK`, `DEGRADED`, `UNAVAILABLE`. Stored in graph metadata as a string, and
 merged to the worst of the two when graphs are combined.
+
+`UNAVAILABLE` means resolution did not run or the backend could not answer;
+`DEGRADED` means it ran and answered partially, which is the best PHP, C and C++
+report. `YamlAdapter` reports `OK` with zero queries, because a YAML document has
+no symbols to resolve — see [Resolvers](../adapters/resolvers.md).
 
 ## ResolverMetrics
 

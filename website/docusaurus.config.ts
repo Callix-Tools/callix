@@ -18,6 +18,10 @@ const config: Config = {
   projectName: 'callix',
 
   onBrokenLinks: 'throw',
+  // Anchors default to 'warn', and a warning in a CI log is a link that stays
+  // broken. Several pages link to a specific heading in another one, and a
+  // heading's slug changes whenever its wording does.
+  onBrokenAnchors: 'throw',
 
   markdown: {
     hooks: {

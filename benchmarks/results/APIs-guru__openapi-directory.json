@@ -1,0 +1,23 @@
+{
+  "name": "APIs-guru/openapi-directory",
+  "langs": [
+    "yaml"
+  ],
+  "description": "~1000 real OpenAPI documents (boundary extraction at scale)",
+  "requested_ref": "openapi3-0-source",
+  "commit": "959d727",
+  "loc": 1268530,
+  "files": 971,
+  "nodes": 11812,
+  "relations": 16795,
+  "seconds": 5.771786883000004,
+  "peak_mem_mb": 115.28515625,
+  "mem_source": "getrusage.max",
+  "resolver_status": "ok",
+  "resolver_queries": 0,
+  "resolver_resolved": 0,
+  "resolver_seconds": 0.0,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

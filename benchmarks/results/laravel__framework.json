@@ -1,0 +1,23 @@
+{
+  "name": "laravel/framework",
+  "langs": [
+    "php"
+  ],
+  "description": "Web application framework (large, HTTP routing)",
+  "requested_ref": "v13.23.0",
+  "commit": "92a7072",
+  "loc": 540800,
+  "files": 3016,
+  "nodes": 83164,
+  "relations": 291129,
+  "seconds": 17.772253135000028,
+  "peak_mem_mb": 375.84765625,
+  "mem_source": "getrusage.max",
+  "resolver_status": "degraded",
+  "resolver_queries": 283108,
+  "resolver_resolved": 197468,
+  "resolver_seconds": 1.104,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

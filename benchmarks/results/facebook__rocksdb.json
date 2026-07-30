@@ -1,0 +1,23 @@
+{
+  "name": "facebook/rocksdb",
+  "langs": [
+    "cpp"
+  ],
+  "description": "Embedded key-value store (large, scale test)",
+  "requested_ref": "v11.1.2",
+  "commit": "3b44608",
+  "loc": 774485,
+  "files": 1342,
+  "nodes": 300996,
+  "relations": 513211,
+  "seconds": 26.897513271999998,
+  "peak_mem_mb": 718.328125,
+  "mem_source": "getrusage.max",
+  "resolver_status": "degraded",
+  "resolver_queries": 433814,
+  "resolver_resolved": 433814,
+  "resolver_seconds": 0.0,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

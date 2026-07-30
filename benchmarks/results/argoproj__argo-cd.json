@@ -1,0 +1,23 @@
+{
+  "name": "argoproj/argo-cd",
+  "langs": [
+    "yaml"
+  ],
+  "description": "GitOps CD — Kubernetes manifests, kustomize, CI pipelines",
+  "requested_ref": "v3.4.5",
+  "commit": "564b949",
+  "loc": 322262,
+  "files": 2201,
+  "nodes": 2220,
+  "relations": 2246,
+  "seconds": 1.448158884999998,
+  "peak_mem_mb": 90.74609375,
+  "mem_source": "getrusage.max",
+  "resolver_status": "ok",
+  "resolver_queries": 0,
+  "resolver_resolved": 0,
+  "resolver_seconds": 0.0,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

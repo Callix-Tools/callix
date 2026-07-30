@@ -1,0 +1,23 @@
+{
+  "name": "redis/redis",
+  "langs": [
+    "c"
+  ],
+  "description": "In-memory data store (large, header/source pairs)",
+  "requested_ref": "8.10.0",
+  "commit": "5279a8d",
+  "loc": 374211,
+  "files": 786,
+  "nodes": 156896,
+  "relations": 200372,
+  "seconds": 6.957668479999995,
+  "peak_mem_mb": 294.49609375,
+  "mem_source": "getrusage.max",
+  "resolver_status": "degraded",
+  "resolver_queries": 161477,
+  "resolver_resolved": 161477,
+  "resolver_seconds": 0.0,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

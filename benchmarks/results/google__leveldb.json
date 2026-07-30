@@ -1,0 +1,23 @@
+{
+  "name": "google/leveldb",
+  "langs": [
+    "cpp"
+  ],
+  "description": "Embedded key-value store (medium, header/source pairs)",
+  "requested_ref": "1.23",
+  "commit": "99b3c03",
+  "loc": 28280,
+  "files": 131,
+  "nodes": 12235,
+  "relations": 20600,
+  "seconds": 0.8693807230000061,
+  "peak_mem_mb": 76.96484375,
+  "mem_source": "getrusage.max",
+  "resolver_status": "degraded",
+  "resolver_queries": 14322,
+  "resolver_resolved": 14322,
+  "resolver_seconds": 0.0,
+  "status": "ok",
+  "error": "",
+  "notes": []
+}

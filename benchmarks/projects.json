@@ -56,6 +56,48 @@
       "ref": "0.15.18",
       "langs": ["rust"],
       "description": "Python linter & formatter (large, scale test)"
+    },
+    {
+      "name": "laravel/framework",
+      "repo": "https://github.com/laravel/framework",
+      "ref": "v13.23.0",
+      "langs": ["php"],
+      "description": "Web application framework (large, HTTP routing)"
+    },
+    {
+      "name": "redis/redis",
+      "repo": "https://github.com/redis/redis",
+      "ref": "8.10.0",
+      "langs": ["c"],
+      "description": "In-memory data store (large, header/source pairs)"
+    },
+    {
+      "name": "google/leveldb",
+      "repo": "https://github.com/google/leveldb",
+      "ref": "1.23",
+      "langs": ["cpp"],
+      "description": "Embedded key-value store (medium, header/source pairs)"
+    },
+    {
+      "name": "facebook/rocksdb",
+      "repo": "https://github.com/facebook/rocksdb",
+      "ref": "v11.1.2",
+      "langs": ["cpp"],
+      "description": "Embedded key-value store (large, scale test)"
+    },
+    {
+      "name": "APIs-guru/openapi-directory",
+      "repo": "https://github.com/APIs-guru/openapi-directory",
+      "ref": "openapi3-0-source",
+      "langs": ["yaml"],
+      "description": "~1000 real OpenAPI documents (boundary extraction at scale)"
+    },
+    {
+      "name": "argoproj/argo-cd",
+      "repo": "https://github.com/argoproj/argo-cd",
+      "ref": "v3.4.5",
+      "langs": ["yaml"],
+      "description": "GitOps CD — Kubernetes manifests, kustomize, CI pipelines"
     }
   ]
 }

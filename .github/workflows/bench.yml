@@ -50,6 +50,25 @@ jobs:
               - "src/rustlang/**"
               - "benchmarks/**"
               - ".github/workflows/bench.yml"
+            php:
+              - "src/php/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            # C and C++ are one adapter behind two classes, so both filters
+            # watch the same directory: a change in src/cfamily/ can move
+            # either dialect's numbers.
+            c:
+              - "src/cfamily/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            cpp:
+              - "src/cfamily/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
+            yaml:
+              - "src/yaml/**"
+              - "benchmarks/**"
+              - ".github/workflows/bench.yml"
 
       # paths-filter's `changes` output is already a JSON array of the filters
       # that matched, which is exactly the shape the matrix needs.
@@ -57,7 +76,7 @@ jobs:
         id: resolve
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo 'list=["python","typescript","go","rust"]' >> "$GITHUB_OUTPUT"
+            echo 'list=["python","typescript","go","rust","php","c","cpp","yaml"]' >> "$GITHUB_OUTPUT"
           else
             echo 'list=${{ steps.filter.outputs.changes }}' >> "$GITHUB_OUTPUT"
           fi

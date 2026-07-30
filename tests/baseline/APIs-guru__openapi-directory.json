@@ -1,0 +1,4894 @@
+{
+  "files": {
+    ".travis.yml": {
+      "hash": "91188cd74e08ad24",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/1forge.com/0.0.1/swagger.yaml": {
+      "hash": "46ef18ecb3e7fcbf",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/1forge.com/patch.yaml": {
+      "hash": "c586f4409611774d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/6-dot-authentiqio.appspot.com/6/swagger.yaml": {
+      "hash": "48658de75a6a6c88",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/6-dot-authentiqio.appspot.com/patch.yaml": {
+      "hash": "d0db2f614d7c5ea8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/amadeus.com/1.2/swagger.yaml": {
+      "hash": "e6dadae47e654c4d",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/amadeus.com/patch.yaml": {
+      "hash": "48d954d4e3b1ac30",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/amazonaws.com/acm/2015-12-08/swagger.yaml": {
+      "hash": "ecfac264eab969d5",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/amazonaws.com/apigateway/2015-07-09/swagger.yaml": {
+      "hash": "a94e74846726cf5c",
+      "nodes": 1,
+      "relations": 47
+    },
+    "APIs/amazonaws.com/application-autoscaling/2016-02-06/swagger.yaml": {
+      "hash": "bf3e3ce6a4a58f0b",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/amazonaws.com/appstream/2016-12-01/swagger.yaml": {
+      "hash": "d3647dc0ba69e7f5",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/amazonaws.com/athena/2017-05-18/swagger.yaml": {
+      "hash": "95f994dcb73d8118",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/amazonaws.com/autoscaling/2011-01-01/swagger.yaml": {
+      "hash": "375c6b9fb39c9791",
+      "nodes": 1,
+      "relations": 52
+    },
+    "APIs/amazonaws.com/batch/2016-08-10/swagger.yaml": {
+      "hash": "59a6deaab1b26887",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/amazonaws.com/budgets/2016-10-20/swagger.yaml": {
+      "hash": "e53ad8653a13c31e",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/amazonaws.com/clouddirectory/2016-05-10/swagger.yaml": {
+      "hash": "3a502fb30d03ea83",
+      "nodes": 1,
+      "relations": 57
+    },
+    "APIs/amazonaws.com/cloudformation/2010-05-15/swagger.yaml": {
+      "hash": "55a828dce473a318",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/amazonaws.com/cloudfront/2016-11-25/swagger.yaml": {
+      "hash": "340ec5df75295292",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/cloudfront/2017-03-25/swagger.yaml": {
+      "hash": "5a8054a3443a87da",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/cloudhsm/2014-05-30/swagger.yaml": {
+      "hash": "be3cae664b7e0bb8",
+      "nodes": 1,
+      "relations": 20
+    },
+    "APIs/amazonaws.com/cloudsearch/2011-02-01/swagger.yaml": {
+      "hash": "62b1d60119bac919",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/amazonaws.com/cloudsearch/2013-01-01/swagger.yaml": {
+      "hash": "a64f612857d14e9a",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/amazonaws.com/cloudsearchdomain/2013-01-01/swagger.yaml": {
+      "hash": "793027a854248f43",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/amazonaws.com/cloudtrail/2013-11-01/swagger.yaml": {
+      "hash": "49819df82d779b81",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/amazonaws.com/codebuild/2016-10-06/swagger.yaml": {
+      "hash": "fdb082bfdbd11e8b",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/amazonaws.com/codecommit/2015-04-13/swagger.yaml": {
+      "hash": "430456c9d96091dc",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/codedeploy/2014-10-06/swagger.yaml": {
+      "hash": "2573aaa2f3517152",
+      "nodes": 1,
+      "relations": 38
+    },
+    "APIs/amazonaws.com/codepipeline/2015-07-09/swagger.yaml": {
+      "hash": "90691c18793dce45",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/amazonaws.com/codestar/2017-04-19/swagger.yaml": {
+      "hash": "2f53d4d2e2ddfde8",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/amazonaws.com/cognito-identity/2014-06-30/swagger.yaml": {
+      "hash": "2db0531287664820",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/amazonaws.com/cognito-idp/2016-04-18/swagger.yaml": {
+      "hash": "0f7a80c4ba9fa10e",
+      "nodes": 1,
+      "relations": 74
+    },
+    "APIs/amazonaws.com/cognito-sync/2014-06-30/swagger.yaml": {
+      "hash": "8af410a056846ec1",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/amazonaws.com/config/2014-11-12/swagger.yaml": {
+      "hash": "6bc9a4b1dca26224",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/amazonaws.com/cur/2017-01-06/swagger.yaml": {
+      "hash": "7d108b949815bcff",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/amazonaws.com/datapipeline/2012-10-29/swagger.yaml": {
+      "hash": "838d4694b3e7efc7",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/amazonaws.com/dax/2017-04-19/swagger.yaml": {
+      "hash": "35f9d5dee83dd619",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/amazonaws.com/devicefarm/2015-06-23/swagger.yaml": {
+      "hash": "7f2bed4f24050182",
+      "nodes": 1,
+      "relations": 49
+    },
+    "APIs/amazonaws.com/directconnect/2012-10-25/swagger.yaml": {
+      "hash": "2acf73f8ac025d9d",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/amazonaws.com/discovery/2015-11-01/swagger.yaml": {
+      "hash": "25394d346c96270a",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/amazonaws.com/dms/2016-01-01/swagger.yaml": {
+      "hash": "d45b3ac2474f1dc1",
+      "nodes": 1,
+      "relations": 40
+    },
+    "APIs/amazonaws.com/ds/2015-04-16/swagger.yaml": {
+      "hash": "5356f6e3c77804db",
+      "nodes": 1,
+      "relations": 40
+    },
+    "APIs/amazonaws.com/dynamodb/2011-12-05/swagger.yaml": {
+      "hash": "e1cb35962bbeaea2",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/amazonaws.com/dynamodb/2012-08-10/swagger.yaml": {
+      "hash": "dd01d999f5c3b7a5",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/amazonaws.com/ec2/2016-11-15/swagger.yaml": {
+      "hash": "01245694724a04cb",
+      "nodes": 1,
+      "relations": 229
+    },
+    "APIs/amazonaws.com/ecr/2015-09-21/swagger.yaml": {
+      "hash": "4afc489ca20b9167",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/ecs/2014-11-13/swagger.yaml": {
+      "hash": "6b86e83b80f0b2e0",
+      "nodes": 1,
+      "relations": 31
+    },
+    "APIs/amazonaws.com/elasticache/2015-02-02/swagger.yaml": {
+      "hash": "30b4fc03449a0ab7",
+      "nodes": 1,
+      "relations": 39
+    },
+    "APIs/amazonaws.com/elasticbeanstalk/2010-12-01/swagger.yaml": {
+      "hash": "b042635ca5460d76",
+      "nodes": 1,
+      "relations": 41
+    },
+    "APIs/amazonaws.com/elasticfilesystem/2015-02-01/swagger.yaml": {
+      "hash": "0c64523d78c6abf4",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/amazonaws.com/elasticloadbalancing/2012-06-01/swagger.yaml": {
+      "hash": "31034898e0a9ba17",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/amazonaws.com/elasticloadbalancingv2/2015-12-01/swagger.yaml": {
+      "hash": "8ec84bc4aea798bd",
+      "nodes": 1,
+      "relations": 31
+    },
+    "APIs/amazonaws.com/elasticmapreduce/2009-03-31/swagger.yaml": {
+      "hash": "ff186b0cd198b716",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/amazonaws.com/elastictranscoder/2012-09-25/swagger.yaml": {
+      "hash": "487b84ca18bdd688",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/amazonaws.com/email/2010-12-01/swagger.yaml": {
+      "hash": "b4aa1e6fdffa2e88",
+      "nodes": 1,
+      "relations": 49
+    },
+    "APIs/amazonaws.com/entitlement.marketplace/2017-01-11/swagger.yaml": {
+      "hash": "aeef1b62e35d2996",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/amazonaws.com/es/2015-01-01/swagger.yaml": {
+      "hash": "eebe143fa7d9015c",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/amazonaws.com/events/2015-10-07/swagger.yaml": {
+      "hash": "f48d4573d8d5f0e0",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/amazonaws.com/firehose/2015-08-04/swagger.yaml": {
+      "hash": "a35ac11f3f014886",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/amazonaws.com/gamelift/2015-10-01/swagger.yaml": {
+      "hash": "37f7622a6e0e0c19",
+      "nodes": 1,
+      "relations": 47
+    },
+    "APIs/amazonaws.com/glacier/2012-06-01/swagger.yaml": {
+      "hash": "62cd3c86b986e04b",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/amazonaws.com/greengrass/2017-06-07/swagger.yaml": {
+      "hash": "caf6e7e1bfb10151",
+      "nodes": 1,
+      "relations": 32
+    },
+    "APIs/amazonaws.com/health/2016-08-04/swagger.yaml": {
+      "hash": "8b6848fb5d77b09a",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/amazonaws.com/iam/2010-05-08/swagger.yaml": {
+      "hash": "f782989d2ad80e7a",
+      "nodes": 1,
+      "relations": 120
+    },
+    "APIs/amazonaws.com/importexport/2010-06-01/swagger.yaml": {
+      "hash": "ff4036a9764acb44",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/amazonaws.com/inspector/2016-02-16/swagger.yaml": {
+      "hash": "7d8a725319041286",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/amazonaws.com/iot-data/2015-05-28/swagger.yaml": {
+      "hash": "525a7d09de84386a",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/amazonaws.com/iot/2015-05-28/swagger.yaml": {
+      "hash": "b5c62b5a43ee4d0c",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/amazonaws.com/kinesis/2013-12-02/swagger.yaml": {
+      "hash": "6cc1f33a543ac775",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/amazonaws.com/kinesisanalytics/2015-08-14/swagger.yaml": {
+      "hash": "fac6211c98e50cd2",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/amazonaws.com/kms/2014-11-01/swagger.yaml": {
+      "hash": "a525cd4ce5045ef9",
+      "nodes": 1,
+      "relations": 35
+    },
+    "APIs/amazonaws.com/lambda/2014-11-11/swagger.yaml": {
+      "hash": "4181f0c79ac74d50",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/amazonaws.com/lambda/2015-03-31/swagger.yaml": {
+      "hash": "2977bde87d486a3f",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/amazonaws.com/lex-models/2017-04-19/swagger.yaml": {
+      "hash": "9d7371bb46faf4c7",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/amazonaws.com/lightsail/2016-11-28/swagger.yaml": {
+      "hash": "5bb49ccb0b4532d9",
+      "nodes": 1,
+      "relations": 48
+    },
+    "APIs/amazonaws.com/machinelearning/2014-12-12/swagger.yaml": {
+      "hash": "f34574246eb86efd",
+      "nodes": 1,
+      "relations": 28
+    },
+    "APIs/amazonaws.com/marketplacecommerceanalytics/2015-07-01/swagger.yaml": {
+      "hash": "01b528c3f08efb6b",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/amazonaws.com/meteringmarketplace/2016-01-14/swagger.yaml": {
+      "hash": "ef9a871fc6266117",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/amazonaws.com/mobileanalytics/2014-06-05/swagger.yaml": {
+      "hash": "8d4bb7d61b542211",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/amazonaws.com/monitoring/2010-08-01/swagger.yaml": {
+      "hash": "d6c90766a0e2b8fd",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/amazonaws.com/mturk-requester/2017-01-17/swagger.yaml": {
+      "hash": "f9413ff491a46b4b",
+      "nodes": 1,
+      "relations": 39
+    },
+    "APIs/amazonaws.com/opsworks/2013-02-18/swagger.yaml": {
+      "hash": "ea457faa18bb1863",
+      "nodes": 1,
+      "relations": 73
+    },
+    "APIs/amazonaws.com/opsworkscm/2016-11-01/swagger.yaml": {
+      "hash": "0147305a7bbcd9f8",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/amazonaws.com/organizations/2016-11-28/swagger.yaml": {
+      "hash": "b71fa54ca7c10160",
+      "nodes": 1,
+      "relations": 39
+    },
+    "APIs/amazonaws.com/pinpoint/2016-12-01/swagger.yaml": {
+      "hash": "90b3976efaaf524f",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/amazonaws.com/polly/2016-06-10/swagger.yaml": {
+      "hash": "8e3ebcb72a025407",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/amazonaws.com/rds/2013-01-10/swagger.yaml": {
+      "hash": "01a0b5b2f8aa8040",
+      "nodes": 1,
+      "relations": 50
+    },
+    "APIs/amazonaws.com/rds/2013-02-12/swagger.yaml": {
+      "hash": "dc6a1cf9d9b29608",
+      "nodes": 1,
+      "relations": 52
+    },
+    "APIs/amazonaws.com/rds/2013-09-09/swagger.yaml": {
+      "hash": "6ace6472a81f9b83",
+      "nodes": 1,
+      "relations": 52
+    },
+    "APIs/amazonaws.com/rds/2014-09-01/swagger.yaml": {
+      "hash": "8c3dc8d56ef3de67",
+      "nodes": 1,
+      "relations": 54
+    },
+    "APIs/amazonaws.com/rds/2014-10-31/swagger.yaml": {
+      "hash": "7afc5eca5114944f",
+      "nodes": 1,
+      "relations": 89
+    },
+    "APIs/amazonaws.com/redshift/2012-12-01/swagger.yaml": {
+      "hash": "6d7e8738eea553a6",
+      "nodes": 1,
+      "relations": 63
+    },
+    "APIs/amazonaws.com/rekognition/2016-06-27/swagger.yaml": {
+      "hash": "302c54fb9c440e05",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/amazonaws.com/resourcegroupstaggingapi/2017-01-26/swagger.yaml": {
+      "hash": "ee3c39e97f4c2edc",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/amazonaws.com/route53/2013-04-01/swagger.yaml": {
+      "hash": "e5ece034f39de0cf",
+      "nodes": 1,
+      "relations": 35
+    },
+    "APIs/amazonaws.com/route53domains/2014-05-15/swagger.yaml": {
+      "hash": "2e40f76ad5e78fd9",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/amazonaws.com/runtime.lex/2016-11-28/swagger.yaml": {
+      "hash": "04dd162afb6d6d15",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/amazonaws.com/s3/2006-03-01/swagger.yaml": {
+      "hash": "e350818ccdef93c5",
+      "nodes": 1,
+      "relations": 66
+    },
+    "APIs/amazonaws.com/sdb/2009-04-15/swagger.yaml": {
+      "hash": "10606e53db8f5c4d",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/amazonaws.com/servicecatalog/2015-12-10/swagger.yaml": {
+      "hash": "d4436b5bed7b4cff",
+      "nodes": 1,
+      "relations": 51
+    },
+    "APIs/amazonaws.com/shield/2016-06-02/swagger.yaml": {
+      "hash": "efbbb97c6b3dfddb",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/amazonaws.com/sms/2016-10-24/swagger.yaml": {
+      "hash": "28f1613658b304ef",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/amazonaws.com/snowball/2016-06-30/swagger.yaml": {
+      "hash": "e7eed062ccb3a81e",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/sns/2010-03-31/swagger.yaml": {
+      "hash": "6a507d34ba59d59f",
+      "nodes": 1,
+      "relations": 30
+    },
+    "APIs/amazonaws.com/sqs/2012-11-05/swagger.yaml": {
+      "hash": "b4fb1c5294743c1f",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/ssm/2014-11-06/swagger.yaml": {
+      "hash": "042b33f04500c9d7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/amazonaws.com/states/2016-11-23/swagger.yaml": {
+      "hash": "07da25810dcee636",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/amazonaws.com/storagegateway/2013-06-30/swagger.yaml": {
+      "hash": "a906f8abec735d9f",
+      "nodes": 1,
+      "relations": 62
+    },
+    "APIs/amazonaws.com/streams.dynamodb/2012-08-10/swagger.yaml": {
+      "hash": "8f2ea27369851310",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/amazonaws.com/sts/2011-06-15/swagger.yaml": {
+      "hash": "894a0896900ee08b",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/amazonaws.com/support/2013-04-15/swagger.yaml": {
+      "hash": "059fef1f207cba26",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/amazonaws.com/swf/2012-01-25/swagger.yaml": {
+      "hash": "53b8bc36eeb3d0a0",
+      "nodes": 1,
+      "relations": 31
+    },
+    "APIs/amazonaws.com/waf-regional/2016-11-28/swagger.yaml": {
+      "hash": "aeac4fd6ab2473ce",
+      "nodes": 1,
+      "relations": 48
+    },
+    "APIs/amazonaws.com/waf/2015-08-24/swagger.yaml": {
+      "hash": "08d81b7e9cf54b28",
+      "nodes": 1,
+      "relations": 44
+    },
+    "APIs/amazonaws.com/workdocs/2016-05-01/swagger.yaml": {
+      "hash": "c186bff5c46d971c",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/amazonaws.com/workspaces/2015-04-08/swagger.yaml": {
+      "hash": "bfbb3a3b36e945d0",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/amazonaws.com/xray/2016-04-12/swagger.yaml": {
+      "hash": "d312cfd6caf03e64",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/apacta.com/0.0.1/swagger.yaml": {
+      "hash": "39d393d0cfb53cae",
+      "nodes": 1,
+      "relations": 126
+    },
+    "APIs/apacta.com/patch.yaml": {
+      "hash": "44d70b26176dcb71",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apimatic.io/1.0/swagger.yaml": {
+      "hash": "51a20bf6fe437fc0",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apimatic.io/patch.yaml": {
+      "hash": "9d165f5b0f5c6815",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apis.guru/2.0/swagger.yaml": {
+      "hash": "a918c6b23e6afe29",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/apis.guru/patch.yaml": {
+      "hash": "1c5a67352b7b77ff",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/2chMatomeFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "01d2ce37ab335eba",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/2chMatomeFeedsApis/patch.yaml": {
+      "hash": "9b0d2ed8290e68d7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/certificateFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "158ffa6a2087f6db",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/certificateFeedsApis/patch.yaml": {
+      "hash": "0117a946c1d354f7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/designFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "d10bd9043e5f9e51",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/designFeedsApis/patch.yaml": {
+      "hash": "1b0ab14fb79dd788",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/documentFrequencyApis/0.0.1/swagger.yaml": {
+      "hash": "a5478ad08634a26b",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/documentFrequencyApis/patch.yaml": {
+      "hash": "46e19c966950cfbf",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/gameFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "7dbfe50ce538a7f3",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/gameFeedsApis/patch.yaml": {
+      "hash": "55b4bf80cd3a6200",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/kuromojiApis/1.0.1/swagger.yaml": {
+      "hash": "67c9d10dbcb60d5f",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/apitore.com/kuromojiApis/patch.yaml": {
+      "hash": "256298e42f326345",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/languageDetectionApis/0.0.1/swagger.yaml": {
+      "hash": "dfbcb21abb07db42",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/apitore.com/languageDetectionApis/patch.yaml": {
+      "hash": "f67d370a5cf8d766",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/newsFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "d41fee445ee23aa8",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/newsFeedsApis/patch.yaml": {
+      "hash": "addabf80fb077a96",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/pioneerBlogFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "655aac3cbd83803a",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/pioneerBlogFeedsApis/patch.yaml": {
+      "hash": "ea62f62a6308cd5b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/rss2jsonApis/0.0.1/swagger.yaml": {
+      "hash": "4f9392a548a8752a",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/rss2jsonApis/patch.yaml": {
+      "hash": "4c11dc3ffa875e3d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/sentenceSeparatorApis/0.0.1/swagger.yaml": {
+      "hash": "97cdb498deccd6e9",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/sentenceSeparatorApis/patch.yaml": {
+      "hash": "eaa8d7bffd934c9a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/sentencepieceApis_wikipedia_/0.0.3/swagger.yaml": {
+      "hash": "76a2031dbe9a5c95",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/apitore.com/sentencepieceApis_wikipedia_/patch.yaml": {
+      "hash": "f5519468bae7902f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/sentimentApis/1.0.6/swagger.yaml": {
+      "hash": "0e47eedec539dbc9",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/sentimentApis/patch.yaml": {
+      "hash": "d87aa8c409eb277e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/synonymApis/1.0.1/swagger.yaml": {
+      "hash": "6e7a57e2d6b866c8",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/synonymApis/patch.yaml": {
+      "hash": "23c17e0cccba8f17",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/techFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "f13fa78b2c74ed72",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/techFeedsApis/patch.yaml": {
+      "hash": "cc9023c1581e56bf",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/text2labelByTfidfApis/0.0.1/swagger.yaml": {
+      "hash": "9a511cf2f6b33f12",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/text2labelByTfidfApis/patch.yaml": {
+      "hash": "8f0e2748bbe6fd5c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/text2labelByWordVectorApis/0.0.1/swagger.yaml": {
+      "hash": "ebfa43bfd4943b3a",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/text2labelByWordVectorApis/patch.yaml": {
+      "hash": "f804d7bba0459f22",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/travelFeedsApis/0.0.1/swagger.yaml": {
+      "hash": "615f4bde554afb7d",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/travelFeedsApis/patch.yaml": {
+      "hash": "3082fd065146da51",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/tweetSummarizationApis/0.0.1/swagger.yaml": {
+      "hash": "8b9b0f18ce416810",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/tweetSummarizationApis/patch.yaml": {
+      "hash": "84af30070da6fe7e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/twitterApis/0.0.2/swagger.yaml": {
+      "hash": "e157c4f4105e06b9",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/apitore.com/twitterApis/patch.yaml": {
+      "hash": "b738737a7172f585",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/twitterApisWithWord2vecQueryExpansion/0.0.1/swagger.yaml": {
+      "hash": "925f0241bc86e668",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/twitterApisWithWord2vecQueryExpansion/patch.yaml": {
+      "hash": "78ff3c5b087f5b38",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2hrefApis/0.0.1/swagger.yaml": {
+      "hash": "a15fefc5a1e6bfc1",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2hrefApis/patch.yaml": {
+      "hash": "ecd8755552c74af8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2htmlApis/0.0.1/swagger.yaml": {
+      "hash": "317c7ea3b684a518",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2htmlApis/patch.yaml": {
+      "hash": "47e2a3c9d3e12ad7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2labelByTfidfApis/0.0.1/swagger.yaml": {
+      "hash": "5884dc20ceac15eb",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2labelByTfidfApis/patch.yaml": {
+      "hash": "e5d9041cdcc338d3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2labelByWordVectorApis/0.0.1/swagger.yaml": {
+      "hash": "7369643ea6bc6178",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2labelByWordVectorApis/patch.yaml": {
+      "hash": "b1a5cf999bbbedda",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2srcApis/0.0.1/swagger.yaml": {
+      "hash": "ebe068a0eebeda63",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2srcApis/patch.yaml": {
+      "hash": "0d52e2cf414a3085",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/url2textApis/0.0.1/swagger.yaml": {
+      "hash": "f29f3de1e46ff6e4",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/url2textApis/patch.yaml": {
+      "hash": "2ac97c322b2b057f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/word2vecApis/1.0.2/swagger.yaml": {
+      "hash": "387c32a47cec6205",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/apitore.com/word2vecApis/patch.yaml": {
+      "hash": "6bbd6dee7f5e73d8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/apitore.com/wordsToVectorsApis/1.0.1/swagger.yaml": {
+      "hash": "85dcf69b659890d8",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/apitore.com/wordsToVectorsApis/patch.yaml": {
+      "hash": "2f559aa10204aed7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/appveyor.com/0.20170106.0/swagger.yaml": {
+      "hash": "d281df367264e317",
+      "nodes": 1,
+      "relations": 45
+    },
+    "APIs/appveyor.com/patch.yaml": {
+      "hash": "1ee734bebb8afd4f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/authentiq.io/1.0/swagger.yaml": {
+      "hash": "984a359b43a35ba3",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/authentiq.io/patch.yaml": {
+      "hash": "27c07400c019ae8a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-advisor/2016-07-12-preview/swagger.yaml": {
+      "hash": "5e3f89166281f667",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/azure.com/arm-analysisservices/2016-05-16/patch.yaml": {
+      "hash": "3e1d3f8e909112fd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-analysisservices/2016-05-16/swagger.yaml": {
+      "hash": "96d920a622a334be",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-apimanagement/2016-07-07/patch.yaml": {
+      "hash": "6a7c08f2ed58831c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-apimanagement/2016-07-07/swagger.yaml": {
+      "hash": "6b76f0447bdeae8a",
+      "nodes": 1,
+      "relations": 99
+    },
+    "APIs/azure.com/arm-appinsights/2015-05-01/swagger.yaml": {
+      "hash": "b26a10bc3547febf",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/arm-authorization/2015-07-01/patch.yaml": {
+      "hash": "9fee98c9efa68310",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-authorization/2015-07-01/swagger.yaml": {
+      "hash": "535d6c15eb7f2c4b",
+      "nodes": 1,
+      "relations": 20
+    },
+    "APIs/azure.com/arm-batch/2015-12-01/patch.yaml": {
+      "hash": "31bcf0b8995d5017",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-batch/2015-12-01/swagger.yaml": {
+      "hash": "cd13c7c241195f70",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/azure.com/arm-billing/2017-02-27-preview/swagger.yaml": {
+      "hash": "7fd2fb251cb7d3db",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/azure.com/arm-cdn/2015-06-01/patch.yaml": {
+      "hash": "6bc23c6ef52421c2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-cdn/2015-06-01/swagger.yaml": {
+      "hash": "a023b85ebef36db3",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/azure.com/arm-cdn/2016-04-02/patch.yaml": {
+      "hash": "27144331ebf0b6fc",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-cdn/2016-04-02/swagger.yaml": {
+      "hash": "a26595807805f894",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/azure.com/arm-cdn/2016-10-02/patch.yaml": {
+      "hash": "e946b91660a14a3d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-cdn/2016-10-02/swagger.yaml": {
+      "hash": "1ee8e3c84e87e0cf",
+      "nodes": 1,
+      "relations": 32
+    },
+    "APIs/azure.com/arm-cdn/patch.yaml": {
+      "hash": "cd469131ea71bf0e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-cognitiveservices/2016-02-01-preview/patch.yaml": {
+      "hash": "7470bed317e37ca9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-cognitiveservices/2016-02-01-preview/swagger.yaml": {
+      "hash": "7b8724c3b8125cde",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/azure.com/arm-cognitiveservices/patch.yaml": {
+      "hash": "d5f74103cd1173c7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-commerce/2015-06-01-preview/patch.yaml": {
+      "hash": "de9a01588294cd1e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-commerce/2015-06-01-preview/swagger.yaml": {
+      "hash": "cc61eaab51a57b73",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/azure.com/arm-commerce/patch.yaml": {
+      "hash": "8f8abafc616205ac",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-containerService/2015-11-01-preview/patch.yaml": {
+      "hash": "2a484714a323cd55",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-containerService/2015-11-01-preview/swagger.yaml": {
+      "hash": "2231758619f7ed72",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/azure.com/arm-compute-containerService/2016-03-30/patch.yaml": {
+      "hash": "fc91dcbf7eaa2e9c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-containerService/2016-03-30/swagger.yaml": {
+      "hash": "eaa97c5af33a88dd",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-compute-containerService/2016-09-30/patch.yaml": {
+      "hash": "130261379fedfee9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-containerService/2016-09-30/swagger.yaml": {
+      "hash": "e109f171f64b15ba",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-compute-containerService/patch.yaml": {
+      "hash": "c1cc9d19a73d406b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-disk/2016-04-30-preview/patch.yaml": {
+      "hash": "bec33f9e3a0c7f6e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute-disk/2016-04-30-preview/swagger.yaml": {
+      "hash": "14575df7772ba9cf",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/azure.com/arm-compute/2015-06-15/patch.yaml": {
+      "hash": "ff82afcbd47ff848",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute/2015-06-15/swagger.yaml": {
+      "hash": "8de7164ac6ac29f6",
+      "nodes": 1,
+      "relations": 54
+    },
+    "APIs/azure.com/arm-compute/2016-03-30/patch.yaml": {
+      "hash": "703e5315d6a55350",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute/2016-03-30/swagger.yaml": {
+      "hash": "051028c39ef890f8",
+      "nodes": 1,
+      "relations": 54
+    },
+    "APIs/azure.com/arm-compute/2016-04-30-preview/patch.yaml": {
+      "hash": "00fc232fd5f12863",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-compute/2016-04-30-preview/swagger.yaml": {
+      "hash": "228bc1d711ced66e",
+      "nodes": 1,
+      "relations": 62
+    },
+    "APIs/azure.com/arm-compute/patch.yaml": {
+      "hash": "32a2097ba2889f1f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-consumption/2017-04-24-preview/swagger.yaml": {
+      "hash": "cf1362f20d7399a0",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/azure.com/arm-containerregistry/2016-06-27-preview/swagger.yaml": {
+      "hash": "10b8d347be88d920",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/azure.com/arm-devtestlabs/2015-05-21-preview/patch.yaml": {
+      "hash": "ffbd7b1893d7a2f8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-devtestlabs/2015-05-21-preview/swagger.yaml": {
+      "hash": "e227f811531d9f04",
+      "nodes": 1,
+      "relations": 57
+    },
+    "APIs/azure.com/arm-devtestlabs/2016-05-15/patch.yaml": {
+      "hash": "f68060b243192692",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-devtestlabs/2016-05-15/swagger.yaml": {
+      "hash": "5de3bb4f37267f07",
+      "nodes": 1,
+      "relations": 105
+    },
+    "APIs/azure.com/arm-devtestlabs/patch.yaml": {
+      "hash": "c1a0013cd3683468",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-dns/2015-05-04-preview/patch.yaml": {
+      "hash": "5f67f625b106cb03",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-dns/2015-05-04-preview/swagger.yaml": {
+      "hash": "08d6aa0836cec873",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-dns/2016-04-01/patch.yaml": {
+      "hash": "e51731162106d877",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-dns/2016-04-01/swagger.yaml": {
+      "hash": "607250b584789a11",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/azure.com/arm-dns/patch.yaml": {
+      "hash": "8785f092c2e758cd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-eventhub/2015-08-01/patch.yaml": {
+      "hash": "e0be700c3aabce51",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-eventhub/2015-08-01/swagger.yaml": {
+      "hash": "797f79bdd15f9b13",
+      "nodes": 1,
+      "relations": 28
+    },
+    "APIs/azure.com/arm-insights/2015-04-01/patch.yaml": {
+      "hash": "2b2b615663aecc60",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-insights/2015-04-01/swagger.yaml": {
+      "hash": "46f986b62b1baf22",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/azure.com/arm-insights/2015-07-01/patch.yaml": {
+      "hash": "1aa755b5c62c567d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-insights/2015-07-01/swagger.yaml": {
+      "hash": "d21f78ff59b6e581",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/azure.com/arm-insights/2016-03-01/patch.yaml": {
+      "hash": "928ab8c833b4de6f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-insights/2016-03-01/swagger.yaml": {
+      "hash": "ee7d9d0adc533388",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/azure.com/arm-intune/2015-01-14-preview/patch.yaml": {
+      "hash": "589e0c36b28f16a0",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-intune/2015-01-14-preview/swagger.yaml": {
+      "hash": "ed2c7471953cfc18",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/azure.com/arm-intune/patch.yaml": {
+      "hash": "204817251671418f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-iothub/2016-02-03/patch.yaml": {
+      "hash": "014ff09466a596d1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-iothub/2016-02-03/swagger.yaml": {
+      "hash": "b08e07d70a38f0bf",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/azure.com/arm-iothub/patch.yaml": {
+      "hash": "5e9b3e0b4527391a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-keyvault/2015-06-01/patch.yaml": {
+      "hash": "113c74ae5eb20505",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-keyvault/2015-06-01/swagger.yaml": {
+      "hash": "187f6e908c98c920",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-keyvault/patch.yaml": {
+      "hash": "c904bcd94194073d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-logic/2015-02-01-preview/patch.yaml": {
+      "hash": "e57582296fa7919b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-logic/2015-02-01-preview/swagger.yaml": {
+      "hash": "2d10f83ea9fe5d4d",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/azure.com/arm-logic/2015-08-01-preview/patch.yaml": {
+      "hash": "6f29ec65db204d62",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-logic/2015-08-01-preview/swagger.yaml": {
+      "hash": "96ca52fe1502f3b0",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/azure.com/arm-logic/2016-06-01/patch.yaml": {
+      "hash": "44e92ce7c44aaccd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-logic/2016-06-01/swagger.yaml": {
+      "hash": "2683ab04ec5b9ef0",
+      "nodes": 1,
+      "relations": 59
+    },
+    "APIs/azure.com/arm-logic/patch.yaml": {
+      "hash": "170fd93aadd9072b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-machinelearning-commitmentPlans/2016-05-01-preview/patch.yaml": {
+      "hash": "1d90c5a345b0da4c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-machinelearning-commitmentPlans/2016-05-01-preview/swagger.yaml": {
+      "hash": "9199ce17a9cd4612",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-machinelearning-webservices/2016-05-01-preview/patch.yaml": {
+      "hash": "67d8ef7daa04687c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-machinelearning-webservices/2016-05-01-preview/swagger.yaml": {
+      "hash": "9a229f38761995c8",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/azure.com/arm-mediaservices/2015-10-01/patch.yaml": {
+      "hash": "e329eb544d167dd5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-mediaservices/2015-10-01/swagger.yaml": {
+      "hash": "aa7cf83d32b0fe35",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/azure.com/arm-mediaservices/patch.yaml": {
+      "hash": "091f66111aea8a16",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-mobileengagement/2014-12-01/patch.yaml": {
+      "hash": "ed2c57407b46734c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-mobileengagement/2014-12-01/swagger.yaml": {
+      "hash": "d01a6163b7985961",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/azure.com/arm-mobileengagement/patch.yaml": {
+      "hash": "fe25ef764d3120c7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-monitor/2015-04-01/swagger.yaml": {
+      "hash": "be31a61266d6903a",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-network/2015-05-01-preview/patch.yaml": {
+      "hash": "b0b355f350c9acd8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-network/2015-05-01-preview/swagger.yaml": {
+      "hash": "d35ee97f12186a92",
+      "nodes": 1,
+      "relations": 87
+    },
+    "APIs/azure.com/arm-network/2016-03-30/patch.yaml": {
+      "hash": "918e34aec232d495",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-network/2016-03-30/swagger.yaml": {
+      "hash": "426f56643dd13781",
+      "nodes": 1,
+      "relations": 90
+    },
+    "APIs/azure.com/arm-network/2016-06-01/patch.yaml": {
+      "hash": "8bf705848ca7e23f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-network/2016-06-01/swagger.yaml": {
+      "hash": "893796d23997d1f2",
+      "nodes": 1,
+      "relations": 97
+    },
+    "APIs/azure.com/arm-notificationhubs/2014-09-01/patch.yaml": {
+      "hash": "b3b9b9eb8c11e294",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-notificationhubs/2014-09-01/swagger.yaml": {
+      "hash": "228116302b6ec768",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/azure.com/arm-notificationhubs/2016-03-01/patch.yaml": {
+      "hash": "85be3d11664e3e48",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-notificationhubs/2016-03-01/swagger.yaml": {
+      "hash": "5748fed7a43df85e",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/azure.com/arm-operationalinsights/2015-03-20/patch.yaml": {
+      "hash": "721eb3259e449113",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-operationalinsights/2015-03-20/swagger.yaml": {
+      "hash": "78d885ce6006b79a",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/azure.com/arm-operationalinsights/2015-11-01-preview/patch.yaml": {
+      "hash": "756727f02936910d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-operationalinsights/2015-11-01-preview/swagger.yaml": {
+      "hash": "02699cbe0494f8d6",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/azure.com/arm-operationalinsights/patch.yaml": {
+      "hash": "5d1d884853dc09e5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-powerbiembedded/2016-01-29/patch.yaml": {
+      "hash": "15ba36479d05a2d7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-powerbiembedded/2016-01-29/swagger.yaml": {
+      "hash": "9c9b108dc1e05d95",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/azure.com/arm-recoveryservices/2016-06-01/patch.yaml": {
+      "hash": "7548c60eab43eaa2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-recoveryservicesbackup/2016-06-01/patch.yaml": {
+      "hash": "056022c860d69b40",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-recoveryservicesbackup/2016-06-01/swagger.yaml": {
+      "hash": "2475f0c76637b800",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/azure.com/arm-recoveryservicesbackup/patch.yaml": {
+      "hash": "86e8799152757cf2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-redis/2015-08-01/patch.yaml": {
+      "hash": "eccf11e79e970716",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-redis/2015-08-01/swagger.yaml": {
+      "hash": "fd18a3dec21b4813",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/azure.com/arm-relay/2016-07-01/swagger.yaml": {
+      "hash": "61d4c1f2b0bc4a68",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/azure.com/arm-resourcehealth/2015-01-01/swagger.yaml": {
+      "hash": "5d1bc3eecce237d8",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-scheduler/2014-08-01-preview/patch.yaml": {
+      "hash": "f5f9e147b7cd7d35",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-scheduler/2014-08-01-preview/swagger.yaml": {
+      "hash": "c7998d7ae0a34f19",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/azure.com/arm-scheduler/2016-01-01/patch.yaml": {
+      "hash": "d7cec6c23e443042",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-scheduler/2016-01-01/swagger.yaml": {
+      "hash": "79bbd476023be5a7",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/azure.com/arm-scheduler/2016-03-01/patch.yaml": {
+      "hash": "6f407bea811b5149",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-scheduler/2016-03-01/swagger.yaml": {
+      "hash": "a905e4137c2838d6",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/azure.com/arm-scheduler/patch.yaml": {
+      "hash": "fa10fc39bfffe213",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-search/2015-02-28/patch.yaml": {
+      "hash": "b766bde370e2dd49",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-search/2015-02-28/swagger.yaml": {
+      "hash": "da8e93542250130f",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-search/2015-08-19/patch.yaml": {
+      "hash": "ca8f0a095193cea4",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-search/2015-08-19/swagger.yaml": {
+      "hash": "7a8ca8c64d8c0865",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-search/patch.yaml": {
+      "hash": "112b9b859d052542",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-servermanagement/2015-07-01-preview/patch.yaml": {
+      "hash": "72c6bd86f15bef79",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-servermanagement/2015-07-01-preview/swagger.yaml": {
+      "hash": "6fb43b096339599e",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/azure.com/arm-servermanagement/2016-07-01-preview/patch.yaml": {
+      "hash": "d84ba5d0deda7b6f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-servermanagement/2016-07-01-preview/swagger.yaml": {
+      "hash": "c4af9b425182e148",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/azure.com/arm-servermanagement/patch.yaml": {
+      "hash": "28dca85fb1582041",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-service-map/2015-11-01-preview/swagger.yaml": {
+      "hash": "4c4a5be9970e9349",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/azure.com/arm-servicebus/2015-08-01/patch.yaml": {
+      "hash": "1385d49b49fdce23",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-servicebus/2015-08-01/swagger.yaml": {
+      "hash": "3d188919b879d02e",
+      "nodes": 1,
+      "relations": 38
+    },
+    "APIs/azure.com/arm-servicefabric/2016-09-01/swagger.yaml": {
+      "hash": "ee415b0496ceef7f",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/azure.com/arm-sql/2014-04-01/swagger.yaml": {
+      "hash": "3aa324fe940cb5a4",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/azure.com/arm-sql/patch.yaml": {
+      "hash": "50efe9b3791bef0e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2015-05-01-preview/patch.yaml": {
+      "hash": "92599f76f4faaca8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2015-05-01-preview/swagger.yaml": {
+      "hash": "88dba53fd1309ea2",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-storage/2015-06-15/patch.yaml": {
+      "hash": "0b84cd436fba44bd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2015-06-15/swagger.yaml": {
+      "hash": "f7a040d4172b9651",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-storage/2016-01-01/patch.yaml": {
+      "hash": "d51783427eac3524",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2016-01-01/swagger.yaml": {
+      "hash": "eac1530dc8978b0b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/azure.com/arm-storage/2016-05-01/patch.yaml": {
+      "hash": "a0609509d9fc64d9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2016-05-01/swagger.yaml": {
+      "hash": "44b69c1ff27788ec",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/azure.com/arm-storage/2016-12-01/patch.yaml": {
+      "hash": "e8b949f72f4bd67b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storage/2016-12-01/swagger.yaml": {
+      "hash": "e194a9b3cd2fd4a5",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/azure.com/arm-storage/patch.yaml": {
+      "hash": "de49f1857dc1bea5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storageimportexport/2016-11-01/patch.yaml": {
+      "hash": "99a8e33e6dc2392a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storageimportexport/2016-11-01/swagger.yaml": {
+      "hash": "170580d9d766a786",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/azure.com/arm-storageimportexport/patch.yaml": {
+      "hash": "1b76e8d62754d06d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-storsimple8000series/2017-06-01/swagger.yaml": {
+      "hash": "381c661cb28b3c9e",
+      "nodes": 1,
+      "relations": 92
+    },
+    "APIs/azure.com/arm-trafficmanager/2015-11-01/patch.yaml": {
+      "hash": "29efd009b34abaa8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-trafficmanager/2015-11-01/swagger.yaml": {
+      "hash": "505b611683a840e6",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/azure.com/arm-web/2015-04-01/swagger.yaml": {
+      "hash": "80e4de23cac78610",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/azure.com/arm-web/2015-08-01-preview/patch.yaml": {
+      "hash": "2e822a2b0867e6be",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-web/2015-08-01-preview/swagger.yaml": {
+      "hash": "5476a93790ed7303",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/azure.com/arm-web/2015-08-01/patch.yaml": {
+      "hash": "26edd877af406f26",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/arm-web/2015-08-01/swagger.yaml": {
+      "hash": "5198bd79062f4191",
+      "nodes": 1,
+      "relations": 295
+    },
+    "APIs/azure.com/insights/2014-04-01/patch.yaml": {
+      "hash": "4524a2dd6ef76c99",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/insights/2014-04-01/swagger.yaml": {
+      "hash": "7e750ec3eb8e660e",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/insights/2015-04-01/patch.yaml": {
+      "hash": "50cf59f74b9ad2bc",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/insights/2015-04-01/swagger.yaml": {
+      "hash": "fb0ed141347cf536",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/insights/2016-03-01/patch.yaml": {
+      "hash": "72d50025ddda496c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/insights/2016-03-01/swagger.yaml": {
+      "hash": "e2157989934c8423",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/insights/2016-09-01/patch.yaml": {
+      "hash": "8c3ae264e124fd76",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/azure.com/insights/2016-09-01/swagger.yaml": {
+      "hash": "6140597ba8cdf02e",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/monitor/2014-04-01/swagger.yaml": {
+      "hash": "9ba09d720e46dc31",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/azure.com/patch.yaml": {
+      "hash": "39e66d242005aa97",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/backupify.com/patch.yaml": {
+      "hash": "b4df28c8cef2fbf3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bbc.co.uk/1.0.0/swagger.yaml": {
+      "hash": "b11e88f8c97bc999",
+      "nodes": 1,
+      "relations": 62
+    },
+    "APIs/bbc.co.uk/patch.yaml": {
+      "hash": "73ad340c92be25d8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bbc.com/1.0.0/swagger.yaml": {
+      "hash": "7c14d1c64c0ebbca",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/bbc.com/patch.yaml": {
+      "hash": "4b61260feef4d596",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bbci.co.uk/1.0/swagger.yaml": {
+      "hash": "d322ed9f3ea2f36f",
+      "nodes": 1,
+      "relations": 30
+    },
+    "APIs/bbci.co.uk/patch.yaml": {
+      "hash": "f13b245a4b2a13d7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bclaws.ca/bclaws/1.0.0/swagger.yaml": {
+      "hash": "326a4e4557f0e09a",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/bclaws.ca/patch.yaml": {
+      "hash": "7aea92aae8fd19f9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/beanstream.com/1.0.1/swagger.yaml": {
+      "hash": "20839eeac65eb52e",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/beanstream.com/patch.yaml": {
+      "hash": "4bd0c2c16a9e9845",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/beezup.com/2.0/swagger.yaml": {
+      "hash": "bf71873a1deba49d",
+      "nodes": 1,
+      "relations": 174
+    },
+    "APIs/beezup.com/patch.yaml": {
+      "hash": "6a4ee88d25d4867f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bigoven.com/partner/fixup.yaml": {
+      "hash": "8d852bdd10ae9d4b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bigoven.com/partner/swagger.yaml": {
+      "hash": "dab9820260035118",
+      "nodes": 1,
+      "relations": 48
+    },
+    "APIs/bigoven.com/patch.yaml": {
+      "hash": "b44a2f854ee515ff",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bikewise.org/patch.yaml": {
+      "hash": "0927722a064a2d73",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bikewise.org/v2/swagger.yaml": {
+      "hash": "1de2e5e447e99f3f",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/bitbucket.org/2.0/fixup.yaml": {
+      "hash": "8ed28f90c4fe1d22",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bitbucket.org/2.0/swagger.yaml": {
+      "hash": "95ea05e780dba404",
+      "nodes": 1,
+      "relations": 182
+    },
+    "APIs/bitbucket.org/patch.yaml": {
+      "hash": "f815079196a54114",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bluemix.net/containers/3.0.0/fixup.yaml": {
+      "hash": "233ac102717d7b45",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bluemix.net/containers/3.0.0/swagger.yaml": {
+      "hash": "2624b93ba0fb2d85",
+      "nodes": 1,
+      "relations": 47
+    },
+    "APIs/bluemix.net/patch.yaml": {
+      "hash": "6b894e6fc9399e73",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/botify.com/1.0.0/fixup.yaml": {
+      "hash": "7a2b428470b02770",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/botify.com/1.0.0/swagger.yaml": {
+      "hash": "2170ed2010b23804",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/botify.com/patch.yaml": {
+      "hash": "5561fb76bccf797d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/box.com/authorization/2.0/swagger.yaml": {
+      "hash": "0923d1e4367d7342",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/box.com/content/2.0/swagger.yaml": {
+      "hash": "6cb4c61633296595",
+      "nodes": 1,
+      "relations": 127
+    },
+    "APIs/box.com/patch.yaml": {
+      "hash": "c5b6f893cea9d0ba",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/box.com/token/2.0/swagger.yaml": {
+      "hash": "b6d56d04f959b748",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/box.com/upload/2.0/swagger.yaml": {
+      "hash": "864c04fedbd365a9",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/brandlovers.com/1.0.0/swagger.yaml": {
+      "hash": "d480347e36ecb39f",
+      "nodes": 1,
+      "relations": 36
+    },
+    "APIs/brandlovers.com/patch.yaml": {
+      "hash": "6416df0d798bc17a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/browshot.com/1.17.0/swagger.yaml": {
+      "hash": "de089a6219e3e501",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/browshot.com/patch.yaml": {
+      "hash": "0e7c0d40773891ae",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/bufferapp.com/1/swagger.yaml": {
+      "hash": "123d5feaec7f3bda",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/bufferapp.com/patch.yaml": {
+      "hash": "e92174b613f28146",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/cambase.io/1.0/swagger.yaml": {
+      "hash": "f448e9c0e1bf767d",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/cambase.io/patch.yaml": {
+      "hash": "6b358d01718093ae",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/cenit.io/v1/swagger.yaml": {
+      "hash": "caf6baaf7ebf536e",
+      "nodes": 1,
+      "relations": 40
+    },
+    "APIs/channel4.com/1.0.0/swagger.yaml": {
+      "hash": "5700930a315c7c44",
+      "nodes": 1,
+      "relations": 68
+    },
+    "APIs/channel4.com/patch.yaml": {
+      "hash": "374dee20391f087e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/circleci.com/patch.yaml": {
+      "hash": "98906a1f2ac544fa",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/circleci.com/v1/swagger.yaml": {
+      "hash": "69670ccfc4a7df4b",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/cisco.com/0.0.3/swagger.yaml": {
+      "hash": "dc1634e9e37c183b",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/cisco.com/patch.yaml": {
+      "hash": "f79394f148138cba",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/gotoassistseeit/0.9.0/fixup.yaml": {
+      "hash": "7239acd958766de3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/gotoassistseeit/patch.yaml": {
+      "hash": "a8a4b96a2958c53a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/gotomeeting/1.0.0/fixup.yaml": {
+      "hash": "6d7d4495ac1b860d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/gotomeeting/1.0.0/swagger.yaml": {
+      "hash": "09670f4a13a8503b",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/citrixonline.com/gotomeeting/patch.yaml": {
+      "hash": "de8948e32efc969c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/gotowebinar/patch.yaml": {
+      "hash": "6cd73afa0e42d65a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/patch.yaml": {
+      "hash": "248a7bc011e67b44",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/scim/NA/fixup.yaml": {
+      "hash": "383e56c0b89c0277",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citrixonline.com/scim/NA/swagger.yaml": {
+      "hash": "afe45cd785e5dc82",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/citycontext.com/1.0.0/fixup.yaml": {
+      "hash": "48dd560ccca97973",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/citycontext.com/1.0.0/swagger.yaml": {
+      "hash": "65d167814f862db3",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/citycontext.com/patch.yaml": {
+      "hash": "ee95fc09fefcfe54",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/clarify.io/1.3.6/swagger.yaml": {
+      "hash": "30751e78e0138f11",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/clarify.io/patch.yaml": {
+      "hash": "2982778623d2b2fe",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/clickmeter.com/patch.yaml": {
+      "hash": "1c16d3f569412b13",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/clickmeter.com/v2/swagger.yaml": {
+      "hash": "daa68dccb628a24e",
+      "nodes": 1,
+      "relations": 108
+    },
+    "APIs/cloud.gov/0.1/swagger.yaml": {
+      "hash": "5a7cef43769a4e9b",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/cloud.gov/patch.yaml": {
+      "hash": "d026bb92b8aec0da",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/cnab-online.herokuapp.com/1.0.0/swagger.yaml": {
+      "hash": "c06d0b8e232260c0",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/cnab-online.herokuapp.com/patch.yaml": {
+      "hash": "90e976e3f3fd534f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/consumerfinance.gov/1.0/swagger.yaml": {
+      "hash": "f45a90710b5c8047",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/consumerfinance.gov/patch.yaml": {
+      "hash": "4687ca3101dd0deb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/core.ac.uk/2.0/fixup.yaml": {
+      "hash": "0d8329be34a3331d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/core.ac.uk/2.0/swagger.yaml": {
+      "hash": "d85efc23e899ff41",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/core.ac.uk/patch.yaml": {
+      "hash": "5b5d1033b0cddf2f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/cybertaxonomy.eu/1.0/swagger.yaml": {
+      "hash": "ed2a79abd01b45ef",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/cybertaxonomy.eu/patch.yaml": {
+      "hash": "40cfcceb07a2de5a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/daisycon.com/patch.yaml": {
+      "hash": "b7db4caafe691eef",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/data.gov/3.0/swagger.yaml": {
+      "hash": "4c09d4e453bb4f67",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/data.gov/patch.yaml": {
+      "hash": "101bd6b299a1bf85",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/data2crm.com/1/swagger.yaml": {
+      "hash": "8f34e26f90c4a2b5",
+      "nodes": 1,
+      "relations": 95
+    },
+    "APIs/data2crm.com/patch.yaml": {
+      "hash": "93fd3853ff621fa7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/datumbox.com/1.0/swagger.yaml": {
+      "hash": "bfc0834306a7012f",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/datumbox.com/patch.yaml": {
+      "hash": "ca46aad23cb03f0c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/betriebsstellen/patch.yaml": {
+      "hash": "59461a6dd2ce078a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/betriebsstellen/v1/swagger.yaml": {
+      "hash": "d13286d50ab6c38d",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/deutschebahn.com/fahrplan/patch.yaml": {
+      "hash": "54f6e2119a923d99",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/fahrplan/v1/swagger.yaml": {
+      "hash": "fbfe0ae39361c4ff",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/deutschebahn.com/fasta/patch.yaml": {
+      "hash": "ea96ab929c9a6b7c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/fasta/v1/swagger.yaml": {
+      "hash": "0ea5ba12f579e4ba",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/deutschebahn.com/flinkster/patch.yaml": {
+      "hash": "1710f8b64b99260f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/flinkster/v1/swagger.yaml": {
+      "hash": "4637bf4761899629",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/deutschebahn.com/reisezentren/patch.yaml": {
+      "hash": "94956f2a7f5ea5d6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/deutschebahn.com/reisezentren/v1/swagger.yaml": {
+      "hash": "a9cab166f522dbb2",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/deutschebahn.com/stada/2.0.47/swagger.yaml": {
+      "hash": "27e374f549c26f57",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/deutschebahn.com/stada/patch.yaml": {
+      "hash": "f1b8b8c51226cdc9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/dweet.io/2.0/swagger.yaml": {
+      "hash": "b52a6f7cee6d4af4",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/dweet.io/patch.yaml": {
+      "hash": "c09f7d7799111e23",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/air/0.0.0/swagger.yaml": {
+      "hash": "9f43e7d93979aea2",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/epa.gov/air/patch.yaml": {
+      "hash": "01bdfcbf5cda8390",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/case/1.0.0/swagger.yaml": {
+      "hash": "366f39991a0878b3",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/epa.gov/case/patch.yaml": {
+      "hash": "26de65a81b4b97dd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/cwa/0.0.0/swagger.yaml": {
+      "hash": "9659bd5a6b957189",
+      "nodes": 1,
+      "relations": 36
+    },
+    "APIs/epa.gov/cwa/patch.yaml": {
+      "hash": "76bc22e303b9bbd8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/dfr/0.0.0/swagger.yaml": {
+      "hash": "af1cc71c7c3741b9",
+      "nodes": 1,
+      "relations": 66
+    },
+    "APIs/epa.gov/dfr/patch.yaml": {
+      "hash": "047b6cc0f2ce84ec",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/echo/1.0.0/swagger.yaml": {
+      "hash": "74f02710b29bd022",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/epa.gov/echo/patch.yaml": {
+      "hash": "020c3bf122e34304",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/eff/1.0.0/swagger.yaml": {
+      "hash": "a6da6e2de75ed383",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/epa.gov/eff/patch.yaml": {
+      "hash": "09d74f4967663a2e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/rcra/0.0.0/swagger.yaml": {
+      "hash": "dcd895a4b0973cd3",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/epa.gov/rcra/patch.yaml": {
+      "hash": "c9a00196252f61d8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/epa.gov/sdw/0.0.0/swagger.yaml": {
+      "hash": "d959b88de8a9a848",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/epa.gov/sdw/patch.yaml": {
+      "hash": "4910db690394369e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/europeana.eu/2.3.0/swagger.yaml": {
+      "hash": "b9f371e88078674f",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/europeana.eu/patch.yaml": {
+      "hash": "3a5d89379c8be938",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/exavault.com/1.0.0/swagger.yaml": {
+      "hash": "a68648f9a179b34f",
+      "nodes": 1,
+      "relations": 35
+    },
+    "APIs/exavault.com/patch.yaml": {
+      "hash": "220c8e42c6cf66ca",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/figshare.com/2.0.0/swagger.yaml": {
+      "hash": "06ddbd5a1055cea5",
+      "nodes": 1,
+      "relations": 109
+    },
+    "APIs/figshare.com/patch.yaml": {
+      "hash": "60a72637998eb0e3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/firebrowse.org/1.1.35/swagger.yaml": {
+      "hash": "ce4368083a3cca27",
+      "nodes": 1,
+      "relations": 30
+    },
+    "APIs/firebrowse.org/patch.yaml": {
+      "hash": "ab0384c9a32aaa7a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/flat.io/2.2.0/swagger.yaml": {
+      "hash": "8eecd3edd75aba6b",
+      "nodes": 1,
+      "relations": 52
+    },
+    "APIs/flat.io/patch.yaml": {
+      "hash": "4867465947a07458",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/furkot.com/1.0.0/swagger.yaml": {
+      "hash": "41fca134c06399fe",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/furkot.com/patch.yaml": {
+      "hash": "adf112f7397e4c1a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/gavagai.se/patch.yaml": {
+      "hash": "6f177f8cb720676e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/geneea.com/1.0/swagger.yaml": {
+      "hash": "afdd5dc0b6797924",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/geneea.com/patch.yaml": {
+      "hash": "3ce81fe047cdd3f6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/geodesystems.com/1.0.0/swagger.yaml": {
+      "hash": "2a3b7140811e1908",
+      "nodes": 1,
+      "relations": 229
+    },
+    "APIs/geodesystems.com/patch.yaml": {
+      "hash": "ad08a5487929ef2c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/getgo.com/gototraining/1.0.0/swagger.yaml": {
+      "hash": "0c692a3de30b7085",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/getgo.com/gototraining/patch.yaml": {
+      "hash": "ee6f5065762cfb01",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/getgo.com/gotowebinar/1.0.0/swagger.yaml": {
+      "hash": "13914c22a9924f67",
+      "nodes": 1,
+      "relations": 38
+    },
+    "APIs/getgo.com/gotowebinar/patch.yaml": {
+      "hash": "1d44364c1f797ce6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/getsandbox.com/patch.yaml": {
+      "hash": "a59cfed85010c972",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/getsandbox.com/v1/swagger.yaml": {
+      "hash": "42477c83000eaeab",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/gettyimages.com/3/swagger.yaml": {
+      "hash": "38732ea84dce4d92",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/gettyimages.com/patch.yaml": {
+      "hash": "8803f5c36e2c1c4e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/github.com/patch.yaml": {
+      "hash": "e9944b95bd99144e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/github.com/v3/swagger.yaml": {
+      "hash": "f9bf612adcaf1a17",
+      "nodes": 1,
+      "relations": 244
+    },
+    "APIs/gitlab.com/patch.yaml": {
+      "hash": "c9ccfb1e4611a95d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/gitlab.com/v3/swagger.yaml": {
+      "hash": "725d95248c9f68b0",
+      "nodes": 1,
+      "relations": 358
+    },
+    "APIs/glugbot.com/patch.yaml": {
+      "hash": "c0c310866e8ea1a5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/acceleratedmobilepageurl/v1/swagger.yaml": {
+      "hash": "8adc8ec2363bd17a",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/adexchangebuyer/patch.yaml": {
+      "hash": "ab1e2a18f564e96f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/adexchangebuyer/v1.2/swagger.yaml": {
+      "hash": "ca5054faff6b18f7",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/googleapis.com/adexchangebuyer/v1.3/swagger.yaml": {
+      "hash": "76bad87e69e416e9",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/googleapis.com/adexchangebuyer/v1.4/swagger.yaml": {
+      "hash": "563954b6da97df52",
+      "nodes": 1,
+      "relations": 38
+    },
+    "APIs/googleapis.com/adexchangebuyer2/v2beta1/swagger.yaml": {
+      "hash": "a763b0ae58409eed",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/googleapis.com/adexchangeseller/patch.yaml": {
+      "hash": "736b1efbe277412c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/adexchangeseller/v1.1/swagger.yaml": {
+      "hash": "7caab7f412cb8e30",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/adexchangeseller/v1/swagger.yaml": {
+      "hash": "bcba974c7fd4f1bf",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/adexchangeseller/v2.0/swagger.yaml": {
+      "hash": "83a557900bf932ea",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/googleapis.com/adexperiencereport/v1/swagger.yaml": {
+      "hash": "35ff3e543729bf8a",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/googleapis.com/admin/datatransfer_v1/swagger.yaml": {
+      "hash": "6ce581addcd6807f",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/admin/directory_v1/fixup.yaml": {
+      "hash": "509cd96de4d6678c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/admin/directory_v1/swagger.yaml": {
+      "hash": "398358169cbb12d6",
+      "nodes": 1,
+      "relations": 96
+    },
+    "APIs/googleapis.com/admin/patch.yaml": {
+      "hash": "a070a93fb5382c2a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/admin/reports_v1/swagger.yaml": {
+      "hash": "d23b13c3e407f1ac",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/adsense/v1.3/swagger.yaml": {
+      "hash": "c61b68ebd4f9cfe8",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/googleapis.com/adsense/v1.4/swagger.yaml": {
+      "hash": "8c67b55b3aed5311",
+      "nodes": 1,
+      "relations": 38
+    },
+    "APIs/googleapis.com/adsensehost/v4.1/swagger.yaml": {
+      "hash": "758f21f9d108d689",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/googleapis.com/analytics/patch.yaml": {
+      "hash": "447e522c87d35405",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/analytics/v2.4/swagger.yaml": {
+      "hash": "7072223a93277a28",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/analytics/v3/swagger.yaml": {
+      "hash": "2c65278a14c0c904",
+      "nodes": 1,
+      "relations": 85
+    },
+    "APIs/googleapis.com/analyticsreporting/v4/swagger.yaml": {
+      "hash": "2559b6b1f9b3ecc1",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/androidenterprise/patch.yaml": {
+      "hash": "431abfa17e9cad49",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/androidenterprise/v1/swagger.yaml": {
+      "hash": "b02019fbc4b42c9e",
+      "nodes": 1,
+      "relations": 77
+    },
+    "APIs/googleapis.com/androidpublisher/patch.yaml": {
+      "hash": "c14a733b399b644a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/androidpublisher/v1.1/swagger.yaml": {
+      "hash": "4a48c98f7107d974",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/googleapis.com/androidpublisher/v1/swagger.yaml": {
+      "hash": "aff25123c79a67b8",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/googleapis.com/androidpublisher/v2/swagger.yaml": {
+      "hash": "44a1e8e5c573755f",
+      "nodes": 1,
+      "relations": 57
+    },
+    "APIs/googleapis.com/appengine/v1alpha/swagger.yaml": {
+      "hash": "bce5cc45d8e6b4dd",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/appsactivity/v1/swagger.yaml": {
+      "hash": "a15dcf75509c2c1c",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/appstate/v1/swagger.yaml": {
+      "hash": "9555fb8f94f6b8aa",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/bigquery/patch.yaml": {
+      "hash": "ea1aad24b38f2041",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/bigquery/v2/swagger.yaml": {
+      "hash": "926b8a3e147f8494",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/googleapis.com/bigquerydatatransfer/v1/swagger.yaml": {
+      "hash": "1c1a04aed3084930",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/googleapis.com/blogger/patch.yaml": {
+      "hash": "5b673a851bcd3978",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/blogger/v2/swagger.yaml": {
+      "hash": "5f0e5ab8980805bf",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/blogger/v3/swagger.yaml": {
+      "hash": "82599728669da4fb",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/googleapis.com/books/patch.yaml": {
+      "hash": "ba7bef73e1922936",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/books/v1/swagger.yaml": {
+      "hash": "312c1c13d3fcb919",
+      "nodes": 1,
+      "relations": 48
+    },
+    "APIs/googleapis.com/calendar/patch.yaml": {
+      "hash": "cbe15f858c0876ea",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/calendar/v3/swagger.yaml": {
+      "hash": "6f81ff0aabe717b4",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/googleapis.com/civicinfo/patch.yaml": {
+      "hash": "5063d0d44266c03c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/civicinfo/v2/swagger.yaml": {
+      "hash": "0385d0ad6892ba78",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/classroom/patch.yaml": {
+      "hash": "65ec47c55406e820",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/classroom/v1/swagger.yaml": {
+      "hash": "9eb5e75caa6754e5",
+      "nodes": 1,
+      "relations": 42
+    },
+    "APIs/googleapis.com/cloudbilling/v1/swagger.yaml": {
+      "hash": "e8563b85a9d2244f",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/cloudbuild/v1/swagger.yaml": {
+      "hash": "e17a18f34e6fd4d8",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/clouddebugger/patch.yaml": {
+      "hash": "700cf023d1b3427c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/clouddebugger/v2/swagger.yaml": {
+      "hash": "b0833de8f6e164d4",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/clouderrorreporting/v1beta1/swagger.yaml": {
+      "hash": "d6e082cf282b7b8d",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/cloudfunctions/v1beta2/swagger.yaml": {
+      "hash": "10a6397816fefd70",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/cloudkms/patch.yaml": {
+      "hash": "8a5a23f2c84f8bdd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/cloudkms/v1/swagger.yaml": {
+      "hash": "4431f757a0a73e14",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/cloudmonitoring/patch.yaml": {
+      "hash": "e1e938188447d3e2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/cloudmonitoring/v2beta2/swagger.yaml": {
+      "hash": "5d2afda52f516e84",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/cloudresourcemanager/patch.yaml": {
+      "hash": "e6b9e7946441738c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/cloudresourcemanager/v1/swagger.yaml": {
+      "hash": "c1f4e7b9557fe395",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/googleapis.com/cloudresourcemanager/v1beta1/swagger.yaml": {
+      "hash": "f646f167f99b4305",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/googleapis.com/cloudtrace/v1/swagger.yaml": {
+      "hash": "8f3b5bb61e613d56",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/googleapis.com/clouduseraccounts/alpha/swagger.yaml": {
+      "hash": "03aeb9fa98acefe7",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/googleapis.com/clouduseraccounts/beta/swagger.yaml": {
+      "hash": "462d6a18efe79ec0",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/clouduseraccounts/patch.yaml": {
+      "hash": "4523da37ec283b4d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/clouduseraccounts/vm_alpha/swagger.yaml": {
+      "hash": "f9626d491b5909ce",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/googleapis.com/clouduseraccounts/vm_beta/swagger.yaml": {
+      "hash": "9e90f3c66aaed4a8",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/compute/alpha/swagger.yaml": {
+      "hash": "a4269be86327a58d",
+      "nodes": 1,
+      "relations": 431
+    },
+    "APIs/googleapis.com/compute/beta/swagger.yaml": {
+      "hash": "0f82a4e3de05d340",
+      "nodes": 1,
+      "relations": 337
+    },
+    "APIs/googleapis.com/compute/patch.yaml": {
+      "hash": "378d2c3853124ee2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/compute/v1/swagger.yaml": {
+      "hash": "76e17166caa90f02",
+      "nodes": 1,
+      "relations": 288
+    },
+    "APIs/googleapis.com/consumersurveys/v2/swagger.yaml": {
+      "hash": "929ff1cdb02b164c",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/container/patch.yaml": {
+      "hash": "4f6a7a31d1bbbd53",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/container/v1/swagger.yaml": {
+      "hash": "61b90f9247f655e7",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/googleapis.com/content/patch.yaml": {
+      "hash": "e2a96f9ca3d1e46a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/content/v2/swagger.yaml": {
+      "hash": "bbd8842923733ab0",
+      "nodes": 1,
+      "relations": 58
+    },
+    "APIs/googleapis.com/content/v2sandbox/swagger.yaml": {
+      "hash": "307cc3fe252b9dc8",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/customsearch/patch.yaml": {
+      "hash": "76dc253a5f41adba",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/customsearch/v1/swagger.yaml": {
+      "hash": "f6a2b37efaef4f2f",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/dataflow/v1b3/swagger.yaml": {
+      "hash": "54941eb64cb98a43",
+      "nodes": 1,
+      "relations": 28
+    },
+    "APIs/googleapis.com/dataproc/v1/swagger.yaml": {
+      "hash": "b8cf8ff1f59031ad",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/dataproc/v1alpha1/swagger.yaml": {
+      "hash": "d730664d1e659b62",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/googleapis.com/dataproc/v1beta1/swagger.yaml": {
+      "hash": "72fabc4681244a96",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/datastore/patch.yaml": {
+      "hash": "f91aa5ccb2ab5c7f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/datastore/v1/swagger.yaml": {
+      "hash": "fbbd70b65642ac21",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/datastore/v1beta3/swagger.yaml": {
+      "hash": "43d9c7b1e214bac0",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/deploymentmanager/alpha/swagger.yaml": {
+      "hash": "9909fe205d0018ac",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/googleapis.com/deploymentmanager/patch.yaml": {
+      "hash": "48591d91dc73b4e9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/deploymentmanager/v2/swagger.yaml": {
+      "hash": "7e8ee94495057003",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/googleapis.com/deploymentmanager/v2beta/swagger.yaml": {
+      "hash": "90250391d73fbf5a",
+      "nodes": 1,
+      "relations": 32
+    },
+    "APIs/googleapis.com/dfareporting/v2.7/swagger.yaml": {
+      "hash": "a88af45be1e7a2b1",
+      "nodes": 1,
+      "relations": 204
+    },
+    "APIs/googleapis.com/discovery/v1/swagger.yaml": {
+      "hash": "50729dfad53f99f7",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/dlp/v2beta1/swagger.yaml": {
+      "hash": "54d4f1fd7fef9888",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/dns/patch.yaml": {
+      "hash": "bd8eeefd99f9ce20",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/dns/v1/swagger.yaml": {
+      "hash": "4b3ff0b486699bf2",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/dns/v2beta1/swagger.yaml": {
+      "hash": "e5b8d7d985518aa8",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/doubleclickbidmanager/patch.yaml": {
+      "hash": "aea1b5e5fb3ed38e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/doubleclickbidmanager/v1/swagger.yaml": {
+      "hash": "c8d0a5be0fd51367",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/doubleclicksearch/patch.yaml": {
+      "hash": "0e0d29c4efe4360e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/doubleclicksearch/v2/swagger.yaml": {
+      "hash": "467db6c426ad289a",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/googleapis.com/drive/patch.yaml": {
+      "hash": "69c37423e453f2d4",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/drive/v2/swagger.yaml": {
+      "hash": "da41763c62bc53c9",
+      "nodes": 1,
+      "relations": 67
+    },
+    "APIs/googleapis.com/drive/v3/swagger.yaml": {
+      "hash": "84f44cf82adcd1a8",
+      "nodes": 1,
+      "relations": 39
+    },
+    "APIs/googleapis.com/firebasedynamiclinks/v1/swagger.yaml": {
+      "hash": "42bc1599343b41b9",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/googleapis.com/firebaserules/v1/swagger.yaml": {
+      "hash": "4777f230bd5100af",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/fitness/v1/swagger.yaml": {
+      "hash": "302361dcf9b60432",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/googleapis.com/fusiontables/v1/swagger.yaml": {
+      "hash": "9d99f290ab83af47",
+      "nodes": 1,
+      "relations": 32
+    },
+    "APIs/googleapis.com/fusiontables/v2/swagger.yaml": {
+      "hash": "7dcc3951effbdcd8",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/googleapis.com/games/patch.yaml": {
+      "hash": "9e9483ada3405dd5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/games/v1/swagger.yaml": {
+      "hash": "a4f616247e9b05fe",
+      "nodes": 1,
+      "relations": 53
+    },
+    "APIs/googleapis.com/gamesConfiguration/patch.yaml": {
+      "hash": "1edf88202f42171b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/gamesConfiguration/v1configuration/swagger.yaml": {
+      "hash": "b8a457cd763e7581",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/googleapis.com/gamesManagement/patch.yaml": {
+      "hash": "7e5f65c8bdd7bf0d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/gamesManagement/v1management/swagger.yaml": {
+      "hash": "19c1fd2d80db9906",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/googleapis.com/genomics/v1/swagger.yaml": {
+      "hash": "29a970319bab31be",
+      "nodes": 1,
+      "relations": 53
+    },
+    "APIs/googleapis.com/genomics/v1alpha2/swagger.yaml": {
+      "hash": "ccd9135ba87ad155",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/gmail/patch.yaml": {
+      "hash": "46b4a0bc075d2257",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/gmail/v1/swagger.yaml": {
+      "hash": "16e92811985c0b09",
+      "nodes": 1,
+      "relations": 62
+    },
+    "APIs/googleapis.com/groupsmigration/v1/swagger.yaml": {
+      "hash": "3c636250e2ae2281",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/groupssettings/v1/swagger.yaml": {
+      "hash": "d4195670198b5576",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/googleapis.com/iam/v1/swagger.yaml": {
+      "hash": "1d00acd31f523824",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/googleapis.com/identitytoolkit/v3/swagger.yaml": {
+      "hash": "02b6179f15fbaf09",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/kgsearch/v1/swagger.yaml": {
+      "hash": "59b02b59d7f50f68",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/language/patch.yaml": {
+      "hash": "e1c6725365986207",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/language/v1/swagger.yaml": {
+      "hash": "ded01c84e8cbf730",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/googleapis.com/licensing/patch.yaml": {
+      "hash": "234c279a48d34336",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/licensing/v1/swagger.yaml": {
+      "hash": "8e077612cdeee541",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/googleapis.com/logging/patch.yaml": {
+      "hash": "cd7d4471f9c68999",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/logging/v2/swagger.yaml": {
+      "hash": "369687162fb60782",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/logging/v2beta1/swagger.yaml": {
+      "hash": "ed71368082e313da",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/manufacturers/v1/swagger.yaml": {
+      "hash": "aae4bed45070dcae",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/googleapis.com/mirror/v1/swagger.yaml": {
+      "hash": "ae01a759a9c1966a",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/googleapis.com/ml/patch.yaml": {
+      "hash": "a823a87ea99421a6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/ml/v1/swagger.yaml": {
+      "hash": "1f491b68f729c84d",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/googleapis.com/ml/v1beta1/swagger.yaml": {
+      "hash": "5ffb6dd61b2c77ba",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/googleapis.com/monitoring/v3/swagger.yaml": {
+      "hash": "a582626bddaeea02",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/googleapis.com/oauth2/v1/swagger.yaml": {
+      "hash": "faddef05673554e8",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/oauth2/v2/swagger.yaml": {
+      "hash": "e752b2e58708941f",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/googleapis.com/pagespeedonline/patch.yaml": {
+      "hash": "eeb9853ce3694982",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/pagespeedonline/v1/swagger.yaml": {
+      "hash": "e800bffe50a8523b",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/pagespeedonline/v2/swagger.yaml": {
+      "hash": "c8a05cb918ea1a4c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/partners/v2/swagger.yaml": {
+      "hash": "9c174d1869222a5b",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/googleapis.com/patch.yaml": {
+      "hash": "d83ff972a35535c0",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/people/v1/swagger.yaml": {
+      "hash": "245079327eeec036",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/googleapis.com/playmoviespartner/v1/swagger.yaml": {
+      "hash": "e587151d0f6925c6",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/plus/patch.yaml": {
+      "hash": "65d7e1017fe5fe54",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/plus/v1/swagger.yaml": {
+      "hash": "9ce0c4a7a2dd0728",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/googleapis.com/plusDomains/patch.yaml": {
+      "hash": "c75f3ca1937164ca",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/plusDomains/v1/swagger.yaml": {
+      "hash": "380dd89a01bcce19",
+      "nodes": 1,
+      "relations": 20
+    },
+    "APIs/googleapis.com/prediction/patch.yaml": {
+      "hash": "8c5b00f8ce0aa366",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/prediction/v1.2/swagger.yaml": {
+      "hash": "304d7ed89984cdfa",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/prediction/v1.3/swagger.yaml": {
+      "hash": "1a7d010b3fc12b66",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/prediction/v1.4/swagger.yaml": {
+      "hash": "46bf579d13139075",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/prediction/v1.5/swagger.yaml": {
+      "hash": "f6c9b8d7eefd3bb2",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/prediction/v1.6/swagger.yaml": {
+      "hash": "dfcda98a58174989",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/proximitybeacon/v1beta1/swagger.yaml": {
+      "hash": "16831b94fc5ab0bf",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/pubsub/patch.yaml": {
+      "hash": "27a3702e472150f7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/pubsub/v1/swagger.yaml": {
+      "hash": "a832d89b3b6ed522",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/googleapis.com/pubsub/v1beta1a/swagger.yaml": {
+      "hash": "0cc677033fc21a7d",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/googleapis.com/pubsub/v1beta2/swagger.yaml": {
+      "hash": "3e9cb842fde9faaa",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/googleapis.com/qpxExpress/v1/swagger.yaml": {
+      "hash": "2dac9794f477e73e",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/replicapool/v1beta1/swagger.yaml": {
+      "hash": "6f82382739787398",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/googleapis.com/replicapool/v1beta2/swagger.yaml": {
+      "hash": "db7310e3b41465b0",
+      "nodes": 1,
+      "relations": 12
+    },
+    "APIs/googleapis.com/replicapoolupdater/v1beta1/swagger.yaml": {
+      "hash": "be2b6f75d0c33a1a",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/googleapis.com/reseller/patch.yaml": {
+      "hash": "300d6db3ec0f8db1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/reseller/v1/swagger.yaml": {
+      "hash": "b80ee8fc0ac2b230",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/googleapis.com/resourceviews/v1beta1/swagger.yaml": {
+      "hash": "bec90b97592ea668",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/googleapis.com/resourceviews/v1beta2/swagger.yaml": {
+      "hash": "1ce9e65225aae795",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/runtimeconfig/v1/swagger.yaml": {
+      "hash": "d82477d0cd6dc973",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/googleapis.com/runtimeconfig/v1beta1/swagger.yaml": {
+      "hash": "98eceeefd516f9d4",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/googleapis.com/safebrowsing/patch.yaml": {
+      "hash": "37de68207af8159e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/safebrowsing/v4/swagger.yaml": {
+      "hash": "8e085cad0cac4995",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/script/patch.yaml": {
+      "hash": "6211c4bb007bfcac",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/script/v1/swagger.yaml": {
+      "hash": "341239620015df29",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/searchconsole/patch.yaml": {
+      "hash": "5753912186b7a8dc",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/searchconsole/v1/swagger.yaml": {
+      "hash": "690c8253adf667b7",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/servicecontrol/v1/swagger.yaml": {
+      "hash": "e7528044af5efb19",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/servicemanagement/v1/swagger.yaml": {
+      "hash": "dd06a132bf9a267b",
+      "nodes": 1,
+      "relations": 21
+    },
+    "APIs/googleapis.com/serviceuser/v1/swagger.yaml": {
+      "hash": "eace1394ba92aca0",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/googleapis.com/sheets/v4/swagger.yaml": {
+      "hash": "76043c8201d52ada",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/siteVerification/v1/swagger.yaml": {
+      "hash": "31a74a3719c3e302",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/googleapis.com/slides/v1/swagger.yaml": {
+      "hash": "706fee674e65e6f2",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/sourcerepo/v1/swagger.yaml": {
+      "hash": "a92f32b07dbd032c",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/googleapis.com/spanner/v1/swagger.yaml": {
+      "hash": "f6413db525c9fd21",
+      "nodes": 1,
+      "relations": 23
+    },
+    "APIs/googleapis.com/spectrum/v1explorer/swagger.yaml": {
+      "hash": "58593d932b66b2f5",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/speech/v1/swagger.yaml": {
+      "hash": "a41d3d20416db3e3",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/speech/v1beta1/swagger.yaml": {
+      "hash": "48fabcbbf6a6ef8a",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/googleapis.com/sqladmin/patch.yaml": {
+      "hash": "1ad5d9cded6397ae",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/sqladmin/v1beta3/swagger.yaml": {
+      "hash": "4c41755a4df40b21",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/googleapis.com/sqladmin/v1beta4/swagger.yaml": {
+      "hash": "babc7cb486598c56",
+      "nodes": 1,
+      "relations": 40
+    },
+    "APIs/googleapis.com/storage/patch.yaml": {
+      "hash": "306d3ee39bc42458",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/storage/v1/swagger.yaml": {
+      "hash": "095a97f926f6e96c",
+      "nodes": 1,
+      "relations": 46
+    },
+    "APIs/googleapis.com/storage/v1beta1/swagger.yaml": {
+      "hash": "bcaddbb231b918b0",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/googleapis.com/storage/v1beta2/swagger.yaml": {
+      "hash": "b1bf85138d7d3777",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/googleapis.com/storagetransfer/patch.yaml": {
+      "hash": "dad799a6f3fd72aa",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/storagetransfer/v1/swagger.yaml": {
+      "hash": "5426f1b94d14189b",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/googleapis.com/surveys/v2/swagger.yaml": {
+      "hash": "bf54da6434095f37",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/googleapis.com/tagmanager/v1/swagger.yaml": {
+      "hash": "7ad41717ccd5c665",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/taskqueue/v1beta1/swagger.yaml": {
+      "hash": "989931a87c028597",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/taskqueue/v1beta2/swagger.yaml": {
+      "hash": "86d052a247478bcd",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/tasks/patch.yaml": {
+      "hash": "f57fa6223445fe9e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/tasks/v1/swagger.yaml": {
+      "hash": "962832974ba0bc52",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/googleapis.com/toolresults/v1beta3/swagger.yaml": {
+      "hash": "67990d44d1745f1c",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/googleapis.com/toolresults/v1beta3firstparty/swagger.yaml": {
+      "hash": "907f4f71ff88e8b6",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/googleapis.com/tracing/v2/swagger.yaml": {
+      "hash": "7196bfe10cb1e064",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/googleapis.com/translate/patch.yaml": {
+      "hash": "4f6f863e61fa2eac",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/translate/v2/swagger.yaml": {
+      "hash": "6bc9655969ac9f6e",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/googleapis.com/urlshortener/patch.yaml": {
+      "hash": "f2fa6d62fafbe0ee",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/urlshortener/v1/swagger.yaml": {
+      "hash": "82ce39125f8defcb",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/googleapis.com/videointelligence/v1beta1/swagger.yaml": {
+      "hash": "7e99406e0eeb192b",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/vision/v1/swagger.yaml": {
+      "hash": "321da122f38e7156",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/webfonts/v1/swagger.yaml": {
+      "hash": "2306e2cc5327a5d4",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/googleapis.com/webmasters/v3/swagger.yaml": {
+      "hash": "dd34b7cfa5399869",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/googleapis.com/youtube/patch.yaml": {
+      "hash": "2f3ced439af3d8f6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/youtube/v3/swagger.yaml": {
+      "hash": "fdce26d71a776e2e",
+      "nodes": 1,
+      "relations": 72
+    },
+    "APIs/googleapis.com/youtubeAnalytics/patch.yaml": {
+      "hash": "58dba2b81e9c81e6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/youtubeAnalytics/v1/swagger.yaml": {
+      "hash": "f8c7bd8b122e30fc",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/youtubeAnalytics/v1beta1/swagger.yaml": {
+      "hash": "fd41eddb21f2e8e6",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/googleapis.com/youtubereporting/patch.yaml": {
+      "hash": "f42587dd897435ab",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/googleapis.com/youtubereporting/v1/swagger.yaml": {
+      "hash": "036e21d788828046",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/gov.bc.ca/bcdc/3.0.1/swagger.yaml": {
+      "hash": "e15a1ef75a717765",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/gov.bc.ca/bcgnws/3.x.x/swagger.yaml": {
+      "hash": "73eced9dc36b0225",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/gov.bc.ca/geocoder/2.0.0/swagger.yaml": {
+      "hash": "4c4a18b9b905ff0b",
+      "nodes": 1,
+      "relations": 14
+    },
+    "APIs/gov.bc.ca/geomark/4.1.2/swagger.yaml": {
+      "hash": "f65588ae33704a86",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/gov.bc.ca/jobposting/1.0.0/swagger.yaml": {
+      "hash": "807db2cdb8b2940f",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/gov.bc.ca/open511/1.0.0/swagger.yaml": {
+      "hash": "d889cb71d5978e80",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/gov.bc.ca/patch.yaml": {
+      "hash": "41f7b5e2d8f55a87",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/gov.bc.ca/router/1.2.0/swagger.yaml": {
+      "hash": "1441886a55c39bc5",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/graphhopper.com/1.0/swagger.yaml": {
+      "hash": "396011178ab8b7de",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/graphhopper.com/patch.yaml": {
+      "hash": "e8343f5aeabba0c6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/healthcare.gov/1.0.0/swagger.yaml": {
+      "hash": "ccebceb346a35f67",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/healthcare.gov/patch.yaml": {
+      "hash": "0c4bd4b6b350814b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/hetras-certification.net/booking/v0/swagger.yaml": {
+      "hash": "bab8b07865bd6711",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/hetras-certification.net/hotel/v0/swagger.yaml": {
+      "hash": "5b106a153dfce749",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/hetras-certification.net/patch.yaml": {
+      "hash": "417268d820022972",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/hhs.gov/2/fixup.yaml": {
+      "hash": "634e197dd30e9aa3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/hhs.gov/2/swagger.yaml": {
+      "hash": "c1ead27c1b7d7d7b",
+      "nodes": 1,
+      "relations": 32
+    },
+    "APIs/hhs.gov/patch.yaml": {
+      "hash": "e4a7977ddc82e51e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/idtbeyond.com/1.1.7/swagger.yaml": {
+      "hash": "3e04193d5501be24",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/idtbeyond.com/patch.yaml": {
+      "hash": "ec9967ef62ec8942",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/ijenko.net/3.0.0/swagger.yaml": {
+      "hash": "bd25d6ce40bd1f49",
+      "nodes": 1,
+      "relations": 67
+    },
+    "APIs/ijenko.net/patch.yaml": {
+      "hash": "48ef0d5374a19975",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/data/1.0/fixup.yaml": {
+      "hash": "814a8ea1d35d14e3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/data/1.0/swagger.yaml": {
+      "hash": "230887369e36efee",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/import.io/extraction/1.0/fixup.yaml": {
+      "hash": "4c6296951e3ea7f2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/extraction/1.0/swagger.yaml": {
+      "hash": "70fd664c5d208a50",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/import.io/patch.yaml": {
+      "hash": "411a8135d4d412f2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/rss/1.0/fixup.yaml": {
+      "hash": "672618ac4c39ab3b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/rss/1.0/swagger.yaml": {
+      "hash": "0e4c695c65993400",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/import.io/run/1.0/fixup.yaml": {
+      "hash": "cf3b239dde3aa8e2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/run/1.0/swagger.yaml": {
+      "hash": "f94601a0650151af",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/import.io/schedule/1.0/fixup.yaml": {
+      "hash": "1f99827d352ba4eb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/import.io/schedule/1.0/swagger.yaml": {
+      "hash": "11c4aadd44bc3f25",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/inboxroute.com/0.9/swagger.yaml": {
+      "hash": "f9149326711e87b0",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/inboxroute.com/patch.yaml": {
+      "hash": "8dd6a38fd13a59fc",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/infermedica.com/patch.yaml": {
+      "hash": "2d97774d9ec8ad6b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/infermedica.com/v1/swagger.yaml": {
+      "hash": "463344da739cfa51",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/instagram.com/1.0.0/swagger.yaml": {
+      "hash": "a2abff6dfc8b2347",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/instagram.com/patch.yaml": {
+      "hash": "5c1eb7231dc39c65",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/jirafe.com/2.0.0/fixup.yaml": {
+      "hash": "3fc4faa3aa641fd6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/jirafe.com/2.0.0/swagger.yaml": {
+      "hash": "d6e34b1617af282a",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/jirafe.com/patch.yaml": {
+      "hash": "e13daf3f03e1cea9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/learnifier.com/1.1.0/fixup.yaml": {
+      "hash": "7f7955225c85cdfd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/learnifier.com/1.1.0/swagger.yaml": {
+      "hash": "f50b7d10bfb94a7b",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/learnifier.com/patch.yaml": {
+      "hash": "81b50c171d1e20b6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/likefolio.com/patch.yaml": {
+      "hash": "d14e9d4e69ecd036",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/lyft.com/1.0.0/swagger.yaml": {
+      "hash": "ab21b6172072fd53",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/lyft.com/patch.yaml": {
+      "hash": "5c8a98577f652bea",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/magento.com/2.1/swagger.yaml": {
+      "hash": "2dc8850d40ba8878",
+      "nodes": 1,
+      "relations": 355
+    },
+    "APIs/magento.com/patch.yaml": {
+      "hash": "12ee751c4fad2e5f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/magick.nu/1.0/swagger.yaml": {
+      "hash": "6c1c6a084b845989",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/magick.nu/patch.yaml": {
+      "hash": "220a6dc44ad281fb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/mandrillapp.com/1.0/swagger.yaml": {
+      "hash": "b2408180f7791d1c",
+      "nodes": 1,
+      "relations": 90
+    },
+    "APIs/mandrillapp.com/patch.yaml": {
+      "hash": "4da1a42f9ec054a3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/medium.com/1.0.0/fixup.yaml": {
+      "hash": "a64c6084cd413b78",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/medium.com/1.0.0/swagger.yaml": {
+      "hash": "983c245f5068f075",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/medium.com/patch.yaml": {
+      "hash": "2165e9d6d2435b6d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/microsoft.com/1.0.0/swagger.yaml": {
+      "hash": "3b40794de16fb829",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/microsoft.com/patch.yaml": {
+      "hash": "6271a1ed29dad97a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/mondiamedia.com/patch.yaml": {
+      "hash": "d5c37d83da12bcb3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/moonmoonmoonmoon.com/1.0/swagger.yaml": {
+      "hash": "648cfe377fdd44f8",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/moonmoonmoonmoon.com/patch.yaml": {
+      "hash": "9487549787a71cbe",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/motaword.com/alpha-0.1.0/swagger.yaml": {
+      "hash": "022f0b6fce3c5cb8",
+      "nodes": 1,
+      "relations": 46
+    },
+    "APIs/motaword.com/patch.yaml": {
+      "hash": "c0035bde43e85b79",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/mozilla.com/kinto/1.17/swagger.yaml": {
+      "hash": "e291883648c5f9c4",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/mozilla.com/kinto/patch.yaml": {
+      "hash": "57bdca97a94e4e70",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nativeads.com/1.0.0/swagger.yaml": {
+      "hash": "41a652d56171ad2b",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/nativeads.com/patch.yaml": {
+      "hash": "69ac62383c6c85b3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nba.com/1.0.0/swagger.yaml": {
+      "hash": "7f835362282bebc9",
+      "nodes": 1,
+      "relations": 91
+    },
+    "APIs/nba.com/patch.yaml": {
+      "hash": "3e32d4c31e24ad7d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/neowsapp.com/1.0/fixup.yaml": {
+      "hash": "255ffaa85db1bcc9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/neowsapp.com/1.0/swagger.yaml": {
+      "hash": "894169a430d7cb8f",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/neowsapp.com/patch.yaml": {
+      "hash": "7f2fb30966b2de4c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/netatmo.net/1.1.0/swagger.yaml": {
+      "hash": "ec36a86c19fd255b",
+      "nodes": 1,
+      "relations": 19
+    },
+    "APIs/netatmo.net/patch.yaml": {
+      "hash": "d480a4aa0c88fa35",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/netlicensing.io/2.x/swagger.yaml": {
+      "hash": "4c167835e5a264f0",
+      "nodes": 1,
+      "relations": 40
+    },
+    "APIs/netlicensing.io/patch.yaml": {
+      "hash": "94ee23797d90b029",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/neutrinoapi.com/3.3.2/swagger.yaml": {
+      "hash": "9a014c94e84ef74f",
+      "nodes": 1,
+      "relations": 25
+    },
+    "APIs/neutrinoapi.com/patch.yaml": {
+      "hash": "aba9a4a9d401579b",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nrel.gov/building-case-studies/1.0/swagger.yaml": {
+      "hash": "549df0313a521ddd",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/nrel.gov/patch.yaml": {
+      "hash": "6042124a63d72638",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nrel.gov/transportation-incentives-laws/0.1.0/swagger.yaml": {
+      "hash": "03d719ad1974bd87",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/nsidc.org/1.0.0/swagger.yaml": {
+      "hash": "123cabd16bc820aa",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/nsidc.org/patch.yaml": {
+      "hash": "b7af024220df650f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/article_search/1.0.0/swagger.yaml": {
+      "hash": "861a84e0f93d6f05",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/nytimes.com/article_search/patch.yaml": {
+      "hash": "34ffa1aebcc03a18",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/books_api/3.0.0/swagger.yaml": {
+      "hash": "1f477a9a85ca60f7",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/nytimes.com/books_api/patch.yaml": {
+      "hash": "8a171800d5608586",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/community/3.0.0/swagger.yaml": {
+      "hash": "4553fabfa7b65f88",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/nytimes.com/geo_api/1.0.0/swagger.yaml": {
+      "hash": "5832f9e02363a8b8",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/nytimes.com/most_popular_api/2.0.0/swagger.yaml": {
+      "hash": "a255c2993cc8eb60",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/nytimes.com/movie_reviews/2.0.0/swagger.yaml": {
+      "hash": "b057457bfa2cb904",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/nytimes.com/movie_reviews/patch.yaml": {
+      "hash": "5c7a6671fec7a782",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/patch.yaml": {
+      "hash": "86dbac2424c6318d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/semantic_api/2.0.0/swagger.yaml": {
+      "hash": "f1cea8895d03cc92",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/nytimes.com/times_tags/1.0.0/swagger.yaml": {
+      "hash": "817b9984161099e0",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/nytimes.com/timeswire/3.0.0/swagger.yaml": {
+      "hash": "af70bc947b58622e",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/nytimes.com/timeswire/patch.yaml": {
+      "hash": "473419986478dea6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/nytimes.com/top_stories/2.0.0/swagger.yaml": {
+      "hash": "1ddc4e548dc5f7da",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/nytimes.com/top_stories/patch.yaml": {
+      "hash": "7e8d894dd5c2e00c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/oceandrivers.com/1.0/fixup.yaml": {
+      "hash": "32ef7c334117927a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/oceandrivers.com/1.0/swagger.yaml": {
+      "hash": "cf38ff1027ce0913",
+      "nodes": 1,
+      "relations": 8
+    },
+    "APIs/oceandrivers.com/patch.yaml": {
+      "hash": "beaba90d2f623c5a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/omdbapi.com/1/swagger.yaml": {
+      "hash": "1ff836ff0365e88b",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/omdbapi.com/patch.yaml": {
+      "hash": "c6ea1a85c02ec9ab",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/ontraport.com/patch.yaml": {
+      "hash": "1fd79884af80359c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/openapi-converter.herokuapp.com/1.0.0/swagger.yaml": {
+      "hash": "36ea50304e7796b3",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/openapi-converter.herokuapp.com/patch.yaml": {
+      "hash": "8f0294d2f854fa38",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/opencagedata.com/1/fixup.yaml": {
+      "hash": "ee6094108a9c808a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/opencagedata.com/1/swagger.yaml": {
+      "hash": "0643da31b882d508",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/opencagedata.com/patch.yaml": {
+      "hash": "faf9d636fa2055fa",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/orghunter.com/1.0.0/swagger.yaml": {
+      "hash": "703075fee0277105",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/orghunter.com/patch.yaml": {
+      "hash": "4239315199c70c11",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/owler.com/1.0.0/swagger.yaml": {
+      "hash": "d53fc5be0ece9954",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/owler.com/patch.yaml": {
+      "hash": "476cbca131d30d90",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/oxforddictionaries.com/1.7.0/swagger.yaml": {
+      "hash": "61ecbbf9ccc2bcba",
+      "nodes": 1,
+      "relations": 27
+    },
+    "APIs/oxforddictionaries.com/fixup.yaml": {
+      "hash": "dbc921082fa8fd96",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/oxforddictionaries.com/patch.yaml": {
+      "hash": "6147598747075867",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/pandorabots.com/1.0.0/swagger.yaml": {
+      "hash": "5a61d941c08e3fdb",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/pandorabots.com/patch.yaml": {
+      "hash": "132e5fd8c07ff375",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/passwordutility.net/patch.yaml": {
+      "hash": "a452ceb3a2b6b8cb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/passwordutility.net/v1/swagger.yaml": {
+      "hash": "08ab05d31289237d",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/patientview.org/1.0/swagger.yaml": {
+      "hash": "bd1494629518f7f2",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/patientview.org/patch.yaml": {
+      "hash": "c5de0bc36334f9ea",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/peel-ci.com/1.0.0/swagger.yaml": {
+      "hash": "2c45e9fd4e9262a1",
+      "nodes": 1,
+      "relations": 5
+    },
+    "APIs/peel-ci.com/patch.yaml": {
+      "hash": "45aac0e0a3c4fa2f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/plenigo.com/patch.yaml": {
+      "hash": "74b71a68f3461ba6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/posty-api.herokuapp.com/patch.yaml": {
+      "hash": "ec6b4886a1440efe",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/posty-api.herokuapp.com/v1/swagger.yaml": {
+      "hash": "21a67b02b559bf32",
+      "nodes": 1,
+      "relations": 28
+    },
+    "APIs/prd-prsn.com/patch.yaml": {
+      "hash": "67e7bb96e38402a1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/pushpay.com/patch.yaml": {
+      "hash": "520788de88e72539",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/rbaskets.in/0.5/swagger.yaml": {
+      "hash": "8a5504753bcf8c90",
+      "nodes": 1,
+      "relations": 9
+    },
+    "APIs/rbaskets.in/patch.yaml": {
+      "hash": "1b0a18bffbf39ec0",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/reactome.org/patch.yaml": {
+      "hash": "b998f55492b60c3c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/rebilly.com/2.1/swagger.yaml": {
+      "hash": "86034df7b9033acb",
+      "nodes": 1,
+      "relations": 242
+    },
+    "APIs/rebilly.com/patch.yaml": {
+      "hash": "653f52b96db916dd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/refugerestrooms.org/patch.yaml": {
+      "hash": "2df53e7199f27c72",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/refugerestrooms.org/v1/fixup.yaml": {
+      "hash": "8d3e46c8c9e2c288",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/refugerestrooms.org/v1/swagger.yaml": {
+      "hash": "b2896b7e68d3175a",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/reverb.com/3.0/swagger.yaml": {
+      "hash": "f44aa892bfebf718",
+      "nodes": 1,
+      "relations": 167
+    },
+    "APIs/reverb.com/patch.yaml": {
+      "hash": "2b821a01f3ae7ae5",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/ritc.io/1.0.0/swagger.yaml": {
+      "hash": "66aeb6645c359d51",
+      "nodes": 1,
+      "relations": 66
+    },
+    "APIs/ritc.io/patch.yaml": {
+      "hash": "546097d679dfa6aa",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/rottentomatoes.com/1.0/swagger.yaml": {
+      "hash": "f20d27710f241ef9",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/rottentomatoes.com/patch.yaml": {
+      "hash": "93a57121d8f516a1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/rummblelabs.com/1.0.0/swagger.yaml": {
+      "hash": "c976b509f1eace2d",
+      "nodes": 1,
+      "relations": 15
+    },
+    "APIs/rummblelabs.com/patch.yaml": {
+      "hash": "535fda2b210af679",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/runscope.com/1.0.0/swagger.yaml": {
+      "hash": "14ae9af096740f43",
+      "nodes": 1,
+      "relations": 29
+    },
+    "APIs/runscope.com/patch.yaml": {
+      "hash": "77947d929e87e6ae",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/schooldigger.com/patch.yaml": {
+      "hash": "a26514733a102aad",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/schooldigger.com/v1/swagger.yaml": {
+      "hash": "6da089f8c35ea25f",
+      "nodes": 1,
+      "relations": 6
+    },
+    "APIs/scrapewebsite.email/0.1/swagger.yaml": {
+      "hash": "6b60acc36c86f6fc",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/scrapewebsite.email/patch.yaml": {
+      "hash": "024d0d5256ec21f9",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/semantria.com/4.0/fixup.yaml": {
+      "hash": "92d191bfbd89d5ae",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/semantria.com/4.0/swagger.yaml": {
+      "hash": "24b67511868027b6",
+      "nodes": 1,
+      "relations": 41
+    },
+    "APIs/semantria.com/patch.yaml": {
+      "hash": "94de4f87aaf998aa",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/sendgrid.com/3.0/swagger.yaml": {
+      "hash": "823a29d557cf1625",
+      "nodes": 1,
+      "relations": 245
+    },
+    "APIs/sendgrid.com/patch.yaml": {
+      "hash": "94d9acf36500c4c2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/simplyrets.com/1.0.0/fixup.yaml": {
+      "hash": "98bd82219847f623",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/simplyrets.com/1.0.0/swagger.yaml": {
+      "hash": "f97d7127a002fff5",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/slack.com/1.0.0/swagger.yaml": {
+      "hash": "3b346ee3eaef271b",
+      "nodes": 1,
+      "relations": 30
+    },
+    "APIs/slack.com/patch.yaml": {
+      "hash": "6e95009fbdec0eff",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/slideroom.com/patch.yaml": {
+      "hash": "caac34eb3e0ecea6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/slideroom.com/v2/fixup.yaml": {
+      "hash": "68aa2ebe4057ecdb",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/slideroom.com/v2/swagger.yaml": {
+      "hash": "e63a6fbd15627cde",
+      "nodes": 1,
+      "relations": 11
+    },
+    "APIs/smart-me.com/patch.yaml": {
+      "hash": "8186e541aad12618",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/smart-me.com/v1/swagger.yaml": {
+      "hash": "4a274b60a7ba9ece",
+      "nodes": 1,
+      "relations": 24
+    },
+    "APIs/solarvps.com/1.0.0/fixup.yaml": {
+      "hash": "383071c3f096d383",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/solarvps.com/1.0.0/swagger.yaml": {
+      "hash": "a45038679098d5b7",
+      "nodes": 1,
+      "relations": 20
+    },
+    "APIs/solarvps.com/patch.yaml": {
+      "hash": "bd8fe09c4c334900",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/spectrocoin.com/1.0.0/fixup.yaml": {
+      "hash": "5e069daf32cdc81a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/spectrocoin.com/1.0.0/swagger.yaml": {
+      "hash": "f13843bb01ac9830",
+      "nodes": 1,
+      "relations": 1
+    },
+    "APIs/spectrocoin.com/patch.yaml": {
+      "hash": "711c40e25dc1f6ed",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/spotify.com/patch.yaml": {
+      "hash": "451f7f62f4d329b8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/spotify.com/v1/swagger.yaml": {
+      "hash": "27e99b82df3dd6de",
+      "nodes": 1,
+      "relations": 37
+    },
+    "APIs/squareup.com/2.0/fixup.yaml": {
+      "hash": "eca26c8ecf857402",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/squareup.com/2.0/swagger.yaml": {
+      "hash": "f54e8c5ef3419023",
+      "nodes": 1,
+      "relations": 16
+    },
+    "APIs/squareup.com/patch.yaml": {
+      "hash": "30984551893ed832",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/stackexchange.com/2.0/swagger.yaml": {
+      "hash": "85ec41f267c61677",
+      "nodes": 1,
+      "relations": 124
+    },
+    "APIs/stackexchange.com/patch.yaml": {
+      "hash": "f59c36eeed7cdda8",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/statsocial.com/1.0.0/swagger.yaml": {
+      "hash": "0ab74f2791160986",
+      "nodes": 1,
+      "relations": 17
+    },
+    "APIs/statsocial.com/patch.yaml": {
+      "hash": "625050eead3c8e8d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/swagger.io/generator/2.2.2/swagger.yaml": {
+      "hash": "a6df744ac2e3c9e0",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/swagger.io/patch.yaml": {
+      "hash": "50874f33efbd8f41",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/swaggerhub.com/1.0.45/swagger.yaml": {
+      "hash": "77026f74f7329e08",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/swaggerhub.com/patch.yaml": {
+      "hash": "9a9734b1dfb80a89",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/synq.fm/1.9.1/swagger.yaml": {
+      "hash": "8e823a467827b855",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/synq.fm/patch.yaml": {
+      "hash": "8136897fcfedd5c1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/taxamo.com/1/swagger.yaml": {
+      "hash": "ba360c4b19754f6b",
+      "nodes": 1,
+      "relations": 36
+    },
+    "APIs/taxamo.com/patch.yaml": {
+      "hash": "0b5a995df56fbbea",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/tfl.gov.uk/patch.yaml": {
+      "hash": "a62fdc7eb7b09b4f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/tfl.gov.uk/v1/swagger.yaml": {
+      "hash": "b93c83d10ba6a634",
+      "nodes": 1,
+      "relations": 80
+    },
+    "APIs/thenounproject.com/1.0.0/fixup.yaml": {
+      "hash": "9f869752ec1e640e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/thenounproject.com/1.0.0/swagger.yaml": {
+      "hash": "9d7df72f42d31ae4",
+      "nodes": 1,
+      "relations": 13
+    },
+    "APIs/thenounproject.com/patch.yaml": {
+      "hash": "0b8856f8d1a7793c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/thetvdb.com/2.1.2/swagger.yaml": {
+      "hash": "9138a4de4e882f9a",
+      "nodes": 1,
+      "relations": 30
+    },
+    "APIs/thetvdb.com/patch.yaml": {
+      "hash": "d96f6b19c644bc0e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/traccar.org/3.10/swagger.yaml": {
+      "hash": "6ce047912ad73650",
+      "nodes": 1,
+      "relations": 55
+    },
+    "APIs/traccar.org/patch.yaml": {
+      "hash": "7321e3a03eff05de",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/trello.com/1.0/swagger.yaml": {
+      "hash": "3960b56340de00ae",
+      "nodes": 1,
+      "relations": 324
+    },
+    "APIs/trello.com/patch.yaml": {
+      "hash": "31eac9c2e1b00e41",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/twilio.com/2010-04-01/fixup.yaml": {
+      "hash": "43061e3d098ef6c6",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/twilio.com/2010-04-01/swagger.yaml": {
+      "hash": "fa9ece24e09ef4b8",
+      "nodes": 1,
+      "relations": 116
+    },
+    "APIs/twilio.com/patch.yaml": {
+      "hash": "0f0b7fad0e9f0157",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/uebermaps.com/2.0/swagger.yaml": {
+      "hash": "a4496cb57005a4cb",
+      "nodes": 1,
+      "relations": 56
+    },
+    "APIs/uebermaps.com/patch.yaml": {
+      "hash": "c7a40cb9a127c9c7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/uploady.com/patch.yaml": {
+      "hash": "68b9c6c288b2410c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/vatapi.com/1/swagger.yaml": {
+      "hash": "2e6ba12bead62068",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/vatapi.com/patch.yaml": {
+      "hash": "b062015dc502a501",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/versioneye.com/2.0/swagger.yaml": {
+      "hash": "49fd165810e127dc",
+      "nodes": 1,
+      "relations": 42
+    },
+    "APIs/versioneye.com/patch.yaml": {
+      "hash": "0e40c7ffff5398d3",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/vestorly.com/1.0.0/fixup.yaml": {
+      "hash": "e2fdd28a46f80407",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/vestorly.com/1.0.0/swagger.yaml": {
+      "hash": "63aee50998d247a1",
+      "nodes": 1,
+      "relations": 33
+    },
+    "APIs/vestorly.com/patch.yaml": {
+      "hash": "1327e4ab3539060a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/victorops.com/0.0.1/swagger.yaml": {
+      "hash": "08c40951ce2a61ff",
+      "nodes": 1,
+      "relations": 43
+    },
+    "APIs/victorops.com/patch.yaml": {
+      "hash": "5a66ed1a48dca641",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/visagecloud.com/1.1/swagger.yaml": {
+      "hash": "7363e17d25804b73",
+      "nodes": 1,
+      "relations": 18
+    },
+    "APIs/visagecloud.com/patch.yaml": {
+      "hash": "e874f3468c60d663",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/waag.org/patch.yaml": {
+      "hash": "9ba71e490521830f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/waag.org/v1/swagger.yaml": {
+      "hash": "962357bb25537cbd",
+      "nodes": 1,
+      "relations": 47
+    },
+    "APIs/watchful.li/1.0.0/fixup.yaml": {
+      "hash": "bec3792fcf29b6b7",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/watchful.li/1.0.0/swagger.yaml": {
+      "hash": "931e6cb4c87c1936",
+      "nodes": 1,
+      "relations": 61
+    },
+    "APIs/watchful.li/patch.yaml": {
+      "hash": "21b2bc8153c8b002",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/wavecell.com/patch.yaml": {
+      "hash": "8544428c28b5e78a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/wavecell.com/v1/swagger.yaml": {
+      "hash": "9109b254ce779c6e",
+      "nodes": 1,
+      "relations": 4
+    },
+    "APIs/wealthport.com/1.0/swagger.yaml": {
+      "hash": "4de3dc9cdff0e3eb",
+      "nodes": 1,
+      "relations": 26
+    },
+    "APIs/wealthport.com/patch.yaml": {
+      "hash": "cbb9443b239eb4a2",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/wikimedia.org/1.0.0/fixup.yaml": {
+      "hash": "454f7d7de67d4267",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/wikimedia.org/1.0.0/swagger.yaml": {
+      "hash": "6f7a91d5e933f6ef",
+      "nodes": 1,
+      "relations": 10
+    },
+    "APIs/wikimedia.org/patch.yaml": {
+      "hash": "960ef9546d19655f",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/arm-graphrbac/1.6/patch.yaml": {
+      "hash": "5011c4e2344636bd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/arm-graphrbac/1.6/swagger.yaml": {
+      "hash": "d2466a9f13b8367b",
+      "nodes": 1,
+      "relations": 34
+    },
+    "APIs/windows.net/batch/2015-12-01.2.2/patch.yaml": {
+      "hash": "b883a58fb7821ad1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/batch/2015-12-01.2.2/swagger.yaml": {
+      "hash": "18ace92f58742abe",
+      "nodes": 1,
+      "relations": 70
+    },
+    "APIs/windows.net/batch/2016-02-01.3.0/patch.yaml": {
+      "hash": "64e82a1644cafa0a",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/batch/2016-02-01.3.0/swagger.yaml": {
+      "hash": "82bd901dfa84575e",
+      "nodes": 1,
+      "relations": 73
+    },
+    "APIs/windows.net/batch/2016-07-01.3.1/patch.yaml": {
+      "hash": "4da6475cce3dd4df",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/batch/2016-07-01.3.1/swagger.yaml": {
+      "hash": "340aeb84fac79337",
+      "nodes": 1,
+      "relations": 74
+    },
+    "APIs/windows.net/batch/2017-01-01.4.0/patch.yaml": {
+      "hash": "614afc8db608ac68",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/windows.net/batch/2017-01-01.4.0/swagger.yaml": {
+      "hash": "729659574bad8d53",
+      "nodes": 1,
+      "relations": 74
+    },
+    "APIs/windows.net/patch.yaml": {
+      "hash": "44358012a0e65c9e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/winning.email/1.0.0/fixup.yaml": {
+      "hash": "804e1b323464d95c",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/winning.email/1.0.0/swagger.yaml": {
+      "hash": "d12bed34b9845104",
+      "nodes": 1,
+      "relations": 3
+    },
+    "APIs/winning.email/patch.yaml": {
+      "hash": "d45cb426c9c413f1",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/wordnik.com/4.0/swagger.yaml": {
+      "hash": "5609d3f3fc1d4bac",
+      "nodes": 1,
+      "relations": 28
+    },
+    "APIs/wordnik.com/patch.yaml": {
+      "hash": "019ebbd3f7f9ac3e",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/xkcd.com/1.0.0/swagger.yaml": {
+      "hash": "5257186e1246991a",
+      "nodes": 1,
+      "relations": 2
+    },
+    "APIs/xkcd.com/patch.yaml": {
+      "hash": "1eb9f7e7368902cd",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/yunbi.com/patch.yaml": {
+      "hash": "c96486d3f1e2a336",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/yunbi.com/v2/swagger.yaml": {
+      "hash": "19a6194a5080db8f",
+      "nodes": 1,
+      "relations": 22
+    },
+    "APIs/zappiti.com/4.15.174/fixup.yaml": {
+      "hash": "4d0b6f73e6c68860",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/zappiti.com/4.15.174/swagger.yaml": {
+      "hash": "c11311f14d23550f",
+      "nodes": 1,
+      "relations": 7
+    },
+    "APIs/zappiti.com/patch.yaml": {
+      "hash": "7d2625ef0d19f89d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "APIs/zoomconnect.com/1/swagger.yaml": {
+      "hash": "4e2ed6c34b658803",
+      "nodes": 1,
+      "relations": 44
+    },
+    "APIs/zoomconnect.com/patch.yaml": {
+      "hash": "0c4eb2d2e61f532d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "fixes/http%3A%2F%2Fapi.ss.solarvps.com%2Fapi-docs.yaml": {
+      "hash": "bf6e07d0bc5b6a77",
+      "nodes": 1,
+      "relations": 0
+    },
+    "fixes/https%3A%2F%2Fapi.clarify.io%2Fapi-docs.yaml": {
+      "hash": "3d12e145a558b870",
+      "nodes": 1,
+      "relations": 0
+    },
+    "fixes/https%3A%2F%2Fwww.googleapis.com%2Fdiscovery%2Fv1%2Fapis%2Fadexchangebuyer%2Fv1.4%2Frest.yaml": {
+      "hash": "89a52776d21e4644",
+      "nodes": 1,
+      "relations": 0
+    },
+    "resources/apis_guru_swagger.yaml": {
+      "hash": "62d9a2bb1549a85d",
+      "nodes": 1,
+      "relations": 2
+    },
+    "resources/categories.yaml": {
+      "hash": "1f11719ef3ed315d",
+      "nodes": 1,
+      "relations": 0
+    },
+    "scripts/spec_sources/blacklist.yaml": {
+      "hash": "b243b1098aa06bd8",
+      "nodes": 1,
+      "relations": 0
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "boundary": 10836,
+      "external_symbol": 4,
+      "file": 971,
+      "project": 1
+    },
+    "relations": {
+      "contains": 971,
+      "exposes": 15820,
+      "imports": 4
+    }
+  },
+  "project": "APIs-guru/openapi-directory",
+  "ref": "openapi3-0-source",
+  "resolution": {
+    "metrics": {
+      "external": 0,
+      "internal": 0,
+      "queries": 0,
+      "resolved": 0,
+      "unresolved": 0
+    },
+    "relations": {
+      "contains": 971,
+      "exposes": 15820,
+      "imports": 4
+    },
+    "status": "ok"
+  },
+  "totals": {
+    "files": 971,
+    "nodes": 11812,
+    "relations": 16795
+  }
+}

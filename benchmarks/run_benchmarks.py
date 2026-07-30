@@ -71,6 +71,13 @@ def _adapter_for(lang: str):
         "typescript": callix.TypeScriptAdapter,
         "go": callix.GoAdapter,
         "rust": callix.RustAdapter,
+        "php": callix.PhpAdapter,
+        # C and C++ are one adapter behind two classes, and they stay two
+        # benchmark languages: a mixed repository is analysed once per dialect,
+        # and the matrix in bench.yml gives each its own job.
+        "c": callix.CAdapter,
+        "cpp": callix.CppAdapter,
+        "yaml": callix.YamlAdapter,
     }
     if lang not in adapters:
         msg = f"no adapter for language {lang!r}"

@@ -56,6 +56,28 @@ def slug(name: str) -> str:
     return name.replace("/", "__")
 
 
+def baseline_lang(project: dict) -> str:
+    """
+    The one language a project's fingerprint covers.
+
+    A fingerprint is a single graph, so a manifest entry listing several
+    languages would have to merge them or drop all but one. It drops all but
+    the first — but says so, because a silently ignored language is a hole in
+    the regression net that looks like coverage. Every entry in the manifest is
+    deliberately single-language; a mixed repository belongs there twice.
+    """
+    langs = [str(lang) for lang in project.get("langs", [])]
+    if not langs:
+        msg = f"{project.get('name')} declares no langs"
+        raise KeyError(msg)
+    if len(langs) > 1:
+        print(
+            f"  note     {project['name']}: fingerprinting {langs[0]} only, "
+            f"ignoring {', '.join(langs[1:])}"
+        )
+    return langs[0]
+
+
 def clone(project: dict, dest: Path) -> None:
     """Shallow-clone the pinned ref; leave an existing checkout alone."""
     if (dest / ".git").exists():
@@ -162,6 +184,10 @@ ADAPTERS = {
     "typescript": "TypeScriptAdapter",
     "go": "GoAdapter",
     "rust": "RustAdapter",
+    "php": "PhpAdapter",
+    "c": "CAdapter",
+    "cpp": "CppAdapter",
+    "yaml": "YamlAdapter",
 }
 
 
@@ -292,7 +318,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
         if not dest.exists():
             print(f"  missing  {project['name']} ({dest})")
             continue
-        data = analyse_callix(project["langs"][0], dest, resolve=not args.no_resolve)
+        data = analyse_callix(baseline_lang(project), dest, resolve=not args.no_resolve)
         data["project"] = project["name"]
         data["ref"] = project["ref"]
         (BASELINE / f"{slug(project['name'])}.json").write_text(
@@ -326,7 +352,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
             print(f"  skipped  {project['name']} (no checkout — pass --clone)")
             continue
         expected = json.loads(path.read_text(encoding="utf-8"))
-        actual = analyse_callix(project["langs"][0], dest, resolve=not args.no_resolve)
+        actual = analyse_callix(baseline_lang(project), dest, resolve=not args.no_resolve)
         compared += 1
         notes = _diff(expected, actual)
         if not notes:
@@ -364,7 +390,7 @@ def cmd_crosscheck(args: argparse.Namespace) -> int:
         if not dest.exists():
             print(f"  skipped  {project['name']}")
             continue
-        lang = project["langs"][0]
+        lang = baseline_lang(project)
         # Structure only: graphlens runs here with a stub resolver, so a
         # resolution fingerprint would have nothing to compare against.
         mine = analyse_callix(lang, dest, resolve=False)

@@ -1,0 +1,6571 @@
+{
+  "files": {
+    "cache/cache.cc": {
+      "hash": "fa41eb62c1ecf180",
+      "nodes": 41,
+      "relations": 53
+    },
+    "cache/cache_bench.cc": {
+      "hash": "f7f8b184458c10b7",
+      "nodes": 7,
+      "relations": 10
+    },
+    "cache/cache_bench_tool.cc": {
+      "hash": "4ad865c270ba679e",
+      "nodes": 149,
+      "relations": 272
+    },
+    "cache/cache_entry_roles.cc": {
+      "hash": "d5cb62e639b3ff50",
+      "nodes": 21,
+      "relations": 26
+    },
+    "cache/cache_entry_roles.h": {
+      "hash": "ac751281b22de3bf",
+      "nodes": 4,
+      "relations": 11
+    },
+    "cache/cache_entry_stats.h": {
+      "hash": "56be097c0c9dfe55",
+      "nodes": 36,
+      "relations": 73
+    },
+    "cache/cache_helpers.cc": {
+      "hash": "3895aee247cd1eb2",
+      "nodes": 13,
+      "relations": 14
+    },
+    "cache/cache_helpers.h": {
+      "hash": "8fb3daf3bb120225",
+      "nodes": 36,
+      "relations": 61
+    },
+    "cache/cache_key.cc": {
+      "hash": "271ab2d5725ac600",
+      "nodes": 18,
+      "relations": 31
+    },
+    "cache/cache_key.h": {
+      "hash": "a8c54d5427a29eb8",
+      "nodes": 22,
+      "relations": 51
+    },
+    "cache/cache_reservation_manager.cc": {
+      "hash": "40009c575c32a065",
+      "nodes": 34,
+      "relations": 54
+    },
+    "cache/cache_reservation_manager.h": {
+      "hash": "934cc53d64991f64",
+      "nodes": 73,
+      "relations": 164
+    },
+    "cache/cache_reservation_manager_test.cc": {
+      "hash": "011e51ed7f29bf82",
+      "nodes": 28,
+      "relations": 53
+    },
+    "cache/cache_test.cc": {
+      "hash": "bab0a5d9cc57b610",
+      "nodes": 113,
+      "relations": 182
+    },
+    "cache/charged_cache.cc": {
+      "hash": "0935c2ee42b5fcaa",
+      "nodes": 36,
+      "relations": 39
+    },
+    "cache/charged_cache.h": {
+      "hash": "1630a95737437d1e",
+      "nodes": 10,
+      "relations": 39
+    },
+    "cache/clock_cache.cc": {
+      "hash": "004651b49384a59d",
+      "nodes": 386,
+      "relations": 457
+    },
+    "cache/clock_cache.h": {
+      "hash": "24a3149fa552ff6e",
+      "nodes": 271,
+      "relations": 415
+    },
+    "cache/compressed_secondary_cache.cc": {
+      "hash": "2ea7071031ba9db6",
+      "nodes": 63,
+      "relations": 81
+    },
+    "cache/compressed_secondary_cache.h": {
+      "hash": "ed3bc0dd99a3482b",
+      "nodes": 43,
+      "relations": 122
+    },
+    "cache/compressed_secondary_cache_test.cc": {
+      "hash": "6a986e4eb3f3691a",
+      "nodes": 100,
+      "relations": 162
+    },
+    "cache/lru_cache.cc": {
+      "hash": "993af86d9136d9f6",
+      "nodes": 125,
+      "relations": 144
+    },
+    "cache/lru_cache.h": {
+      "hash": "7019cee26b782937",
+      "nodes": 183,
+      "relations": 266
+    },
+    "cache/lru_cache_test.cc": {
+      "hash": "f10f7ac269d24b0a",
+      "nodes": 216,
+      "relations": 348
+    },
+    "cache/secondary_cache.cc": {
+      "hash": "f7a5adc36883c965",
+      "nodes": 3,
+      "relations": 6
+    },
+    "cache/secondary_cache_adapter.cc": {
+      "hash": "630976f843f480fe",
+      "nodes": 82,
+      "relations": 96
+    },
+    "cache/secondary_cache_adapter.h": {
+      "hash": "c87d2a26ded295c5",
+      "nodes": 17,
+      "relations": 71
+    },
+    "cache/sharded_cache.cc": {
+      "hash": "35ba93ba5f8b4241",
+      "nodes": 33,
+      "relations": 50
+    },
+    "cache/sharded_cache.h": {
+      "hash": "bce2afa4374bf05d",
+      "nodes": 102,
+      "relations": 191
+    },
+    "cache/tiered_secondary_cache.cc": {
+      "hash": "37fc30e23b566097",
+      "nodes": 21,
+      "relations": 24
+    },
+    "cache/tiered_secondary_cache.h": {
+      "hash": "02f66005b7997d5b",
+      "nodes": 50,
+      "relations": 95
+    },
+    "cache/tiered_secondary_cache_test.cc": {
+      "hash": "f8508e79900fdb88",
+      "nodes": 52,
+      "relations": 98
+    },
+    "cache/typed_cache.h": {
+      "hash": "a2e0d0404b84e0af",
+      "nodes": 112,
+      "relations": 162
+    },
+    "db/arena_wrapped_db_iter.cc": {
+      "hash": "f2621afaedffd89a",
+      "nodes": 48,
+      "relations": 63
+    },
+    "db/arena_wrapped_db_iter.h": {
+      "hash": "085491c57eb5145c",
+      "nodes": 53,
+      "relations": 115
+    },
+    "db/attribute_group_iterator_impl.cc": {
+      "hash": "8d6a660149225712",
+      "nodes": 6,
+      "relations": 7
+    },
+    "db/attribute_group_iterator_impl.h": {
+      "hash": "0da24c09601faca7",
+      "nodes": 54,
+      "relations": 97
+    },
+    "db/blob/blob_contents.cc": {
+      "hash": "24f3777abe080302",
+      "nodes": 7,
+      "relations": 16
+    },
+    "db/blob/blob_contents.h": {
+      "hash": "fe9c922277e13145",
+      "nodes": 28,
+      "relations": 54
+    },
+    "db/blob/blob_counting_iterator.h": {
+      "hash": "fb8cb5bb7774e9ce",
+      "nodes": 41,
+      "relations": 77
+    },
+    "db/blob/blob_counting_iterator_test.cc": {
+      "hash": "e0fb41a396d84ce5",
+      "nodes": 18,
+      "relations": 38
+    },
+    "db/blob/blob_fetcher.cc": {
+      "hash": "5a4ca04ea69d0ec2",
+      "nodes": 15,
+      "relations": 18
+    },
+    "db/blob/blob_fetcher.h": {
+      "hash": "97797342f4458342",
+      "nodes": 9,
+      "relations": 24
+    },
+    "db/blob/blob_file_addition.cc": {
+      "hash": "bc7409f635b4c730",
+      "nodes": 30,
+      "relations": 47
+    },
+    "db/blob/blob_file_addition.h": {
+      "hash": "4c40147afafd194d",
+      "nodes": 25,
+      "relations": 63
+    },
+    "db/blob/blob_file_addition_test.cc": {
+      "hash": "227950bffa4d9776",
+      "nodes": 16,
+      "relations": 31
+    },
+    "db/blob/blob_file_builder.cc": {
+      "hash": "0e970a622a5a9713",
+      "nodes": 83,
+      "relations": 126
+    },
+    "db/blob/blob_file_builder.h": {
+      "hash": "bb021415bcca4561",
+      "nodes": 42,
+      "relations": 132
+    },
+    "db/blob/blob_file_builder_test.cc": {
+      "hash": "3a82c66e92fd88c1",
+      "nodes": 53,
+      "relations": 110
+    },
+    "db/blob/blob_file_cache.cc": {
+      "hash": "63bc7555a1555194",
+      "nodes": 24,
+      "relations": 43
+    },
+    "db/blob/blob_file_cache.h": {
+      "hash": "ec829557a68a7766",
+      "nodes": 20,
+      "relations": 55
+    },
+    "db/blob/blob_file_cache_test.cc": {
+      "hash": "cd13b9972651289b",
+      "nodes": 29,
+      "relations": 65
+    },
+    "db/blob/blob_file_completion_callback.h": {
+      "hash": "ab436ace42755beb",
+      "nodes": 35,
+      "relations": 51
+    },
+    "db/blob/blob_file_garbage.cc": {
+      "hash": "66d4fe14fcc9d9e2",
+      "nodes": 28,
+      "relations": 47
+    },
+    "db/blob/blob_file_garbage.h": {
+      "hash": "e87f7512137b086b",
+      "nodes": 18,
+      "relations": 50
+    },
+    "db/blob/blob_file_garbage_test.cc": {
+      "hash": "55e0196a9f8491c9",
+      "nodes": 16,
+      "relations": 31
+    },
+    "db/blob/blob_file_meta.cc": {
+      "hash": "f49fde1d519a8817",
+      "nodes": 15,
+      "relations": 24
+    },
+    "db/blob/blob_file_meta.h": {
+      "hash": "26a0b9658b19e116",
+      "nodes": 72,
+      "relations": 131
+    },
+    "db/blob/blob_file_reader.cc": {
+      "hash": "e9a66833f55f9dd9",
+      "nodes": 90,
+      "relations": 124
+    },
+    "db/blob/blob_file_reader.h": {
+      "hash": "07d27d5dabb023bb",
+      "nodes": 22,
+      "relations": 78
+    },
+    "db/blob/blob_file_reader_test.cc": {
+      "hash": "5ef0372623cf6a36",
+      "nodes": 67,
+      "relations": 112
+    },
+    "db/blob/blob_garbage_meter.cc": {
+      "hash": "0c345b47fdacb9a3",
+      "nodes": 16,
+      "relations": 23
+    },
+    "db/blob/blob_garbage_meter.h": {
+      "hash": "e1cfbd803325800c",
+      "nodes": 33,
+      "relations": 71
+    },
+    "db/blob/blob_garbage_meter_test.cc": {
+      "hash": "638fd709ff94a52e",
+      "nodes": 13,
+      "relations": 27
+    },
+    "db/blob/blob_index.h": {
+      "hash": "60766424d9efb007",
+      "nodes": 54,
+      "relations": 94
+    },
+    "db/blob/blob_log_format.cc": {
+      "hash": "7ded892baeb0d86a",
+      "nodes": 17,
+      "relations": 24
+    },
+    "db/blob/blob_log_format.h": {
+      "hash": "e291a528f1b042d7",
+      "nodes": 49,
+      "relations": 96
+    },
+    "db/blob/blob_log_sequential_reader.cc": {
+      "hash": "a3a740aef672d486",
+      "nodes": 22,
+      "relations": 29
+    },
+    "db/blob/blob_log_sequential_reader.h": {
+      "hash": "18dbedb773a6e170",
+      "nodes": 19,
+      "relations": 55
+    },
+    "db/blob/blob_log_writer.cc": {
+      "hash": "c9e7e74035168c8f",
+      "nodes": 55,
+      "relations": 75
+    },
+    "db/blob/blob_log_writer.h": {
+      "hash": "9d343112aa93cfd1",
+      "nodes": 29,
+      "relations": 81
+    },
+    "db/blob/blob_read_request.h": {
+      "hash": "d68eefb22d2d0bd7",
+      "nodes": 26,
+      "relations": 45
+    },
+    "db/blob/blob_source.cc": {
+      "hash": "d2df0aac3b87b82d",
+      "nodes": 65,
+      "relations": 89
+    },
+    "db/blob/blob_source.h": {
+      "hash": "526c53bd00f3ec9a",
+      "nodes": 37,
+      "relations": 100
+    },
+    "db/blob/blob_source_test.cc": {
+      "hash": "33628a3ffccd08a1",
+      "nodes": 70,
+      "relations": 137
+    },
+    "db/blob/db_blob_basic_test.cc": {
+      "hash": "11eddece251b04b6",
+      "nodes": 66,
+      "relations": 98
+    },
+    "db/blob/db_blob_compaction_test.cc": {
+      "hash": "a6bce28e65632afb",
+      "nodes": 87,
+      "relations": 131
+    },
+    "db/blob/db_blob_corruption_test.cc": {
+      "hash": "d64d98a98494d832",
+      "nodes": 11,
+      "relations": 19
+    },
+    "db/blob/db_blob_index_test.cc": {
+      "hash": "c54a95c8809b9c86",
+      "nodes": 49,
+      "relations": 96
+    },
+    "db/blob/prefetch_buffer_collection.cc": {
+      "hash": "3927a23e9511ddc1",
+      "nodes": 4,
+      "relations": 5
+    },
+    "db/blob/prefetch_buffer_collection.h": {
+      "hash": "58751d01be34ee39",
+      "nodes": 12,
+      "relations": 28
+    },
+    "db/builder.cc": {
+      "hash": "23b3c101fb92cae3",
+      "nodes": 73,
+      "relations": 141
+    },
+    "db/builder.h": {
+      "hash": "03bd66a871bb8592",
+      "nodes": 18,
+      "relations": 62
+    },
+    "db/c.cc": {
+      "hash": "2736d75b2f379415",
+      "nodes": 4017,
+      "relations": 4312
+    },
+    "db/coalescing_iterator.cc": {
+      "hash": "07d4f9b81233fdbc",
+      "nodes": 5,
+      "relations": 8
+    },
+    "db/coalescing_iterator.h": {
+      "hash": "3dc26491f7604206",
+      "nodes": 48,
+      "relations": 86
+    },
+    "db/column_family.cc": {
+      "hash": "b1c9b876e30cac0e",
+      "nodes": 233,
+      "relations": 302
+    },
+    "db/column_family.h": {
+      "hash": "af9c0ecb29ab612c",
+      "nodes": 216,
+      "relations": 567
+    },
+    "db/column_family_test.cc": {
+      "hash": "56a56211a3a3e793",
+      "nodes": 280,
+      "relations": 419
+    },
+    "db/compact_files_test.cc": {
+      "hash": "8d20728c432fb325",
+      "nodes": 40,
+      "relations": 74
+    },
+    "db/compaction/clipping_iterator.h": {
+      "hash": "35f7ae4543986eae",
+      "nodes": 50,
+      "relations": 89
+    },
+    "db/compaction/clipping_iterator_test.cc": {
+      "hash": "cad9da82243391c7",
+      "nodes": 27,
+      "relations": 54
+    },
+    "db/compaction/compaction.cc": {
+      "hash": "a40aa0a1c741cacc",
+      "nodes": 136,
+      "relations": 181
+    },
+    "db/compaction/compaction.h": {
+      "hash": "513a7bd4daf90242",
+      "nodes": 190,
+      "relations": 381
+    },
+    "db/compaction/compaction_iteration_stats.h": {
+      "hash": "24e57072609474f5",
+      "nodes": 24,
+      "relations": 47
+    },
+    "db/compaction/compaction_iterator.cc": {
+      "hash": "7cf0b4d2e79071c3",
+      "nodes": 84,
+      "relations": 114
+    },
+    "db/compaction/compaction_iterator.h": {
+      "hash": "d41fd5c6a19296a7",
+      "nodes": 183,
+      "relations": 393
+    },
+    "db/compaction/compaction_iterator_test.cc": {
+      "hash": "e8de21e481076d3b",
+      "nodes": 215,
+      "relations": 316
+    },
+    "db/compaction/compaction_job.cc": {
+      "hash": "a70aabd4cd70e6c7",
+      "nodes": 286,
+      "relations": 388
+    },
+    "db/compaction/compaction_job.h": {
+      "hash": "f226593c2bc9aa0c",
+      "nodes": 201,
+      "relations": 560
+    },
+    "db/compaction/compaction_job_stats_test.cc": {
+      "hash": "d11fc35ed8b16463",
+      "nodes": 230,
+      "relations": 381
+    },
+    "db/compaction/compaction_job_test.cc": {
+      "hash": "9258a5747455fd82",
+      "nodes": 251,
+      "relations": 381
+    },
+    "db/compaction/compaction_outputs.cc": {
+      "hash": "6d3f7837679223f1",
+      "nodes": 45,
+      "relations": 49
+    },
+    "db/compaction/compaction_outputs.h": {
+      "hash": "be57540a0c640956",
+      "nodes": 110,
+      "relations": 216
+    },
+    "db/compaction/compaction_picker.cc": {
+      "hash": "cc260413a20b95d5",
+      "nodes": 154,
+      "relations": 187
+    },
+    "db/compaction/compaction_picker.h": {
+      "hash": "97b0e292999619a4",
+      "nodes": 49,
+      "relations": 137
+    },
+    "db/compaction/compaction_picker_fifo.cc": {
+      "hash": "56eafaea7d742999",
+      "nodes": 71,
+      "relations": 104
+    },
+    "db/compaction/compaction_picker_fifo.h": {
+      "hash": "ab35d4956ffabb81",
+      "nodes": 21,
+      "relations": 31
+    },
+    "db/compaction/compaction_picker_level.cc": {
+      "hash": "d6e9a6f526c11e99",
+      "nodes": 71,
+      "relations": 121
+    },
+    "db/compaction/compaction_picker_level.h": {
+      "hash": "d34e1a74caaca630",
+      "nodes": 13,
+      "relations": 18
+    },
+    "db/compaction/compaction_picker_test.cc": {
+      "hash": "dd534639b16d651d",
+      "nodes": 312,
+      "relations": 423
+    },
+    "db/compaction/compaction_picker_universal.cc": {
+      "hash": "7dbab9bb178b69d4",
+      "nodes": 198,
+      "relations": 283
+    },
+    "db/compaction/compaction_picker_universal.h": {
+      "hash": "9a126cc30a5795dc",
+      "nodes": 8,
+      "relations": 17
+    },
+    "db/compaction/compaction_service_job.cc": {
+      "hash": "9392955ea947ddfd",
+      "nodes": 81,
+      "relations": 103
+    },
+    "db/compaction/compaction_service_test.cc": {
+      "hash": "85eb3cc00e92d4ff",
+      "nodes": 200,
+      "relations": 303
+    },
+    "db/compaction/compaction_state.cc": {
+      "hash": "d0959d86717b0c53",
+      "nodes": 7,
+      "relations": 8
+    },
+    "db/compaction/compaction_state.h": {
+      "hash": "93f621a0f74b6688",
+      "nodes": 10,
+      "relations": 25
+    },
+    "db/compaction/file_pri.h": {
+      "hash": "3b18cdaaf2d993ce",
+      "nodes": 15,
+      "relations": 24
+    },
+    "db/compaction/sst_partitioner.cc": {
+      "hash": "d9dcaab788644f72",
+      "nodes": 23,
+      "relations": 32
+    },
+    "db/compaction/subcompaction_state.cc": {
+      "hash": "054d6b51f64b20d9",
+      "nodes": 17,
+      "relations": 20
+    },
+    "db/compaction/subcompaction_state.h": {
+      "hash": "07200fa376e1b18b",
+      "nodes": 57,
+      "relations": 118
+    },
+    "db/compaction/tiered_compaction_test.cc": {
+      "hash": "4f6a91be41f6f0e2",
+      "nodes": 126,
+      "relations": 190
+    },
+    "db/comparator_db_test.cc": {
+      "hash": "04ca92f314642bc8",
+      "nodes": 97,
+      "relations": 164
+    },
+    "db/convenience.cc": {
+      "hash": "a379aea8e5275bb0",
+      "nodes": 42,
+      "relations": 49
+    },
+    "db/convenience_impl.h": {
+      "hash": "42a51444d6cf6fcc",
+      "nodes": 3,
+      "relations": 7
+    },
+    "db/corruption_test.cc": {
+      "hash": "521c1b5cd8beec61",
+      "nodes": 129,
+      "relations": 215
+    },
+    "db/cuckoo_table_db_test.cc": {
+      "hash": "400c7667976912e8",
+      "nodes": 44,
+      "relations": 80
+    },
+    "db/db_basic_test.cc": {
+      "hash": "b15fdd5b376023ac",
+      "nodes": 343,
+      "relations": 510
+    },
+    "db/db_block_cache_test.cc": {
+      "hash": "cbb2e941a51cb654",
+      "nodes": 220,
+      "relations": 359
+    },
+    "db/db_bloom_filter_test.cc": {
+      "hash": "edf3613c98b48938",
+      "nodes": 234,
+      "relations": 364
+    },
+    "db/db_clip_test.cc": {
+      "hash": "f3530fe09220ea4b",
+      "nodes": 7,
+      "relations": 14
+    },
+    "db/db_compaction_abort_test.cc": {
+      "hash": "e3bcd7c57b46fdea",
+      "nodes": 79,
+      "relations": 136
+    },
+    "db/db_compaction_filter_test.cc": {
+      "hash": "f72b2f5819829a84",
+      "nodes": 113,
+      "relations": 174
+    },
+    "db/db_compaction_test.cc": {
+      "hash": "c145a4fd3e40cea4",
+      "nodes": 369,
+      "relations": 514
+    },
+    "db/db_dynamic_level_test.cc": {
+      "hash": "d0ac675102efbcd6",
+      "nodes": 13,
+      "relations": 24
+    },
+    "db/db_encryption_test.cc": {
+      "hash": "2d1ae09a2dcc2d68",
+      "nodes": 13,
+      "relations": 27
+    },
+    "db/db_etc3_test.cc": {
+      "hash": "c6e2de05bd422882",
+      "nodes": 6,
+      "relations": 9
+    },
+    "db/db_filesnapshot.cc": {
+      "hash": "9a2f5d00816f28f6",
+      "nodes": 36,
+      "relations": 75
+    },
+    "db/db_flush_test.cc": {
+      "hash": "ff8bdd0ea7acbfaf",
+      "nodes": 129,
+      "relations": 196
+    },
+    "db/db_follower_test.cc": {
+      "hash": "7bdec85d2d75e654",
+      "nodes": 57,
+      "relations": 98
+    },
+    "db/db_impl/compacted_db_impl.cc": {
+      "hash": "5cc590765e9c1f38",
+      "nodes": 31,
+      "relations": 47
+    },
+    "db/db_impl/compacted_db_impl.h": {
+      "hash": "6a12d478a03e5f1e",
+      "nodes": 34,
+      "relations": 70
+    },
+    "db/db_impl/db_impl.cc": {
+      "hash": "06136e49572c0c4d",
+      "nodes": 699,
+      "relations": 949
+    },
+    "db/db_impl/db_impl.h": {
+      "hash": "e847bf2523ca904f",
+      "nodes": 601,
+      "relations": 1813
+    },
+    "db/db_impl/db_impl_compaction_flush.cc": {
+      "hash": "ed8a839f08cbc1fc",
+      "nodes": 291,
+      "relations": 349
+    },
+    "db/db_impl/db_impl_debug.cc": {
+      "hash": "04b746c38df055d3",
+      "nodes": 78,
+      "relations": 93
+    },
+    "db/db_impl/db_impl_experimental.cc": {
+      "hash": "9d6b344d3c2354c9",
+      "nodes": 17,
+      "relations": 34
+    },
+    "db/db_impl/db_impl_files.cc": {
+      "hash": "a1ab030b73cbe933",
+      "nodes": 83,
+      "relations": 111
+    },
+    "db/db_impl/db_impl_follower.cc": {
+      "hash": "202876892ee60fe0",
+      "nodes": 38,
+      "relations": 68
+    },
+    "db/db_impl/db_impl_follower.h": {
+      "hash": "8c284b1747999cdc",
+      "nodes": 18,
+      "relations": 48
+    },
+    "db/db_impl/db_impl_open.cc": {
+      "hash": "2642fc31aa99a046",
+      "nodes": 266,
+      "relations": 326
+    },
+    "db/db_impl/db_impl_readonly.cc": {
+      "hash": "94bb2e4ca6546c18",
+      "nodes": 46,
+      "relations": 69
+    },
+    "db/db_impl/db_impl_readonly.h": {
+      "hash": "7304520d30164357",
+      "nodes": 35,
+      "relations": 74
+    },
+    "db/db_impl/db_impl_secondary.cc": {
+      "hash": "2c8cd7be67038528",
+      "nodes": 136,
+      "relations": 178
+    },
+    "db/db_impl/db_impl_secondary.h": {
+      "hash": "67e8ebaae1c4f222",
+      "nodes": 78,
+      "relations": 183
+    },
+    "db/db_impl/db_impl_write.cc": {
+      "hash": "1bd62773b408fbf2",
+      "nodes": 272,
+      "relations": 330
+    },
+    "db/db_info_dumper.cc": {
+      "hash": "5a82929268091dee",
+      "nodes": 13,
+      "relations": 28
+    },
+    "db/db_info_dumper.h": {
+      "hash": "b84a30bca968fc6f",
+      "nodes": 3,
+      "relations": 7
+    },
+    "db/db_inplace_update_test.cc": {
+      "hash": "4c7a99d1e6b14c9a",
+      "nodes": 14,
+      "relations": 19
+    },
+    "db/db_io_failure_test.cc": {
+      "hash": "2a9beb1ce37f2ab2",
+      "nodes": 86,
+      "relations": 129
+    },
+    "db/db_iter.cc": {
+      "hash": "72f91ab04b583e1d",
+      "nodes": 107,
+      "relations": 157
+    },
+    "db/db_iter.h": {
+      "hash": "1c63b237d32fe12d",
+      "nodes": 142,
+      "relations": 332
+    },
+    "db/db_iter_stress_test.cc": {
+      "hash": "8cc4d397141846d3",
+      "nodes": 87,
+      "relations": 161
+    },
+    "db/db_iter_test.cc": {
+      "hash": "6ea2a67033a595c6",
+      "nodes": 124,
+      "relations": 204
+    },
+    "db/db_iterator_test.cc": {
+      "hash": "13365ab81d1b6497",
+      "nodes": 127,
+      "relations": 174
+    },
+    "db/db_kv_checksum_test.cc": {
+      "hash": "a8ecd0f2277551d2",
+      "nodes": 81,
+      "relations": 122
+    },
+    "db/db_log_iter_test.cc": {
+      "hash": "de624e323d8add90",
+      "nodes": 24,
+      "relations": 34
+    },
+    "db/db_logical_block_size_cache_test.cc": {
+      "hash": "68614fb1f9beb4a5",
+      "nodes": 31,
+      "relations": 51
+    },
+    "db/db_memtable_test.cc": {
+      "hash": "977aeece9dffb9ab",
+      "nodes": 73,
+      "relations": 117
+    },
+    "db/db_merge_operand_test.cc": {
+      "hash": "7e9a16af48c54eb6",
+      "nodes": 32,
+      "relations": 59
+    },
+    "db/db_merge_operator_test.cc": {
+      "hash": "cca12c03fbf9f5bb",
+      "nodes": 57,
+      "relations": 97
+    },
+    "db/db_options_test.cc": {
+      "hash": "8b3a051b6205020d",
+      "nodes": 72,
+      "relations": 113
+    },
+    "db/db_properties_test.cc": {
+      "hash": "91ce45aef50b8b24",
+      "nodes": 134,
+      "relations": 206
+    },
+    "db/db_range_del_test.cc": {
+      "hash": "b1be05d46a5be435",
+      "nodes": 113,
+      "relations": 146
+    },
+    "db/db_rate_limiter_test.cc": {
+      "hash": "64211dfcac3ee663",
+      "nodes": 59,
+      "relations": 108
+    },
+    "db/db_readonly_with_timestamp_test.cc": {
+      "hash": "f7085d3dd8230810",
+      "nodes": 26,
+      "relations": 33
+    },
+    "db/db_secondary_test.cc": {
+      "hash": "50ac5f4d46d423ed",
+      "nodes": 85,
+      "relations": 121
+    },
+    "db/db_sst_test.cc": {
+      "hash": "d7cfc2dc5a8db08c",
+      "nodes": 48,
+      "relations": 81
+    },
+    "db/db_statistics_test.cc": {
+      "hash": "509a09ad1da45633",
+      "nodes": 19,
+      "relations": 36
+    },
+    "db/db_table_properties_test.cc": {
+      "hash": "6e07a57c20cd3e45",
+      "nodes": 58,
+      "relations": 102
+    },
+    "db/db_tailing_iter_test.cc": {
+      "hash": "5d641c967e924b6e",
+      "nodes": 20,
+      "relations": 27
+    },
+    "db/db_test.cc": {
+      "hash": "c9e4c243e587d190",
+      "nodes": 489,
+      "relations": 764
+    },
+    "db/db_test2.cc": {
+      "hash": "c7ad2ef56e271c0f",
+      "nodes": 243,
+      "relations": 363
+    },
+    "db/db_test_util.cc": {
+      "hash": "3cfc7153672ff422",
+      "nodes": 329,
+      "relations": 363
+    },
+    "db/db_test_util.h": {
+      "hash": "b074b8e2ff0a27c2",
+      "nodes": 317,
+      "relations": 793
+    },
+    "db/db_universal_compaction_test.cc": {
+      "hash": "de26fa0072171563",
+      "nodes": 77,
+      "relations": 110
+    },
+    "db/db_wal_test.cc": {
+      "hash": "6f381cba92b5d213",
+      "nodes": 149,
+      "relations": 205
+    },
+    "db/db_with_timestamp_basic_test.cc": {
+      "hash": "17ac38c25d0e13fd",
+      "nodes": 129,
+      "relations": 183
+    },
+    "db/db_with_timestamp_compaction_test.cc": {
+      "hash": "ac6f91d7037f71f6",
+      "nodes": 58,
+      "relations": 89
+    },
+    "db/db_with_timestamp_test_util.cc": {
+      "hash": "b5e0ca95a99878ca",
+      "nodes": 31,
+      "relations": 32
+    },
+    "db/db_with_timestamp_test_util.h": {
+      "hash": "43375e332434bd1c",
+      "nodes": 25,
+      "relations": 54
+    },
+    "db/db_write_buffer_manager_test.cc": {
+      "hash": "79d9019f18ffead0",
+      "nodes": 19,
+      "relations": 27
+    },
+    "db/db_write_test.cc": {
+      "hash": "55e33e14aabf0758",
+      "nodes": 47,
+      "relations": 83
+    },
+    "db/dbformat.cc": {
+      "hash": "ee4787833053e208",
+      "nodes": 85,
+      "relations": 101
+    },
+    "db/dbformat.h": {
+      "hash": "423f8bdd56adfb40",
+      "nodes": 361,
+      "relations": 548
+    },
+    "db/dbformat_test.cc": {
+      "hash": "fed2fa630c802fe6",
+      "nodes": 30,
+      "relations": 38
+    },
+    "db/deletefile_test.cc": {
+      "hash": "3804a71fcfb8a2da",
+      "nodes": 46,
+      "relations": 90
+    },
+    "db/error_handler.cc": {
+      "hash": "1e60d71ce9bd32b3",
+      "nodes": 37,
+      "relations": 49
+    },
+    "db/error_handler.h": {
+      "hash": "de9ef26e23efe258",
+      "nodes": 49,
+      "relations": 121
+    },
+    "db/error_handler_fs_test.cc": {
+      "hash": "f0edb7d7facb45cb",
+      "nodes": 100,
+      "relations": 150
+    },
+    "db/event_helpers.cc": {
+      "hash": "ed8cf800077861a8",
+      "nodes": 83,
+      "relations": 94
+    },
+    "db/event_helpers.h": {
+      "hash": "e21aceac28005112",
+      "nodes": 18,
+      "relations": 49
+    },
+    "db/experimental.cc": {
+      "hash": "94a2fdfc9320daac",
+      "nodes": 234,
+      "relations": 364
+    },
+    "db/external_sst_file_basic_test.cc": {
+      "hash": "b7b2a1b307ef2d04",
+      "nodes": 139,
+      "relations": 201
+    },
+    "db/external_sst_file_ingestion_job.cc": {
+      "hash": "4b8f053e52b6e41b",
+      "nodes": 89,
+      "relations": 124
+    },
+    "db/external_sst_file_ingestion_job.h": {
+      "hash": "04447f941e42ef46",
+      "nodes": 121,
+      "relations": 262
+    },
+    "db/external_sst_file_test.cc": {
+      "hash": "d25c85b722ad511f",
+      "nodes": 198,
+      "relations": 277
+    },
+    "db/fault_injection_test.cc": {
+      "hash": "a557ec9f2e5919a2",
+      "nodes": 104,
+      "relations": 192
+    },
+    "db/file_indexer.cc": {
+      "hash": "b4bc05086223c6a1",
+      "nodes": 34,
+      "relations": 43
+    },
+    "db/file_indexer.h": {
+      "hash": "099481ce4ac8cbf2",
+      "nodes": 25,
+      "relations": 70
+    },
+    "db/file_indexer_test.cc": {
+      "hash": "ebfc7d15735ac813",
+      "nodes": 44,
+      "relations": 76
+    },
+    "db/filename_test.cc": {
+      "hash": "1d8634370bf07f45",
+      "nodes": 10,
+      "relations": 18
+    },
+    "db/flush_job.cc": {
+      "hash": "4a9e26931b053319",
+      "nodes": 90,
+      "relations": 163
+    },
+    "db/flush_job.h": {
+      "hash": "340e7b944bb3d113",
+      "nodes": 75,
+      "relations": 220
+    },
+    "db/flush_job_test.cc": {
+      "hash": "88e1c6aa5d0af9dd",
+      "nodes": 84,
+      "relations": 153
+    },
+    "db/flush_scheduler.cc": {
+      "hash": "9e68edb413f232a2",
+      "nodes": 9,
+      "relations": 14
+    },
+    "db/flush_scheduler.h": {
+      "hash": "0f15863594a05851",
+      "nodes": 14,
+      "relations": 39
+    },
+    "db/forward_iterator.cc": {
+      "hash": "1be0f74b3e5dbe48",
+      "nodes": 122,
+      "relations": 191
+    },
+    "db/forward_iterator.h": {
+      "hash": "78cd424275e5b4bb",
+      "nodes": 49,
+      "relations": 162
+    },
+    "db/forward_iterator_bench.cc": {
+      "hash": "75634887823ebfae",
+      "nodes": 92,
+      "relations": 186
+    },
+    "db/history_trimming_iterator.h": {
+      "hash": "10f73683d94bae4e",
+      "nodes": 31,
+      "relations": 60
+    },
+    "db/import_column_family_job.cc": {
+      "hash": "8204b16fcc36f08d",
+      "nodes": 28,
+      "relations": 57
+    },
+    "db/import_column_family_job.h": {
+      "hash": "f2769898423fe8da",
+      "nodes": 37,
+      "relations": 85
+    },
+    "db/import_column_family_test.cc": {
+      "hash": "6a771b36f1a0e1b2",
+      "nodes": 37,
+      "relations": 62
+    },
+    "db/internal_stats.cc": {
+      "hash": "751fedcc4459153f",
+      "nodes": 446,
+      "relations": 598
+    },
+    "db/internal_stats.h": {
+      "hash": "a8b8ea24f043f982",
+      "nodes": 337,
+      "relations": 651
+    },
+    "db/job_context.h": {
+      "hash": "07894c2402e8a21f",
+      "nodes": 83,
+      "relations": 153
+    },
+    "db/kv_checksum.h": {
+      "hash": "1a178a2244cd3477",
+      "nodes": 160,
+      "relations": 232
+    },
+    "db/listener_test.cc": {
+      "hash": "68134164615383ce",
+      "nodes": 222,
+      "relations": 395
+    },
+    "db/log_reader.cc": {
+      "hash": "c64097fba6afeb0f",
+      "nodes": 67,
+      "relations": 85
+    },
+    "db/log_reader.h": {
+      "hash": "01adcfe89d14177a",
+      "nodes": 80,
+      "relations": 197
+    },
+    "db/log_test.cc": {
+      "hash": "adbdfc0f57f00e28",
+      "nodes": 167,
+      "relations": 255
+    },
+    "db/log_writer.cc": {
+      "hash": "eb878198141a63b7",
+      "nodes": 44,
+      "relations": 62
+    },
+    "db/log_writer.h": {
+      "hash": "b841780d62c6dd99",
+      "nodes": 38,
+      "relations": 107
+    },
+    "db/logs_with_prep_tracker.cc": {
+      "hash": "7861d34b102dee97",
+      "nodes": 8,
+      "relations": 11
+    },
+    "db/logs_with_prep_tracker.h": {
+      "hash": "5fd4757486887b19",
+      "nodes": 18,
+      "relations": 46
+    },
+    "db/lookup_key.h": {
+      "hash": "2f2aee3ecd9e2873",
+      "nodes": 17,
+      "relations": 35
+    },
+    "db/malloc_stats.cc": {
+      "hash": "3d136b098861665d",
+      "nodes": 13,
+      "relations": 22
+    },
+    "db/malloc_stats.h": {
+      "hash": "34f68cdf34f93107",
+      "nodes": 3,
+      "relations": 7
+    },
+    "db/manifest_ops.cc": {
+      "hash": "ec0e3c0bdf2a0d94",
+      "nodes": 9,
+      "relations": 12
+    },
+    "db/manifest_ops.h": {
+      "hash": "5f835906b03e36eb",
+      "nodes": 3,
+      "relations": 7
+    },
+    "db/manual_compaction_test.cc": {
+      "hash": "70abf82d1dfab258",
+      "nodes": 34,
+      "relations": 59
+    },
+    "db/memtable.cc": {
+      "hash": "b3a5635b1a83c2b0",
+      "nodes": 301,
+      "relations": 461
+    },
+    "db/memtable.h": {
+      "hash": "55c8d7a6becb358a",
+      "nodes": 289,
+      "relations": 553
+    },
+    "db/memtable_list.cc": {
+      "hash": "c83ed103d73b8d26",
+      "nodes": 182,
+      "relations": 227
+    },
+    "db/memtable_list.h": {
+      "hash": "c6b887b3d8032e39",
+      "nodes": 86,
+      "relations": 248
+    },
+    "db/memtable_list_test.cc": {
+      "hash": "c8c8ddd0fa5ef0c8",
+      "nodes": 47,
+      "relations": 88
+    },
+    "db/merge_context.h": {
+      "hash": "08e3023973f08a04",
+      "nodes": 29,
+      "relations": 55
+    },
+    "db/merge_helper.cc": {
+      "hash": "57ee06f3abed32eb",
+      "nodes": 85,
+      "relations": 122
+    },
+    "db/merge_helper.h": {
+      "hash": "0b99c5b3fa15482f",
+      "nodes": 98,
+      "relations": 192
+    },
+    "db/merge_helper_test.cc": {
+      "hash": "5769b7ce0a954176",
+      "nodes": 44,
+      "relations": 78
+    },
+    "db/merge_operator.cc": {
+      "hash": "957aba27bdab0c4e",
+      "nodes": 25,
+      "relations": 32
+    },
+    "db/merge_test.cc": {
+      "hash": "e3ebe4fef9aa99f3",
+      "nodes": 123,
+      "relations": 189
+    },
+    "db/multi_cf_iterator_impl.h": {
+      "hash": "a7ef32102d0c0b59",
+      "nodes": 65,
+      "relations": 115
+    },
+    "db/multi_cf_iterator_test.cc": {
+      "hash": "cf48960e2e356ecb",
+      "nodes": 38,
+      "relations": 47
+    },
+    "db/multi_scan.cc": {
+      "hash": "166b39c66ffdcd93",
+      "nodes": 9,
+      "relations": 10
+    },
+    "db/obsolete_files_test.cc": {
+      "hash": "37032bccf37acff7",
+      "nodes": 38,
+      "relations": 80
+    },
+    "db/options_file_test.cc": {
+      "hash": "8d7aa4715105eb62",
+      "nodes": 19,
+      "relations": 33
+    },
+    "db/output_validator.cc": {
+      "hash": "c423fe2f70756c13",
+      "nodes": 7,
+      "relations": 12
+    },
+    "db/output_validator.h": {
+      "hash": "205510a98e2d920f",
+      "nodes": 16,
+      "relations": 30
+    },
+    "db/perf_context_test.cc": {
+      "hash": "e3a408ddbeaa24d0",
+      "nodes": 46,
+      "relations": 83
+    },
+    "db/periodic_task_scheduler.cc": {
+      "hash": "3bfa5cdd0b529f3b",
+      "nodes": 21,
+      "relations": 26
+    },
+    "db/periodic_task_scheduler.h": {
+      "hash": "6263e8f9bb548ace",
+      "nodes": 32,
+      "relations": 66
+    },
+    "db/periodic_task_scheduler_test.cc": {
+      "hash": "dc97f0f7671268f3",
+      "nodes": 19,
+      "relations": 36
+    },
+    "db/pinned_iterators_manager.h": {
+      "hash": "cd22be73bc091446",
+      "nodes": 29,
+      "relations": 52
+    },
+    "db/plain_table_db_test.cc": {
+      "hash": "6417fc0afa08c564",
+      "nodes": 136,
+      "relations": 227
+    },
+    "db/post_memtable_callback.h": {
+      "hash": "62b84c59e93bb364",
+      "nodes": 8,
+      "relations": 13
+    },
+    "db/pre_release_callback.h": {
+      "hash": "b9bc3f84b6f798ad",
+      "nodes": 11,
+      "relations": 16
+    },
+    "db/prefix_test.cc": {
+      "hash": "2e8eb0d1a43f7d42",
+      "nodes": 109,
+      "relations": 183
+    },
+    "db/range_del_aggregator.cc": {
+      "hash": "5f3984ac3293ca8e",
+      "nodes": 94,
+      "relations": 140
+    },
+    "db/range_del_aggregator.h": {
+      "hash": "8e5c177a70d26ae3",
+      "nodes": 185,
+      "relations": 370
+    },
+    "db/range_del_aggregator_bench.cc": {
+      "hash": "1e505dac580641f7",
+      "nodes": 56,
+      "relations": 109
+    },
+    "db/range_del_aggregator_test.cc": {
+      "hash": "fb067e3b49441ac3",
+      "nodes": 79,
+      "relations": 110
+    },
+    "db/range_tombstone_fragmenter.cc": {
+      "hash": "69d95f21e3125714",
+      "nodes": 65,
+      "relations": 92
+    },
+    "db/range_tombstone_fragmenter.h": {
+      "hash": "1c8e7cb91f51e3fd",
+      "nodes": 123,
+      "relations": 254
+    },
+    "db/range_tombstone_fragmenter_test.cc": {
+      "hash": "d092cc3b27bd8435",
+      "nodes": 52,
+      "relations": 69
+    },
+    "db/read_callback.h": {
+      "hash": "1a6dae3045304555",
+      "nodes": 19,
+      "relations": 31
+    },
+    "db/repair.cc": {
+      "hash": "02045f4d7cb727d8",
+      "nodes": 95,
+      "relations": 181
+    },
+    "db/repair_test.cc": {
+      "hash": "150af807aca697af",
+      "nodes": 47,
+      "relations": 80
+    },
+    "db/seqno_time_test.cc": {
+      "hash": "3250b6c63593a316",
+      "nodes": 45,
+      "relations": 70
+    },
+    "db/seqno_to_time_mapping.cc": {
+      "hash": "f7e616854a25052f",
+      "nodes": 85,
+      "relations": 104
+    },
+    "db/seqno_to_time_mapping.h": {
+      "hash": "a9406bbc7e88b927",
+      "nodes": 65,
+      "relations": 168
+    },
+    "db/snapshot_checker.h": {
+      "hash": "c64a3af2089a13b2",
+      "nodes": 18,
+      "relations": 38
+    },
+    "db/snapshot_impl.cc": {
+      "hash": "1e4bfe8121ee4005",
+      "nodes": 10,
+      "relations": 13
+    },
+    "db/snapshot_impl.h": {
+      "hash": "2d6b16ed8753717b",
+      "nodes": 58,
+      "relations": 97
+    },
+    "db/table_cache.cc": {
+      "hash": "e49dfc015e23a15a",
+      "nodes": 178,
+      "relations": 234
+    },
+    "db/table_cache.h": {
+      "hash": "5883bb76d6955da0",
+      "nodes": 63,
+      "relations": 145
+    },
+    "db/table_cache_sync_and_async.h": {
+      "hash": "ff49d913eef918a8",
+      "nodes": 3,
+      "relations": 4
+    },
+    "db/table_properties_collector.cc": {
+      "hash": "8457497f729ea4d4",
+      "nodes": 25,
+      "relations": 32
+    },
+    "db/table_properties_collector.h": {
+      "hash": "f848f9179b80a0b6",
+      "nodes": 61,
+      "relations": 108
+    },
+    "db/table_properties_collector_test.cc": {
+      "hash": "77b5cb2daf123cb1",
+      "nodes": 96,
+      "relations": 170
+    },
+    "db/transaction_log_impl.cc": {
+      "hash": "a2fd8122c3d20b51",
+      "nodes": 37,
+      "relations": 49
+    },
+    "db/transaction_log_impl.h": {
+      "hash": "b65e89bede6e0b56",
+      "nodes": 63,
+      "relations": 139
+    },
+    "db/trim_history_scheduler.cc": {
+      "hash": "b5cb8882229e0812",
+      "nodes": 9,
+      "relations": 14
+    },
+    "db/trim_history_scheduler.h": {
+      "hash": "0c1911d1220fbebf",
+      "nodes": 10,
+      "relations": 30
+    },
+    "db/version_builder.cc": {
+      "hash": "f867798fbb75c93e",
+      "nodes": 285,
+      "relations": 455
+    },
+    "db/version_builder.h": {
+      "hash": "8353c928af20523d",
+      "nodes": 13,
+      "relations": 72
+    },
+    "db/version_builder_test.cc": {
+      "hash": "0122d64cc144a328",
+      "nodes": 95,
+      "relations": 137
+    },
+    "db/version_edit.cc": {
+      "hash": "23fa3f24aee798f5",
+      "nodes": 84,
+      "relations": 102
+    },
+    "db/version_edit.h": {
+      "hash": "2e0f2631b34833d5",
+      "nodes": 418,
+      "relations": 772
+    },
+    "db/version_edit_handler.cc": {
+      "hash": "3861abe820f56d30",
+      "nodes": 131,
+      "relations": 151
+    },
+    "db/version_edit_handler.h": {
+      "hash": "397050cc70d6f1da",
+      "nodes": 113,
+      "relations": 267
+    },
+    "db/version_edit_test.cc": {
+      "hash": "bdb282ff2f24943b",
+      "nodes": 69,
+      "relations": 101
+    },
+    "db/version_set.cc": {
+      "hash": "cb3dc3fbab6f86fc",
+      "nodes": 830,
+      "relations": 1133
+    },
+    "db/version_set.h": {
+      "hash": "84c21d728edd0725",
+      "nodes": 453,
+      "relations": 1079
+    },
+    "db/version_set_sync_and_async.h": {
+      "hash": "270032ce232e5647",
+      "nodes": 3,
+      "relations": 4
+    },
+    "db/version_set_test.cc": {
+      "hash": "0ee2a1b93f6d8e03",
+      "nodes": 378,
+      "relations": 565
+    },
+    "db/version_util.cc": {
+      "hash": "0df8ebe645c10584",
+      "nodes": 23,
+      "relations": 42
+    },
+    "db/version_util.h": {
+      "hash": "b1aa3c7ca17aeeb8",
+      "nodes": 31,
+      "relations": 61
+    },
+    "db/wal_edit.cc": {
+      "hash": "ee686b8bad507384",
+      "nodes": 37,
+      "relations": 44
+    },
+    "db/wal_edit.h": {
+      "hash": "aab13db197d17848",
+      "nodes": 55,
+      "relations": 126
+    },
+    "db/wal_edit_test.cc": {
+      "hash": "8069de1cafad02bf",
+      "nodes": 36,
+      "relations": 60
+    },
+    "db/wal_manager.cc": {
+      "hash": "d8d7718f487c11ae",
+      "nodes": 58,
+      "relations": 103
+    },
+    "db/wal_manager.h": {
+      "hash": "fd144d87e77cf0c3",
+      "nodes": 46,
+      "relations": 112
+    },
+    "db/wal_manager_test.cc": {
+      "hash": "fbbd445735cc9145",
+      "nodes": 60,
+      "relations": 114
+    },
+    "db/wide/db_wide_basic_test.cc": {
+      "hash": "8ea60e0bd9453ca2",
+      "nodes": 58,
+      "relations": 99
+    },
+    "db/wide/wide_column_serialization.cc": {
+      "hash": "ebf5aa60bf380324",
+      "nodes": 80,
+      "relations": 99
+    },
+    "db/wide/wide_column_serialization.h": {
+      "hash": "64fe83720836f9d5",
+      "nodes": 21,
+      "relations": 81
+    },
+    "db/wide/wide_column_serialization_test.cc": {
+      "hash": "84b03320995379d2",
+      "nodes": 61,
+      "relations": 79
+    },
+    "db/wide/wide_columns.cc": {
+      "hash": "cb2cd47b0185acc5",
+      "nodes": 6,
+      "relations": 9
+    },
+    "db/wide/wide_columns_helper.cc": {
+      "hash": "05b74a23626e1056",
+      "nodes": 12,
+      "relations": 17
+    },
+    "db/wide/wide_columns_helper.h": {
+      "hash": "e82e27ab970dcf6e",
+      "nodes": 19,
+      "relations": 37
+    },
+    "db/wide/wide_columns_helper_test.cc": {
+      "hash": "d8399f1daa30ab01",
+      "nodes": 7,
+      "relations": 15
+    },
+    "db/write_batch.cc": {
+      "hash": "2f83e19f7969cfb6",
+      "nodes": 557,
+      "relations": 766
+    },
+    "db/write_batch_base.cc": {
+      "hash": "291e47e379f560cb",
+      "nodes": 36,
+      "relations": 43
+    },
+    "db/write_batch_internal.h": {
+      "hash": "4191f7b0e9aa10ad",
+      "nodes": 137,
+      "relations": 265
+    },
+    "db/write_batch_test.cc": {
+      "hash": "1ae004aa40f6d8d4",
+      "nodes": 115,
+      "relations": 172
+    },
+    "db/write_callback.h": {
+      "hash": "456493c7e3be121c",
+      "nodes": 7,
+      "relations": 12
+    },
+    "db/write_callback_test.cc": {
+      "hash": "cdae03fb190c1fc5",
+      "nodes": 55,
+      "relations": 112
+    },
+    "db/write_controller.cc": {
+      "hash": "5134534ac0bf3688",
+      "nodes": 20,
+      "relations": 32
+    },
+    "db/write_controller.h": {
+      "hash": "dabc725079a7f244",
+      "nodes": 44,
+      "relations": 94
+    },
+    "db/write_controller_test.cc": {
+      "hash": "61e51aed5b5d6b26",
+      "nodes": 18,
+      "relations": 34
+    },
+    "db/write_stall_stats.cc": {
+      "hash": "0e441677b281d7a0",
+      "nodes": 24,
+      "relations": 25
+    },
+    "db/write_stall_stats.h": {
+      "hash": "dc38ee113ad9363c",
+      "nodes": 6,
+      "relations": 18
+    },
+    "db/write_thread.cc": {
+      "hash": "f35621a2138c3e25",
+      "nodes": 71,
+      "relations": 88
+    },
+    "db/write_thread.h": {
+      "hash": "71bbbcad9e072bf9",
+      "nodes": 122,
+      "relations": 291
+    },
+    "db_stress_tool/batched_ops_stress.cc": {
+      "hash": "6bafaec6a824f274",
+      "nodes": 50,
+      "relations": 66
+    },
+    "db_stress_tool/cf_consistency_stress.cc": {
+      "hash": "71dde143b697ca67",
+      "nodes": 58,
+      "relations": 78
+    },
+    "db_stress_tool/db_stress.cc": {
+      "hash": "90a4be9bb2872898",
+      "nodes": 8,
+      "relations": 13
+    },
+    "db_stress_tool/db_stress_common.cc": {
+      "hash": "cc4bf5af906e90b9",
+      "nodes": 137,
+      "relations": 162
+    },
+    "db_stress_tool/db_stress_common.h": {
+      "hash": "62bcc17c7ad80233",
+      "nodes": 101,
+      "relations": 241
+    },
+    "db_stress_tool/db_stress_compaction_filter.h": {
+      "hash": "f8199708f20e5a6f",
+      "nodes": 22,
+      "relations": 38
+    },
+    "db_stress_tool/db_stress_compaction_service.cc": {
+      "hash": "6e9ef3eb2c5a4ce8",
+      "nodes": 8,
+      "relations": 15
+    },
+    "db_stress_tool/db_stress_compaction_service.h": {
+      "hash": "63cd9d3a19325f49",
+      "nodes": 22,
+      "relations": 42
+    },
+    "db_stress_tool/db_stress_compression_manager.cc": {
+      "hash": "f918fa101dc05174",
+      "nodes": 4,
+      "relations": 7
+    },
+    "db_stress_tool/db_stress_compression_manager.h": {
+      "hash": "38cebe9edbc3e6b3",
+      "nodes": 15,
+      "relations": 25
+    },
+    "db_stress_tool/db_stress_driver.cc": {
+      "hash": "82cdc7d414248ad0",
+      "nodes": 10,
+      "relations": 15
+    },
+    "db_stress_tool/db_stress_env_wrapper.h": {
+      "hash": "e3f40ddb4522f3d5",
+      "nodes": 104,
+      "relations": 135
+    },
+    "db_stress_tool/db_stress_filters.cc": {
+      "hash": "096761bf1d1ed937",
+      "nodes": 25,
+      "relations": 34
+    },
+    "db_stress_tool/db_stress_filters.h": {
+      "hash": "5705ac91223708ff",
+      "nodes": 2,
+      "relations": 4
+    },
+    "db_stress_tool/db_stress_gflags.cc": {
+      "hash": "a19cedc1da1f7877",
+      "nodes": 49,
+      "relations": 56
+    },
+    "db_stress_tool/db_stress_listener.cc": {
+      "hash": "6ce654a25b5e2348",
+      "nodes": 17,
+      "relations": 26
+    },
+    "db_stress_tool/db_stress_listener.h": {
+      "hash": "f41a5f929bdfbf3d",
+      "nodes": 76,
+      "relations": 158
+    },
+    "db_stress_tool/db_stress_shared_state.cc": {
+      "hash": "be30f3f67ae69b0b",
+      "nodes": 3,
+      "relations": 4
+    },
+    "db_stress_tool/db_stress_shared_state.h": {
+      "hash": "c3ca6245c6411c6a",
+      "nodes": 176,
+      "relations": 297
+    },
+    "db_stress_tool/db_stress_stat.h": {
+      "hash": "064cb43f85977f62",
+      "nodes": 70,
+      "relations": 131
+    },
+    "db_stress_tool/db_stress_table_properties_collector.h": {
+      "hash": "7b3d877b32912850",
+      "nodes": 20,
+      "relations": 38
+    },
+    "db_stress_tool/db_stress_test_base.cc": {
+      "hash": "e037f41ae90d012c",
+      "nodes": 243,
+      "relations": 310
+    },
+    "db_stress_tool/db_stress_test_base.h": {
+      "hash": "c8547ba111ab8a66",
+      "nodes": 132,
+      "relations": 328
+    },
+    "db_stress_tool/db_stress_tool.cc": {
+      "hash": "c42e49b37fa0bee1",
+      "nodes": 16,
+      "relations": 27
+    },
+    "db_stress_tool/db_stress_wide_merge_operator.cc": {
+      "hash": "113eb5b067a8a1a1",
+      "nodes": 6,
+      "relations": 9
+    },
+    "db_stress_tool/db_stress_wide_merge_operator.h": {
+      "hash": "da19ee872516fcd1",
+      "nodes": 4,
+      "relations": 8
+    },
+    "db_stress_tool/expected_state.cc": {
+      "hash": "56b2dcebfb3145f2",
+      "nodes": 2,
+      "relations": 3
+    },
+    "db_stress_tool/expected_state.h": {
+      "hash": "abd4e5cdab9d8b27",
+      "nodes": 188,
+      "relations": 291
+    },
+    "db_stress_tool/expected_value.cc": {
+      "hash": "eb1da3be311132ca",
+      "nodes": 23,
+      "relations": 26
+    },
+    "db_stress_tool/expected_value.h": {
+      "hash": "7ec1b197faae949d",
+      "nodes": 81,
+      "relations": 164
+    },
+    "db_stress_tool/multi_ops_txns_stress.cc": {
+      "hash": "bfe0b436b5d27414",
+      "nodes": 154,
+      "relations": 202
+    },
+    "db_stress_tool/multi_ops_txns_stress.h": {
+      "hash": "ee65f6141d92d94a",
+      "nodes": 121,
+      "relations": 253
+    },
+    "db_stress_tool/no_batched_ops_stress.cc": {
+      "hash": "6348d0ff8dfa3e66",
+      "nodes": 104,
+      "relations": 143
+    },
+    "env/composite_env.cc": {
+      "hash": "fdff5075b85fdc0e",
+      "nodes": 186,
+      "relations": 250
+    },
+    "env/composite_env_wrapper.h": {
+      "hash": "37870612d898b459",
+      "nodes": 171,
+      "relations": 267
+    },
+    "env/emulated_clock.h": {
+      "hash": "149ce2bf332f7c04",
+      "nodes": 35,
+      "relations": 67
+    },
+    "env/env.cc": {
+      "hash": "4c70e8dbcd5490f6",
+      "nodes": 474,
+      "relations": 627
+    },
+    "env/env_basic_test.cc": {
+      "hash": "9f06f8d006c9637c",
+      "nodes": 38,
+      "relations": 64
+    },
+    "env/env_chroot.cc": {
+      "hash": "c69cfa0e2f084300",
+      "nodes": 29,
+      "relations": 44
+    },
+    "env/env_chroot.h": {
+      "hash": "d9f21fe75a0b72a2",
+      "nodes": 8,
+      "relations": 28
+    },
+    "env/env_encryption.cc": {
+      "hash": "386f18c1cc15b37b",
+      "nodes": 306,
+      "relations": 376
+    },
+    "env/env_encryption_ctr.h": {
+      "hash": "e56bc2eac8a4c50e",
+      "nodes": 28,
+      "relations": 53
+    },
+    "env/env_posix.cc": {
+      "hash": "5dd48e4d1cdaf6d3",
+      "nodes": 154,
+      "relations": 298
+    },
+    "env/env_test.cc": {
+      "hash": "b682a0a7965e2b3a",
+      "nodes": 48,
+      "relations": 141
+    },
+    "env/file_system.cc": {
+      "hash": "fc898396ffebadc8",
+      "nodes": 82,
+      "relations": 114
+    },
+    "env/file_system_tracer.cc": {
+      "hash": "ff9e32b94d4fefb5",
+      "nodes": 165,
+      "relations": 173
+    },
+    "env/file_system_tracer.h": {
+      "hash": "fd6e36beb0b9db31",
+      "nodes": 111,
+      "relations": 246
+    },
+    "env/fs_on_demand.cc": {
+      "hash": "481f0cf61ba66731",
+      "nodes": 64,
+      "relations": 81
+    },
+    "env/fs_on_demand.h": {
+      "hash": "6f30c36cc5046133",
+      "nodes": 33,
+      "relations": 76
+    },
+    "env/fs_posix.cc": {
+      "hash": "bebbb67fdbdc189f",
+      "nodes": 210,
+      "relations": 359
+    },
+    "env/fs_readonly.h": {
+      "hash": "2d2bd51ba3365524",
+      "nodes": 23,
+      "relations": 40
+    },
+    "env/fs_remap.cc": {
+      "hash": "7dc2ba045b15e4b5",
+      "nodes": 116,
+      "relations": 117
+    },
+    "env/fs_remap.h": {
+      "hash": "b77b003ecfff2488",
+      "nodes": 9,
+      "relations": 67
+    },
+    "env/io_posix.cc": {
+      "hash": "e8dbd1d70cee35f9",
+      "nodes": 237,
+      "relations": 342
+    },
+    "env/io_posix.h": {
+      "hash": "8931227c8f7ee5b5",
+      "nodes": 226,
+      "relations": 426
+    },
+    "env/io_posix_test.cc": {
+      "hash": "e39d24f87de32479",
+      "nodes": 14,
+      "relations": 24
+    },
+    "env/mock_env.cc": {
+      "hash": "1e5ed0fd4a6ef952",
+      "nodes": 290,
+      "relations": 446
+    },
+    "env/mock_env.h": {
+      "hash": "114b9fe35833ded6",
+      "nodes": 64,
+      "relations": 120
+    },
+    "env/mock_env_test.cc": {
+      "hash": "cf8eee6b354c7c2f",
+      "nodes": 13,
+      "relations": 27
+    },
+    "env/unique_id_gen.cc": {
+      "hash": "0d1a07f73eb3d7a6",
+      "nodes": 73,
+      "relations": 123
+    },
+    "env/unique_id_gen.h": {
+      "hash": "f8b64d2e61df15bc",
+      "nodes": 26,
+      "relations": 50
+    },
+    "examples/column_families_example.cc": {
+      "hash": "66cd5ecdd89d0c7e",
+      "nodes": 10,
+      "relations": 23
+    },
+    "examples/compact_files_example.cc": {
+      "hash": "92ab4c47cbafb63a",
+      "nodes": 44,
+      "relations": 74
+    },
+    "examples/compaction_filter_example.cc": {
+      "hash": "96ac3d4fe90b78c4",
+      "nodes": 25,
+      "relations": 41
+    },
+    "examples/multi_processes_example.cc": {
+      "hash": "c065299a2b27babe",
+      "nodes": 43,
+      "relations": 79
+    },
+    "examples/optimistic_transaction_example.cc": {
+      "hash": "bde24776527471d7",
+      "nodes": 6,
+      "relations": 17
+    },
+    "examples/options_file_example.cc": {
+      "hash": "a787d344ed5d006c",
+      "nodes": 21,
+      "relations": 47
+    },
+    "examples/rocksdb_backup_restore_example.cc": {
+      "hash": "f13622cffb7855e3",
+      "nodes": 8,
+      "relations": 23
+    },
+    "examples/simple_example.cc": {
+      "hash": "45d74a4d6fe3a214",
+      "nodes": 7,
+      "relations": 20
+    },
+    "examples/transaction_example.cc": {
+      "hash": "b413b206bd3667e7",
+      "nodes": 6,
+      "relations": 17
+    },
+    "file/delete_scheduler.cc": {
+      "hash": "0e7a1472225f7534",
+      "nodes": 66,
+      "relations": 91
+    },
+    "file/delete_scheduler.h": {
+      "hash": "c50212f6930da2c5",
+      "nodes": 52,
+      "relations": 139
+    },
+    "file/delete_scheduler_test.cc": {
+      "hash": "b43190dd8090433f",
+      "nodes": 52,
+      "relations": 91
+    },
+    "file/file_prefetch_buffer.cc": {
+      "hash": "294f60eeae896e8d",
+      "nodes": 117,
+      "relations": 143
+    },
+    "file/file_prefetch_buffer.h": {
+      "hash": "c1ba8cb3513454c2",
+      "nodes": 144,
+      "relations": 283
+    },
+    "file/file_util.cc": {
+      "hash": "ce379b5237ff9b9b",
+      "nodes": 68,
+      "relations": 87
+    },
+    "file/file_util.h": {
+      "hash": "410790f30de0fb33",
+      "nodes": 42,
+      "relations": 68
+    },
+    "file/filename.cc": {
+      "hash": "ecdb18c0195723a0",
+      "nodes": 148,
+      "relations": 180
+    },
+    "file/filename.h": {
+      "hash": "879fc8517e11fed6",
+      "nodes": 31,
+      "relations": 86
+    },
+    "file/line_file_reader.cc": {
+      "hash": "222bcd03095a75b5",
+      "nodes": 14,
+      "relations": 19
+    },
+    "file/line_file_reader.h": {
+      "hash": "9c310b5385a6e871",
+      "nodes": 17,
+      "relations": 36
+    },
+    "file/prefetch_test.cc": {
+      "hash": "3170a2b5c821159e",
+      "nodes": 190,
+      "relations": 272
+    },
+    "file/random_access_file_reader.cc": {
+      "hash": "ba35dcdb3978a2aa",
+      "nodes": 64,
+      "relations": 86
+    },
+    "file/random_access_file_reader.h": {
+      "hash": "a0aafc81980cdae3",
+      "nodes": 75,
+      "relations": 143
+    },
+    "file/random_access_file_reader_test.cc": {
+      "hash": "f6dba427168d31dc",
+      "nodes": 33,
+      "relations": 62
+    },
+    "file/read_write_util.cc": {
+      "hash": "361514a04714feab",
+      "nodes": 12,
+      "relations": 17
+    },
+    "file/read_write_util.h": {
+      "hash": "561ede15c7ee1fbe",
+      "nodes": 5,
+      "relations": 14
+    },
+    "file/readahead_file_info.h": {
+      "hash": "5f971f3ab9a084b1",
+      "nodes": 10,
+      "relations": 20
+    },
+    "file/readahead_raf.cc": {
+      "hash": "9f2c217bf0cc1fcd",
+      "nodes": 56,
+      "relations": 87
+    },
+    "file/readahead_raf.h": {
+      "hash": "194f167f21430719",
+      "nodes": 3,
+      "relations": 8
+    },
+    "file/sequence_file_reader.cc": {
+      "hash": "ddadd16c790a5056",
+      "nodes": 70,
+      "relations": 110
+    },
+    "file/sequence_file_reader.h": {
+      "hash": "e73fa700184c84dc",
+      "nodes": 43,
+      "relations": 78
+    },
+    "file/sst_file_manager_impl.cc": {
+      "hash": "5f51d3808af4e84a",
+      "nodes": 101,
+      "relations": 125
+    },
+    "file/sst_file_manager_impl.h": {
+      "hash": "1510a02e68d1e9c3",
+      "nodes": 40,
+      "relations": 140
+    },
+    "file/writable_file_writer.cc": {
+      "hash": "303755d53f2884d4",
+      "nodes": 77,
+      "relations": 104
+    },
+    "file/writable_file_writer.h": {
+      "hash": "f2cf822da7283956",
+      "nodes": 108,
+      "relations": 226
+    },
+    "fuzz/db_fuzzer.cc": {
+      "hash": "68b02efbff68fab8",
+      "nodes": 19,
+      "relations": 33
+    },
+    "fuzz/db_map_fuzzer.cc": {
+      "hash": "95321c2e1ecfa181",
+      "nodes": 13,
+      "relations": 30
+    },
+    "fuzz/sst_file_writer_fuzzer.cc": {
+      "hash": "3f75f89e7b74147e",
+      "nodes": 19,
+      "relations": 42
+    },
+    "include/rocksdb/advanced_cache.h": {
+      "hash": "9fccb222c2333e40",
+      "nodes": 214,
+      "relations": 363
+    },
+    "include/rocksdb/advanced_compression.h": {
+      "hash": "0bcd817849749e5b",
+      "nodes": 144,
+      "relations": 248
+    },
+    "include/rocksdb/advanced_iterator.h": {
+      "hash": "37a217e8ffe71858",
+      "nodes": 10,
+      "relations": 17
+    },
+    "include/rocksdb/advanced_options.h": {
+      "hash": "ae967aa87eff6a7c",
+      "nodes": 142,
+      "relations": 269
+    },
+    "include/rocksdb/attribute_groups.h": {
+      "hash": "9a75f30e7ef82ff2",
+      "nodes": 59,
+      "relations": 90
+    },
+    "include/rocksdb/block_cache_trace_writer.h": {
+      "hash": "9e5734a0e37be546",
+      "nodes": 56,
+      "relations": 91
+    },
+    "include/rocksdb/cache.h": {
+      "hash": "47d94430cbc85725",
+      "nodes": 142,
+      "relations": 241
+    },
+    "include/rocksdb/cleanable.h": {
+      "hash": "591ddd487a9efd9d",
+      "nodes": 21,
+      "relations": 72
+    },
+    "include/rocksdb/compaction_filter.h": {
+      "hash": "308f3f3a5cce38d6",
+      "nodes": 73,
+      "relations": 140
+    },
+    "include/rocksdb/compaction_job_stats.h": {
+      "hash": "1783eaa06c538c17",
+      "nodes": 43,
+      "relations": 91
+    },
+    "include/rocksdb/comparator.h": {
+      "hash": "44c1a17e5dd7d74a",
+      "nodes": 49,
+      "relations": 86
+    },
+    "include/rocksdb/compression_type.h": {
+      "hash": "851532922f0b93f4",
+      "nodes": 160,
+      "relations": 317
+    },
+    "include/rocksdb/concurrent_task_limiter.h": {
+      "hash": "56bca49739fcf0e3",
+      "nodes": 11,
+      "relations": 22
+    },
+    "include/rocksdb/configurable.h": {
+      "hash": "7b59480d5d8a6951",
+      "nodes": 40,
+      "relations": 101
+    },
+    "include/rocksdb/convenience.h": {
+      "hash": "93ec774f2c6e6738",
+      "nodes": 46,
+      "relations": 114
+    },
+    "include/rocksdb/customizable.h": {
+      "hash": "c2987a3e3fdd829b",
+      "nodes": 21,
+      "relations": 41
+    },
+    "include/rocksdb/data_structure.h": {
+      "hash": "ef8eb1dec0d00c82",
+      "nodes": 221,
+      "relations": 374
+    },
+    "include/rocksdb/db.h": {
+      "hash": "2478ee2e8807cfc8",
+      "nodes": 489,
+      "relations": 893
+    },
+    "include/rocksdb/db_bench_tool.h": {
+      "hash": "3077fa6db5b30dbe",
+      "nodes": 7,
+      "relations": 10
+    },
+    "include/rocksdb/db_dump_tool.h": {
+      "hash": "7538076a07773627",
+      "nodes": 19,
+      "relations": 30
+    },
+    "include/rocksdb/env.h": {
+      "hash": "d82e9179e06b267f",
+      "nodes": 800,
+      "relations": 1440
+    },
+    "include/rocksdb/env_encryption.h": {
+      "hash": "b3d9ce2da5a8e654",
+      "nodes": 92,
+      "relations": 226
+    },
+    "include/rocksdb/experimental.h": {
+      "hash": "5bbe9f5ceabb2737",
+      "nodes": 76,
+      "relations": 140
+    },
+    "include/rocksdb/external_table.h": {
+      "hash": "fef2461570583c34",
+      "nodes": 88,
+      "relations": 143
+    },
+    "include/rocksdb/file_checksum.h": {
+      "hash": "879d6e1e1d67599f",
+      "nodes": 47,
+      "relations": 82
+    },
+    "include/rocksdb/file_system.h": {
+      "hash": "266e081ec632b382",
+      "nodes": 777,
+      "relations": 1183
+    },
+    "include/rocksdb/filter_policy.h": {
+      "hash": "46e101b93e0b99d8",
+      "nodes": 29,
+      "relations": 69
+    },
+    "include/rocksdb/flush_block_policy.h": {
+      "hash": "c8ae0f7e6dd9ffb4",
+      "nodes": 19,
+      "relations": 42
+    },
+    "include/rocksdb/functor_wrapper.h": {
+      "hash": "e38ea87aacb0f949",
+      "nodes": 23,
+      "relations": 35
+    },
+    "include/rocksdb/io_dispatcher.h": {
+      "hash": "04f627b208045e4e",
+      "nodes": 67,
+      "relations": 158
+    },
+    "include/rocksdb/io_status.h": {
+      "hash": "d8d5ea0b1e56d37d",
+      "nodes": 104,
+      "relations": 160
+    },
+    "include/rocksdb/iostats_context.h": {
+      "hash": "4cf8426c3610b221",
+      "nodes": 36,
+      "relations": 76
+    },
+    "include/rocksdb/iterator.h": {
+      "hash": "3a8854eb4a17cc0f",
+      "nodes": 14,
+      "relations": 33
+    },
+    "include/rocksdb/iterator_base.h": {
+      "hash": "2e3459e9d02ea1f0",
+      "nodes": 23,
+      "relations": 44
+    },
+    "include/rocksdb/ldb_tool.h": {
+      "hash": "a8f7445275cabd97",
+      "nodes": 26,
+      "relations": 40
+    },
+    "include/rocksdb/listener.h": {
+      "hash": "681683ea1a37fa18",
+      "nodes": 326,
+      "relations": 592
+    },
+    "include/rocksdb/memory_allocator.h": {
+      "hash": "a67433ce484b360c",
+      "nodes": 22,
+      "relations": 39
+    },
+    "include/rocksdb/memtablerep.h": {
+      "hash": "ce22a52aad0c8ca4",
+      "nodes": 113,
+      "relations": 216
+    },
+    "include/rocksdb/merge_operator.h": {
+      "hash": "e2812e147f969423",
+      "nodes": 67,
+      "relations": 134
+    },
+    "include/rocksdb/metadata.h": {
+      "hash": "21bd9b83711d8448",
+      "nodes": 115,
+      "relations": 190
+    },
+    "include/rocksdb/multi_scan.h": {
+      "hash": "44b2d89c20818a5b",
+      "nodes": 80,
+      "relations": 148
+    },
+    "include/rocksdb/options.h": {
+      "hash": "e6e039aa8e63be16",
+      "nodes": 436,
+      "relations": 884
+    },
+    "include/rocksdb/perf_context.h": {
+      "hash": "972e24e1915c88d0",
+      "nodes": 132,
+      "relations": 285
+    },
+    "include/rocksdb/perf_level.h": {
+      "hash": "f8cf16936d59c5c8",
+      "nodes": 13,
+      "relations": 28
+    },
+    "include/rocksdb/persistent_cache.h": {
+      "hash": "ac543f0e0209d84b",
+      "nodes": 23,
+      "relations": 45
+    },
+    "include/rocksdb/port_defs.h": {
+      "hash": "dec96a5baabddfc7",
+      "nodes": 7,
+      "relations": 13
+    },
+    "include/rocksdb/rate_limiter.h": {
+      "hash": "c2423242be863b0c",
+      "nodes": 40,
+      "relations": 70
+    },
+    "include/rocksdb/secondary_cache.h": {
+      "hash": "1982970c12f2a5fc",
+      "nodes": 84,
+      "relations": 132
+    },
+    "include/rocksdb/slice.h": {
+      "hash": "e582ada7fa0a56fd",
+      "nodes": 104,
+      "relations": 181
+    },
+    "include/rocksdb/slice_transform.h": {
+      "hash": "3494446e03dfe79b",
+      "nodes": 16,
+      "relations": 38
+    },
+    "include/rocksdb/snapshot.h": {
+      "hash": "a538e13f8f5c3daf",
+      "nodes": 9,
+      "relations": 26
+    },
+    "include/rocksdb/sst_dump_tool.h": {
+      "hash": "0f78b915e634ae10",
+      "nodes": 7,
+      "relations": 9
+    },
+    "include/rocksdb/sst_file_manager.h": {
+      "hash": "3ec87d463b04c982",
+      "nodes": 27,
+      "relations": 57
+    },
+    "include/rocksdb/sst_file_reader.h": {
+      "hash": "d5055f6eed935868",
+      "nodes": 13,
+      "relations": 41
+    },
+    "include/rocksdb/sst_file_writer.h": {
+      "hash": "966774f50ec31d92",
+      "nodes": 41,
+      "relations": 102
+    },
+    "include/rocksdb/sst_partitioner.h": {
+      "hash": "8d99356376f57a1c",
+      "nodes": 48,
+      "relations": 97
+    },
+    "include/rocksdb/statistics.h": {
+      "hash": "92cffbf949bd4c10",
+      "nodes": 373,
+      "relations": 731
+    },
+    "include/rocksdb/stats_history.h": {
+      "hash": "69a1699175d0d1e9",
+      "nodes": 14,
+      "relations": 30
+    },
+    "include/rocksdb/status.h": {
+      "hash": "f26ce0c9f8258f8c",
+      "nodes": 242,
+      "relations": 413
+    },
+    "include/rocksdb/system_clock.h": {
+      "hash": "de65002f7d05d4c2",
+      "nodes": 40,
+      "relations": 86
+    },
+    "include/rocksdb/table.h": {
+      "hash": "7667c4d98477b287",
+      "nodes": 167,
+      "relations": 328
+    },
+    "include/rocksdb/table_properties.h": {
+      "hash": "e0eda5a227b6579d",
+      "nodes": 139,
+      "relations": 289
+    },
+    "include/rocksdb/thread_status.h": {
+      "hash": "56f8cc8cdc4b921c",
+      "nodes": 95,
+      "relations": 177
+    },
+    "include/rocksdb/threadpool.h": {
+      "hash": "56b769821b63d36b",
+      "nodes": 15,
+      "relations": 29
+    },
+    "include/rocksdb/tool_hooks.h": {
+      "hash": "ac19535356dc46cb",
+      "nodes": 129,
+      "relations": 163
+    },
+    "include/rocksdb/trace_reader_writer.h": {
+      "hash": "a35ecf795049a2e7",
+      "nodes": 14,
+      "relations": 25
+    },
+    "include/rocksdb/trace_record.h": {
+      "hash": "d2081481dd46a879",
+      "nodes": 71,
+      "relations": 198
+    },
+    "include/rocksdb/trace_record_result.h": {
+      "hash": "00640cc99241c36f",
+      "nodes": 40,
+      "relations": 127
+    },
+    "include/rocksdb/transaction_log.h": {
+      "hash": "940a77fd0983a08d",
+      "nodes": 43,
+      "relations": 79
+    },
+    "include/rocksdb/types.h": {
+      "hash": "81c0b2d8451f2271",
+      "nodes": 66,
+      "relations": 125
+    },
+    "include/rocksdb/unique_id.h": {
+      "hash": "5a69ce3d760b6142",
+      "nodes": 2,
+      "relations": 6
+    },
+    "include/rocksdb/universal_compaction.h": {
+      "hash": "5997a924828571b8",
+      "nodes": 22,
+      "relations": 43
+    },
+    "include/rocksdb/user_defined_index.h": {
+      "hash": "7e2746200153ca1d",
+      "nodes": 66,
+      "relations": 115
+    },
+    "include/rocksdb/user_write_callback.h": {
+      "hash": "92b9b355632ffebf",
+      "nodes": 6,
+      "relations": 10
+    },
+    "include/rocksdb/utilities/agg_merge.h": {
+      "hash": "fa7161d2c9dca819",
+      "nodes": 13,
+      "relations": 28
+    },
+    "include/rocksdb/utilities/backup_engine.h": {
+      "hash": "7acc0416f1032ccb",
+      "nodes": 190,
+      "relations": 309
+    },
+    "include/rocksdb/utilities/cache_dump_load.h": {
+      "hash": "d9b4a8d8d0b4a7dd",
+      "nodes": 35,
+      "relations": 67
+    },
+    "include/rocksdb/utilities/checkpoint.h": {
+      "hash": "3ef476d510c78477",
+      "nodes": 12,
+      "relations": 22
+    },
+    "include/rocksdb/utilities/customizable_util.h": {
+      "hash": "6955d293ed025c20",
+      "nodes": 43,
+      "relations": 54
+    },
+    "include/rocksdb/utilities/db_ttl.h": {
+      "hash": "51abdf97e695c3d1",
+      "nodes": 21,
+      "relations": 37
+    },
+    "include/rocksdb/utilities/debug.h": {
+      "hash": "ec0aa95c251e1333",
+      "nodes": 14,
+      "relations": 27
+    },
+    "include/rocksdb/utilities/env_mirror.h": {
+      "hash": "3afb86a47c7b911a",
+      "nodes": 55,
+      "relations": 96
+    },
+    "include/rocksdb/utilities/info_log_finder.h": {
+      "hash": "4e1cea99513f5c45",
+      "nodes": 5,
+      "relations": 13
+    },
+    "include/rocksdb/utilities/ldb_cmd.h": {
+      "hash": "588cde1cb4fbbf3c",
+      "nodes": 238,
+      "relations": 404
+    },
+    "include/rocksdb/utilities/ldb_cmd_execute_result.h": {
+      "hash": "18ef00bbf29bfde4",
+      "nodes": 25,
+      "relations": 45
+    },
+    "include/rocksdb/utilities/leveldb_options.h": {
+      "hash": "56bb5b9c19b1c6a1",
+      "nodes": 18,
+      "relations": 46
+    },
+    "include/rocksdb/utilities/memory_util.h": {
+      "hash": "3d60220691cbf305",
+      "nodes": 15,
+      "relations": 36
+    },
+    "include/rocksdb/utilities/object_registry.h": {
+      "hash": "d1a743a21fa6dcd4",
+      "nodes": 141,
+      "relations": 263
+    },
+    "include/rocksdb/utilities/optimistic_transaction_db.h": {
+      "hash": "1ed729dd6816bfe3",
+      "nodes": 31,
+      "relations": 65
+    },
+    "include/rocksdb/utilities/option_change_migration.h": {
+      "hash": "f03e70e17cdc14df",
+      "nodes": 6,
+      "relations": 17
+    },
+    "include/rocksdb/utilities/options_type.h": {
+      "hash": "37f9e5ee77e52d73",
+      "nodes": 266,
+      "relations": 401
+    },
+    "include/rocksdb/utilities/options_util.h": {
+      "hash": "aba28279a42a13e5",
+      "nodes": 9,
+      "relations": 26
+    },
+    "include/rocksdb/utilities/replayer.h": {
+      "hash": "f60174e97db33bf0",
+      "nodes": 24,
+      "relations": 43
+    },
+    "include/rocksdb/utilities/secondary_index.h": {
+      "hash": "b9f55103a0e99691",
+      "nodes": 38,
+      "relations": 92
+    },
+    "include/rocksdb/utilities/secondary_index_faiss.h": {
+      "hash": "d0fb74d46e2c5326",
+      "nodes": 25,
+      "relations": 63
+    },
+    "include/rocksdb/utilities/secondary_index_simple.h": {
+      "hash": "dff1c3512689868d",
+      "nodes": 16,
+      "relations": 36
+    },
+    "include/rocksdb/utilities/sim_cache.h": {
+      "hash": "f4e7c8fcc2c52432",
+      "nodes": 26,
+      "relations": 55
+    },
+    "include/rocksdb/utilities/stackable_db.h": {
+      "hash": "094ee0ebd6d8f09e",
+      "nodes": 358,
+      "relations": 483
+    },
+    "include/rocksdb/utilities/table_properties_collectors.h": {
+      "hash": "28f83fe079f7811c",
+      "nodes": 57,
+      "relations": 109
+    },
+    "include/rocksdb/utilities/transaction.h": {
+      "hash": "2c8af1d6d3aeb8e0",
+      "nodes": 307,
+      "relations": 446
+    },
+    "include/rocksdb/utilities/transaction_db.h": {
+      "hash": "84e9e022ff650a1c",
+      "nodes": 153,
+      "relations": 283
+    },
+    "include/rocksdb/utilities/transaction_db_mutex.h": {
+      "hash": "b0deea2cdc10b8b4",
+      "nodes": 22,
+      "relations": 37
+    },
+    "include/rocksdb/utilities/types_util.h": {
+      "hash": "f54c1a7b4cc35737",
+      "nodes": 5,
+      "relations": 15
+    },
+    "include/rocksdb/utilities/write_batch_with_index.h": {
+      "hash": "992b74d75d9ae265",
+      "nodes": 87,
+      "relations": 225
+    },
+    "include/rocksdb/version.h": {
+      "hash": "0af14c82d10e8af3",
+      "nodes": 10,
+      "relations": 15
+    },
+    "include/rocksdb/wal_filter.h": {
+      "hash": "e28f82cc29c9a076",
+      "nodes": 23,
+      "relations": 44
+    },
+    "include/rocksdb/wide_columns.h": {
+      "hash": "b523b960c46ba0da",
+      "nodes": 84,
+      "relations": 134
+    },
+    "include/rocksdb/write_batch.h": {
+      "hash": "1d87df1bb8366a03",
+      "nodes": 113,
+      "relations": 299
+    },
+    "include/rocksdb/write_batch_base.h": {
+      "hash": "b9e5228c1b2af73d",
+      "nodes": 81,
+      "relations": 137
+    },
+    "include/rocksdb/write_buffer_manager.h": {
+      "hash": "45fc362c3c0bd30c",
+      "nodes": 37,
+      "relations": 97
+    },
+    "java/rocksjni/backup_engine_options.cc": {
+      "hash": "29da83312fc99c55",
+      "nodes": 74,
+      "relations": 91
+    },
+    "java/rocksjni/backupenginejni.cc": {
+      "hash": "aa4653e6545177dd",
+      "nodes": 54,
+      "relations": 65
+    },
+    "java/rocksjni/cache.cc": {
+      "hash": "26556167d64df439",
+      "nodes": 8,
+      "relations": 13
+    },
+    "java/rocksjni/cassandra_compactionfilterjni.cc": {
+      "hash": "e1ac3e18a0bd5794",
+      "nodes": 8,
+      "relations": 15
+    },
+    "java/rocksjni/cassandra_value_operator.cc": {
+      "hash": "297ad9185335f252",
+      "nodes": 22,
+      "relations": 53
+    },
+    "java/rocksjni/checkpoint.cc": {
+      "hash": "c1554cef3c99c6c3",
+      "nodes": 23,
+      "relations": 40
+    },
+    "java/rocksjni/clock_cache.cc": {
+      "hash": "b86542921848333c",
+      "nodes": 11,
+      "relations": 18
+    },
+    "java/rocksjni/columnfamilyhandle.cc": {
+      "hash": "f59aae1520294107",
+      "nodes": 16,
+      "relations": 25
+    },
+    "java/rocksjni/compact_range_options.cc": {
+      "hash": "9ed354294972ff1c",
+      "nodes": 70,
+      "relations": 88
+    },
+    "java/rocksjni/compaction_filter.cc": {
+      "hash": "2a8d8d0317c03a8a",
+      "nodes": 6,
+      "relations": 11
+    },
+    "java/rocksjni/compaction_filter_factory.cc": {
+      "hash": "5e0942a5c5b9775f",
+      "nodes": 11,
+      "relations": 20
+    },
+    "java/rocksjni/compaction_filter_factory_jnicallback.cc": {
+      "hash": "e1fd370949f0ff38",
+      "nodes": 9,
+      "relations": 12
+    },
+    "java/rocksjni/compaction_filter_factory_jnicallback.h": {
+      "hash": "3220f2df7b6834e8",
+      "nodes": 8,
+      "relations": 23
+    },
+    "java/rocksjni/compaction_job_info.cc": {
+      "hash": "5e14cc853ec7963a",
+      "nodes": 38,
+      "relations": 47
+    },
+    "java/rocksjni/compaction_job_stats.cc": {
+      "hash": "dd7736f9932e6866",
+      "nodes": 62,
+      "relations": 71
+    },
+    "java/rocksjni/compaction_options.cc": {
+      "hash": "389f1688c2289439",
+      "nodes": 24,
+      "relations": 33
+    },
+    "java/rocksjni/compaction_options_fifo.cc": {
+      "hash": "a5fec728dc89ba4f",
+      "nodes": 28,
+      "relations": 35
+    },
+    "java/rocksjni/compaction_options_universal.cc": {
+      "hash": "64da8bda200f5727",
+      "nodes": 44,
+      "relations": 53
+    },
+    "java/rocksjni/comparator.cc": {
+      "hash": "ffbe1c951de4d3f7",
+      "nodes": 19,
+      "relations": 38
+    },
+    "java/rocksjni/comparatorjnicallback.cc": {
+      "hash": "bda4738fe6b7334a",
+      "nodes": 39,
+      "relations": 42
+    },
+    "java/rocksjni/comparatorjnicallback.h": {
+      "hash": "c847514eb4f7b992",
+      "nodes": 43,
+      "relations": 110
+    },
+    "java/rocksjni/compression_options.cc": {
+      "hash": "6b4cb27240702c44",
+      "nodes": 48,
+      "relations": 55
+    },
+    "java/rocksjni/concurrent_task_limiter.cc": {
+      "hash": "c4a05c903240cf86",
+      "nodes": 24,
+      "relations": 37
+    },
+    "java/rocksjni/config_options.cc": {
+      "hash": "c360db289ed5ff65",
+      "nodes": 25,
+      "relations": 34
+    },
+    "java/rocksjni/env.cc": {
+      "hash": "6579781fb895d252",
+      "nodes": 44,
+      "relations": 61
+    },
+    "java/rocksjni/env_options.cc": {
+      "hash": "a7ffe1de672dfd08",
+      "nodes": 63,
+      "relations": 70
+    },
+    "java/rocksjni/event_listener.cc": {
+      "hash": "743ba07cdbf02941",
+      "nodes": 13,
+      "relations": 24
+    },
+    "java/rocksjni/event_listener_jnicallback.cc": {
+      "hash": "852775094755a136",
+      "nodes": 76,
+      "relations": 79
+    },
+    "java/rocksjni/event_listener_jnicallback.h": {
+      "hash": "1f4611a24a9d46fe",
+      "nodes": 54,
+      "relations": 165
+    },
+    "java/rocksjni/export_import_files_metadatajni.cc": {
+      "hash": "0fe098b01d526ca0",
+      "nodes": 6,
+      "relations": 11
+    },
+    "java/rocksjni/filter.cc": {
+      "hash": "8cba8d83b6755a95",
+      "nodes": 14,
+      "relations": 31
+    },
+    "java/rocksjni/hyper_clock_cache.cc": {
+      "hash": "e964a7849b1894f7",
+      "nodes": 12,
+      "relations": 19
+    },
+    "java/rocksjni/import_column_family_options.cc": {
+      "hash": "aa30ad5b11a89460",
+      "nodes": 13,
+      "relations": 20
+    },
+    "java/rocksjni/ingest_external_file_options.cc": {
+      "hash": "e913c5f1b3536b55",
+      "nodes": 43,
+      "relations": 50
+    },
+    "java/rocksjni/iterator.cc": {
+      "hash": "ced177cb38619304",
+      "nodes": 94,
+      "relations": 107
+    },
+    "java/rocksjni/jni_multiget_helpers.cc": {
+      "hash": "e193063139928b5c",
+      "nodes": 36,
+      "relations": 41
+    },
+    "java/rocksjni/jni_multiget_helpers.h": {
+      "hash": "0fcc5c60e0279b8f",
+      "nodes": 11,
+      "relations": 39
+    },
+    "java/rocksjni/jni_perf_context.cc": {
+      "hash": "984b928612e6cc2f",
+      "nodes": 216,
+      "relations": 225
+    },
+    "java/rocksjni/jnicallback.cc": {
+      "hash": "503aef058037c83e",
+      "nodes": 12,
+      "relations": 17
+    },
+    "java/rocksjni/jnicallback.h": {
+      "hash": "5947919723e0776e",
+      "nodes": 7,
+      "relations": 21
+    },
+    "java/rocksjni/kv_helper.h": {
+      "hash": "1fbd46be1ef35439",
+      "nodes": 74,
+      "relations": 127
+    },
+    "java/rocksjni/loggerjnicallback.cc": {
+      "hash": "0852d18375834694",
+      "nodes": 30,
+      "relations": 44
+    },
+    "java/rocksjni/loggerjnicallback.h": {
+      "hash": "ce84b4456fc0c98d",
+      "nodes": 18,
+      "relations": 43
+    },
+    "java/rocksjni/lru_cache.cc": {
+      "hash": "ac8c9159756c2a69",
+      "nodes": 13,
+      "relations": 20
+    },
+    "java/rocksjni/memory_util.cc": {
+      "hash": "ec18234cc90b9275",
+      "nodes": 13,
+      "relations": 28
+    },
+    "java/rocksjni/memtablejni.cc": {
+      "hash": "e87a1168e60593ee",
+      "nodes": 26,
+      "relations": 39
+    },
+    "java/rocksjni/merge_operator.cc": {
+      "hash": "038c6dfd7cf0e58c",
+      "nodes": 28,
+      "relations": 61
+    },
+    "java/rocksjni/native_comparator_wrapper_test.cc": {
+      "hash": "3f609dad090146f7",
+      "nodes": 15,
+      "relations": 30
+    },
+    "java/rocksjni/optimistic_transaction_db.cc": {
+      "hash": "0186c8f2341fd8ff",
+      "nodes": 41,
+      "relations": 54
+    },
+    "java/rocksjni/optimistic_transaction_options.cc": {
+      "hash": "293b06d1bd61bdde",
+      "nodes": 17,
+      "relations": 26
+    },
+    "java/rocksjni/options.cc": {
+      "hash": "ffadab370a650af7",
+      "nodes": 1826,
+      "relations": 1887
+    },
+    "java/rocksjni/options_util.cc": {
+      "hash": "1e56dc34ff995292",
+      "nodes": 31,
+      "relations": 44
+    },
+    "java/rocksjni/persistent_cache.cc": {
+      "hash": "e8787bceef83457d",
+      "nodes": 17,
+      "relations": 30
+    },
+    "java/rocksjni/portal.h": {
+      "hash": "23e0473c1b29134e",
+      "nodes": 980,
+      "relations": 1380
+    },
+    "java/rocksjni/ratelimiterjni.cc": {
+      "hash": "41b500ae2bf3b963",
+      "nodes": 27,
+      "relations": 34
+    },
+    "java/rocksjni/remove_emptyvalue_compactionfilterjni.cc": {
+      "hash": "0d696f21aac5c30b",
+      "nodes": 6,
+      "relations": 13
+    },
+    "java/rocksjni/restorejni.cc": {
+      "hash": "1daf90345372e075",
+      "nodes": 13,
+      "relations": 28
+    },
+    "java/rocksjni/rocks_callback_object.cc": {
+      "hash": "e923899e253abd6a",
+      "nodes": 6,
+      "relations": 11
+    },
+    "java/rocksjni/rocksdb_exception_test.cc": {
+      "hash": "f62bc56e320e1116",
+      "nodes": 18,
+      "relations": 27
+    },
+    "java/rocksjni/rocksjni.cc": {
+      "hash": "1641e2ea3740624c",
+      "nodes": 770,
+      "relations": 811
+    },
+    "java/rocksjni/slice.cc": {
+      "hash": "6c76db4c9650b851",
+      "nodes": 76,
+      "relations": 95
+    },
+    "java/rocksjni/snapshot.cc": {
+      "hash": "6902f203039d0885",
+      "nodes": 9,
+      "relations": 20
+    },
+    "java/rocksjni/sst_file_manager.cc": {
+      "hash": "cbeffbef6ae3a3b1",
+      "nodes": 41,
+      "relations": 52
+    },
+    "java/rocksjni/sst_file_reader_iterator.cc": {
+      "hash": "ddd6415bb9d04d5c",
+      "nodes": 93,
+      "relations": 104
+    },
+    "java/rocksjni/sst_file_readerjni.cc": {
+      "hash": "f8508d89b5c730de",
+      "nodes": 27,
+      "relations": 44
+    },
+    "java/rocksjni/sst_file_writerjni.cc": {
+      "hash": "38f6319ede6d5ad6",
+      "nodes": 66,
+      "relations": 83
+    },
+    "java/rocksjni/sst_partitioner.cc": {
+      "hash": "01c7443f8d42c634",
+      "nodes": 12,
+      "relations": 25
+    },
+    "java/rocksjni/statistics.cc": {
+      "hash": "3bca0c827c356f93",
+      "nodes": 51,
+      "relations": 66
+    },
+    "java/rocksjni/statisticsjni.cc": {
+      "hash": "0e35d488e5b08238",
+      "nodes": 9,
+      "relations": 10
+    },
+    "java/rocksjni/statisticsjni.h": {
+      "hash": "0a6a6d3d4a748685",
+      "nodes": 8,
+      "relations": 24
+    },
+    "java/rocksjni/stderr_logger.cc": {
+      "hash": "4091a80dad0ae92e",
+      "nodes": 18,
+      "relations": 29
+    },
+    "java/rocksjni/table.cc": {
+      "hash": "43e2b4432d9b689f",
+      "nodes": 53,
+      "relations": 68
+    },
+    "java/rocksjni/table_filter.cc": {
+      "hash": "ef10e449a603b8e2",
+      "nodes": 9,
+      "relations": 18
+    },
+    "java/rocksjni/table_filter_jnicallback.cc": {
+      "hash": "330d84b45e8d39e9",
+      "nodes": 7,
+      "relations": 10
+    },
+    "java/rocksjni/table_filter_jnicallback.h": {
+      "hash": "2e2208adc93bad87",
+      "nodes": 9,
+      "relations": 24
+    },
+    "java/rocksjni/table_properties_collector_factory.cc": {
+      "hash": "b30cb41a6cd485ae",
+      "nodes": 12,
+      "relations": 21
+    },
+    "java/rocksjni/table_properties_collector_factory.h": {
+      "hash": "e047f1e15d4fb184",
+      "nodes": 5,
+      "relations": 9
+    },
+    "java/rocksjni/testable_event_listener.cc": {
+      "hash": "34f2558f70254c4f",
+      "nodes": 12,
+      "relations": 27
+    },
+    "java/rocksjni/thread_status.cc": {
+      "hash": "e9e6417300d0d168",
+      "nodes": 28,
+      "relations": 35
+    },
+    "java/rocksjni/trace_writer.cc": {
+      "hash": "981a153da5f8fce2",
+      "nodes": 8,
+      "relations": 15
+    },
+    "java/rocksjni/trace_writer_jnicallback.cc": {
+      "hash": "c353021ad3fbb22d",
+      "nodes": 10,
+      "relations": 13
+    },
+    "java/rocksjni/trace_writer_jnicallback.h": {
+      "hash": "f980c41dce57dac2",
+      "nodes": 9,
+      "relations": 27
+    },
+    "java/rocksjni/transaction.cc": {
+      "hash": "7535e6f3ffc09a82",
+      "nodes": 465,
+      "relations": 480
+    },
+    "java/rocksjni/transaction_db.cc": {
+      "hash": "9fbdab82a953982d",
+      "nodes": 61,
+      "relations": 80
+    },
+    "java/rocksjni/transaction_db_options.cc": {
+      "hash": "8832ddf63857d5c2",
+      "nodes": 34,
+      "relations": 43
+    },
+    "java/rocksjni/transaction_log.cc": {
+      "hash": "3e368b1cc9e91fe8",
+      "nodes": 19,
+      "relations": 30
+    },
+    "java/rocksjni/transaction_notifier.cc": {
+      "hash": "754c7f0afce67d68",
+      "nodes": 10,
+      "relations": 17
+    },
+    "java/rocksjni/transaction_notifier_jnicallback.cc": {
+      "hash": "f02ba3f6d00a013c",
+      "nodes": 9,
+      "relations": 14
+    },
+    "java/rocksjni/transaction_notifier_jnicallback.h": {
+      "hash": "c8f4db21add94d8e",
+      "nodes": 6,
+      "relations": 16
+    },
+    "java/rocksjni/transaction_options.cc": {
+      "hash": "4c23ae0d35d03e8d",
+      "nodes": 38,
+      "relations": 45
+    },
+    "java/rocksjni/ttl.cc": {
+      "hash": "efb37d610480bbea",
+      "nodes": 34,
+      "relations": 53
+    },
+    "java/rocksjni/wal_filter.cc": {
+      "hash": "695e956f07ddcc45",
+      "nodes": 8,
+      "relations": 15
+    },
+    "java/rocksjni/wal_filter_jnicallback.cc": {
+      "hash": "a267fa0e93001152",
+      "nodes": 17,
+      "relations": 22
+    },
+    "java/rocksjni/wal_filter_jnicallback.h": {
+      "hash": "3c4a148c3b87b58f",
+      "nodes": 11,
+      "relations": 33
+    },
+    "java/rocksjni/write_batch.cc": {
+      "hash": "4cfd8afe3d92aa21",
+      "nodes": 163,
+      "relations": 192
+    },
+    "java/rocksjni/write_batch_test.cc": {
+      "hash": "4bdfcd5df2b56dd0",
+      "nodes": 29,
+      "relations": 62
+    },
+    "java/rocksjni/write_batch_with_index.cc": {
+      "hash": "1d239ec85cf9c922",
+      "nodes": 218,
+      "relations": 229
+    },
+    "java/rocksjni/write_buffer_manager.cc": {
+      "hash": "a37d30fc1c96662e",
+      "nodes": 13,
+      "relations": 24
+    },
+    "java/rocksjni/writebatchhandlerjnicallback.cc": {
+      "hash": "b2669ef0e9030abc",
+      "nodes": 64,
+      "relations": 69
+    },
+    "java/rocksjni/writebatchhandlerjnicallback.h": {
+      "hash": "8182c75ca5aa7ae7",
+      "nodes": 29,
+      "relations": 100
+    },
+    "logging/auto_roll_logger.cc": {
+      "hash": "a77e9a5857780f71",
+      "nodes": 39,
+      "relations": 55
+    },
+    "logging/auto_roll_logger.h": {
+      "hash": "d8939df925772caa",
+      "nodes": 44,
+      "relations": 114
+    },
+    "logging/auto_roll_logger_test.cc": {
+      "hash": "2d96d6dec6925c25",
+      "nodes": 69,
+      "relations": 122
+    },
+    "logging/env_logger.h": {
+      "hash": "dd00284b363c2e14",
+      "nodes": 42,
+      "relations": 85
+    },
+    "logging/env_logger_test.cc": {
+      "hash": "04dc49ad434e2a6c",
+      "nodes": 25,
+      "relations": 39
+    },
+    "logging/event_logger.cc": {
+      "hash": "881e8635ec09e3d8",
+      "nodes": 22,
+      "relations": 33
+    },
+    "logging/event_logger.h": {
+      "hash": "90f5c2d1b65ac620",
+      "nodes": 60,
+      "relations": 122
+    },
+    "logging/event_logger_test.cc": {
+      "hash": "2e3b59c984caffeb",
+      "nodes": 12,
+      "relations": 21
+    },
+    "logging/log_buffer.cc": {
+      "hash": "540ee4279831cfca",
+      "nodes": 19,
+      "relations": 24
+    },
+    "logging/log_buffer.h": {
+      "hash": "cfe161673405f17d",
+      "nodes": 16,
+      "relations": 43
+    },
+    "memory/allocator.h": {
+      "hash": "d8594b7b4c856364",
+      "nodes": 21,
+      "relations": 48
+    },
+    "memory/arena.cc": {
+      "hash": "10d913c409d3327e",
+      "nodes": 27,
+      "relations": 42
+    },
+    "memory/arena.h": {
+      "hash": "0d8978b61a1cd14f",
+      "nodes": 36,
+      "relations": 84
+    },
+    "memory/arena_test.cc": {
+      "hash": "c7a6e9c306793fc4",
+      "nodes": 25,
+      "relations": 37
+    },
+    "memory/concurrent_arena.cc": {
+      "hash": "26f0adae58fd3b15",
+      "nodes": 12,
+      "relations": 19
+    },
+    "memory/concurrent_arena.h": {
+      "hash": "72344013bb0c3397",
+      "nodes": 46,
+      "relations": 99
+    },
+    "memory/jemalloc_nodump_allocator.cc": {
+      "hash": "6c83dcbdf74a2756",
+      "nodes": 19,
+      "relations": 42
+    },
+    "memory/jemalloc_nodump_allocator.h": {
+      "hash": "cffa0373991d2993",
+      "nodes": 45,
+      "relations": 86
+    },
+    "memory/memkind_kmem_allocator.cc": {
+      "hash": "291cd888a6b78be5",
+      "nodes": 11,
+      "relations": 14
+    },
+    "memory/memkind_kmem_allocator.h": {
+      "hash": "77c5f0ca655bb1e0",
+      "nodes": 9,
+      "relations": 24
+    },
+    "memory/memory_allocator.cc": {
+      "hash": "a6d0a1718ab2ea2c",
+      "nodes": 17,
+      "relations": 30
+    },
+    "memory/memory_allocator_impl.h": {
+      "hash": "a0c87f24f9cca5df",
+      "nodes": 16,
+      "relations": 22
+    },
+    "memory/memory_allocator_test.cc": {
+      "hash": "0a9eefcabf09fb0c",
+      "nodes": 25,
+      "relations": 52
+    },
+    "memory/memory_usage.h": {
+      "hash": "92aa8d609074d23e",
+      "nodes": 9,
+      "relations": 16
+    },
+    "memtable/alloc_tracker.cc": {
+      "hash": "2dbeb022a98f8daf",
+      "nodes": 12,
+      "relations": 19
+    },
+    "memtable/hash_linklist_rep.cc": {
+      "hash": "cd6cb861f066bda5",
+      "nodes": 222,
+      "relations": 358
+    },
+    "memtable/hash_skiplist_rep.cc": {
+      "hash": "87716d23ed44eb0a",
+      "nodes": 120,
+      "relations": 203
+    },
+    "memtable/inlineskiplist.h": {
+      "hash": "ef95bd51fcd9b341",
+      "nodes": 192,
+      "relations": 284
+    },
+    "memtable/inlineskiplist_test.cc": {
+      "hash": "0b281d2af0d9801e",
+      "nodes": 143,
+      "relations": 211
+    },
+    "memtable/memtablerep_bench.cc": {
+      "hash": "bb1dece9bb8958e1",
+      "nodes": 199,
+      "relations": 310
+    },
+    "memtable/skiplist.h": {
+      "hash": "6452216cf2390fff",
+      "nodes": 88,
+      "relations": 143
+    },
+    "memtable/skiplist_test.cc": {
+      "hash": "c692e796cd5dbb55",
+      "nodes": 24,
+      "relations": 74
+    },
+    "memtable/skiplistrep.cc": {
+      "hash": "dc2e74d73d1e5c5b",
+      "nodes": 130,
+      "relations": 199
+    },
+    "memtable/stl_wrappers.h": {
+      "hash": "be393e74ecf30f41",
+      "nodes": 17,
+      "relations": 32
+    },
+    "memtable/vectorrep.cc": {
+      "hash": "f1b0efe5c474ea4c",
+      "nodes": 83,
+      "relations": 147
+    },
+    "memtable/wbwi_memtable.cc": {
+      "hash": "69d5019f2ad5a6a3",
+      "nodes": 26,
+      "relations": 31
+    },
+    "memtable/wbwi_memtable.h": {
+      "hash": "1f175c68a1f710c4",
+      "nodes": 91,
+      "relations": 170
+    },
+    "memtable/write_buffer_manager.cc": {
+      "hash": "03546e33ca96cc76",
+      "nodes": 29,
+      "relations": 42
+    },
+    "memtable/write_buffer_manager_test.cc": {
+      "hash": "90f23c8f2b06bd07",
+      "nodes": 11,
+      "relations": 17
+    },
+    "microbench/db_basic_bench.cc": {
+      "hash": "ea0f02caa3a6a9b4",
+      "nodes": 129,
+      "relations": 166
+    },
+    "microbench/ribbon_bench.cc": {
+      "hash": "f16a195e8c0b1c70",
+      "nodes": 21,
+      "relations": 31
+    },
+    "monitoring/file_read_sample.h": {
+      "hash": "dc7eb9724ce61838",
+      "nodes": 12,
+      "relations": 17
+    },
+    "monitoring/histogram.cc": {
+      "hash": "e571240814aceeb8",
+      "nodes": 44,
+      "relations": 59
+    },
+    "monitoring/histogram.h": {
+      "hash": "ca82105943b79e55",
+      "nodes": 68,
+      "relations": 176
+    },
+    "monitoring/histogram_test.cc": {
+      "hash": "76da17be048e549a",
+      "nodes": 35,
+      "relations": 49
+    },
+    "monitoring/histogram_windowing.cc": {
+      "hash": "86c0c8c8bb556209",
+      "nodes": 30,
+      "relations": 39
+    },
+    "monitoring/histogram_windowing.h": {
+      "hash": "ea234bf6dab87ddb",
+      "nodes": 22,
+      "relations": 74
+    },
+    "monitoring/in_memory_stats_history.cc": {
+      "hash": "f658f93b313801f6",
+      "nodes": 12,
+      "relations": 15
+    },
+    "monitoring/in_memory_stats_history.h": {
+      "hash": "5e9bc79aa3172dc3",
+      "nodes": 18,
+      "relations": 45
+    },
+    "monitoring/instrumented_mutex.cc": {
+      "hash": "516be7030bfa28d0",
+      "nodes": 17,
+      "relations": 26
+    },
+    "monitoring/instrumented_mutex.h": {
+      "hash": "a7e94612d26329b9",
+      "nodes": 54,
+      "relations": 106
+    },
+    "monitoring/iostats_context.cc": {
+      "hash": "4b9fadef94f60607",
+      "nodes": 10,
+      "relations": 15
+    },
+    "monitoring/iostats_context_test.cc": {
+      "hash": "6a6d2b211e74a1e6",
+      "nodes": 4,
+      "relations": 8
+    },
+    "monitoring/perf_context.cc": {
+      "hash": "54fae8747cec5d52",
+      "nodes": 25,
+      "relations": 30
+    },
+    "monitoring/perf_level.cc": {
+      "hash": "3af385cd4019fa7c",
+      "nodes": 7,
+      "relations": 10
+    },
+    "monitoring/perf_step_timer.h": {
+      "hash": "68e50386198fd594",
+      "nodes": 24,
+      "relations": 42
+    },
+    "monitoring/persistent_stats_history.cc": {
+      "hash": "c503be64079b2183",
+      "nodes": 35,
+      "relations": 47
+    },
+    "monitoring/persistent_stats_history.h": {
+      "hash": "b95d4d2bfb57ba40",
+      "nodes": 28,
+      "relations": 62
+    },
+    "monitoring/statistics.cc": {
+      "hash": "f13878baf350415b",
+      "nodes": 55,
+      "relations": 84
+    },
+    "monitoring/statistics_impl.h": {
+      "hash": "7565b299af6a90e1",
+      "nodes": 54,
+      "relations": 107
+    },
+    "monitoring/statistics_test.cc": {
+      "hash": "17483469690f8986",
+      "nodes": 11,
+      "relations": 23
+    },
+    "monitoring/stats_history_test.cc": {
+      "hash": "095e23cd98909e4f",
+      "nodes": 36,
+      "relations": 76
+    },
+    "monitoring/thread_status_impl.cc": {
+      "hash": "a9702eb1e1838432",
+      "nodes": 22,
+      "relations": 33
+    },
+    "monitoring/thread_status_updater.cc": {
+      "hash": "a4a3342c7efafc9c",
+      "nodes": 48,
+      "relations": 59
+    },
+    "monitoring/thread_status_updater.h": {
+      "hash": "c16b7b5db728e65a",
+      "nodes": 44,
+      "relations": 135
+    },
+    "monitoring/thread_status_updater_debug.cc": {
+      "hash": "bd6fabd6d0b0088f",
+      "nodes": 8,
+      "relations": 15
+    },
+    "monitoring/thread_status_util.cc": {
+      "hash": "cf144f05a50aaf8b",
+      "nodes": 43,
+      "relations": 52
+    },
+    "monitoring/thread_status_util.h": {
+      "hash": "1858d11790fee557",
+      "nodes": 11,
+      "relations": 64
+    },
+    "monitoring/thread_status_util_debug.cc": {
+      "hash": "587886a6a17c9ee5",
+      "nodes": 13,
+      "relations": 20
+    },
+    "options/cf_options.cc": {
+      "hash": "77f7a8771f051ded",
+      "nodes": 120,
+      "relations": 181
+    },
+    "options/cf_options.h": {
+      "hash": "6eddeea6fbf9a82b",
+      "nodes": 114,
+      "relations": 252
+    },
+    "options/configurable.cc": {
+      "hash": "640e4dbef854f2d3",
+      "nodes": 144,
+      "relations": 178
+    },
+    "options/configurable_helper.h": {
+      "hash": "b7f802ae37122bc5",
+      "nodes": 11,
+      "relations": 39
+    },
+    "options/configurable_test.cc": {
+      "hash": "512a00681ea87b09",
+      "nodes": 88,
+      "relations": 131
+    },
+    "options/configurable_test.h": {
+      "hash": "b98cdcf98090a294",
+      "nodes": 46,
+      "relations": 85
+    },
+    "options/customizable.cc": {
+      "hash": "fbd502e03696dac9",
+      "nodes": 33,
+      "relations": 54
+    },
+    "options/customizable_test.cc": {
+      "hash": "37603ebacf458a55",
+      "nodes": 319,
+      "relations": 526
+    },
+    "options/db_options.cc": {
+      "hash": "6750547fcd21c5d6",
+      "nodes": 83,
+      "relations": 130
+    },
+    "options/db_options.h": {
+      "hash": "1e2c30f6c7e5b36e",
+      "nodes": 118,
+      "relations": 257
+    },
+    "options/offpeak_time_info.cc": {
+      "hash": "abea9edbcfd6984f",
+      "nodes": 11,
+      "relations": 16
+    },
+    "options/offpeak_time_info.h": {
+      "hash": "ff6095875ba4bf21",
+      "nodes": 14,
+      "relations": 36
+    },
+    "options/options.cc": {
+      "hash": "ac2f99d6738589d1",
+      "nodes": 75,
+      "relations": 120
+    },
+    "options/options_helper.cc": {
+      "hash": "359d1f36ade393aa",
+      "nodes": 233,
+      "relations": 298
+    },
+    "options/options_helper.h": {
+      "hash": "61b7a1550f45f3c5",
+      "nodes": 25,
+      "relations": 90
+    },
+    "options/options_parser.cc": {
+      "hash": "f56900c0eb8b2ab4",
+      "nodes": 103,
+      "relations": 148
+    },
+    "options/options_parser.h": {
+      "hash": "a6c85bf748252210",
+      "nodes": 48,
+      "relations": 112
+    },
+    "options/options_settable_test.cc": {
+      "hash": "fe8d327e0c48a262",
+      "nodes": 30,
+      "relations": 46
+    },
+    "options/options_test.cc": {
+      "hash": "ac04b96a18a53432",
+      "nodes": 196,
+      "relations": 284
+    },
+    "port/mmap.cc": {
+      "hash": "8ab85bd2fc999ea6",
+      "nodes": 20,
+      "relations": 33
+    },
+    "port/mmap.h": {
+      "hash": "e53fb6c439284bb8",
+      "nodes": 25,
+      "relations": 61
+    },
+    "port/port_dirent.h": {
+      "hash": "1bf81d1669841f4a",
+      "nodes": 5,
+      "relations": 13
+    },
+    "port/port_example.h": {
+      "hash": "7d5964e64d88eba5",
+      "nodes": 9,
+      "relations": 41
+    },
+    "port/port_posix.cc": {
+      "hash": "f5777f63acb0e151",
+      "nodes": 61,
+      "relations": 90
+    },
+    "port/port_posix.h": {
+      "hash": "c6eb92f8129c3e48",
+      "nodes": 38,
+      "relations": 107
+    },
+    "port/stack_trace.cc": {
+      "hash": "9826925a0d0a452e",
+      "nodes": 47,
+      "relations": 81
+    },
+    "port/stack_trace.h": {
+      "hash": "b35d20d4a90a13e5",
+      "nodes": 4,
+      "relations": 9
+    },
+    "port/sys_time.h": {
+      "hash": "9c8129647cea5a74",
+      "nodes": 14,
+      "relations": 21
+    },
+    "port/win/env_default.cc": {
+      "hash": "9452855d5e928082",
+      "nodes": 9,
+      "relations": 21
+    },
+    "port/win/env_win.cc": {
+      "hash": "443effe0fc83dcec",
+      "nodes": 231,
+      "relations": 336
+    },
+    "port/win/env_win.h": {
+      "hash": "ce684e3096cc3594",
+      "nodes": 102,
+      "relations": 251
+    },
+    "port/win/io_win.cc": {
+      "hash": "23bd4268d81ba50b",
+      "nodes": 233,
+      "relations": 296
+    },
+    "port/win/io_win.h": {
+      "hash": "b58502cdfc05774a",
+      "nodes": 165,
+      "relations": 353
+    },
+    "port/win/port_win.cc": {
+      "hash": "4be2dab54c17bcdc",
+      "nodes": 44,
+      "relations": 97
+    },
+    "port/win/port_win.h": {
+      "hash": "f85af0b01e196ea7",
+      "nodes": 16,
+      "relations": 43
+    },
+    "port/win/win_jemalloc.cc": {
+      "hash": "f11f1fcc408c6c0e",
+      "nodes": 23,
+      "relations": 30
+    },
+    "port/win/win_logger.cc": {
+      "hash": "995c445a01dd2423",
+      "nodes": 29,
+      "relations": 52
+    },
+    "port/win/win_logger.h": {
+      "hash": "71643914ef2d250d",
+      "nodes": 16,
+      "relations": 51
+    },
+    "port/win/win_thread.cc": {
+      "hash": "518b18d5fc12117f",
+      "nodes": 32,
+      "relations": 51
+    },
+    "port/win/win_thread.h": {
+      "hash": "a77d98b8a1deccab",
+      "nodes": 18,
+      "relations": 54
+    },
+    "port/win/xpress_win.cc": {
+      "hash": "8b90de85dc39f2c1",
+      "nodes": 31,
+      "relations": 45
+    },
+    "port/win/xpress_win.h": {
+      "hash": "1077e9c86531ecb5",
+      "nodes": 4,
+      "relations": 11
+    },
+    "table/adaptive/adaptive_table_factory.cc": {
+      "hash": "c2f0ed1195f8befc",
+      "nodes": 26,
+      "relations": 33
+    },
+    "table/adaptive/adaptive_table_factory.h": {
+      "hash": "82fd5b423aa614ad",
+      "nodes": 13,
+      "relations": 38
+    },
+    "table/block_based/binary_search_index_reader.cc": {
+      "hash": "70767594423624fa",
+      "nodes": 16,
+      "relations": 17
+    },
+    "table/block_based/binary_search_index_reader.h": {
+      "hash": "a1c779f351a72ad0",
+      "nodes": 7,
+      "relations": 14
+    },
+    "table/block_based/block.cc": {
+      "hash": "ee6e17bfe01e6fb2",
+      "nodes": 120,
+      "relations": 153
+    },
+    "table/block_based/block.h": {
+      "hash": "98c7a38334cc8333",
+      "nodes": 262,
+      "relations": 522
+    },
+    "table/block_based/block_based_table_builder.cc": {
+      "hash": "bbc3d0122d24f511",
+      "nodes": 343,
+      "relations": 595
+    },
+    "table/block_based/block_based_table_builder.h": {
+      "hash": "8e3640c4400e1b7d",
+      "nodes": 36,
+      "relations": 155
+    },
+    "table/block_based/block_based_table_factory.cc": {
+      "hash": "8fe2c68c596d0a8e",
+      "nodes": 90,
+      "relations": 147
+    },
+    "table/block_based/block_based_table_factory.h": {
+      "hash": "bcaf9d862dc85546",
+      "nodes": 29,
+      "relations": 88
+    },
+    "table/block_based/block_based_table_iterator.cc": {
+      "hash": "21d8b4c1ffb3fab1",
+      "nodes": 44,
+      "relations": 47
+    },
+    "table/block_based/block_based_table_iterator.h": {
+      "hash": "c4f7cb403d9d78e1",
+      "nodes": 108,
+      "relations": 241
+    },
+    "table/block_based/block_based_table_reader.cc": {
+      "hash": "216f22f1200d99a4",
+      "nodes": 418,
+      "relations": 567
+    },
+    "table/block_based/block_based_table_reader.h": {
+      "hash": "cc2e866c61dca7fa",
+      "nodes": 213,
+      "relations": 492
+    },
+    "table/block_based/block_based_table_reader_impl.h": {
+      "hash": "1a14d5b66ab60b99",
+      "nodes": 29,
+      "relations": 41
+    },
+    "table/block_based/block_based_table_reader_sync_and_async.h": {
+      "hash": "e00432d75cb50f55",
+      "nodes": 5,
+      "relations": 9
+    },
+    "table/block_based/block_based_table_reader_test.cc": {
+      "hash": "78d26d5e8b9052ec",
+      "nodes": 210,
+      "relations": 341
+    },
+    "table/block_based/block_builder.cc": {
+      "hash": "34fe10858839a6f4",
+      "nodes": 63,
+      "relations": 89
+    },
+    "table/block_based/block_builder.h": {
+      "hash": "60d285db6810d6e5",
+      "nodes": 30,
+      "relations": 83
+    },
+    "table/block_based/block_cache.cc": {
+      "hash": "f09f446c8ed19526",
+      "nodes": 32,
+      "relations": 35
+    },
+    "table/block_based/block_cache.h": {
+      "hash": "1ea1bc000b60e430",
+      "nodes": 71,
+      "relations": 135
+    },
+    "table/block_based/block_prefetcher.cc": {
+      "hash": "990ee03b648851b2",
+      "nodes": 13,
+      "relations": 18
+    },
+    "table/block_based/block_prefetcher.h": {
+      "hash": "7b5b1dad32514747",
+      "nodes": 33,
+      "relations": 49
+    },
+    "table/block_based/block_prefix_index.cc": {
+      "hash": "45faad77602a83a6",
+      "nodes": 47,
+      "relations": 72
+    },
+    "table/block_based/block_prefix_index.h": {
+      "hash": "af11f31d1262b0f6",
+      "nodes": 19,
+      "relations": 39
+    },
+    "table/block_based/block_test.cc": {
+      "hash": "e6b1d7d3912f9d86",
+      "nodes": 226,
+      "relations": 343
+    },
+    "table/block_based/block_type.h": {
+      "hash": "b6ed78995357d495",
+      "nodes": 18,
+      "relations": 33
+    },
+    "table/block_based/block_util.h": {
+      "hash": "e86b065c8daea0a0",
+      "nodes": 44,
+      "relations": 65
+    },
+    "table/block_based/cachable_entry.h": {
+      "hash": "55ebfd2d5db195f6",
+      "nodes": 51,
+      "relations": 88
+    },
+    "table/block_based/data_block_footer.cc": {
+      "hash": "68542ca0b3116e4a",
+      "nodes": 10,
+      "relations": 13
+    },
+    "table/block_based/data_block_footer.h": {
+      "hash": "cdd2f4da65fc6585",
+      "nodes": 19,
+      "relations": 42
+    },
+    "table/block_based/data_block_hash_index.cc": {
+      "hash": "bcd4d2fcf3e5ab4e",
+      "nodes": 21,
+      "relations": 32
+    },
+    "table/block_based/data_block_hash_index.h": {
+      "hash": "175657efb4d37d1b",
+      "nodes": 24,
+      "relations": 52
+    },
+    "table/block_based/data_block_hash_index_test.cc": {
+      "hash": "aa0b5dc5a4b76426",
+      "nodes": 52,
+      "relations": 80
+    },
+    "table/block_based/filter_block.h": {
+      "hash": "1b3aa37ce3681ad5",
+      "nodes": 75,
+      "relations": 132
+    },
+    "table/block_based/filter_block_reader_common.cc": {
+      "hash": "9e315b56ba03956e",
+      "nodes": 39,
+      "relations": 49
+    },
+    "table/block_based/filter_block_reader_common.h": {
+      "hash": "cf18708a1cefb8b0",
+      "nodes": 14,
+      "relations": 44
+    },
+    "table/block_based/filter_policy.cc": {
+      "hash": "a66d5600658d4cdc",
+      "nodes": 341,
+      "relations": 524
+    },
+    "table/block_based/filter_policy_internal.h": {
+      "hash": "a458da6158bc9e62",
+      "nodes": 71,
+      "relations": 189
+    },
+    "table/block_based/flush_block_policy.cc": {
+      "hash": "fd62f554feaaad1f",
+      "nodes": 44,
+      "relations": 70
+    },
+    "table/block_based/flush_block_policy_impl.h": {
+      "hash": "b27f39254978426a",
+      "nodes": 16,
+      "relations": 27
+    },
+    "table/block_based/full_filter_block.cc": {
+      "hash": "70007d211ef4b446",
+      "nodes": 68,
+      "relations": 91
+    },
+    "table/block_based/full_filter_block.h": {
+      "hash": "ff31b39bdc8d4570",
+      "nodes": 39,
+      "relations": 107
+    },
+    "table/block_based/full_filter_block_test.cc": {
+      "hash": "8392d0f742daba0d",
+      "nodes": 77,
+      "relations": 135
+    },
+    "table/block_based/hash_index_reader.cc": {
+      "hash": "fa46acb148722ecc",
+      "nodes": 20,
+      "relations": 25
+    },
+    "table/block_based/hash_index_reader.h": {
+      "hash": "d4a61c14c5dfd103",
+      "nodes": 8,
+      "relations": 16
+    },
+    "table/block_based/index_builder.cc": {
+      "hash": "5607b6ed64b24b5c",
+      "nodes": 69,
+      "relations": 89
+    },
+    "table/block_based/index_builder.h": {
+      "hash": "c7a87938a48e94bf",
+      "nodes": 214,
+      "relations": 360
+    },
+    "table/block_based/index_reader_common.cc": {
+      "hash": "e1b789758ae617a0",
+      "nodes": 18,
+      "relations": 22
+    },
+    "table/block_based/index_reader_common.h": {
+      "hash": "5b78a8a4f64f3754",
+      "nodes": 18,
+      "relations": 37
+    },
+    "table/block_based/mock_block_based_table.h": {
+      "hash": "2f2150cb6b5c1c60",
+      "nodes": 21,
+      "relations": 39
+    },
+    "table/block_based/multi_scan_index_iterator.cc": {
+      "hash": "29aba2fbbefd7da4",
+      "nodes": 33,
+      "relations": 39
+    },
+    "table/block_based/multi_scan_index_iterator.h": {
+      "hash": "2fc85eb152787dc4",
+      "nodes": 37,
+      "relations": 111
+    },
+    "table/block_based/parsed_full_filter_block.cc": {
+      "hash": "96c4fb7aa5e8933f",
+      "nodes": 7,
+      "relations": 10
+    },
+    "table/block_based/parsed_full_filter_block.h": {
+      "hash": "e8ab47f25e9c7b8b",
+      "nodes": 13,
+      "relations": 32
+    },
+    "table/block_based/partitioned_filter_block.cc": {
+      "hash": "21a1bcd4ca8db07a",
+      "nodes": 124,
+      "relations": 151
+    },
+    "table/block_based/partitioned_filter_block.h": {
+      "hash": "47c09b29fd0c3bbc",
+      "nodes": 46,
+      "relations": 162
+    },
+    "table/block_based/partitioned_filter_block_test.cc": {
+      "hash": "58e5237e7c55bd0d",
+      "nodes": 80,
+      "relations": 138
+    },
+    "table/block_based/partitioned_index_iterator.cc": {
+      "hash": "feced2bfdb7cf4e8",
+      "nodes": 14,
+      "relations": 15
+    },
+    "table/block_based/partitioned_index_iterator.h": {
+      "hash": "c43b5f125daa5548",
+      "nodes": 41,
+      "relations": 95
+    },
+    "table/block_based/partitioned_index_reader.cc": {
+      "hash": "d6590a6300ec8ff8",
+      "nodes": 26,
+      "relations": 35
+    },
+    "table/block_based/partitioned_index_reader.h": {
+      "hash": "0e62b600ce692704",
+      "nodes": 9,
+      "relations": 23
+    },
+    "table/block_based/reader_common.cc": {
+      "hash": "de1df5e364a45b10",
+      "nodes": 18,
+      "relations": 31
+    },
+    "table/block_based/reader_common.h": {
+      "hash": "a7854fe047560f0d",
+      "nodes": 6,
+      "relations": 14
+    },
+    "table/block_based/uncompression_dict_reader.cc": {
+      "hash": "ba8a34ffef25a897",
+      "nodes": 31,
+      "relations": 40
+    },
+    "table/block_based/uncompression_dict_reader.h": {
+      "hash": "0c442af1f7766502",
+      "nodes": 10,
+      "relations": 33
+    },
+    "table/block_based/user_defined_index_wrapper.h": {
+      "hash": "2408e3274cfe25fa",
+      "nodes": 99,
+      "relations": 166
+    },
+    "table/block_fetcher.cc": {
+      "hash": "620918b9dae5102d",
+      "nodes": 35,
+      "relations": 68
+    },
+    "table/block_fetcher.h": {
+      "hash": "ada610af25b1d2b4",
+      "nodes": 67,
+      "relations": 148
+    },
+    "table/block_fetcher_test.cc": {
+      "hash": "103516dd385137e4",
+      "nodes": 109,
+      "relations": 173
+    },
+    "table/cleanable_test.cc": {
+      "hash": "d32656041a669424",
+      "nodes": 28,
+      "relations": 47
+    },
+    "table/compaction_merging_iterator.cc": {
+      "hash": "1c90686bbf0129c5",
+      "nodes": 82,
+      "relations": 139
+    },
+    "table/compaction_merging_iterator.h": {
+      "hash": "ae818e26bed908fb",
+      "nodes": 5,
+      "relations": 15
+    },
+    "table/cuckoo/cuckoo_table_builder.cc": {
+      "hash": "2ba045ed4faf7b6d",
+      "nodes": 58,
+      "relations": 102
+    },
+    "table/cuckoo/cuckoo_table_builder.h": {
+      "hash": "12f9b540fc8a9e07",
+      "nodes": 53,
+      "relations": 139
+    },
+    "table/cuckoo/cuckoo_table_builder_test.cc": {
+      "hash": "e2e9afe9eccec165",
+      "nodes": 52,
+      "relations": 85
+    },
+    "table/cuckoo/cuckoo_table_factory.cc": {
+      "hash": "4bf5bf8a871ac293",
+      "nodes": 21,
+      "relations": 35
+    },
+    "table/cuckoo/cuckoo_table_factory.h": {
+      "hash": "a57141438a71d6d3",
+      "nodes": 22,
+      "relations": 39
+    },
+    "table/cuckoo/cuckoo_table_reader.cc": {
+      "hash": "509b261957ee52d9",
+      "nodes": 74,
+      "relations": 145
+    },
+    "table/cuckoo/cuckoo_table_reader.h": {
+      "hash": "d9ff624be90fc347",
+      "nodes": 46,
+      "relations": 89
+    },
+    "table/cuckoo/cuckoo_table_reader_test.cc": {
+      "hash": "5982eb76f902247c",
+      "nodes": 67,
+      "relations": 117
+    },
+    "table/external_table.cc": {
+      "hash": "3f5e239a5b896d1d",
+      "nodes": 120,
+      "relations": 206
+    },
+    "table/format.cc": {
+      "hash": "b49fdc4946eb37eb",
+      "nodes": 139,
+      "relations": 195
+    },
+    "table/format.h": {
+      "hash": "bea6c26dc5f21318",
+      "nodes": 123,
+      "relations": 240
+    },
+    "table/get_context.cc": {
+      "hash": "a6b68ce19b99895c",
+      "nodes": 89,
+      "relations": 117
+    },
+    "table/get_context.h": {
+      "hash": "6342d1d743d54ccb",
+      "nodes": 90,
+      "relations": 203
+    },
+    "table/internal_iterator.h": {
+      "hash": "a93168af33f930c3",
+      "nodes": 46,
+      "relations": 95
+    },
+    "table/iter_heap.h": {
+      "hash": "13c740e25523632a",
+      "nodes": 17,
+      "relations": 26
+    },
+    "table/iterator.cc": {
+      "hash": "954ec4a31a191065",
+      "nodes": 48,
+      "relations": 80
+    },
+    "table/iterator_wrapper.h": {
+      "hash": "cbc52345f9e89e8d",
+      "nodes": 51,
+      "relations": 93
+    },
+    "table/merger_test.cc": {
+      "hash": "a9e90820798fba90",
+      "nodes": 41,
+      "relations": 72
+    },
+    "table/merging_iterator.cc": {
+      "hash": "1e847e6f6d30af75",
+      "nodes": 147,
+      "relations": 238
+    },
+    "table/merging_iterator.h": {
+      "hash": "82726ed04e3f390f",
+      "nodes": 15,
+      "relations": 42
+    },
+    "table/meta_blocks.cc": {
+      "hash": "3cd8d0a4df41d26f",
+      "nodes": 125,
+      "relations": 168
+    },
+    "table/meta_blocks.h": {
+      "hash": "60fc27df66f85522",
+      "nodes": 42,
+      "relations": 110
+    },
+    "table/mock_table.cc": {
+      "hash": "47befda23c5a911b",
+      "nodes": 81,
+      "relations": 143
+    },
+    "table/mock_table.h": {
+      "hash": "cb03062952792d6e",
+      "nodes": 73,
+      "relations": 143
+    },
+    "table/multiget_context.h": {
+      "hash": "8ca407f2ffdf7fda",
+      "nodes": 136,
+      "relations": 248
+    },
+    "table/persistent_cache_helper.cc": {
+      "hash": "04f344e10ed4d0f8",
+      "nodes": 23,
+      "relations": 28
+    },
+    "table/persistent_cache_helper.h": {
+      "hash": "e5acccf33fff9e6f",
+      "nodes": 6,
+      "relations": 22
+    },
+    "table/persistent_cache_options.h": {
+      "hash": "8dc8aba371c69263",
+      "nodes": 14,
+      "relations": 28
+    },
+    "table/plain/plain_table_bloom.cc": {
+      "hash": "870c58c878b5d949",
+      "nodes": 24,
+      "relations": 33
+    },
+    "table/plain/plain_table_bloom.h": {
+      "hash": "e05cff9ebe3068e1",
+      "nodes": 40,
+      "relations": 87
+    },
+    "table/plain/plain_table_builder.cc": {
+      "hash": "5108201b8b3bbee4",
+      "nodes": 62,
+      "relations": 106
+    },
+    "table/plain/plain_table_builder.h": {
+      "hash": "d92de7c90b5d258a",
+      "nodes": 46,
+      "relations": 120
+    },
+    "table/plain/plain_table_factory.cc": {
+      "hash": "a54ce6892bf7e485",
+      "nodes": 50,
+      "relations": 84
+    },
+    "table/plain/plain_table_factory.h": {
+      "hash": "f4780a9a87ea6232",
+      "nodes": 15,
+      "relations": 39
+    },
+    "table/plain/plain_table_index.cc": {
+      "hash": "02e6700b2a5a20eb",
+      "nodes": 29,
+      "relations": 39
+    },
+    "table/plain/plain_table_index.h": {
+      "hash": "3afb7032c8b29de4",
+      "nodes": 72,
+      "relations": 151
+    },
+    "table/plain/plain_table_key_coding.cc": {
+      "hash": "caf3b5f23113aec1",
+      "nodes": 75,
+      "relations": 96
+    },
+    "table/plain/plain_table_key_coding.h": {
+      "hash": "0a057fd8f57bd830",
+      "nodes": 56,
+      "relations": 114
+    },
+    "table/plain/plain_table_reader.cc": {
+      "hash": "810ca6ac5bb3b8c8",
+      "nodes": 126,
+      "relations": 223
+    },
+    "table/plain/plain_table_reader.h": {
+      "hash": "02515ff78ae5a046",
+      "nodes": 81,
+      "relations": 173
+    },
+    "table/sst_file_dumper.cc": {
+      "hash": "dc8e3ffe8cf078ae",
+      "nodes": 83,
+      "relations": 155
+    },
+    "table/sst_file_dumper.h": {
+      "hash": "db3e1953a79db83f",
+      "nodes": 35,
+      "relations": 87
+    },
+    "table/sst_file_reader.cc": {
+      "hash": "12bc64fe7c15e443",
+      "nodes": 52,
+      "relations": 89
+    },
+    "table/sst_file_reader_test.cc": {
+      "hash": "f42840c4a89ed30d",
+      "nodes": 106,
+      "relations": 166
+    },
+    "table/sst_file_writer.cc": {
+      "hash": "a65522f08b62cdb1",
+      "nodes": 112,
+      "relations": 162
+    },
+    "table/sst_file_writer_collectors.h": {
+      "hash": "49fec605e4dc693d",
+      "nodes": 27,
+      "relations": 53
+    },
+    "table/table_builder.h": {
+      "hash": "e759f292c36c4641",
+      "nodes": 116,
+      "relations": 202
+    },
+    "table/table_factory.cc": {
+      "hash": "fa82ee6a9c07f231",
+      "nodes": 14,
+      "relations": 30
+    },
+    "table/table_iterator.h": {
+      "hash": "82d919af9d63b909",
+      "nodes": 31,
+      "relations": 55
+    },
+    "table/table_properties.cc": {
+      "hash": "b5cadb56c2899b72",
+      "nodes": 45,
+      "relations": 111
+    },
+    "table/table_reader.h": {
+      "hash": "e83ee862925571ab",
+      "nodes": 65,
+      "relations": 113
+    },
+    "table/table_reader_bench.cc": {
+      "hash": "caabd1f313443483",
+      "nodes": 37,
+      "relations": 74
+    },
+    "table/table_test.cc": {
+      "hash": "40d08015ba7469d1",
+      "nodes": 941,
+      "relations": 1518
+    },
+    "table/two_level_iterator.cc": {
+      "hash": "9e7d95b8d097e9f4",
+      "nodes": 44,
+      "relations": 83
+    },
+    "table/two_level_iterator.h": {
+      "hash": "fe0a872f01c2f737",
+      "nodes": 9,
+      "relations": 20
+    },
+    "table/unique_id.cc": {
+      "hash": "8a8020c8c4ff791a",
+      "nodes": 43,
+      "relations": 52
+    },
+    "table/unique_id_impl.h": {
+      "hash": "48dc11ad1ac6d684",
+      "nodes": 14,
+      "relations": 29
+    },
+    "test_util/mock_time_env.cc": {
+      "hash": "a1b2ad12399fdd2f",
+      "nodes": 4,
+      "relations": 7
+    },
+    "test_util/mock_time_env.h": {
+      "hash": "b62666d4072e616f",
+      "nodes": 30,
+      "relations": 59
+    },
+    "test_util/secondary_cache_test_util.cc": {
+      "hash": "906cb0cc64f15882",
+      "nodes": 28,
+      "relations": 31
+    },
+    "test_util/secondary_cache_test_util.h": {
+      "hash": "1387d6ac47774e7b",
+      "nodes": 48,
+      "relations": 80
+    },
+    "test_util/sync_point.cc": {
+      "hash": "6377885c585f1cf3",
+      "nodes": 27,
+      "relations": 32
+    },
+    "test_util/sync_point.h": {
+      "hash": "f488687540c8e082",
+      "nodes": 23,
+      "relations": 74
+    },
+    "test_util/sync_point_impl.cc": {
+      "hash": "ce7ee446bb144aa5",
+      "nodes": 21,
+      "relations": 23
+    },
+    "test_util/sync_point_impl.h": {
+      "hash": "faeb4f84fe2ab62b",
+      "nodes": 45,
+      "relations": 107
+    },
+    "test_util/testharness.cc": {
+      "hash": "51ade89d68efa7e4",
+      "nodes": 34,
+      "relations": 43
+    },
+    "test_util/testharness.h": {
+      "hash": "2403d4767962aeff",
+      "nodes": 8,
+      "relations": 32
+    },
+    "test_util/testutil.cc": {
+      "hash": "b6f1d327e16c5a23",
+      "nodes": 181,
+      "relations": 251
+    },
+    "test_util/testutil.h": {
+      "hash": "04579e1972aa64e1",
+      "nodes": 307,
+      "relations": 554
+    },
+    "test_util/testutil_test.cc": {
+      "hash": "2a2a536dd4743408",
+      "nodes": 10,
+      "relations": 20
+    },
+    "test_util/transaction_test_util.cc": {
+      "hash": "e57a8a9b792eae5d",
+      "nodes": 55,
+      "relations": 86
+    },
+    "test_util/transaction_test_util.h": {
+      "hash": "94a81936283d0bad",
+      "nodes": 25,
+      "relations": 68
+    },
+    "third-party/gtest-1.8.1/fused-src/gtest/gtest-all.cc": {
+      "hash": "2295c980d3368561",
+      "nodes": 1183,
+      "relations": 1444
+    },
+    "third-party/gtest-1.8.1/fused-src/gtest/gtest.h": {
+      "hash": "d640ffee81250dd8",
+      "nodes": 7105,
+      "relations": 9990
+    },
+    "third-party/gtest-1.8.1/fused-src/gtest/gtest_main.cc": {
+      "hash": "8eae6412c1421925",
+      "nodes": 6,
+      "relations": 9
+    },
+    "tools/blob_dump.cc": {
+      "hash": "0dc903f7a8772c3d",
+      "nodes": 9,
+      "relations": 18
+    },
+    "tools/block_cache_analyzer/block_cache_trace_analyzer.cc": {
+      "hash": "7f5c34ee64e2c719",
+      "nodes": 167,
+      "relations": 200
+    },
+    "tools/block_cache_analyzer/block_cache_trace_analyzer.h": {
+      "hash": "78772ac27da15b6c",
+      "nodes": 84,
+      "relations": 222
+    },
+    "tools/block_cache_analyzer/block_cache_trace_analyzer_test.cc": {
+      "hash": "f8affffa10472917",
+      "nodes": 62,
+      "relations": 114
+    },
+    "tools/block_cache_analyzer/block_cache_trace_analyzer_tool.cc": {
+      "hash": "0555478fe708e5ff",
+      "nodes": 3,
+      "relations": 8
+    },
+    "tools/db_bench.cc": {
+      "hash": "6c5e9459b394c48c",
+      "nodes": 3,
+      "relations": 8
+    },
+    "tools/db_bench_tool.cc": {
+      "hash": "e430dce3fdd0868f",
+      "nodes": 724,
+      "relations": 1232
+    },
+    "tools/db_bench_tool_test.cc": {
+      "hash": "4336ad0686485410",
+      "nodes": 39,
+      "relations": 72
+    },
+    "tools/db_repl_stress.cc": {
+      "hash": "3efa1bb9f97ed493",
+      "nodes": 15,
+      "relations": 30
+    },
+    "tools/db_sanity_test.cc": {
+      "hash": "847a6c921b67560d",
+      "nodes": 95,
+      "relations": 176
+    },
+    "tools/dump/db_dump_tool.cc": {
+      "hash": "b8f5b0c77c766a67",
+      "nodes": 13,
+      "relations": 24
+    },
+    "tools/dump/rocksdb_dump.cc": {
+      "hash": "eb95301aa6a9860c",
+      "nodes": 5,
+      "relations": 14
+    },
+    "tools/dump/rocksdb_undump.cc": {
+      "hash": "cf36a8b1737ecfea",
+      "nodes": 5,
+      "relations": 14
+    },
+    "tools/io_tracer_parser.cc": {
+      "hash": "6980b3c5bb3c3e8a",
+      "nodes": 3,
+      "relations": 8
+    },
+    "tools/io_tracer_parser_test.cc": {
+      "hash": "e66cab34a05874af",
+      "nodes": 29,
+      "relations": 61
+    },
+    "tools/io_tracer_parser_tool.cc": {
+      "hash": "e8cabe477e520d2a",
+      "nodes": 21,
+      "relations": 40
+    },
+    "tools/io_tracer_parser_tool.h": {
+      "hash": "0ae1f8a580f7d86f",
+      "nodes": 8,
+      "relations": 23
+    },
+    "tools/ldb.cc": {
+      "hash": "c2d11b02407a00c2",
+      "nodes": 2,
+      "relations": 4
+    },
+    "tools/ldb_cmd.cc": {
+      "hash": "fde1346451c572c4",
+      "nodes": 648,
+      "relations": 790
+    },
+    "tools/ldb_cmd_impl.h": {
+      "hash": "228dadbeee9c84fe",
+      "nodes": 225,
+      "relations": 718
+    },
+    "tools/ldb_cmd_test.cc": {
+      "hash": "d06be066e5706a43",
+      "nodes": 70,
+      "relations": 132
+    },
+    "tools/ldb_tool.cc": {
+      "hash": "785eea09dd5a7f80",
+      "nodes": 26,
+      "relations": 31
+    },
+    "tools/reduce_levels_test.cc": {
+      "hash": "e9efcf98235f4dd1",
+      "nodes": 34,
+      "relations": 63
+    },
+    "tools/simulated_hybrid_file_system.cc": {
+      "hash": "9800f383e1787ed1",
+      "nodes": 78,
+      "relations": 91
+    },
+    "tools/simulated_hybrid_file_system.h": {
+      "hash": "e70ecf3c5ea22dbe",
+      "nodes": 28,
+      "relations": 74
+    },
+    "tools/sst_dump.cc": {
+      "hash": "271a9f2c1c05993b",
+      "nodes": 2,
+      "relations": 4
+    },
+    "tools/sst_dump_test.cc": {
+      "hash": "889362fed876c78f",
+      "nodes": 89,
+      "relations": 142
+    },
+    "tools/sst_dump_tool.cc": {
+      "hash": "f80a9f8ae3e6e060",
+      "nodes": 24,
+      "relations": 47
+    },
+    "tools/tool_hooks.cc": {
+      "hash": "f7e302b5b1555ba6",
+      "nodes": 68,
+      "relations": 83
+    },
+    "tools/trace_analyzer.cc": {
+      "hash": "c6bff40ac16b3a4c",
+      "nodes": 3,
+      "relations": 8
+    },
+    "tools/trace_analyzer_test.cc": {
+      "hash": "c2693b3e86f8bc87",
+      "nodes": 49,
+      "relations": 95
+    },
+    "tools/trace_analyzer_tool.cc": {
+      "hash": "81704efb5b97c45a",
+      "nodes": 141,
+      "relations": 213
+    },
+    "tools/trace_analyzer_tool.h": {
+      "hash": "8dcc69a85fe4507a",
+      "nodes": 155,
+      "relations": 375
+    },
+    "tools/write_stress.cc": {
+      "hash": "8e6132568e4ba737",
+      "nodes": 27,
+      "relations": 67
+    },
+    "trace_replay/block_cache_tracer.cc": {
+      "hash": "89868465680fd680",
+      "nodes": 82,
+      "relations": 107
+    },
+    "trace_replay/block_cache_tracer.h": {
+      "hash": "5d9289fdc8b73e34",
+      "nodes": 73,
+      "relations": 188
+    },
+    "trace_replay/block_cache_tracer_test.cc": {
+      "hash": "3dd351cde5cdeb52",
+      "nodes": 45,
+      "relations": 72
+    },
+    "trace_replay/io_tracer.cc": {
+      "hash": "8e6cbf57fdbc9bfd",
+      "nodes": 37,
+      "relations": 60
+    },
+    "trace_replay/io_tracer.h": {
+      "hash": "5a713502a4c67e77",
+      "nodes": 76,
+      "relations": 160
+    },
+    "trace_replay/io_tracer_test.cc": {
+      "hash": "661bece08aa36e55",
+      "nodes": 31,
+      "relations": 57
+    },
+    "trace_replay/trace_record.cc": {
+      "hash": "c957adb8aa0419df",
+      "nodes": 101,
+      "relations": 120
+    },
+    "trace_replay/trace_record_handler.cc": {
+      "hash": "7b2f6d8d30d6d117",
+      "nodes": 21,
+      "relations": 28
+    },
+    "trace_replay/trace_record_handler.h": {
+      "hash": "7622ecec0eed6e7d",
+      "nodes": 15,
+      "relations": 47
+    },
+    "trace_replay/trace_record_result.cc": {
+      "hash": "bf69ed391bcd2008",
+      "nodes": 70,
+      "relations": 71
+    },
+    "trace_replay/trace_replay.cc": {
+      "hash": "2a0497ce63ffee52",
+      "nodes": 82,
+      "relations": 112
+    },
+    "trace_replay/trace_replay.h": {
+      "hash": "16118a105d8c14d1",
+      "nodes": 47,
+      "relations": 142
+    },
+    "util/aligned_buffer.h": {
+      "hash": "a5fcf5558f46db18",
+      "nodes": 91,
+      "relations": 147
+    },
+    "util/aligned_storage.h": {
+      "hash": "e4e9d69e3c59e30b",
+      "nodes": 6,
+      "relations": 11
+    },
+    "util/async_file_reader.cc": {
+      "hash": "7fbf756005be8ca7",
+      "nodes": 5,
+      "relations": 6
+    },
+    "util/async_file_reader.h": {
+      "hash": "9a4390def34095e4",
+      "nodes": 65,
+      "relations": 116
+    },
+    "util/atomic.h": {
+      "hash": "53ba480b96f46f93",
+      "nodes": 52,
+      "relations": 78
+    },
+    "util/auto_tune_compressor.cc": {
+      "hash": "26f7a0ddee0252aa",
+      "nodes": 77,
+      "relations": 92
+    },
+    "util/auto_tune_compressor.h": {
+      "hash": "0f2a55401b7a9dbe",
+      "nodes": 69,
+      "relations": 162
+    },
+    "util/autovector.h": {
+      "hash": "72b9614616305bac",
+      "nodes": 124,
+      "relations": 220
+    },
+    "util/autovector_test.cc": {
+      "hash": "82d477b71bce0085",
+      "nodes": 35,
+      "relations": 53
+    },
+    "util/bit_fields.h": {
+      "hash": "2b8c3aa1fab9f897",
+      "nodes": 177,
+      "relations": 279
+    },
+    "util/bloom_impl.h": {
+      "hash": "581d19e14738ee57",
+      "nodes": 99,
+      "relations": 132
+    },
+    "util/bloom_test.cc": {
+      "hash": "2b25170f841dddc9",
+      "nodes": 91,
+      "relations": 151
+    },
+    "util/cast_util.h": {
+      "hash": "2d4d64b5c942d18a",
+      "nodes": 27,
+      "relations": 46
+    },
+    "util/channel.h": {
+      "hash": "d269c57ccbf058b9",
+      "nodes": 21,
+      "relations": 42
+    },
+    "util/cleanable.cc": {
+      "hash": "4817ebbb9544a08d",
+      "nodes": 43,
+      "relations": 55
+    },
+    "util/coding.cc": {
+      "hash": "73c93c7283c05b29",
+      "nodes": 16,
+      "relations": 25
+    },
+    "util/coding.h": {
+      "hash": "986ab758495e0a3a",
+      "nodes": 115,
+      "relations": 129
+    },
+    "util/coding_lean.h": {
+      "hash": "6d634b3febf075a4",
+      "nodes": 19,
+      "relations": 24
+    },
+    "util/coding_test.cc": {
+      "hash": "acb40c8fbca15ff3",
+      "nodes": 15,
+      "relations": 19
+    },
+    "util/compaction_job_stats_impl.cc": {
+      "hash": "29a5c5b598a3a042",
+      "nodes": 5,
+      "relations": 6
+    },
+    "util/comparator.cc": {
+      "hash": "ff2563137e4d989a",
+      "nodes": 100,
+      "relations": 164
+    },
+    "util/compression.cc": {
+      "hash": "57a7c966be02bf2c",
+      "nodes": 302,
+      "relations": 432
+    },
+    "util/compression.h": {
+      "hash": "7cb6631b88ccd0fc",
+      "nodes": 180,
+      "relations": 314
+    },
+    "util/compression_context_cache.cc": {
+      "hash": "8c18f99c462e5e8f",
+      "nodes": 29,
+      "relations": 48
+    },
+    "util/compression_context_cache.h": {
+      "hash": "582f65f73eccd933",
+      "nodes": 7,
+      "relations": 26
+    },
+    "util/compression_test.cc": {
+      "hash": "1067c46d5edd2431",
+      "nodes": 121,
+      "relations": 198
+    },
+    "util/concurrent_task_limiter_impl.cc": {
+      "hash": "2fd9a460a1fc3a65",
+      "nodes": 18,
+      "relations": 21
+    },
+    "util/concurrent_task_limiter_impl.h": {
+      "hash": "4e9e6746006c9279",
+      "nodes": 17,
+      "relations": 49
+    },
+    "util/core_local.h": {
+      "hash": "6a5bbc2e0753ce0e",
+      "nodes": 19,
+      "relations": 43
+    },
+    "util/crc32c.cc": {
+      "hash": "b91fe3c738aa8985",
+      "nodes": 109,
+      "relations": 147
+    },
+    "util/crc32c.h": {
+      "hash": "abfa5ae001d92c9d",
+      "nodes": 16,
+      "relations": 23
+    },
+    "util/crc32c_arm64.cc": {
+      "hash": "62f0f790a34bb4a5",
+      "nodes": 14,
+      "relations": 28
+    },
+    "util/crc32c_test.cc": {
+      "hash": "b21405498d1d0b2c",
+      "nodes": 26,
+      "relations": 37
+    },
+    "util/data_structure.cc": {
+      "hash": "c1d5cadbaa4aa1ce",
+      "nodes": 7,
+      "relations": 10
+    },
+    "util/defer.h": {
+      "hash": "78738b999ada0845",
+      "nodes": 24,
+      "relations": 40
+    },
+    "util/defer_test.cc": {
+      "hash": "87695b236e88c41b",
+      "nodes": 9,
+      "relations": 17
+    },
+    "util/distributed_mutex.h": {
+      "hash": "028095c3d9dca122",
+      "nodes": 12,
+      "relations": 22
+    },
+    "util/duplicate_detector.h": {
+      "hash": "de02390f849e5e7c",
+      "nodes": 18,
+      "relations": 32
+    },
+    "util/dynamic_bloom.cc": {
+      "hash": "c305b0147abe4a47",
+      "nodes": 15,
+      "relations": 26
+    },
+    "util/dynamic_bloom.h": {
+      "hash": "03c3b86bec00b491",
+      "nodes": 40,
+      "relations": 70
+    },
+    "util/dynamic_bloom_test.cc": {
+      "hash": "bd6538d6fb9f631b",
+      "nodes": 36,
+      "relations": 74
+    },
+    "util/fastrange.h": {
+      "hash": "1c5fe1e3a5edb5e9",
+      "nodes": 23,
+      "relations": 32
+    },
+    "util/file_checksum_helper.cc": {
+      "hash": "a5be728e8fe01b41",
+      "nodes": 27,
+      "relations": 30
+    },
+    "util/file_checksum_helper.h": {
+      "hash": "74e0f0444431adac",
+      "nodes": 24,
+      "relations": 57
+    },
+    "util/file_reader_writer_test.cc": {
+      "hash": "ea11e7500d1dc1ad",
+      "nodes": 125,
+      "relations": 208
+    },
+    "util/filelock_test.cc": {
+      "hash": "27e93f4c9bb88a9f",
+      "nodes": 25,
+      "relations": 53
+    },
+    "util/filter_bench.cc": {
+      "hash": "672697a65939aa54",
+      "nodes": 83,
+      "relations": 162
+    },
+    "util/hash.cc": {
+      "hash": "24f2a3e3a9087012",
+      "nodes": 68,
+      "relations": 83
+    },
+    "util/hash.h": {
+      "hash": "6c0d4beb31d92629",
+      "nodes": 37,
+      "relations": 57
+    },
+    "util/hash128.h": {
+      "hash": "d8d7f2fe49f1755e",
+      "nodes": 5,
+      "relations": 10
+    },
+    "util/hash_containers.h": {
+      "hash": "2c5402428b373a93",
+      "nodes": 9,
+      "relations": 18
+    },
+    "util/hash_map.h": {
+      "hash": "2f92cd34600cc79a",
+      "nodes": 16,
+      "relations": 28
+    },
+    "util/hash_test.cc": {
+      "hash": "ee2813c9a01869db",
+      "nodes": 40,
+      "relations": 59
+    },
+    "util/heap.h": {
+      "hash": "46b592d5440d4349",
+      "nodes": 40,
+      "relations": 71
+    },
+    "util/heap_test.cc": {
+      "hash": "0f972624faac20bd",
+      "nodes": 14,
+      "relations": 30
+    },
+    "util/interval_test.cc": {
+      "hash": "f093c7559a120e3a",
+      "nodes": 8,
+      "relations": 14
+    },
+    "util/io_dispatcher_imp.cc": {
+      "hash": "d9db1d5daf2ea043",
+      "nodes": 130,
+      "relations": 212
+    },
+    "util/io_dispatcher_imp.h": {
+      "hash": "41a89ae61d7558ac",
+      "nodes": 5,
+      "relations": 17
+    },
+    "util/io_dispatcher_test.cc": {
+      "hash": "a698b67a86a76f6e",
+      "nodes": 121,
+      "relations": 191
+    },
+    "util/kv_map.h": {
+      "hash": "aecc76ab4b5c3fb6",
+      "nodes": 17,
+      "relations": 30
+    },
+    "util/log_write_bench.cc": {
+      "hash": "ff355aa5f17a4612",
+      "nodes": 10,
+      "relations": 27
+    },
+    "util/math.h": {
+      "hash": "3ef5424b4b81fa5f",
+      "nodes": 32,
+      "relations": 45
+    },
+    "util/math128.h": {
+      "hash": "7bd7daf0f6ae4edf",
+      "nodes": 115,
+      "relations": 124
+    },
+    "util/murmurhash.cc": {
+      "hash": "022109a753f5a1b2",
+      "nodes": 15,
+      "relations": 18
+    },
+    "util/murmurhash.h": {
+      "hash": "303998577c19f367",
+      "nodes": 7,
+      "relations": 14
+    },
+    "util/mutexlock.h": {
+      "hash": "93064c00da97b21c",
+      "nodes": 64,
+      "relations": 117
+    },
+    "util/overload.h": {
+      "hash": "ce7cc82aa24648b3",
+      "nodes": 4,
+      "relations": 5
+    },
+    "util/random.cc": {
+      "hash": "876c0937a42f6f56",
+      "nodes": 17,
+      "relations": 34
+    },
+    "util/random.h": {
+      "hash": "01c7d0c5a712bab9",
+      "nodes": 62,
+      "relations": 106
+    },
+    "util/random_test.cc": {
+      "hash": "bc72d55a2319fbb5",
+      "nodes": 9,
+      "relations": 17
+    },
+    "util/rate_limiter.cc": {
+      "hash": "fa17cbc759b8f830",
+      "nodes": 52,
+      "relations": 70
+    },
+    "util/rate_limiter_impl.h": {
+      "hash": "d30753fcf33f3446",
+      "nodes": 52,
+      "relations": 120
+    },
+    "util/rate_limiter_test.cc": {
+      "hash": "d34cd1ea50f02947",
+      "nodes": 28,
+      "relations": 53
+    },
+    "util/repeatable_thread.h": {
+      "hash": "d77bb5ba3fbee596",
+      "nodes": 33,
+      "relations": 62
+    },
+    "util/repeatable_thread_test.cc": {
+      "hash": "5888766d62ebddb3",
+      "nodes": 13,
+      "relations": 29
+    },
+    "util/ribbon_alg.h": {
+      "hash": "e6ba22830c2768a7",
+      "nodes": 68,
+      "relations": 75
+    },
+    "util/ribbon_config.cc": {
+      "hash": "49675353a3416acb",
+      "nodes": 16,
+      "relations": 24
+    },
+    "util/ribbon_config.h": {
+      "hash": "b3c72cc7a1cce136",
+      "nodes": 27,
+      "relations": 50
+    },
+    "util/ribbon_impl.h": {
+      "hash": "da9737e9a035022c",
+      "nodes": 194,
+      "relations": 297
+    },
+    "util/ribbon_test.cc": {
+      "hash": "efddf37ce74bfbcd",
+      "nodes": 190,
+      "relations": 288
+    },
+    "util/semaphore.h": {
+      "hash": "3ecb66153d7972b1",
+      "nodes": 15,
+      "relations": 26
+    },
+    "util/set_comparator.h": {
+      "hash": "fc0ebda72011921b",
+      "nodes": 10,
+      "relations": 15
+    },
+    "util/simple_mixed_compressor.cc": {
+      "hash": "733b4f9d0e53ba1f",
+      "nodes": 38,
+      "relations": 49
+    },
+    "util/simple_mixed_compressor.h": {
+      "hash": "d9fdacb433c9761e",
+      "nodes": 16,
+      "relations": 55
+    },
+    "util/single_thread_executor.h": {
+      "hash": "ff29cbccc0f8fab3",
+      "nodes": 15,
+      "relations": 31
+    },
+    "util/slice.cc": {
+      "hash": "865daca1132bb2b7",
+      "nodes": 83,
+      "relations": 131
+    },
+    "util/slice_test.cc": {
+      "hash": "9827a9c8f36e39ab",
+      "nodes": 39,
+      "relations": 72
+    },
+    "util/slice_transform_test.cc": {
+      "hash": "ca1b18121efd0bc8",
+      "nodes": 26,
+      "relations": 51
+    },
+    "util/status.cc": {
+      "hash": "9aaebc9b770fd3ae",
+      "nodes": 20,
+      "relations": 29
+    },
+    "util/stderr_logger.cc": {
+      "hash": "462b4cf266342e2a",
+      "nodes": 8,
+      "relations": 13
+    },
+    "util/stderr_logger.h": {
+      "hash": "46acd91f7130ec15",
+      "nodes": 12,
+      "relations": 25
+    },
+    "util/stop_watch.h": {
+      "hash": "083ce0772a5ddb8b",
+      "nodes": 42,
+      "relations": 70
+    },
+    "util/string_util.cc": {
+      "hash": "78b16be96189770e",
+      "nodes": 106,
+      "relations": 133
+    },
+    "util/string_util.h": {
+      "hash": "f2f8aa82b9468384",
+      "nodes": 21,
+      "relations": 65
+    },
+    "util/string_util_test.cc": {
+      "hash": "21cf8308da01ecbf",
+      "nodes": 6,
+      "relations": 14
+    },
+    "util/thread_guard.h": {
+      "hash": "33b6c15fb1e1ce62",
+      "nodes": 15,
+      "relations": 28
+    },
+    "util/thread_list_test.cc": {
+      "hash": "6e718285488c1463",
+      "nodes": 50,
+      "relations": 78
+    },
+    "util/thread_local.cc": {
+      "hash": "747c63cda18de883",
+      "nodes": 97,
+      "relations": 137
+    },
+    "util/thread_local.h": {
+      "hash": "c393bf1e7eb8a337",
+      "nodes": 14,
+      "relations": 53
+    },
+    "util/thread_local_test.cc": {
+      "hash": "bd1247594e01c0ad",
+      "nodes": 42,
+      "relations": 75
+    },
+    "util/thread_operation.h": {
+      "hash": "efc0b16b2ae94057",
+      "nodes": 20,
+      "relations": 31
+    },
+    "util/threadpool_imp.cc": {
+      "hash": "60b5f9291bea928f",
+      "nodes": 122,
+      "relations": 201
+    },
+    "util/threadpool_imp.h": {
+      "hash": "43641feb2d82e451",
+      "nodes": 10,
+      "relations": 61
+    },
+    "util/timer.h": {
+      "hash": "0efef23dc6ca6cf5",
+      "nodes": 59,
+      "relations": 111
+    },
+    "util/timer_queue.h": {
+      "hash": "f08062ce729bd409",
+      "nodes": 45,
+      "relations": 92
+    },
+    "util/timer_queue_test.cc": {
+      "hash": "e3758efa1be872de",
+      "nodes": 8,
+      "relations": 14
+    },
+    "util/timer_test.cc": {
+      "hash": "8036dd34f54281a5",
+      "nodes": 21,
+      "relations": 33
+    },
+    "util/udt_util.cc": {
+      "hash": "34eb1d8e27d78f5f",
+      "nodes": 111,
+      "relations": 129
+    },
+    "util/udt_util.h": {
+      "hash": "ae36b31bffe57289",
+      "nodes": 45,
+      "relations": 129
+    },
+    "util/udt_util_test.cc": {
+      "hash": "9132403a547f3ab8",
+      "nodes": 96,
+      "relations": 134
+    },
+    "util/user_comparator_wrapper.h": {
+      "hash": "2b7b019ac50ba054",
+      "nodes": 30,
+      "relations": 44
+    },
+    "util/vector_iterator.h": {
+      "hash": "a4a7adf9bccdbc2d",
+      "nodes": 48,
+      "relations": 88
+    },
+    "util/work_queue.h": {
+      "hash": "78ebe3e90a0b98cb",
+      "nodes": 28,
+      "relations": 57
+    },
+    "util/work_queue_test.cc": {
+      "hash": "a2d662db529e532f",
+      "nodes": 24,
+      "relations": 44
+    },
+    "util/write_batch_util.cc": {
+      "hash": "996ea3d914e694ef",
+      "nodes": 5,
+      "relations": 6
+    },
+    "util/write_batch_util.h": {
+      "hash": "f3eb36fa2985837d",
+      "nodes": 35,
+      "relations": 64
+    },
+    "util/xxhash.cc": {
+      "hash": "1a49a8d04de04ea7",
+      "nodes": 2,
+      "relations": 3
+    },
+    "utilities/agg_merge/agg_merge.cc": {
+      "hash": "2930aae4049c6e25",
+      "nodes": 61,
+      "relations": 101
+    },
+    "utilities/agg_merge/agg_merge_impl.h": {
+      "hash": "001e1b6e0f395e83",
+      "nodes": 16,
+      "relations": 44
+    },
+    "utilities/agg_merge/agg_merge_test.cc": {
+      "hash": "0b57d04010160962",
+      "nodes": 12,
+      "relations": 29
+    },
+    "utilities/agg_merge/test_agg_merge.cc": {
+      "hash": "baaf112e6d12cb59",
+      "nodes": 26,
+      "relations": 37
+    },
+    "utilities/agg_merge/test_agg_merge.h": {
+      "hash": "e26caf109cb64d0f",
+      "nodes": 18,
+      "relations": 52
+    },
+    "utilities/backup/backup_engine.cc": {
+      "hash": "d026e4700472d396",
+      "nodes": 541,
+      "relations": 852
+    },
+    "utilities/backup/backup_engine_impl.h": {
+      "hash": "b8efd308f02b435a",
+      "nodes": 9,
+      "relations": 18
+    },
+    "utilities/backup/backup_engine_test.cc": {
+      "hash": "391fa87836bd2b26",
+      "nodes": 398,
+      "relations": 619
+    },
+    "utilities/blob_db/blob_compaction_filter.cc": {
+      "hash": "fb9fae12d3fa1501",
+      "nodes": 43,
+      "relations": 56
+    },
+    "utilities/blob_db/blob_compaction_filter.h": {
+      "hash": "e1734ab95d1a7e7d",
+      "nodes": 84,
+      "relations": 164
+    },
+    "utilities/blob_db/blob_db.cc": {
+      "hash": "9463a786c3c6b966",
+      "nodes": 20,
+      "relations": 27
+    },
+    "utilities/blob_db/blob_db.h": {
+      "hash": "d4e7fbb96ed2fa8b",
+      "nodes": 87,
+      "relations": 130
+    },
+    "utilities/blob_db/blob_db_gc_stats.h": {
+      "hash": "3e2e4d124abbf5d7",
+      "nodes": 22,
+      "relations": 41
+    },
+    "utilities/blob_db/blob_db_impl.cc": {
+      "hash": "7b880deeb0aad47d",
+      "nodes": 270,
+      "relations": 350
+    },
+    "utilities/blob_db/blob_db_impl.h": {
+      "hash": "e440bea7fe8085df",
+      "nodes": 69,
+      "relations": 307
+    },
+    "utilities/blob_db/blob_db_impl_filesnapshot.cc": {
+      "hash": "52c074b17d9f17fb",
+      "nodes": 17,
+      "relations": 26
+    },
+    "utilities/blob_db/blob_db_iterator.h": {
+      "hash": "517037c413bd49d3",
+      "nodes": 33,
+      "relations": 62
+    },
+    "utilities/blob_db/blob_db_listener.h": {
+      "hash": "3139323a650417e9",
+      "nodes": 25,
+      "relations": 44
+    },
+    "utilities/blob_db/blob_db_test.cc": {
+      "hash": "eaa094a7f968b648",
+      "nodes": 131,
+      "relations": 214
+    },
+    "utilities/blob_db/blob_dump_tool.cc": {
+      "hash": "60370bbba53606ff",
+      "nodes": 49,
+      "relations": 78
+    },
+    "utilities/blob_db/blob_dump_tool.h": {
+      "hash": "c63d7fe7b3b21c3e",
+      "nodes": 17,
+      "relations": 54
+    },
+    "utilities/blob_db/blob_file.cc": {
+      "hash": "f241b63af84ed8d9",
+      "nodes": 49,
+      "relations": 77
+    },
+    "utilities/blob_db/blob_file.h": {
+      "hash": "738fc62b0a4ff799",
+      "nodes": 69,
+      "relations": 154
+    },
+    "utilities/cache_dump_load.cc": {
+      "hash": "61aecb8cf6129d9d",
+      "nodes": 30,
+      "relations": 45
+    },
+    "utilities/cache_dump_load_impl.cc": {
+      "hash": "d96e5c8b3f101c35",
+      "nodes": 41,
+      "relations": 64
+    },
+    "utilities/cache_dump_load_impl.h": {
+      "hash": "6818aa6006d4a667",
+      "nodes": 106,
+      "relations": 211
+    },
+    "utilities/cassandra/cassandra_compaction_filter.cc": {
+      "hash": "fd14cc9d7ae706ab",
+      "nodes": 22,
+      "relations": 40
+    },
+    "utilities/cassandra/cassandra_compaction_filter.h": {
+      "hash": "337d2e86fa7b547b",
+      "nodes": 18,
+      "relations": 36
+    },
+    "utilities/cassandra/cassandra_format_test.cc": {
+      "hash": "72230c83c6c73bec",
+      "nodes": 16,
+      "relations": 28
+    },
+    "utilities/cassandra/cassandra_functional_test.cc": {
+      "hash": "221dcf19d85c8f20",
+      "nodes": 55,
+      "relations": 100
+    },
+    "utilities/cassandra/cassandra_options.h": {
+      "hash": "94adab49e29fdb40",
+      "nodes": 15,
+      "relations": 28
+    },
+    "utilities/cassandra/cassandra_row_merge_test.cc": {
+      "hash": "cca5102f185d169f",
+      "nodes": 8,
+      "relations": 16
+    },
+    "utilities/cassandra/cassandra_serialize_test.cc": {
+      "hash": "e652c3cca2004ce2",
+      "nodes": 9,
+      "relations": 13
+    },
+    "utilities/cassandra/format.cc": {
+      "hash": "4be4de7ee8d170f1",
+      "nodes": 86,
+      "relations": 96
+    },
+    "utilities/cassandra/format.h": {
+      "hash": "4321603146304580",
+      "nodes": 35,
+      "relations": 138
+    },
+    "utilities/cassandra/merge_operator.cc": {
+      "hash": "eb17082b01dbf239",
+      "nodes": 19,
+      "relations": 36
+    },
+    "utilities/cassandra/merge_operator.h": {
+      "hash": "dde8643f35e60939",
+      "nodes": 13,
+      "relations": 27
+    },
+    "utilities/cassandra/serialize.h": {
+      "hash": "6b9a3639322ed0ca",
+      "nodes": 21,
+      "relations": 26
+    },
+    "utilities/cassandra/test_utils.cc": {
+      "hash": "66194c451b33be9e",
+      "nodes": 30,
+      "relations": 31
+    },
+    "utilities/cassandra/test_utils.h": {
+      "hash": "49f3099e0e100049",
+      "nodes": 11,
+      "relations": 25
+    },
+    "utilities/checkpoint/checkpoint_impl.cc": {
+      "hash": "3fca38e25ce04da8",
+      "nodes": 51,
+      "relations": 101
+    },
+    "utilities/checkpoint/checkpoint_impl.h": {
+      "hash": "90760c0c167424c3",
+      "nodes": 22,
+      "relations": 38
+    },
+    "utilities/checkpoint/checkpoint_test.cc": {
+      "hash": "61895db5fd192df0",
+      "nodes": 121,
+      "relations": 204
+    },
+    "utilities/compaction_filters.cc": {
+      "hash": "667189f2d11463c2",
+      "nodes": 18,
+      "relations": 33
+    },
+    "utilities/compaction_filters/layered_compaction_filter_base.h": {
+      "hash": "4fdaddcd672f85c2",
+      "nodes": 11,
+      "relations": 19
+    },
+    "utilities/compaction_filters/remove_emptyvalue_compactionfilter.cc": {
+      "hash": "588b320ba8830e69",
+      "nodes": 6,
+      "relations": 15
+    },
+    "utilities/compaction_filters/remove_emptyvalue_compactionfilter.h": {
+      "hash": "965333fa4a0a2c26",
+      "nodes": 11,
+      "relations": 16
+    },
+    "utilities/convenience/info_log_finder.cc": {
+      "hash": "f30f3b3dc78d0fee",
+      "nodes": 7,
+      "relations": 12
+    },
+    "utilities/counted_fs.cc": {
+      "hash": "d8b6b324f936b413",
+      "nodes": 169,
+      "relations": 215
+    },
+    "utilities/counted_fs.h": {
+      "hash": "6772ac417a753270",
+      "nodes": 52,
+      "relations": 107
+    },
+    "utilities/debug.cc": {
+      "hash": "6a64a55a771b0e2a",
+      "nodes": 20,
+      "relations": 27
+    },
+    "utilities/env_mirror.cc": {
+      "hash": "020f86c7d02c809e",
+      "nodes": 93,
+      "relations": 130
+    },
+    "utilities/env_mirror_test.cc": {
+      "hash": "558088b5bda4db0f",
+      "nodes": 17,
+      "relations": 30
+    },
+    "utilities/env_timed.cc": {
+      "hash": "80fe65a780caff9a",
+      "nodes": 108,
+      "relations": 119
+    },
+    "utilities/env_timed.h": {
+      "hash": "8163e79c9089bb06",
+      "nodes": 5,
+      "relations": 50
+    },
+    "utilities/env_timed_test.cc": {
+      "hash": "2a4f0d5a9017da9f",
+      "nodes": 6,
+      "relations": 12
+    },
+    "utilities/fault_injection_env.cc": {
+      "hash": "574806b4e0b8cf02",
+      "nodes": 105,
+      "relations": 113
+    },
+    "utilities/fault_injection_env.h": {
+      "hash": "db89386edbfb278c",
+      "nodes": 79,
+      "relations": 215
+    },
+    "utilities/fault_injection_fs.cc": {
+      "hash": "e9e21869af187c1c",
+      "nodes": 309,
+      "relations": 344
+    },
+    "utilities/fault_injection_fs.h": {
+      "hash": "dc7a04377d226f09",
+      "nodes": 19,
+      "relations": 54
+    },
+    "utilities/fault_injection_fs_test.cc": {
+      "hash": "e13358206b55645c",
+      "nodes": 11,
+      "relations": 21
+    },
+    "utilities/fault_injection_secondary_cache.cc": {
+      "hash": "3488c19011aa46c2",
+      "nodes": 29,
+      "relations": 30
+    },
+    "utilities/fault_injection_secondary_cache.h": {
+      "hash": "0e3a7bd84dd450e4",
+      "nodes": 40,
+      "relations": 90
+    },
+    "utilities/leveldb_options/leveldb_options.cc": {
+      "hash": "e4ec5fa71a39a3bb",
+      "nodes": 11,
+      "relations": 24
+    },
+    "utilities/memory/memory_test.cc": {
+      "hash": "d548cc6e4d7cc5ea",
+      "nodes": 29,
+      "relations": 58
+    },
+    "utilities/memory/memory_util.cc": {
+      "hash": "02900787ec9dff08",
+      "nodes": 7,
+      "relations": 10
+    },
+    "utilities/memory_allocators.h": {
+      "hash": "e3190e30bf402595",
+      "nodes": 40,
+      "relations": 69
+    },
+    "utilities/merge_operators.cc": {
+      "hash": "860ae3e33661579d",
+      "nodes": 22,
+      "relations": 50
+    },
+    "utilities/merge_operators.h": {
+      "hash": "66377a059f2aef67",
+      "nodes": 7,
+      "relations": 35
+    },
+    "utilities/merge_operators/bytesxor.cc": {
+      "hash": "f2ad50904aea1494",
+      "nodes": 13,
+      "relations": 20
+    },
+    "utilities/merge_operators/bytesxor.h": {
+      "hash": "fdbd4b122200e479",
+      "nodes": 16,
+      "relations": 37
+    },
+    "utilities/merge_operators/max.cc": {
+      "hash": "ad01d980a4168547",
+      "nodes": 17,
+      "relations": 26
+    },
+    "utilities/merge_operators/max_operator.h": {
+      "hash": "c90c7ed27e5f31c9",
+      "nodes": 7,
+      "relations": 20
+    },
+    "utilities/merge_operators/put.cc": {
+      "hash": "38c89252ef9cb6c5",
+      "nodes": 21,
+      "relations": 31
+    },
+    "utilities/merge_operators/put_operator.h": {
+      "hash": "02cca375ca7aa48c",
+      "nodes": 11,
+      "relations": 29
+    },
+    "utilities/merge_operators/sortlist.cc": {
+      "hash": "ffa601e7ae1546c8",
+      "nodes": 22,
+      "relations": 31
+    },
+    "utilities/merge_operators/sortlist.h": {
+      "hash": "21b7596369211c73",
+      "nodes": 10,
+      "relations": 25
+    },
+    "utilities/merge_operators/string_append/stringappend.cc": {
+      "hash": "b663d0a5c3203770",
+      "nodes": 22,
+      "relations": 37
+    },
+    "utilities/merge_operators/string_append/stringappend.h": {
+      "hash": "9e9c5bd25a94bc53",
+      "nodes": 11,
+      "relations": 23
+    },
+    "utilities/merge_operators/string_append/stringappend2.cc": {
+      "hash": "4693ea46e02df92b",
+      "nodes": 22,
+      "relations": 43
+    },
+    "utilities/merge_operators/string_append/stringappend2.h": {
+      "hash": "33414a466d5b020b",
+      "nodes": 17,
+      "relations": 33
+    },
+    "utilities/merge_operators/string_append/stringappend_test.cc": {
+      "hash": "d06318543ef6de79",
+      "nodes": 51,
+      "relations": 88
+    },
+    "utilities/merge_operators/uint64add.cc": {
+      "hash": "eb1457f0e40fbd54",
+      "nodes": 18,
+      "relations": 33
+    },
+    "utilities/merge_operators/uint64add.h": {
+      "hash": "7e6050dc19500d3a",
+      "nodes": 8,
+      "relations": 21
+    },
+    "utilities/object_registry.cc": {
+      "hash": "d2d35b8a30d098c0",
+      "nodes": 70,
+      "relations": 88
+    },
+    "utilities/object_registry_test.cc": {
+      "hash": "0b19bd6de75d6ff7",
+      "nodes": 56,
+      "relations": 76
+    },
+    "utilities/option_change_migration/option_change_migration.cc": {
+      "hash": "4926ff17e080726c",
+      "nodes": 71,
+      "relations": 76
+    },
+    "utilities/option_change_migration/option_change_migration_test.cc": {
+      "hash": "9a4af8ba7497cd9e",
+      "nodes": 32,
+      "relations": 58
+    },
+    "utilities/options/options_util.cc": {
+      "hash": "091fcae8e1728a2c",
+      "nodes": 28,
+      "relations": 40
+    },
+    "utilities/options/options_util_test.cc": {
+      "hash": "00c09c388986383b",
+      "nodes": 60,
+      "relations": 111
+    },
+    "utilities/persistent_cache/block_cache_tier.cc": {
+      "hash": "cdb56613f3876078",
+      "nodes": 44,
+      "relations": 60
+    },
+    "utilities/persistent_cache/block_cache_tier.h": {
+      "hash": "4f06aeb1d79855f4",
+      "nodes": 74,
+      "relations": 183
+    },
+    "utilities/persistent_cache/block_cache_tier_file.cc": {
+      "hash": "884d7e1247c491b3",
+      "nodes": 107,
+      "relations": 145
+    },
+    "utilities/persistent_cache/block_cache_tier_file.h": {
+      "hash": "955e2c4919fe6547",
+      "nodes": 117,
+      "relations": 243
+    },
+    "utilities/persistent_cache/block_cache_tier_file_buffer.h": {
+      "hash": "7be3a36a8dadbb7d",
+      "nodes": 39,
+      "relations": 74
+    },
+    "utilities/persistent_cache/block_cache_tier_metadata.cc": {
+      "hash": "4dcf1e3699a948d9",
+      "nodes": 19,
+      "relations": 23
+    },
+    "utilities/persistent_cache/block_cache_tier_metadata.h": {
+      "hash": "adad2f4731f5decc",
+      "nodes": 39,
+      "relations": 86
+    },
+    "utilities/persistent_cache/hash_table.h": {
+      "hash": "56562e45b3b4df8c",
+      "nodes": 47,
+      "relations": 76
+    },
+    "utilities/persistent_cache/hash_table_bench.cc": {
+      "hash": "c0817922e3bc00b3",
+      "nodes": 90,
+      "relations": 160
+    },
+    "utilities/persistent_cache/hash_table_evictable.h": {
+      "hash": "946bc331bfaf840a",
+      "nodes": 32,
+      "relations": 53
+    },
+    "utilities/persistent_cache/hash_table_test.cc": {
+      "hash": "33a8fee36c2b827f",
+      "nodes": 51,
+      "relations": 96
+    },
+    "utilities/persistent_cache/lrulist.h": {
+      "hash": "e06c5fca91bf6189",
+      "nodes": 28,
+      "relations": 48
+    },
+    "utilities/persistent_cache/persistent_cache_bench.cc": {
+      "hash": "dcc6eb35a1a155e4",
+      "nodes": 58,
+      "relations": 115
+    },
+    "utilities/persistent_cache/persistent_cache_test.cc": {
+      "hash": "0fc8bce26b761316",
+      "nodes": 58,
+      "relations": 74
+    },
+    "utilities/persistent_cache/persistent_cache_test.h": {
+      "hash": "94cc3b05b4d890cf",
+      "nodes": 63,
+      "relations": 120
+    },
+    "utilities/persistent_cache/persistent_cache_tier.cc": {
+      "hash": "a7eb465b6bbebb39",
+      "nodes": 31,
+      "relations": 40
+    },
+    "utilities/persistent_cache/persistent_cache_tier.h": {
+      "hash": "686f2665caffe72e",
+      "nodes": 66,
+      "relations": 153
+    },
+    "utilities/persistent_cache/persistent_cache_util.h": {
+      "hash": "472bd71babc6277f",
+      "nodes": 17,
+      "relations": 32
+    },
+    "utilities/persistent_cache/volatile_tier_impl.cc": {
+      "hash": "1776d4d76a484d2b",
+      "nodes": 17,
+      "relations": 22
+    },
+    "utilities/persistent_cache/volatile_tier_impl.h": {
+      "hash": "488cb54d0e2826d8",
+      "nodes": 49,
+      "relations": 103
+    },
+    "utilities/secondary_index/faiss_ivf_index.cc": {
+      "hash": "257c094bd8e41d0a",
+      "nodes": 75,
+      "relations": 118
+    },
+    "utilities/secondary_index/faiss_ivf_index_test.cc": {
+      "hash": "fe5773eb4531aede",
+      "nodes": 14,
+      "relations": 36
+    },
+    "utilities/secondary_index/secondary_index_helper.h": {
+      "hash": "a3772445972e4db1",
+      "nodes": 11,
+      "relations": 22
+    },
+    "utilities/secondary_index/secondary_index_iterator.cc": {
+      "hash": "c7b4138be9c6a6fe",
+      "nodes": 20,
+      "relations": 23
+    },
+    "utilities/secondary_index/secondary_index_mixin.h": {
+      "hash": "5bf8805c00c19376",
+      "nodes": 151,
+      "relations": 214
+    },
+    "utilities/secondary_index/simple_secondary_index.cc": {
+      "hash": "e71bbeba02ea4055",
+      "nodes": 21,
+      "relations": 36
+    },
+    "utilities/simulator_cache/cache_simulator.cc": {
+      "hash": "70c2f919e8111a31",
+      "nodes": 42,
+      "relations": 49
+    },
+    "utilities/simulator_cache/cache_simulator.h": {
+      "hash": "fb4c7f809aed3de7",
+      "nodes": 78,
+      "relations": 167
+    },
+    "utilities/simulator_cache/cache_simulator_test.cc": {
+      "hash": "6b28e3eaae225744",
+      "nodes": 40,
+      "relations": 59
+    },
+    "utilities/simulator_cache/sim_cache.cc": {
+      "hash": "3d727d18034dccb0",
+      "nodes": 116,
+      "relations": 189
+    },
+    "utilities/simulator_cache/sim_cache_test.cc": {
+      "hash": "d6e97bf8d7bd9d39",
+      "nodes": 27,
+      "relations": 47
+    },
+    "utilities/table_properties_collectors/compact_for_tiering_collector.cc": {
+      "hash": "97196d7fdf342ba0",
+      "nodes": 39,
+      "relations": 64
+    },
+    "utilities/table_properties_collectors/compact_for_tiering_collector.h": {
+      "hash": "9b2d6ff3c6a796b4",
+      "nodes": 13,
+      "relations": 42
+    },
+    "utilities/table_properties_collectors/compact_for_tiering_collector_test.cc": {
+      "hash": "14a048bdb656a080",
+      "nodes": 19,
+      "relations": 45
+    },
+    "utilities/table_properties_collectors/compact_on_deletion_collector.cc": {
+      "hash": "9128fa1d40d7748d",
+      "nodes": 37,
+      "relations": 56
+    },
+    "utilities/table_properties_collectors/compact_on_deletion_collector.h": {
+      "hash": "037ecd45e924a393",
+      "nodes": 26,
+      "relations": 50
+    },
+    "utilities/table_properties_collectors/compact_on_deletion_collector_test.cc": {
+      "hash": "57ffc4d849257abf",
+      "nodes": 16,
+      "relations": 40
+    },
+    "utilities/trace/file_trace_reader_writer.cc": {
+      "hash": "470ff301140604e8",
+      "nodes": 32,
+      "relations": 43
+    },
+    "utilities/trace/file_trace_reader_writer.h": {
+      "hash": "4ff222cbfe5c8799",
+      "nodes": 9,
+      "relations": 39
+    },
+    "utilities/trace/replayer_impl.cc": {
+      "hash": "5b963ff595fb4ae7",
+      "nodes": 29,
+      "relations": 42
+    },
+    "utilities/trace/replayer_impl.h": {
+      "hash": "e9d765bcdedc0d98",
+      "nodes": 29,
+      "relations": 87
+    },
+    "utilities/transactions/lock/lock_manager.cc": {
+      "hash": "ae6a7a7844086399",
+      "nodes": 6,
+      "relations": 9
+    },
+    "utilities/transactions/lock/lock_manager.h": {
+      "hash": "e68449b4aec2ae03",
+      "nodes": 50,
+      "relations": 78
+    },
+    "utilities/transactions/lock/lock_tracker.h": {
+      "hash": "665048af356005cd",
+      "nodes": 51,
+      "relations": 99
+    },
+    "utilities/transactions/lock/point/any_lock_manager_test.h": {
+      "hash": "ba0600561f9c6bf1",
+      "nodes": 13,
+      "relations": 15
+    },
+    "utilities/transactions/lock/point/point_lock_bench.cc": {
+      "hash": "939ff2d6ad4025c3",
+      "nodes": 3,
+      "relations": 8
+    },
+    "utilities/transactions/lock/point/point_lock_bench_tool.cc": {
+      "hash": "1100ca3049321a08",
+      "nodes": 28,
+      "relations": 61
+    },
+    "utilities/transactions/lock/point/point_lock_manager.cc": {
+      "hash": "a20956e2091d438e",
+      "nodes": 240,
+      "relations": 330
+    },
+    "utilities/transactions/lock/point/point_lock_manager.h": {
+      "hash": "876f82a310cae992",
+      "nodes": 103,
+      "relations": 200
+    },
+    "utilities/transactions/lock/point/point_lock_manager_stress_test.cc": {
+      "hash": "d4bc89ab671cbc4c",
+      "nodes": 21,
+      "relations": 37
+    },
+    "utilities/transactions/lock/point/point_lock_manager_test.cc": {
+      "hash": "fa6f6b8c56f58dd1",
+      "nodes": 44,
+      "relations": 54
+    },
+    "utilities/transactions/lock/point/point_lock_manager_test.h": {
+      "hash": "793529f04d764116",
+      "nodes": 25,
+      "relations": 48
+    },
+    "utilities/transactions/lock/point/point_lock_manager_test_common.h": {
+      "hash": "e1cc8dfcfad27f8d",
+      "nodes": 23,
+      "relations": 40
+    },
+    "utilities/transactions/lock/point/point_lock_tracker.cc": {
+      "hash": "d6ad0d86d4d4ae42",
+      "nodes": 35,
+      "relations": 48
+    },
+    "utilities/transactions/lock/point/point_lock_tracker.h": {
+      "hash": "9137f3d7a195777e",
+      "nodes": 31,
+      "relations": 73
+    },
+    "utilities/transactions/lock/point/point_lock_validation_test_runner.h": {
+      "hash": "fb063c1917f0bbff",
+      "nodes": 73,
+      "relations": 131
+    },
+    "utilities/transactions/lock/range/range_lock_manager.h": {
+      "hash": "1d2874dd6f6fe19b",
+      "nodes": 9,
+      "relations": 11
+    },
+    "utilities/transactions/lock/range/range_locking_test.cc": {
+      "hash": "18ffdf2df6b11a2d",
+      "nodes": 37,
+      "relations": 69
+    },
+    "utilities/transactions/lock/range/range_tree/lib/ft/comparator.h": {
+      "hash": "ed0c043e0cd79b52",
+      "nodes": 32,
+      "relations": 55
+    },
+    "utilities/transactions/lock/range/range_tree/lib/ft/ft-status.h": {
+      "hash": "05d2dab5a4370c50",
+      "nodes": 30,
+      "relations": 62
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/concurrent_tree.cc": {
+      "hash": "d41421e397722a89",
+      "nodes": 23,
+      "relations": 24
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/concurrent_tree.h": {
+      "hash": "12801cc63eab108a",
+      "nodes": 12,
+      "relations": 45
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/keyrange.cc": {
+      "hash": "0c93a55c88e1f821",
+      "nodes": 29,
+      "relations": 34
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/keyrange.h": {
+      "hash": "7fac9f54f27784d1",
+      "nodes": 15,
+      "relations": 52
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/lock_request.cc": {
+      "hash": "d26c0f36995ccd6f",
+      "nodes": 77,
+      "relations": 88
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/lock_request.h": {
+      "hash": "1dcdd5972fc65468",
+      "nodes": 53,
+      "relations": 156
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/locktree.cc": {
+      "hash": "e382b8e171ce5a5b",
+      "nodes": 148,
+      "relations": 169
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/locktree.h": {
+      "hash": "602119b2f212b0ef",
+      "nodes": 86,
+      "relations": 295
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/manager.cc": {
+      "hash": "21db3b2d380291b6",
+      "nodes": 71,
+      "relations": 89
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/range_buffer.cc": {
+      "hash": "aec4ddfff2788497",
+      "nodes": 39,
+      "relations": 48
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/range_buffer.h": {
+      "hash": "cffbbe03fe37f2f4",
+      "nodes": 33,
+      "relations": 98
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/treenode.cc": {
+      "hash": "a845168dbd55b74d",
+      "nodes": 62,
+      "relations": 65
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/treenode.h": {
+      "hash": "3414187172bbd61f",
+      "nodes": 27,
+      "relations": 116
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/txnid_set.cc": {
+      "hash": "691033b3314c41e9",
+      "nodes": 17,
+      "relations": 21
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/txnid_set.h": {
+      "hash": "490030f161639def",
+      "nodes": 6,
+      "relations": 23
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/wfg.cc": {
+      "hash": "f36f2396b56fb8a3",
+      "nodes": 39,
+      "relations": 50
+    },
+    "utilities/transactions/lock/range/range_tree/lib/locktree/wfg.h": {
+      "hash": "d07d5ba335287cf6",
+      "nodes": 16,
+      "relations": 51
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/toku_atomic.h": {
+      "hash": "96b458802f5f16fd",
+      "nodes": 30,
+      "relations": 37
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/toku_external_pthread.h": {
+      "hash": "de8d146c2c876bf6",
+      "nodes": 34,
+      "relations": 45
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/toku_instrumentation.h": {
+      "hash": "33e654fce537f1e6",
+      "nodes": 186,
+      "relations": 231
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/toku_pthread.h": {
+      "hash": "875f8eba35ae17c3",
+      "nodes": 124,
+      "relations": 144
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/toku_race_tools.h": {
+      "hash": "cbb97e16d48d02d2",
+      "nodes": 13,
+      "relations": 16
+    },
+    "utilities/transactions/lock/range/range_tree/lib/portability/txn_subst.h": {
+      "hash": "4a69331e89682e37",
+      "nodes": 7,
+      "relations": 11
+    },
+    "utilities/transactions/lock/range/range_tree/lib/standalone_port.cc": {
+      "hash": "acaa1f65fd5f7f1c",
+      "nodes": 41,
+      "relations": 50
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/dbt.cc": {
+      "hash": "71892540f64c7d7d",
+      "nodes": 41,
+      "relations": 48
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/dbt.h": {
+      "hash": "73aaa6b0d4cf4284",
+      "nodes": 2,
+      "relations": 18
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/growable_array.h": {
+      "hash": "d7b15865e75dde68",
+      "nodes": 17,
+      "relations": 28
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/memarena.cc": {
+      "hash": "986508d7819344c9",
+      "nodes": 22,
+      "relations": 29
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/memarena.h": {
+      "hash": "ce5f3f45742494b8",
+      "nodes": 19,
+      "relations": 55
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/omt.h": {
+      "hash": "6ec885bff743bf43",
+      "nodes": 88,
+      "relations": 261
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/omt_impl.h": {
+      "hash": "c0d67b9aad2527e6",
+      "nodes": 205,
+      "relations": 227
+    },
+    "utilities/transactions/lock/range/range_tree/lib/util/partitioned_counter.h": {
+      "hash": "f0f21b51d8d58999",
+      "nodes": 22,
+      "relations": 33
+    },
+    "utilities/transactions/lock/range/range_tree/range_tree_lock_manager.cc": {
+      "hash": "90a74790ea78a5c9",
+      "nodes": 87,
+      "relations": 121
+    },
+    "utilities/transactions/lock/range/range_tree/range_tree_lock_manager.h": {
+      "hash": "0f96b412a66a5c19",
+      "nodes": 41,
+      "relations": 106
+    },
+    "utilities/transactions/lock/range/range_tree/range_tree_lock_tracker.cc": {
+      "hash": "2c21f2d57a9ea00b",
+      "nodes": 21,
+      "relations": 26
+    },
+    "utilities/transactions/lock/range/range_tree/range_tree_lock_tracker.h": {
+      "hash": "a565c1d83dccafb4",
+      "nodes": 44,
+      "relations": 99
+    },
+    "utilities/transactions/optimistic_transaction.cc": {
+      "hash": "194d4908e23b8591",
+      "nodes": 43,
+      "relations": 75
+    },
+    "utilities/transactions/optimistic_transaction.h": {
+      "hash": "5162fd82639777d4",
+      "nodes": 30,
+      "relations": 91
+    },
+    "utilities/transactions/optimistic_transaction_db_impl.cc": {
+      "hash": "23893dddb5c8541f",
+      "nodes": 37,
+      "relations": 52
+    },
+    "utilities/transactions/optimistic_transaction_db_impl.h": {
+      "hash": "a7e7420bd97c4140",
+      "nodes": 38,
+      "relations": 73
+    },
+    "utilities/transactions/optimistic_transaction_test.cc": {
+      "hash": "efb9faebcdd00a8e",
+      "nodes": 75,
+      "relations": 118
+    },
+    "utilities/transactions/pessimistic_transaction.cc": {
+      "hash": "e0efea1a35afd8b7",
+      "nodes": 174,
+      "relations": 217
+    },
+    "utilities/transactions/pessimistic_transaction.h": {
+      "hash": "1be06300cb8cf64e",
+      "nodes": 89,
+      "relations": 263
+    },
+    "utilities/transactions/pessimistic_transaction_db.cc": {
+      "hash": "01c3ec0e38589de9",
+      "nodes": 186,
+      "relations": 226
+    },
+    "utilities/transactions/pessimistic_transaction_db.h": {
+      "hash": "85cc0788272723e7",
+      "nodes": 76,
+      "relations": 227
+    },
+    "utilities/transactions/snapshot_checker.cc": {
+      "hash": "167a92e86b89071d",
+      "nodes": 18,
+      "relations": 23
+    },
+    "utilities/transactions/timestamped_snapshot_test.cc": {
+      "hash": "54ac53d6fcb61e92",
+      "nodes": 22,
+      "relations": 34
+    },
+    "utilities/transactions/transaction_base.cc": {
+      "hash": "9813fdbb8b07a882",
+      "nodes": 213,
+      "relations": 249
+    },
+    "utilities/transactions/transaction_base.h": {
+      "hash": "7bb98ee7025716b5",
+      "nodes": 171,
+      "relations": 370
+    },
+    "utilities/transactions/transaction_db_mutex_impl.cc": {
+      "hash": "913f333a12730383",
+      "nodes": 29,
+      "relations": 55
+    },
+    "utilities/transactions/transaction_db_mutex_impl.h": {
+      "hash": "b8576379a859e577",
+      "nodes": 3,
+      "relations": 10
+    },
+    "utilities/transactions/transaction_test.cc": {
+      "hash": "8498f95acc62785b",
+      "nodes": 176,
+      "relations": 241
+    },
+    "utilities/transactions/transaction_test.h": {
+      "hash": "9430a76ee5efb7b4",
+      "nodes": 108,
+      "relations": 196
+    },
+    "utilities/transactions/transaction_util.cc": {
+      "hash": "2e2ce5f91eb25cf3",
+      "nodes": 35,
+      "relations": 54
+    },
+    "utilities/transactions/transaction_util.h": {
+      "hash": "1197c0eedff2b5ca",
+      "nodes": 13,
+      "relations": 37
+    },
+    "utilities/transactions/write_committed_transaction_ts_test.cc": {
+      "hash": "03e070ee0e5ec473",
+      "nodes": 26,
+      "relations": 40
+    },
+    "utilities/transactions/write_prepared_transaction_seqno_test.cc": {
+      "hash": "42784f3bb9200ed5",
+      "nodes": 30,
+      "relations": 67
+    },
+    "utilities/transactions/write_prepared_transaction_test.cc": {
+      "hash": "9d12adc93cb03a67",
+      "nodes": 166,
+      "relations": 245
+    },
+    "utilities/transactions/write_prepared_txn.cc": {
+      "hash": "cbaea9a3c979ba6a",
+      "nodes": 59,
+      "relations": 92
+    },
+    "utilities/transactions/write_prepared_txn.h": {
+      "hash": "2c5da7de088b334f",
+      "nodes": 37,
+      "relations": 112
+    },
+    "utilities/transactions/write_prepared_txn_db.cc": {
+      "hash": "2a7b1c11d649ceee",
+      "nodes": 138,
+      "relations": 181
+    },
+    "utilities/transactions/write_prepared_txn_db.h": {
+      "hash": "4a0bf187276d40ef",
+      "nodes": 244,
+      "relations": 479
+    },
+    "utilities/transactions/write_unprepared_transaction_test.cc": {
+      "hash": "4a81e3dac20b4a5c",
+      "nodes": 35,
+      "relations": 52
+    },
+    "utilities/transactions/write_unprepared_txn.cc": {
+      "hash": "347249d756ac162a",
+      "nodes": 101,
+      "relations": 112
+    },
+    "utilities/transactions/write_unprepared_txn.h": {
+      "hash": "ffa363dadfba1278",
+      "nodes": 47,
+      "relations": 147
+    },
+    "utilities/transactions/write_unprepared_txn_db.cc": {
+      "hash": "e291cc7d04609327",
+      "nodes": 30,
+      "relations": 41
+    },
+    "utilities/transactions/write_unprepared_txn_db.h": {
+      "hash": "a9b293dec76ade9a",
+      "nodes": 20,
+      "relations": 40
+    },
+    "utilities/trie_index/bitvector.cc": {
+      "hash": "9e97fa5b234d2bdb",
+      "nodes": 35,
+      "relations": 46
+    },
+    "utilities/trie_index/bitvector.h": {
+      "hash": "5e537b31d8e1480f",
+      "nodes": 91,
+      "relations": 186
+    },
+    "utilities/trie_index/louds_trie.cc": {
+      "hash": "6f99bde74638d157",
+      "nodes": 77,
+      "relations": 90
+    },
+    "utilities/trie_index/louds_trie.h": {
+      "hash": "40eb43ab8755ce53",
+      "nodes": 117,
+      "relations": 288
+    },
+    "utilities/trie_index/trie_index_db_test.cc": {
+      "hash": "bb3fecb55f618d4b",
+      "nodes": 124,
+      "relations": 188
+    },
+    "utilities/trie_index/trie_index_factory.cc": {
+      "hash": "c5a9d1b3072017d9",
+      "nodes": 50,
+      "relations": 67
+    },
+    "utilities/trie_index/trie_index_factory.h": {
+      "hash": "aeab80d83274984d",
+      "nodes": 50,
+      "relations": 128
+    },
+    "utilities/trie_index/trie_index_test.cc": {
+      "hash": "33ac4b69c166aaf9",
+      "nodes": 235,
+      "relations": 341
+    },
+    "utilities/ttl/db_ttl_impl.cc": {
+      "hash": "fda91e7ee56ec675",
+      "nodes": 150,
+      "relations": 175
+    },
+    "utilities/ttl/db_ttl_impl.h": {
+      "hash": "63519f32f6b9a545",
+      "nodes": 64,
+      "relations": 192
+    },
+    "utilities/ttl/ttl_test.cc": {
+      "hash": "3c958d2da6a95416",
+      "nodes": 143,
+      "relations": 223
+    },
+    "utilities/types_util.cc": {
+      "hash": "2e357eb710fd5f2f",
+      "nodes": 15,
+      "relations": 18
+    },
+    "utilities/types_util_test.cc": {
+      "hash": "d223018d7b52b300",
+      "nodes": 16,
+      "relations": 26
+    },
+    "utilities/util_merge_operators_test.cc": {
+      "hash": "0f1edf5a4ad48524",
+      "nodes": 22,
+      "relations": 34
+    },
+    "utilities/wal_filter.cc": {
+      "hash": "4238265e8515f8f3",
+      "nodes": 10,
+      "relations": 21
+    },
+    "utilities/write_batch_with_index/write_batch_with_index.cc": {
+      "hash": "4a755701827805e8",
+      "nodes": 231,
+      "relations": 295
+    },
+    "utilities/write_batch_with_index/write_batch_with_index_internal.cc": {
+      "hash": "8d593f0469b30419",
+      "nodes": 100,
+      "relations": 128
+    },
+    "utilities/write_batch_with_index/write_batch_with_index_internal.h": {
+      "hash": "0a3f148dd25c08b3",
+      "nodes": 129,
+      "relations": 302
+    },
+    "utilities/write_batch_with_index/write_batch_with_index_test.cc": {
+      "hash": "118f66e7fda310e4",
+      "nodes": 194,
+      "relations": 272
+    }
+  },
+  "kinds": {
+    "nodes": {
+      "attribute": 14420,
+      "class": 3793,
+      "dependency": 17,
+      "external_symbol": 792,
+      "file": 1303,
+      "function": 9463,
+      "import": 11322,
+      "method": 21005,
+      "module": 66,
+      "parameter": 41335,
+      "project": 8,
+      "type_alias": 836,
+      "variable": 979
+    },
+    "relations": {
+      "contains": 1369,
+      "declares": 146982,
+      "depends_on": 17,
+      "imports": 11322,
+      "resolves_to": 11322
+    }
+  },
+  "project": "facebook/rocksdb",
+  "ref": "v11.1.2",
+  "resolution": {
+    "metrics": {
+      "external": 195664,
+      "internal": 238150,
+      "queries": 433814,
+      "resolved": 433814,
+      "unresolved": 0
+    },
+    "relations": {
+      "calls": 218307,
+      "contains": 1369,
+      "declares": 146982,
+      "depends_on": 17,
+      "has_type": 71330,
+      "imports": 11322,
+      "inherits_from": 1979,
+      "references": 50583,
+      "resolves_to": 11322
+    },
+    "status": "degraded"
+  },
+  "totals": {
+    "files": 1303,
+    "nodes": 105339,
+    "relations": 171012
+  }
+}

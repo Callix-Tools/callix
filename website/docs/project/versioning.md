@@ -120,12 +120,18 @@ rather than after: making `PythonAdapter`'s two positional arguments keyword-onl
 was a breaking change, and it was free to make while the promise was not yet in
 force.
 
-## Before 1.0
+## What 1.0 settled first
 
-The project is at 0.1.0 and none of the above is in force yet. Breaking
-changes are cheap now and impossible later, which is the reason for the
+The project is at **1.0.0** and everything above is now in force. The window in
+which breaking changes were cheap is closed, which is why it was spent on the
 deliberate divergences recorded in
 [the migration notes](./migrating-from-graphlens.md) — a vendored dependency
-reported as first-party code, or a duplicated structural edge, is worth fixing
-while fixing it is still free. The adapter constructors were aligned in the same
-spirit: the shape of the public API is the one thing 1.0 freezes hardest.
+reported as first-party code, or a duplicated structural edge, was worth fixing
+while fixing it was still free. The adapter constructors were aligned in the same
+spirit, all eight taking the same keyword-only four: the shape of the public API
+is the one thing 1.0 freezes hardest.
+
+The practical consequence is `SCHEMA_VERSION`. It stays at 1 for all of 1.x,
+because `ensure_schema_version` demands exact equality — a bump would make every
+stored graph unreadable in both directions, so it cannot happen in a minor
+release.

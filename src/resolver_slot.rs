@@ -20,7 +20,7 @@
 //! answer is where that name is *defined*. Answers are matched to queries by
 //! index, so a resolver must return one item per query and use `None` for "I do
 //! not know" rather than dropping it. `resolve_all` gets every occurrence in one
-//! call because the four built-in backends all amortize a workspace load, and a
+//! call because the built-in backends all amortize a workspace load, and a
 //! per-site protocol would have made that impossible to write.
 //!
 //! [`ResolverSlot`] is generic over the native backend and carries no bound, so
@@ -41,9 +41,10 @@ use crate::status::ResolverStatus;
 /// A backend compiled into callix, driven directly rather than through Python.
 ///
 /// The three methods are the native mirror of the Python protocol above. The
-/// `prepare` signature is the union of what the four backends need: ty and
-/// rust-analyzer index a whole root and ignore `files`, while the PHP symbol
-/// table is built from exactly the files the walk collected.
+/// `prepare` signature is the union of what the five backends need — Python,
+/// TypeScript, Go, Rust and PHP: ty and rust-analyzer index a whole root and
+/// ignore `files`, while the PHP symbol table is built from exactly the files
+/// the walk collected.
 pub(crate) trait NativeResolver {
     fn prepare(&mut self, project_root: &Path, files: &[PathBuf]) -> PyResult<()>;
 

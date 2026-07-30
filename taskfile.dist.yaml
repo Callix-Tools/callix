@@ -84,8 +84,16 @@ tasks:
     cmds:
       - task: unit
       - task: golden
-      - cargo test {{.PROFILE}}
+      - task: test:rust
       - task: example
+
+  test:rust:
+    desc: cargo test — the Rust-side unit tests (wire values, path sorting, SCIP)
+    # A task of its own so CI runs it as a step without respelling the profile.
+    # These cover what Python cannot see: the enum wire values, sort_paths, the
+    # SCIP decoder and the dependency parsers.
+    cmds:
+      - cargo test {{.PROFILE}}
 
   unit:
     desc: pytest over tests/unit and tests/api (the public Python API)

@@ -51,6 +51,12 @@ jobs:
       - name: Stubs are up to date
         run: task stubs:check
 
+      - name: Rust unit tests
+        # The 137 tests Python cannot reach: the enum wire values, sort_paths,
+        # the SCIP decoder, the dependency parsers. They ran in `task test` but
+        # not here, so for a while nothing in CI executed them.
+        run: task test:rust
+
       - name: Unit and API tests
         # Pure Python against the built module; needs no language toolchain.
         run: task unit

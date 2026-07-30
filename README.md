@@ -114,6 +114,19 @@ Python implementation this replaces: **5.2×** on apache/superset, **3.3×** on
 colinhacks/zod, **2.6×** on gin-gonic/gin. Details and method in
 [Benchmarks](https://callix-tools.github.io/callix/docs/project/benchmarks).
 
+## Versioning
+
+Semver covers the graph contract — the node and relation kinds, the two id
+formulas, 1-based spans, node ordering, the serialization format — and the
+Python API as generated into the committed `.pyi`. It does not cover what the
+resolvers answer: the Python one is a pinned `0.0.x` release of ty, the Rust
+one is whatever `rust-analyzer` the machine has. A patch release may change
+which `CALLS` edges appear. What is watched instead is the aggregate share of
+resolved queries, recorded per project in the baselines.
+
+Full statement, including which changes need a major release:
+[Versioning](https://callix-tools.github.io/callix/docs/project/versioning).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development loop, the build

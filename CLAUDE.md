@@ -61,6 +61,33 @@ Two ordering constraints are load-bearing and easy to break:
   way Python's `sorted()` over `pathlib.Path` does. Sorting by the whole
   string diverges on neighbours like `src/v4-mini/…` vs `src/v4/…`.
 
+Three further invariants, each of which was violated at some point:
+
+- **A structural edge has no multiplicity.** Visitors emit one per occurrence
+  while the node they point at is deduplicated by qualified name, so a variable
+  assigned eight times produced eight identical `DECLARES` edges. Every adapter
+  calls `graph.dedupe_structural_relations(py)` at the end of `analyze`; an
+  edge that carries metadata records *where it was observed* and is exempt.
+- **`merge` is all-or-nothing.** Ids are validated before any node is inserted,
+  or a failed merge leaves part of the other graph behind depending on where
+  the collision happened to sit. Relations are appended without deduplication:
+  merge once per source graph.
+- **Reading a payload raises `SerializationError` and nothing else.** Malformed
+  JSON, a missing key and an unknown kind all funnel through it, so callers
+  have one type to catch.
+
+### What semver covers
+
+The graph contract above, the Python API in the committed `.pyi`, and
+`SCHEMA_VERSION` — which will not move within 1.x, because
+`ensure_schema_version` demands exact equality and a bump makes every stored
+graph unreadable in both directions. Not covered: what the resolvers answer
+(ty is a pinned `0.0.x`, rust-analyzer is whatever is installed), boundary
+recall, or how exhaustively a given language is walked. Full text in
+`website/docs/project/versioning.md`; thread-safety guarantees, which are
+"single-threaded by construction — nothing releases the GIL", in
+`website/docs/project/thread-safety.md`.
+
 ### Anatomy of a language adapter
 
 Each of `src/python/`, `src/typescript/`, `src/golang/`, `src/rustlang/`

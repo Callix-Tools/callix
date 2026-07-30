@@ -1,6 +1,9 @@
 //! A graph node: a flat model with a `kind` discriminator instead of a class
 //! hierarchy — easier to serialize and cheaper to build in a hot loop.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
@@ -104,6 +107,91 @@ impl NodeKind {
     }
 }
 
+#[cfg(test)]
+mod kind_tests {
+    use super::*;
+
+    /// The graph contract is 14 node kinds. `as_str` and `parse` are two
+    /// independent match arms over the same enum: a kind added to one and
+    /// forgotten in the other is invisible from Python, because nothing there
+    /// enumerates the Rust variants.
+    const ALL: [NodeKind; 14] = [
+        NodeKind::Project,
+        NodeKind::Module,
+        NodeKind::File,
+        NodeKind::Class,
+        NodeKind::Function,
+        NodeKind::Method,
+        NodeKind::Parameter,
+        NodeKind::Import,
+        NodeKind::Dependency,
+        NodeKind::ExternalSymbol,
+        NodeKind::Variable,
+        NodeKind::Attribute,
+        NodeKind::TypeAlias,
+        NodeKind::Boundary,
+    ];
+
+    /// A second, independent spelling of the table — the wire values are part
+    /// of the on-disk format, so they are pinned rather than derived. The
+    /// match is exhaustive: a new variant fails to compile until it is added
+    /// here and to `ALL`.
+    fn expected_str(kind: NodeKind) -> &'static str {
+        match kind {
+            NodeKind::Project => "project",
+            NodeKind::Module => "module",
+            NodeKind::File => "file",
+            NodeKind::Class => "class",
+            NodeKind::Function => "function",
+            NodeKind::Method => "method",
+            NodeKind::Parameter => "parameter",
+            NodeKind::Import => "import",
+            NodeKind::Dependency => "dependency",
+            NodeKind::ExternalSymbol => "external_symbol",
+            NodeKind::Variable => "variable",
+            NodeKind::Attribute => "attribute",
+            NodeKind::TypeAlias => "type_alias",
+            NodeKind::Boundary => "boundary",
+        }
+    }
+
+    #[test]
+    fn there_are_exactly_fourteen_node_kinds() {
+        assert_eq!(ALL.len(), 14);
+    }
+
+    #[test]
+    fn as_str_and_parse_round_trip_for_every_kind() {
+        for kind in ALL {
+            assert_eq!(kind.as_str(), expected_str(kind));
+            assert_eq!(
+                NodeKind::parse(kind.as_str()),
+                Some(kind),
+                "{} does not round-trip",
+                kind.as_str()
+            );
+        }
+    }
+
+    #[test]
+    fn every_wire_value_is_distinct() {
+        for (i, left) in ALL.iter().enumerate() {
+            for right in &ALL[i + 1..] {
+                assert_ne!(left.as_str(), right.as_str());
+                assert_ne!(left, right);
+            }
+        }
+    }
+
+    #[test]
+    fn parse_rejects_an_unknown_value() {
+        // Upper case is the Python enum's member name, not its value.
+        for value in ["", "FUNCTION", "typealias", "external symbol", "unknown"] {
+            assert_eq!(NodeKind::parse(value), None, "{value:?} was accepted");
+        }
+    }
+}
+
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all)]
 pub struct Node {
@@ -161,5 +249,20 @@ impl Node {
             && self.file_path == other.file_path
             && self.span == other.span
             && self.metadata.bind(py).eq(other.metadata.bind(py))?)
+    }
+
+    /// Hashes the id alone.
+    ///
+    /// Defining `__eq__` in Python removes the inherited `__hash__`, which
+    /// left nodes unhashable — `set(graph.nodes.values())` raised a TypeError
+    /// on a graph library. A content hash is not available because `__eq__`
+    /// compares a metadata dict, but the id is enough: equality requires the
+    /// ids to match, so equal nodes always hash equal, which is the direction
+    /// the contract demands. Two nodes sharing an id and differing in metadata
+    /// collide, and colliding is allowed.
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.id.hash(&mut hasher);
+        hasher.finish()
     }
 }

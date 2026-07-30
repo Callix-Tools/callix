@@ -203,3 +203,115 @@ pub(crate) fn run_extractors(
     }
     Ok(refs)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn collapses_every_path_parameter_style() {
+        // {id} — FastAPI, Starlette, Spring, Laravel
+        assert_eq!(normalize_http_path("/users/{id}"), "/users/{}");
+        // :id — Express, gin, echo
+        assert_eq!(normalize_http_path("/users/:id"), "/users/{}");
+        // <converter:name> — Flask
+        assert_eq!(normalize_http_path("/users/<int:id>"), "/users/{}");
+        assert_eq!(normalize_http_path("/users/<uuid:id>/x"), "/users/{}/x");
+        // A concrete id in a client URL has to meet the server's parameter.
+        assert_eq!(normalize_http_path("/users/1"), "/users/{}");
+        assert_eq!(normalize_http_path("/users/1/posts/2"), "/users/{}/posts/{}");
+        // Several parameters, several styles, one path.
+        assert_eq!(normalize_http_path("/a/<int:id>/b/{x}/c/:y"), "/a/{}/b/{}/c/{}");
+        assert_eq!(normalize_http_path("/{a}{b}/c"), "/{}{}/c");
+    }
+
+    /// Two forms that are NOT collapsed. `$id` (shell-style interpolation in
+    /// a template URL) and `*` / `*rest` (gin's catch-all) both stay
+    /// verbatim, so a route written that way will not meet a client's
+    /// concrete path. Pinned so the gap is a known one.
+    #[test]
+    fn dollar_and_wildcard_parameters_are_left_alone() {
+        assert_eq!(normalize_http_path("/users/$id"), "/users/$id");
+        assert_eq!(normalize_http_path("/users/*"), "/users/*");
+        assert_eq!(normalize_http_path("/static/*filepath"), "/static/*filepath");
+    }
+
+    #[test]
+    fn strips_scheme_host_query_and_fragment() {
+        assert_eq!(
+            normalize_http_path("https://api.example.com/v1/users/{id}"),
+            "/v1/users/{}"
+        );
+        assert_eq!(normalize_http_path("/users?page=1&size=2"), "/users");
+        assert_eq!(normalize_http_path("/users#frag"), "/users");
+        // A URL with no path at all reduces to the root.
+        assert_eq!(normalize_http_path("https://api.example.com"), "/");
+        assert_eq!(normalize_http_path("http://host/"), "/");
+    }
+
+    #[test]
+    fn drops_the_trailing_slash_except_at_the_root() {
+        assert_eq!(normalize_http_path("/users/"), "/users");
+        assert_eq!(normalize_http_path("/users/:id/"), "/users/{}");
+        assert_eq!(normalize_http_path("/"), "/");
+        assert_eq!(normalize_http_path("//"), "/");
+    }
+
+    #[test]
+    fn normalizes_a_relative_path_and_trims_whitespace() {
+        assert_eq!(normalize_http_path("users/1"), "/users/{}");
+        assert_eq!(normalize_http_path("   /a/b   "), "/a/b");
+        assert_eq!(normalize_http_path(""), "/");
+    }
+
+    #[test]
+    fn an_already_normalized_path_is_a_fixed_point() {
+        for path in ["/", "/users", "/users/{}", "/users/{}/posts/{}", "/a/b/c"] {
+            assert_eq!(normalize_http_path(path), path, "{path} is not stable");
+            assert_eq!(
+                normalize_http_path(&normalize_http_path(path)),
+                normalize_http_path(path)
+            );
+        }
+    }
+
+    /// A colon inside a segment is data, not a parameter: gRPC-style verbs
+    /// (`/v1/users/123:activate`) and digests (`sha256:abc`) must survive.
+    #[test]
+    fn a_colon_inside_a_segment_is_not_a_parameter() {
+        assert_eq!(normalize_http_path("/v1/users/123:activate"), "/v1/users/123:activate");
+        assert_eq!(normalize_http_path("/sha256:abc"), "/sha256:abc");
+        // A bare colon is not a name either.
+        assert_eq!(normalize_http_path("/x/:/y"), "/x/:/y");
+    }
+
+    /// The cross-language merge is exactly this: pairs written in different
+    /// frameworks must reduce to one key, or the boundary node splits in two.
+    #[test]
+    fn pairs_from_different_languages_agree() {
+        let pairs = [
+            ("/users/{id}", "/users/:id"),
+            ("/users/{id}", "/users/<int:id>"),
+            ("/users/{user_id}", "/users/{id}"),
+            ("/users/1", "/users/{id}"),
+            ("https://api.example.com/v1/users/{id}", "/v1/users/:id"),
+            ("/users/", "/users"),
+            ("/users?page=1", "/users/"),
+        ];
+        for (left, right) in pairs {
+            assert_eq!(
+                normalize_http_path(left),
+                normalize_http_path(right),
+                "{left} and {right} do not merge"
+            );
+        }
+    }
+
+    #[test]
+    fn collapse_params_leaves_an_unclosed_delimiter_alone() {
+        // An unterminated `{` or `<` must neither hang nor swallow the rest.
+        assert_eq!(collapse_params("/users/{id"), "/users/{id");
+        assert_eq!(collapse_params("/users/<int:id"), "/users/<int:id");
+        assert_eq!(collapse_params("/a}b"), "/a}b");
+    }
+}

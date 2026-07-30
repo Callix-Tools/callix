@@ -18,6 +18,17 @@ classifiers = [
 dynamic = ["version"]
 dependencies = []
 
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+# The golden-file harness in tests/ is a script, not a pytest module; only the
+# two suites below are collected.
+testpaths = ["tests/unit", "tests/api"]
+# So that the suites can share `tests/graphs.py` — the repo root has to be
+# importable, since `tests/` is a plain directory and not a package.
+pythonpath = ["."]
+
 [tool.maturin]
 python-source = "python"
 module-name = "callix._core"

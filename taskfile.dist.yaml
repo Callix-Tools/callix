@@ -80,11 +80,19 @@ tasks:
       - cargo check --all-targets {{.PROFILE}}
 
   test:
-    desc: Golden fixture tests, cargo test, and a smoke run of the example
+    desc: Unit/API tests, golden fixtures, cargo test, and a smoke run of the example
     cmds:
+      - task: unit
       - task: golden
       - cargo test {{.PROFILE}}
       - task: example
+
+  unit:
+    desc: pytest over tests/unit and tests/api (the public Python API)
+    # --group dev rather than a plain `uv run`, so pytest is not a runtime
+    # dependency of the wheel.
+    cmds:
+      - uv run --group dev pytest {{.CLI_ARGS}}
 
   golden:
     desc: Compare the fixture graphs against tests/golden (UPDATE=1 to rewrite)

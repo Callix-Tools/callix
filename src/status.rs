@@ -92,3 +92,99 @@ impl ResolverStatus {
         format!("ResolverStatus.{}", self.as_str().to_uppercase())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every variant. `as_str`, `parse` and `severity` are three independent
+    /// match arms over the same enum, and a status added to one but not the
+    /// others is exactly the kind of silent drift no Python test can see.
+    const ALL: [ResolverStatus; 3] = [
+        ResolverStatus::Ok,
+        ResolverStatus::Degraded,
+        ResolverStatus::Unavailable,
+    ];
+
+    /// A second, independent spelling of the table. The match is exhaustive,
+    /// so adding a variant fails to compile here until it is written down.
+    fn expected_str(status: ResolverStatus) -> &'static str {
+        match status {
+            ResolverStatus::Ok => "ok",
+            ResolverStatus::Degraded => "degraded",
+            ResolverStatus::Unavailable => "unavailable",
+        }
+    }
+
+    #[test]
+    fn there_are_exactly_three_statuses() {
+        assert_eq!(ALL.len(), 3);
+    }
+
+    #[test]
+    fn as_str_and_parse_round_trip_for_every_status() {
+        for status in ALL {
+            assert_eq!(status.as_str(), expected_str(status));
+            assert_eq!(
+                ResolverStatus::parse(status.as_str()),
+                Some(status),
+                "{} does not round-trip",
+                status.as_str()
+            );
+        }
+    }
+
+    #[test]
+    fn parse_rejects_anything_else() {
+        for value in ["", "OK", "Degraded", "unknown", "ok "] {
+            assert_eq!(ResolverStatus::parse(value), None, "{value:?} was accepted");
+        }
+    }
+
+    #[test]
+    fn severity_orders_ok_before_degraded_before_unavailable() {
+        assert!(ResolverStatus::Ok.severity() < ResolverStatus::Degraded.severity());
+        assert!(ResolverStatus::Degraded.severity() < ResolverStatus::Unavailable.severity());
+    }
+
+    /// Worst wins, over every ordered pair.
+    #[test]
+    fn combine_takes_the_worst_of_every_pair() {
+        for left in ALL {
+            for right in ALL {
+                let worst = if left.severity() >= right.severity() { left } else { right };
+                assert_eq!(
+                    ResolverStatus::combine(vec![left, right]),
+                    worst,
+                    "combine({}, {})",
+                    left.as_str(),
+                    right.as_str()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn combine_of_nothing_is_ok() {
+        // An adapter that ran no resolver at all is not "degraded".
+        assert_eq!(ResolverStatus::combine(Vec::new()), ResolverStatus::Ok);
+        assert_eq!(
+            ResolverStatus::combine(vec![ResolverStatus::Ok]),
+            ResolverStatus::Ok
+        );
+        assert_eq!(
+            ResolverStatus::combine(vec![
+                ResolverStatus::Ok,
+                ResolverStatus::Unavailable,
+                ResolverStatus::Degraded,
+            ]),
+            ResolverStatus::Unavailable
+        );
+    }
+
+    #[test]
+    fn the_metadata_key_is_stable() {
+        // graphlens reads this key out of a stored graph.
+        assert_eq!(RESOLVER_STATUS_KEY, "resolver_status");
+    }
+}

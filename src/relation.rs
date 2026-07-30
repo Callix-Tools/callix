@@ -1,5 +1,8 @@
 //! A directed edge between two nodes, referring to them by ID.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
@@ -91,6 +94,83 @@ impl RelationKind {
     }
 }
 
+#[cfg(test)]
+mod kind_tests {
+    use super::*;
+
+    /// The graph contract is 12 relation kinds. As with `NodeKind`, `as_str`
+    /// and `parse` are separate match arms and drift between them is silent.
+    const ALL: [RelationKind; 12] = [
+        RelationKind::Contains,
+        RelationKind::Declares,
+        RelationKind::Imports,
+        RelationKind::Calls,
+        RelationKind::References,
+        RelationKind::DependsOn,
+        RelationKind::ResolvesTo,
+        RelationKind::InheritsFrom,
+        RelationKind::HasType,
+        RelationKind::Exposes,
+        RelationKind::Consumes,
+        RelationKind::CommunicatesWith,
+    ];
+
+    /// A second, independent spelling of the wire values. Exhaustive on
+    /// purpose: a new variant fails to compile until it is written down here
+    /// and added to `ALL`.
+    fn expected_str(kind: RelationKind) -> &'static str {
+        match kind {
+            RelationKind::Contains => "contains",
+            RelationKind::Declares => "declares",
+            RelationKind::Imports => "imports",
+            RelationKind::Calls => "calls",
+            RelationKind::References => "references",
+            RelationKind::DependsOn => "depends_on",
+            RelationKind::ResolvesTo => "resolves_to",
+            RelationKind::InheritsFrom => "inherits_from",
+            RelationKind::HasType => "has_type",
+            RelationKind::Exposes => "exposes",
+            RelationKind::Consumes => "consumes",
+            RelationKind::CommunicatesWith => "communicates_with",
+        }
+    }
+
+    #[test]
+    fn there_are_exactly_twelve_relation_kinds() {
+        assert_eq!(ALL.len(), 12);
+    }
+
+    #[test]
+    fn as_str_and_parse_round_trip_for_every_kind() {
+        for kind in ALL {
+            assert_eq!(kind.as_str(), expected_str(kind));
+            assert_eq!(
+                RelationKind::parse(kind.as_str()),
+                Some(kind),
+                "{} does not round-trip",
+                kind.as_str()
+            );
+        }
+    }
+
+    #[test]
+    fn every_wire_value_is_distinct() {
+        for (i, left) in ALL.iter().enumerate() {
+            for right in &ALL[i + 1..] {
+                assert_ne!(left.as_str(), right.as_str());
+                assert_ne!(left, right);
+            }
+        }
+    }
+
+    #[test]
+    fn parse_rejects_an_unknown_value() {
+        for value in ["", "CALLS", "dependson", "depends-on", "communicates with"] {
+            assert_eq!(RelationKind::parse(value), None, "{value:?} was accepted");
+        }
+    }
+}
+
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all)]
 pub struct Relation {
@@ -134,5 +214,16 @@ impl Relation {
             && self.target_id == other.target_id
             && self.kind == other.kind
             && self.metadata.bind(py).eq(other.metadata.bind(py))?)
+    }
+
+    /// Hashes the endpoints and the kind — everything `__eq__` compares except
+    /// the metadata dict, which is not hashable. See `Node::__hash__` for why
+    /// a partial hash is the right answer rather than no hash at all.
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.source_id.hash(&mut hasher);
+        self.target_id.hash(&mut hasher);
+        self.kind.hash(&mut hasher);
+        hasher.finish()
     }
 }

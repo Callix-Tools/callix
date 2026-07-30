@@ -229,8 +229,16 @@ impl Graph {
     /// how cross-language graphs are combined, where adapters for different
     /// languages deliberately produce the same BOUNDARY node. A collision
     /// between two *different* nodes stays an error even in this mode.
+    ///
+    /// Either the whole graph merges or nothing does. Relations are appended
+    /// without deduplication, so merging the same graph twice doubles its
+    /// edges — call it once per source graph.
     #[pyo3(signature = (other, *, allow_shared = false))]
     fn merge(&mut self, py: Python<'_>, other: &Self, allow_shared: bool) -> PyResult<()> {
+        // Every id is checked before any is inserted. Validating as it went
+        // left a failed merge with part of the other graph already in this
+        // one: whether the caller was corrupted depended on where the
+        // colliding node happened to sit in insertion order.
         for (id, node) in &other.nodes {
             if let Some(existing) = self.nodes.get(id) {
                 if allow_shared && existing.get().__eq__(py, node.get())? {
@@ -240,7 +248,11 @@ impl Graph {
                     "Node with id '{id}' already exists"
                 )));
             }
-            self.nodes.insert(id.clone(), node.clone_ref(py));
+        }
+        for (id, node) in &other.nodes {
+            if !self.nodes.contains_key(id) {
+                self.nodes.insert(id.clone(), node.clone_ref(py));
+            }
         }
         self.relations
             .extend(other.relations.iter().map(|r| r.clone_ref(py)));
@@ -544,6 +556,10 @@ impl Graph {
     fn subgraph(&self, py: Python<'_>, node_ids: Vec<String>) -> PyResult<Self> {
         let ids: HashSet<String> = node_ids.into_iter().collect();
         let mut sub = Self::new(py);
+        // The metadata comes along: a subgraph that reported no
+        // `resolver_status` looked like an unresolved graph rather than a slice
+        // of a resolved one, which is the opposite of what it is.
+        sub.metadata.bind(py).update(self.metadata.bind(py).as_mapping())?;
         for (id, node) in &self.nodes {
             if ids.contains(id) {
                 sub.add_node(node.clone_ref(py))?;

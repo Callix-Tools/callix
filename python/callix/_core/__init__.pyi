@@ -244,6 +244,10 @@ class Graph:
         how cross-language graphs are combined, where adapters for different
         languages deliberately produce the same BOUNDARY node. A collision
         between two *different* nodes stays an error even in this mode.
+        
+        Either the whole graph merges or nothing does. Relations are appended
+        without deduplication, so merging the same graph twice doubles its
+        edges — call it once per source graph.
         """
     def to_dict(self) -> dict:
         r"""
@@ -393,6 +397,18 @@ class Node:
     def __new__(cls, id: builtins.str, kind: NodeKind, qualified_name: builtins.str, name: builtins.str, file_path: typing.Optional[builtins.str] = None, span: typing.Optional[Span] = None, metadata: typing.Optional[dict] = None) -> Node: ...
     def __repr__(self) -> builtins.str: ...
     def __eq__(self, other: Node) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int:
+        r"""
+        Hashes the id alone.
+        
+        Defining `__eq__` in Python removes the inherited `__hash__`, which
+        left nodes unhashable — `set(graph.nodes.values())` raised a TypeError
+        on a graph library. A content hash is not available because `__eq__`
+        compares a metadata dict, but the id is enough: equality requires the
+        ids to match, so equal nodes always hash equal, which is the direction
+        the contract demands. Two nodes sharing an id and differing in metadata
+        collide, and colliding is allowed.
+        """
 
 @typing.final
 class OccurrenceRef:
@@ -474,6 +490,12 @@ class Relation:
     def __new__(cls, source_id: builtins.str, target_id: builtins.str, kind: RelationKind, metadata: typing.Optional[dict] = None) -> Relation: ...
     def __repr__(self) -> builtins.str: ...
     def __eq__(self, other: Relation) -> builtins.bool: ...
+    def __hash__(self) -> builtins.int:
+        r"""
+        Hashes the endpoints and the kind — everything `__eq__` compares except
+        the metadata dict, which is not hashable. See `Node::__hash__` for why
+        a partial hash is the right answer rather than no hash at all.
+        """
 
 @typing.final
 class ResolvedRef:

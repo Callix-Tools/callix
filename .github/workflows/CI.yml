@@ -49,6 +49,10 @@ jobs:
       - name: Stubs are up to date
         run: task stubs:check
 
+      - name: Unit and API tests
+        # Pure Python against the built module; needs no language toolchain.
+        run: task unit
+
       - name: Golden fixtures
         # Structure-only comparison needs no toolchain; the resolved summary
         # skips Go and Rust here, since neither is installed in this job.

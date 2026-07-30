@@ -51,7 +51,13 @@ fn parse_pyproject(root: &Path, names: &mut HashSet<String>) {
     let Ok(table) = text.parse::<toml::Table>() else {
         return;
     };
+    collect_pyproject(&table, names);
+}
 
+/// The traversal half of [`parse_pyproject`]. Split from the read because the
+/// interesting part is the shape of the manifest — five places declare
+/// dependencies and each nests differently — not the file access.
+fn collect_pyproject(table: &toml::Table, names: &mut HashSet<String>) {
     if let Some(project) = table.get("project").and_then(|v| v.as_table()) {
         if let Some(deps) = project.get("dependencies").and_then(|v| v.as_array()) {
             for dep in deps.iter().filter_map(|d| d.as_str()) {
@@ -197,4 +203,139 @@ pub fn stdlib_names(py: Python<'_>) -> PyResult<HashSet<String>> {
 #[pyfunction]
 pub fn get_stdlib_names(py: Python<'_>) -> PyResult<HashSet<String>> {
     stdlib_names(py)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn collected(text: &str) -> Vec<String> {
+        let table = text.parse::<toml::Table>().expect("the test manifest parses");
+        let mut names = HashSet::new();
+        collect_pyproject(&table, &mut names);
+        let mut out: Vec<String> = names.into_iter().collect();
+        out.sort();
+        out
+    }
+
+    #[test]
+    fn normalizes_a_requirement_into_an_import_name() {
+        assert_eq!(normalize_pkg_name("requests>=2.0"), "requests");
+        assert_eq!(normalize_pkg_name("requests [security]"), "requests");
+        assert_eq!(normalize_pkg_name("Flask-SQLAlchemy"), "flask_sqlalchemy");
+        assert_eq!(normalize_pkg_name("pytest;python_version>'3'"), "pytest");
+        assert_eq!(normalize_pkg_name("UPPER"), "upper");
+        // Every version specifier PEP 508 allows.
+        for raw in ["a==1", "a>=1", "a<=1", "a>1", "a<1", "a!=1", "a~=1", "a===1"] {
+            assert_eq!(normalize_pkg_name(raw), "a", "{raw}");
+        }
+    }
+
+    #[test]
+    fn normalizes_nothing_out_of_a_comment_or_blank() {
+        assert_eq!(normalize_pkg_name(""), "");
+        assert_eq!(normalize_pkg_name("   "), "");
+        assert_eq!(normalize_pkg_name("# comment"), "");
+        assert_eq!(normalize_pkg_name("package # trailing"), "package");
+    }
+
+    /// An npm scope survives: `@scope/pkg` is one package name, and turning
+    /// its hyphens into underscores would break the lookup against
+    /// package.json. Shared with the TypeScript side, which is why it lives
+    /// here rather than in the Python-only path.
+    #[test]
+    fn a_scoped_npm_name_keeps_its_shape() {
+        assert_eq!(normalize_pkg_name("@scope/Pkg"), "@scope/pkg");
+        assert_eq!(normalize_pkg_name("@types/node"), "@types/node");
+        assert_eq!(normalize_pkg_name("@my-scope/my-pkg"), "@my-scope/my-pkg");
+    }
+
+    #[test]
+    fn reads_pep_621_dependencies_and_every_extra_group() {
+        let text = r#"
+[project]
+name = "demo"
+dependencies = ["requests>=2.0", "Flask-SQLAlchemy"]
+
+[project.optional-dependencies]
+dev = ["mypy", "ruff"]
+docs = ["sphinx"]
+"#;
+        assert_eq!(
+            collected(text),
+            ["flask_sqlalchemy", "mypy", "requests", "ruff", "sphinx"]
+        );
+    }
+
+    /// Poetry declares dependencies as table *keys*, and `python` is a
+    /// constraint on the interpreter rather than an importable package.
+    #[test]
+    fn reads_poetry_groups_and_drops_the_python_constraint() {
+        let text = r#"
+[tool.poetry]
+name = "p"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+requests = "^2"
+Flask-Login = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[tool.poetry.group.test.dependencies]
+hypothesis = "*"
+
+[tool.poetry.group.lint.dependencies]
+ruff = "*"
+"#;
+        assert_eq!(
+            collected(text),
+            ["flask_login", "hypothesis", "pytest", "requests", "ruff"]
+        );
+    }
+
+    #[test]
+    fn a_manifest_declaring_nothing_yields_nothing() {
+        assert!(collected("[tool.other]\nx = 1\n").is_empty());
+        assert!(collected("[project]\nname = \"x\"\n").is_empty());
+        // A scalar where a list belongs is ignored rather than coerced.
+        assert!(collected("[project]\ndependencies = \"requests\"\n").is_empty());
+        assert!(collected("[tool.poetry]\nname = \"x\"\n").is_empty());
+    }
+
+    /// Both layouts in one file: a Poetry project migrating to PEP 621 has
+    /// both, and neither may shadow the other.
+    #[test]
+    fn pep_621_and_poetry_are_both_read() {
+        let text = r#"
+[project]
+dependencies = ["sphinx"]
+
+[tool.poetry.dependencies]
+requests = "^2"
+"#;
+        assert_eq!(collected(text), ["requests", "sphinx"]);
+    }
+
+    #[test]
+    fn requirement_lines_that_carry_no_import_name_are_skipped() {
+        for line in [
+            "-r other.txt",
+            "-c constraints.txt",
+            "-e .",
+            "https://example.com/x.whl",
+            "http://example.com/x.whl",
+            "git+https://github.com/a/b",
+            "svn+https://example.com/x",
+            "hg+https://example.com/x",
+            "bzr+https://example.com/x",
+            "  -r indented.txt",
+        ] {
+            assert!(is_skipped(line), "{line:?} should be skipped");
+        }
+        for line in ["requests", "flask>=2", "-- not a flag we know", "editable"] {
+            assert!(!is_skipped(line), "{line:?} should be kept");
+        }
+    }
 }

@@ -16,10 +16,15 @@ use crate::span::Span;
 
 pub const SCHEMA_VERSION: u32 = 1;
 
+/// A required key, or SerializationError.
+///
+/// Every failure reading a payload raises SerializationError, so a caller has
+/// one exception type to catch. Leaking KeyError, ValueError and
+/// json.JSONDecodeError through meant the type callix declares for this was
+/// raised on almost none of the ways a payload can be wrong.
 fn required<'py>(data: &Bound<'py, PyDict>, key: &str) -> PyResult<Bound<'py, PyAny>> {
-    data.get_item(key)?.ok_or_else(|| {
-        pyo3::exceptions::PyKeyError::new_err(format!("missing key {key:?}"))
-    })
+    data.get_item(key)?
+        .ok_or_else(|| SerializationError::new_err(format!("missing key {key:?}")))
 }
 
 /// Serializes a node into a JSON-compatible dict.
@@ -46,7 +51,7 @@ pub fn node_to_dict<'py>(py: Python<'py>, node: &Node) -> PyResult<Bound<'py, Py
 pub fn node_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Node> {
     let kind_raw = required(data, "kind")?.str()?.to_string();
     let kind = NodeKind::parse(&kind_raw).ok_or_else(|| {
-        pyo3::exceptions::PyValueError::new_err(format!("unknown NodeKind: {kind_raw:?}"))
+        SerializationError::new_err(format!("unknown NodeKind: {kind_raw:?}"))
     })?;
 
     let file_path = data
@@ -87,7 +92,7 @@ pub fn relation_to_dict<'py>(
 pub fn relation_from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Relation> {
     let kind_raw = required(data, "kind")?.str()?.to_string();
     let kind = RelationKind::parse(&kind_raw).ok_or_else(|| {
-        pyo3::exceptions::PyValueError::new_err(format!("unknown RelationKind: {kind_raw:?}"))
+        SerializationError::new_err(format!("unknown RelationKind: {kind_raw:?}"))
     })?;
 
     Ok(Relation {
@@ -135,7 +140,9 @@ pub fn json_dumps(
 
 /// `json.loads(text)`.
 pub fn json_loads<'py>(py: Python<'py>, text: &str) -> PyResult<Bound<'py, PyAny>> {
-    py.import("json")?.call_method1("loads", (text,))
+    py.import("json")?
+        .call_method1("loads", (text,))
+        .map_err(|err| SerializationError::new_err(format!("graph JSON is not valid: {err}")))
 }
 
 /// Extracts a list of dicts by key; missing or non-list yields empty.

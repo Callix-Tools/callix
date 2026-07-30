@@ -129,16 +129,57 @@ def fingerprint(graph) -> dict:
     }
 
 
-def analyse_callix(lang: str, root: Path) -> dict:
+def resolution_fingerprint(graph) -> dict:
+    """
+    What the resolver produced, without freezing which edge went where.
+
+    The structural fingerprint is taken with `resolve=False` and therefore says
+    nothing at all about the resolvers — a structural graph that has not moved
+    proves the visitor is unchanged, not the type checker. That gap made a
+    641-commit jump in the embedded ty verifiable only against a three-file
+    fixture. Counts are the right granularity: individual CALLS edges are too
+    volatile to freeze across a ty release, while a drop in `resolved` or the
+    disappearance of a whole relation kind is exactly what needs to be caught.
+    """
+    metrics = graph.metadata.get("resolver_metrics") or {}
+    return {
+        "status": graph.metadata.get("resolver_status"),
+        "metrics": {
+            key: metrics.get(key)
+            # `seconds` is a timing, not a result.
+            for key in ("queries", "resolved", "internal", "external", "unresolved")
+        },
+        "relations": dict(
+            sorted(
+                collections.Counter(r.kind.value for r in graph.relations).items()
+            )
+        ),
+    }
+
+
+ADAPTERS = {
+    "python": "PythonAdapter",
+    "typescript": "TypeScriptAdapter",
+    "go": "GoAdapter",
+    "rust": "RustAdapter",
+}
+
+
+def analyse_callix(lang: str, root: Path, *, resolve: bool = True) -> dict:
     import callix
 
-    adapters = {
-        "python": callix.PythonAdapter,
-        "typescript": callix.TypeScriptAdapter,
-        "go": callix.GoAdapter,
-        "rust": callix.RustAdapter,
-    }
-    return fingerprint(adapters[lang](resolve=False).analyze(root))
+    adapter = getattr(callix, ADAPTERS[lang])
+    data = fingerprint(adapter(resolve=False).analyze(root))
+    if not resolve:
+        return data
+
+    # Go needs its toolchain and Rust needs rust-analyzer; where they are
+    # missing the resolver reports `unavailable` rather than failing, and
+    # recording that would freeze the absence of a toolchain into the baseline.
+    resolved = adapter().analyze(root)
+    if resolved.metadata.get("resolver_status") not in (None, "unavailable"):
+        data["resolution"] = resolution_fingerprint(resolved)
+    return data
 
 
 def analyse_graphlens(lang: str, root: Path, graphlens: Path) -> dict:
@@ -208,6 +249,32 @@ def _diff(expected: dict, actual: dict) -> list[str]:
     for label, group in (("gone", missing), ("new", added), ("changed", changed)):
         if len(group) > 10:
             notes.append(f"... and {len(group) - 10} more {label}")
+
+    notes.extend(_diff_resolution(expected.get("resolution"), actual.get("resolution")))
+    return notes
+
+
+def _diff_resolution(want: dict | None, got: dict | None) -> list[str]:
+    """Differences in what the resolver produced."""
+    if want is None and got is None:
+        return []
+    if want is None:
+        return ["resolution: newly recorded (no baseline)"]
+    if got is None:
+        return ["resolution: GONE — the resolver reported unavailable"]
+
+    notes: list[str] = []
+    if want["status"] != got["status"]:
+        notes.append(f"resolution.status: {want['status']} -> {got['status']}")
+    for key, before in want["metrics"].items():
+        after = got["metrics"].get(key)
+        if before != after:
+            notes.append(f"resolution.{key}: {before} -> {after}")
+    for kind in sorted(set(want["relations"]) | set(got["relations"])):
+        before = want["relations"].get(kind, 0)
+        after = got["relations"].get(kind, 0)
+        if before != after:
+            notes.append(f"resolution.relations.{kind}: {before} -> {after}")
     return notes
 
 
@@ -225,7 +292,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
         if not dest.exists():
             print(f"  missing  {project['name']} ({dest})")
             continue
-        data = analyse_callix(project["langs"][0], dest)
+        data = analyse_callix(project["langs"][0], dest, resolve=not args.no_resolve)
         data["project"] = project["name"]
         data["ref"] = project["ref"]
         (BASELINE / f"{slug(project['name'])}.json").write_text(
@@ -259,7 +326,7 @@ def cmd_compare(args: argparse.Namespace) -> int:
             print(f"  skipped  {project['name']} (no checkout — pass --clone)")
             continue
         expected = json.loads(path.read_text(encoding="utf-8"))
-        actual = analyse_callix(project["langs"][0], dest)
+        actual = analyse_callix(project["langs"][0], dest, resolve=not args.no_resolve)
         compared += 1
         notes = _diff(expected, actual)
         if not notes:
@@ -298,7 +365,9 @@ def cmd_crosscheck(args: argparse.Namespace) -> int:
             print(f"  skipped  {project['name']}")
             continue
         lang = project["langs"][0]
-        mine = analyse_callix(lang, dest)
+        # Structure only: graphlens runs here with a stub resolver, so a
+        # resolution fingerprint would have nothing to compare against.
+        mine = analyse_callix(lang, dest, resolve=False)
         try:
             theirs = analyse_graphlens(lang, dest, graphlens)
         except subprocess.CalledProcessError as exc:
@@ -323,6 +392,10 @@ def _common(sub, name: str, help_text: str):
     )
     parser.add_argument("--project", default="", help="one project by name")
     parser.add_argument("--lang", default="", help="one language")
+    parser.add_argument(
+        "--no-resolve", action="store_true",
+        help="structure only — skips the resolver, which is the slow part",
+    )
     return parser
 
 

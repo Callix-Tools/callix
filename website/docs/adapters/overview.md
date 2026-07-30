@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Overview
 
-Six adapters, one interface:
+Eight adapters, one interface:
 
 | Language | Class | Project marker | Extensions |
 |---|---|---|---|
@@ -13,6 +13,8 @@ Six adapters, one interface:
 | Go | `GoAdapter` | `go.mod` | `.go` |
 | Rust | `RustAdapter` | `Cargo.toml` | `.rs` |
 | PHP | `PhpAdapter` | `composer.json`, or any `.php` | `.php` |
+| C | `CAdapter` | `CMakeLists.txt`, `Makefile`, `meson.build` | `.c`, `.h` |
+| C++ | `CppAdapter` | same | `.cpp`, `.cc`, `.cxx`, `.hpp`, `.hh`, `.h` |
 | YAML | `YamlAdapter` | any `.yaml` / `.yml` | `.yaml`, `.yml` |
 
 [YAML](./yaml.md) is the odd one out: it declares no symbols, so it produces

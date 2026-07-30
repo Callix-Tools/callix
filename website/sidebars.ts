@@ -37,6 +37,7 @@ const sidebars: SidebarsConfig = {
         'adapters/go',
         'adapters/rust',
         'adapters/php',
+        'adapters/c-family',
         'adapters/yaml',
       ],
     },

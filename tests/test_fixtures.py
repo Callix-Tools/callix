@@ -75,6 +75,8 @@ def adapters() -> dict:
         "rust": callix.RustAdapter,
         "yaml": callix.YamlAdapter,
         "php": callix.PhpAdapter,
+        "c": callix.CAdapter,
+        "cpp": callix.CppAdapter,
     }
 
 

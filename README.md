@@ -2,7 +2,7 @@
 
   <h1>callix</h1>
 
-  <p>Polyglot code analysis in Rust. Parses Python, TypeScript, Go, Rust, PHP and YAML into a shared graph IR — with the type checkers linked in, so there are no language servers to install.</p>
+  <p>Polyglot code analysis in Rust. Parses Python, TypeScript, Go, Rust, PHP, C, C++ and YAML into a shared graph IR — with the type checkers linked in, so there are no language servers to install.</p>
 
   [![PyPI](https://img.shields.io/pypi/v/callix?color=blue)](https://pypi.org/project/callix/)
   [![Python](https://img.shields.io/pypi/pyversions/callix)](https://pypi.org/project/callix/)
@@ -36,15 +36,17 @@ the analysis engines into the module instead:
 | Go | `go/packages` + `go/types`, same c-archive | a Go toolchain |
 | Rust | `rust-analyzer scip` index, decoded natively | `rust-analyzer` and Cargo |
 | PHP | a symbol table built from the sources | none |
+| C / C++ | a symbol table over the parsed sources | none |
 | YAML | none — it declares no symbols | none |
 
 Python and TypeScript need nothing beyond the wheel — the checkers and their
 standard-library stubs are inside it. Go and Rust use the toolchain the project
 already has, because a standard library shipped as *sources* cannot be frozen
-into a wheel. PHP has no equivalent checker to link and no widely installed
-indexer worth shelling out to, so callix builds a symbol table from the sources
-and reports `degraded` — honest about being a symbol table and not a type
-checker.
+into a wheel. PHP and the C family have no checker worth linking and no widely
+installed indexer worth shelling out to — every precise C/C++ option requires a
+`compile_commands.json`, which almost no repository ships — so callix builds a
+symbol table from the sources and reports `degraded`, honest about being a symbol
+table and not a type checker.
 
 ## Installation
 
@@ -71,9 +73,9 @@ graph.to_json(indent=2)          # serialization
 old.diff(new)                    # structural diff
 ```
 
-The same call works for every other language — `TypeScriptAdapter`,
-`GoAdapter`, `RustAdapter`, `PhpAdapter`, `YamlAdapter` — and each discovers its
-own project roots, so a monorepo works without configuration.
+The same call works for every other language — `TypeScriptAdapter`, `GoAdapter`,
+`RustAdapter`, `PhpAdapter`, `CAdapter`, `CppAdapter`, `YamlAdapter` — and each
+discovers its own project roots, so a monorepo works without configuration.
 
 Symbol resolution is on by default. `resolve=False` gives a structural graph;
 `graph.metadata["resolver_status"]` always says how complete the result is.

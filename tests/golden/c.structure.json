@@ -1,0 +1,1123 @@
+{
+  "metadata": {
+    "resolver_status": "unavailable"
+  },
+  "nodes": [
+    {
+      "file_path": null,
+      "id": "0f867cb0416ba557",
+      "kind": "project",
+      "metadata": {},
+      "name": "fixture",
+      "qualified_name": "fixture",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "f2e01f2061f86cbb",
+      "kind": "dependency",
+      "metadata": {},
+      "name": "curl",
+      "qualified_name": "curl",
+      "span": null
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "7895d4d2b6bada0a",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.h",
+      "qualified_name": "include/engine.h",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "ab20b7f46e68ccfd",
+      "kind": "module",
+      "metadata": {},
+      "name": "include",
+      "qualified_name": "include",
+      "span": null
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "c0615b6b76de2075",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.c",
+      "qualified_name": "src/engine.c",
+      "span": null
+    },
+    {
+      "file_path": null,
+      "id": "468d1a6442363500",
+      "kind": "module",
+      "metadata": {},
+      "name": "src",
+      "qualified_name": "src",
+      "span": null
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "505bd43780aec7e1",
+      "kind": "file",
+      "metadata": {},
+      "name": "main.c",
+      "qualified_name": "src/main.c",
+      "span": null
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "901d0129af55f972",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            7,
+            6,
+            7,
+            12
+          ]
+        },
+        "record_kind": "enum"
+      },
+      "name": "region",
+      "qualified_name": "region",
+      "span": [
+        7,
+        1,
+        10,
+        2
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "98c37a3ff67b9d27",
+      "kind": "attribute",
+      "metadata": {
+        "access": "",
+        "annotation": "",
+        "declared_in": [],
+        "is_enumerator": true,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            8,
+            5,
+            8,
+            18
+          ]
+        }
+      },
+      "name": "REGION_EUROPE",
+      "qualified_name": "REGION_EUROPE",
+      "span": [
+        8,
+        5,
+        8,
+        18
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "c43afa2de117d1d8",
+      "kind": "attribute",
+      "metadata": {
+        "access": "",
+        "annotation": "",
+        "declared_in": [],
+        "is_enumerator": true,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            9,
+            5,
+            9,
+            19
+          ]
+        }
+      },
+      "name": "REGION_AMERICA",
+      "qualified_name": "REGION_AMERICA",
+      "span": [
+        9,
+        5,
+        9,
+        19
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "87146c3b70393413",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            12,
+            8,
+            12,
+            14
+          ]
+        },
+        "record_kind": "struct"
+      },
+      "name": "engine",
+      "qualified_name": "engine",
+      "span": [
+        12,
+        1,
+        15,
+        2
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "d1cc0739196097ec",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "char",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            13,
+            17,
+            13,
+            22
+          ]
+        }
+      },
+      "name": "label",
+      "qualified_name": "engine::label",
+      "span": [
+        13,
+        5,
+        13,
+        23
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "3b037d55a4786113",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "enum region",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            14,
+            17,
+            14,
+            23
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "engine::region",
+      "span": [
+        14,
+        5,
+        14,
+        24
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "61800d16cbc9ad63",
+      "kind": "type_alias",
+      "metadata": {
+        "declared_in": [],
+        "is_concept": false,
+        "is_template": false,
+        "name_span": {
+          "__span__": [
+            17,
+            23,
+            17,
+            31
+          ]
+        },
+        "underlying": "struct engine"
+      },
+      "name": "engine_t",
+      "qualified_name": "engine_t",
+      "span": [
+        17,
+        1,
+        17,
+        32
+      ]
+    },
+    {
+      "file_path": "include/engine.h",
+      "id": "06c7d3e09b952e23",
+      "kind": "import",
+      "metadata": {
+        "include_path": "stddef.h",
+        "include_style": "system",
+        "origin": "unknown",
+        "resolved_path": null
+      },
+      "name": "stddef.h",
+      "qualified_name": "include/engine.h::stddef.h",
+      "span": [
+        5,
+        1,
+        6,
+        1
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "915444dcbcd67080",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "stddef.h",
+      "qualified_name": "stddef.h",
+      "span": null
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "6d52c64bf59dd90e",
+      "kind": "variable",
+      "metadata": {
+        "annotation": "char",
+        "declared_in": [],
+        "is_definition": true,
+        "is_extern": false,
+        "is_static": true,
+        "linkage": "internal",
+        "name_span": {
+          "__span__": [
+            3,
+            26,
+            3,
+            39
+          ]
+        }
+      },
+      "name": "DEFAULT_LABEL",
+      "qualified_name": "src/engine.c::DEFAULT_LABEL",
+      "span": [
+        3,
+        1,
+        3,
+        49
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "4622a690ea55f875",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": true,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "internal",
+        "name_span": {
+          "__span__": [
+            7,
+            20,
+            7,
+            29
+          ]
+        },
+        "return_type": "char",
+        "signature": ""
+      },
+      "name": "label_for",
+      "qualified_name": "src/engine.c::label_for",
+      "span": [
+        7,
+        1,
+        10,
+        2
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "3eac31f9e6a4d811",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "enum region",
+        "name_span": {
+          "__span__": [
+            7,
+            42,
+            7,
+            48
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "src/engine.c::label_for.region",
+      "span": [
+        7,
+        30,
+        7,
+        48
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "1328cba9ed5d5476",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [
+          "include/engine.h"
+        ],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            12,
+            10,
+            12,
+            22
+          ]
+        },
+        "return_type": "engine_t",
+        "signature": ""
+      },
+      "name": "engine_build",
+      "qualified_name": "engine_build",
+      "span": [
+        12,
+        1,
+        18,
+        2
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "269708ddeb7214fa",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "enum region",
+        "name_span": {
+          "__span__": [
+            12,
+            35,
+            12,
+            41
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "engine_build.region",
+      "span": [
+        12,
+        23,
+        12,
+        41
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "1307f30d6cb02fe9",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [
+          "include/engine.h"
+        ],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            20,
+            5,
+            20,
+            16
+          ]
+        },
+        "return_type": "int",
+        "signature": ""
+      },
+      "name": "engine_ping",
+      "qualified_name": "engine_ping",
+      "span": [
+        20,
+        1,
+        23,
+        2
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "6073ab06b697426f",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "engine_t",
+        "name_span": {
+          "__span__": [
+            20,
+            33,
+            20,
+            39
+          ]
+        }
+      },
+      "name": "engine",
+      "qualified_name": "engine_ping.engine",
+      "span": [
+        20,
+        17,
+        20,
+        39
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "8127a9cb561aed10",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [
+          "include/engine.h"
+        ],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            25,
+            13,
+            25,
+            28
+          ]
+        },
+        "return_type": "char",
+        "signature": ""
+      },
+      "name": "engine_describe",
+      "qualified_name": "engine_describe",
+      "span": [
+        25,
+        1,
+        31,
+        2
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "a00d0ecf35464077",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "engine_t",
+        "name_span": {
+          "__span__": [
+            25,
+            45,
+            25,
+            51
+          ]
+        }
+      },
+      "name": "engine",
+      "qualified_name": "engine_describe.engine",
+      "span": [
+        25,
+        29,
+        25,
+        51
+      ]
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "892be97bee440ec6",
+      "kind": "import",
+      "metadata": {
+        "include_path": "engine.h",
+        "include_style": "quoted",
+        "origin": "internal",
+        "resolved_path": "include/engine.h"
+      },
+      "name": "engine.h",
+      "qualified_name": "src/engine.c::engine.h",
+      "span": [
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "362112593c8bf637",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": true,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "internal",
+        "name_span": {
+          "__span__": [
+            7,
+            20,
+            7,
+            29
+          ]
+        },
+        "return_type": "char",
+        "signature": ""
+      },
+      "name": "label_for",
+      "qualified_name": "src/main.c::label_for",
+      "span": [
+        7,
+        1,
+        10,
+        2
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "4c4aae42f3fb7f7f",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "enum region",
+        "name_span": {
+          "__span__": [
+            7,
+            42,
+            7,
+            48
+          ]
+        }
+      },
+      "name": "region",
+      "qualified_name": "src/main.c::label_for.region",
+      "span": [
+        7,
+        30,
+        7,
+        48
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "eb22e037e8ab9a4a",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": true,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "internal",
+        "name_span": {
+          "__span__": [
+            12,
+            12,
+            12,
+            21
+          ]
+        },
+        "return_type": "int",
+        "signature": ""
+      },
+      "name": "fetch_one",
+      "qualified_name": "src/main.c::fetch_one",
+      "span": [
+        12,
+        1,
+        22,
+        2
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "319c48edff87eb2c",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "long",
+        "name_span": {
+          "__span__": [
+            12,
+            27,
+            12,
+            32
+          ]
+        }
+      },
+      "name": "ident",
+      "qualified_name": "src/main.c::fetch_one.ident",
+      "span": [
+        12,
+        22,
+        12,
+        32
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "1a8a4d20dd02dc12",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            24,
+            5,
+            24,
+            9
+          ]
+        },
+        "return_type": "int",
+        "signature": ""
+      },
+      "name": "main",
+      "qualified_name": "main",
+      "span": [
+        24,
+        1,
+        32,
+        2
+      ]
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "72c0121329ebd7f0",
+      "kind": "import",
+      "metadata": {
+        "include_path": "curl/curl.h",
+        "include_style": "system",
+        "origin": "unknown",
+        "resolved_path": null
+      },
+      "name": "curl/curl.h",
+      "qualified_name": "src/main.c::curl/curl.h",
+      "span": [
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "d5b24bcb704d333f",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "curl.h",
+      "qualified_name": "curl/curl.h",
+      "span": null
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "f84b19b7242298fd",
+      "kind": "import",
+      "metadata": {
+        "include_path": "stdio.h",
+        "include_style": "system",
+        "origin": "unknown",
+        "resolved_path": null
+      },
+      "name": "stdio.h",
+      "qualified_name": "src/main.c::stdio.h",
+      "span": [
+        2,
+        1,
+        3,
+        1
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "a865dffeb4397c82",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "stdio.h",
+      "qualified_name": "stdio.h",
+      "span": null
+    },
+    {
+      "file_path": "src/main.c",
+      "id": "2657263399d2a0a1",
+      "kind": "import",
+      "metadata": {
+        "include_path": "engine.h",
+        "include_style": "quoted",
+        "origin": "internal",
+        "resolved_path": "include/engine.h"
+      },
+      "name": "engine.h",
+      "qualified_name": "src/main.c::engine.h",
+      "span": [
+        4,
+        1,
+        5,
+        1
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "metadata": {
+        "key": "GET /engines/{}",
+        "mechanism": "http"
+      },
+      "name": "GET /engines/{}",
+      "qualified_name": "http:GET /engines/{}",
+      "span": null
+    }
+  ],
+  "relations": [
+    {
+      "kind": "depends_on",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "f2e01f2061f86cbb"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "ab20b7f46e68ccfd"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
+      "target_id": "7895d4d2b6bada0a"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "468d1a6442363500"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
+      "target_id": "c0615b6b76de2075"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
+      "target_id": "505bd43780aec7e1"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "901d0129af55f972"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "98c37a3ff67b9d27"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "901d0129af55f972",
+      "target_id": "98c37a3ff67b9d27"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "c43afa2de117d1d8"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "901d0129af55f972",
+      "target_id": "c43afa2de117d1d8"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "87146c3b70393413"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "d1cc0739196097ec"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "87146c3b70393413",
+      "target_id": "d1cc0739196097ec"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "3b037d55a4786113"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "87146c3b70393413",
+      "target_id": "3b037d55a4786113"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "61800d16cbc9ad63"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "1328cba9ed5d5476"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1328cba9ed5d5476",
+      "target_id": "269708ddeb7214fa"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "1307f30d6cb02fe9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "1307f30d6cb02fe9",
+      "target_id": "6073ab06b697426f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "8127a9cb561aed10"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "8127a9cb561aed10",
+      "target_id": "a00d0ecf35464077"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "06c7d3e09b952e23"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "7895d4d2b6bada0a",
+      "target_id": "915444dcbcd67080"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "06c7d3e09b952e23",
+      "target_id": "915444dcbcd67080"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "6d52c64bf59dd90e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "4622a690ea55f875"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "4622a690ea55f875",
+      "target_id": "3eac31f9e6a4d811"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "1328cba9ed5d5476"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "1307f30d6cb02fe9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "8127a9cb561aed10"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "892be97bee440ec6"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "c0615b6b76de2075",
+      "target_id": "7895d4d2b6bada0a"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "892be97bee440ec6",
+      "target_id": "7895d4d2b6bada0a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "362112593c8bf637"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "362112593c8bf637",
+      "target_id": "4c4aae42f3fb7f7f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "eb22e037e8ab9a4a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "eb22e037e8ab9a4a",
+      "target_id": "319c48edff87eb2c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "1a8a4d20dd02dc12"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "72c0121329ebd7f0"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "d5b24bcb704d333f"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "72c0121329ebd7f0",
+      "target_id": "d5b24bcb704d333f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "f84b19b7242298fd"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "a865dffeb4397c82"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "f84b19b7242298fd",
+      "target_id": "a865dffeb4397c82"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "2657263399d2a0a1"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "505bd43780aec7e1",
+      "target_id": "7895d4d2b6bada0a"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "2657263399d2a0a1",
+      "target_id": "7895d4d2b6bada0a"
+    },
+    {
+      "kind": "consumes",
+      "metadata": {
+        "col": 5,
+        "confidence": 0.7,
+        "framework": "libcurl",
+        "key": "GET /engines/{}",
+        "line": 18,
+        "mechanism": "http",
+        "method": "GET",
+        "path": "/engines/{}",
+        "role": "client"
+      },
+      "source_id": "eb22e037e8ab9a4a",
+      "target_id": "acfc953e2d84d7b4"
+    }
+  ],
+  "schema_version": 1
+}

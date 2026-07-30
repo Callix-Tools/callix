@@ -53,6 +53,16 @@ def php_graph() -> Graph:
 
 
 @pytest.fixture
+def c_graph() -> Graph:
+    return callix.CAdapter(resolve=False).analyze(FIXTURES / "c")
+
+
+@pytest.fixture
+def cpp_graph() -> Graph:
+    return callix.CppAdapter(resolve=False).analyze(FIXTURES / "cpp")
+
+
+@pytest.fixture
 def cross_language_graph(python_graph: Graph, yaml_graph: Graph) -> Graph:
     """The Python service and the OpenAPI spec in one graph.
 

@@ -9,7 +9,10 @@ import typing
 __all__ = [
     "AdapterError",
     "BoundaryRef",
+    "CAdapter",
+    "CFamilyResolver",
     "CallixError",
+    "CppAdapter",
     "DuplicateNodeError",
     "EmbeddedTyResolver",
     "GoAdapter",
@@ -42,14 +45,19 @@ __all__ = [
     "apply_boundaries",
     "apply_resolutions",
     "build_root_structure",
+    "c_detect_project_name",
+    "c_parse_dependencies",
     "classify_go_import",
     "classify_php_import",
     "classify_rust_import",
     "collect_python_files",
     "collect_typescript_files_py",
+    "cpp_detect_project_name",
     "detect_project_name",
     "diff_graphs",
     "ensure_schema_version",
+    "extract_c_boundaries",
+    "extract_cpp_boundaries",
     "extract_go_boundaries",
     "extract_php_boundaries",
     "extract_python_boundaries",
@@ -58,6 +66,8 @@ __all__ = [
     "extract_yaml_boundaries",
     "file_to_qualified_name",
     "filter_nested_files",
+    "find_c_roots",
+    "find_cpp_roots",
     "find_go_roots",
     "find_php_roots",
     "find_python_roots",
@@ -69,6 +79,8 @@ __all__ = [
     "go_detect_project_name",
     "go_parse_dependencies",
     "go_read_module_path",
+    "is_c_project",
+    "is_cpp_project",
     "is_go_project",
     "is_package_init",
     "is_php_project",
@@ -156,11 +168,63 @@ class BoundaryRef:
     def __new__(cls, mechanism: builtins.str, role: builtins.str, key: builtins.str, line: builtins.int, col: builtins.int, confidence: builtins.float = ..., detail: typing.Optional[typing.Mapping[builtins.str, builtins.str]] = None) -> BoundaryRef: ...
     def __repr__(self) -> builtins.str: ...
 
+@typing.final
+class CAdapter:
+    r"""
+    The C adapter.
+    """
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> CAdapter: ...
+    def language(self) -> builtins.str: ...
+    def file_extensions(self) -> builtins.set[builtins.str]: ...
+    def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+    def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+    def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
+        r"""
+        Analyses the project and returns the graph.
+        """
+    def __repr__(self) -> builtins.str: ...
+
+@typing.final
+class CFamilyResolver:
+    r"""
+    The Python-visible resolver for C and C++.
+    
+    Exposed for symmetry with the other four adapters and so a caller can ask
+    what it is: `status()` answers `DEGRADED`, always, because a symbol table is
+    not a type checker and reporting `OK` would misrepresent the graph. The
+    resolution itself happens inside `analyze`, against the index built from the
+    sources it has already parsed, so there is no `prepare` step to drive from
+    Python and nothing to configure.
+    """
+    def __new__(cls) -> CFamilyResolver: ...
+    def status(self) -> ResolverStatus:
+        r"""
+        Always `DEGRADED`: a symbol table over the analysed sources, with no
+        preprocessor evaluation, no macro expansion and no overload resolution.
+        """
+    def __repr__(self) -> builtins.str: ...
+
 class CallixError(builtins.Exception):
     r"""
     Base callix error.
     """
     ...
+
+@typing.final
+class CppAdapter:
+    r"""
+    The C++ adapter.
+    """
+    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> CppAdapter: ...
+    def language(self) -> builtins.str: ...
+    def file_extensions(self) -> builtins.set[builtins.str]: ...
+    def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+    def collect_files(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+    def analyze(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None, *, strict: builtins.bool = ...) -> Graph:
+        r"""
+        Analyses the project and returns the graph.
+        """
+    def __repr__(self) -> builtins.str: ...
 
 class DuplicateNodeError(CallixError):
     r"""
@@ -923,6 +987,16 @@ def build_root_structure(graph: Graph, project_root: builtins.str, py_root: buil
     resolver and a full `SpanIndex` serve every root at once.
     """
 
+def c_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
+
+def c_parse_dependencies(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[builtins.str]:
+    r"""
+    The declared dependencies of a C or C++ project, sorted.
+    
+    One function for both dialects: a `CMakeLists.txt` never says which of the
+    two it builds, and neither does any of the other manifests.
+    """
+
 def classify_go_import(import_path: builtins.str, module_path: typing.Optional[builtins.str] = None, required: typing.Optional[builtins.set[builtins.str]] = None) -> builtins.str:
     r"""
     Classification of a Go import path.
@@ -945,6 +1019,8 @@ def collect_typescript_files_py(project_root: builtins.str | os.PathLike | pathl
     Every TypeScript file under the root, declarations excluded.
     """
 
+def cpp_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.str: ...
+
 def detect_project_name(project_root: builtins.str) -> builtins.str: ...
 
 def diff_graphs(old: Graph, new: Graph) -> GraphDiff:
@@ -956,6 +1032,16 @@ def diff_graphs(old: Graph, new: Graph) -> GraphDiff:
 def ensure_schema_version(data: dict) -> None:
     r"""
     Fails with SerializationError on an unsupported schema version.
+    """
+
+def extract_c_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
+    r"""
+    Boundaries in a single C source — the entry point for checks.
+    """
+
+def extract_cpp_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
+    r"""
+    Boundaries in a single C++ source — the entry point for checks.
     """
 
 def extract_go_boundaries(source: bytes) -> builtins.list[BoundaryRef]:
@@ -996,6 +1082,10 @@ def filter_nested_files(files: typing.Sequence[builtins.str], current_root: buil
     Drops nested roots' files (a parent does not parse its subprojects).
     """
 
+def find_c_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+
+def find_cpp_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
+
 def find_go_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
 
 def find_php_roots(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.list[pathlib.Path]: ...
@@ -1020,6 +1110,10 @@ def go_detect_project_name(root: builtins.str | os.PathLike | pathlib.Path) -> b
 def go_parse_dependencies(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.set[builtins.str]: ...
 
 def go_read_module_path(root: builtins.str | os.PathLike | pathlib.Path) -> typing.Optional[builtins.str]: ...
+
+def is_c_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
+
+def is_cpp_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
 
 def is_go_project(root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
 

@@ -5,6 +5,7 @@ use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 
 mod boundaries;
+mod cfamily;
 mod dependencies;
 mod diffing;
 mod error;
@@ -37,6 +38,7 @@ pub use error::{
 pub use golang::{GoAdapter, GoResolver};
 pub use graph::Graph;
 pub use node::{Node, NodeKind};
+pub use cfamily::{CAdapter, CFamilyResolver, CppAdapter};
 pub use php::{PhpAdapter, PhpResolver};
 pub use metrics::ResolverMetrics;
 pub use occurrence::{ImportClassifier, OccurrenceRef};
@@ -93,6 +95,18 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rustlang::rust_parse_dependencies, m)?)?;
     m.add_function(wrap_pyfunction!(rustlang::classify_rust_import, m)?)?;
     m.add_function(wrap_pyfunction!(rustlang::extract_rust_boundaries, m)?)?;
+    m.add_class::<CAdapter>()?;
+    m.add_class::<CppAdapter>()?;
+    m.add_class::<CFamilyResolver>()?;
+    m.add_function(wrap_pyfunction!(cfamily::is_c_project, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::find_c_roots, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::c_detect_project_name, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::is_cpp_project, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::find_cpp_roots, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::cpp_detect_project_name, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::c_parse_dependencies, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::extract_c_boundaries, m)?)?;
+    m.add_function(wrap_pyfunction!(cfamily::extract_cpp_boundaries, m)?)?;
     m.add_class::<PhpAdapter>()?;
     m.add_class::<PhpResolver>()?;
     m.add_function(wrap_pyfunction!(php::is_php_project, m)?)?;

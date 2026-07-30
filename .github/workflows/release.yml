@@ -178,7 +178,9 @@ jobs:
       - uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: astral-sh/setup-uv@v9
+      # Pinned exactly: setup-uv stopped publishing floating major tags
+      # after v7, so `@v9` does not resolve — only `@v9.0.0` does.
+      - uses: astral-sh/setup-uv@v9.0.0
       - uses: kenji-miyake/setup-git-cliff@v2
 
       - name: Collect artifacts

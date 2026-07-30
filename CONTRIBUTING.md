@@ -201,6 +201,22 @@ task bench:run BENCH_LANG=rust
 The table in the root README is generated — do not edit it by hand. The
 `Benchmark` workflow refreshes and commits it.
 
+## Bumping a GitHub Action
+
+Check that the ref exists before pushing, because Actions resolves it at
+dispatch and a bad one fails the run before a single step executes. A release
+existing does **not** mean the floating major tag does — `astral-sh/setup-uv`
+stopped publishing them after v7, so it is pinned to an exact version, while
+`arduino/setup-task` publishes its majors as branches rather than tags.
+
+```bash
+grep -rhoE "uses: [^ ]+@[^ ]+" .github/workflows/*.yml | sed 's/uses: //' | sort -u |
+  while IFS='@' read -r repo ref; do
+    git ls-remote "https://github.com/$repo" "refs/tags/$ref" "refs/heads/$ref" |
+      grep -q . && echo "ok   $repo@$ref" || echo "FAIL $repo@$ref"
+  done
+```
+
 ## Releasing
 
 Versions come from conventional commits via

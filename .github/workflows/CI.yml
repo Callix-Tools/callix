@@ -27,7 +27,9 @@ jobs:
         with:
           go-version: "1.26"
           cache-dependency-path: go/go.sum
-      - uses: astral-sh/setup-uv@v9
+      # Pinned exactly: setup-uv stopped publishing floating major tags
+      # after v7, so `@v9` does not resolve — only `@v9.0.0` does.
+      - uses: astral-sh/setup-uv@v9.0.0
         with:
           python-version: "3.13"
       - uses: arduino/setup-task@v3

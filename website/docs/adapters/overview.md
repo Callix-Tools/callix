@@ -47,7 +47,24 @@ Do not assume Python's shape carries over. A `MODULE` is:
 - a **package directory** in **Go**, whose qualified name equals the import
   path — which is why internal imports bind by direct lookup;
 - a module path in **Rust** (`crate::net::http`), derived from the file's place
-  under `src/`, with inline `mod foo { … }` adding segments.
+  under `src/`, with inline `mod foo { … }` adding segments;
+- a namespace in **PHP** (`App\Service`), backslash-separated at every level;
+- the **directory** in **C** and **C++** — a namespace groups declarations but
+  does not contain files, and namespaces live in the qualified names instead.
+
+## One constructor
+
+Every adapter takes the same four keyword-only arguments:
+
+```python
+Adapter(resolve=True, resolver=None, dep_parsers=None, boundary_extractors=None)
+```
+
+`resolver` replaces the language's native backend, `dep_parsers` replaces its
+manifest reader, and `boundary_extractors` runs in addition to the built-in ones.
+`YamlAdapter` takes the first and last only — there is no resolution phase to
+redirect and no project-root manifest. See
+[Custom resolvers and parsers](../guides/custom-resolvers.md).
 
 ## Resolver status
 

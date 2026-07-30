@@ -173,7 +173,23 @@ class CAdapter:
     r"""
     The C adapter.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> CAdapter: ...
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> CAdapter:
+        r"""
+        Args:
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing the built-in symbol
+            table. An object with `prepare(root, files)`,
+            `resolve_all(queries)` and `status()`. This is where a
+            `compile_commands.json`-based indexer belongs: it is asked about
+            positions, while the built-in table resolves by name.
+        dep_parsers: custom manifest parsers, replacing the built-in CMake,
+            vcpkg, conan and meson readers. Each is an object with
+            `can_parse(root)` and `parse(root)`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
+        """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
     def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
@@ -215,7 +231,23 @@ class CppAdapter:
     r"""
     The C++ adapter.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> CppAdapter: ...
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> CppAdapter:
+        r"""
+        Args:
+        resolve: False turns the resolution phase off — the graph stays
+            structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing the built-in symbol
+            table. An object with `prepare(root, files)`,
+            `resolve_all(queries)` and `status()`. This is where a
+            `compile_commands.json`-based indexer belongs: it is asked about
+            positions, while the built-in table resolves by name.
+        dep_parsers: custom manifest parsers, replacing the built-in CMake,
+            vcpkg, conan and meson readers. Each is an object with
+            `can_parse(root)` and `parse(root)`.
+        boundary_extractors: extra boundary extractors, run in **addition**
+            to the built-in ones. Each is an object with
+            `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
+        """
     def language(self) -> builtins.str: ...
     def file_extensions(self) -> builtins.set[builtins.str]: ...
     def can_handle(self, project_root: builtins.str | os.PathLike | pathlib.Path) -> builtins.bool: ...
@@ -257,11 +289,17 @@ class GoAdapter:
     r"""
     The language adapter for Go projects.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> GoAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> GoAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing `go/packages`. An
+            object with `prepare(root, files)`, `resolve_all(queries)` and
+            `status()`.
+        dep_parsers: custom manifest parsers, replacing the built-in `go.mod`
+            reader. Each is an object with `can_parse(root)` and
+            `parse(root)`.
         boundary_extractors: extra boundary extractors, run in **addition**
             to the built-in ones. Each is an object with
             `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
@@ -517,11 +555,17 @@ class PhpAdapter:
     r"""
     The language adapter for PHP projects.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> PhpAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> PhpAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing the built-in symbol
+            table. An object with `prepare(root, files)`,
+            `resolve_all(queries)` and `status()`.
+        dep_parsers: custom manifest parsers, replacing the built-in
+            `composer.json` reader. Each is an object with `can_parse(root)` and
+            `parse(root)`.
         boundary_extractors: extra boundary extractors, run in **addition**
             to the built-in ones. Each is an object with
             `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
@@ -564,17 +608,18 @@ class PythonAdapter:
     resolution pass for the whole call, then boundaries. The order is not
     cosmetic — see the comments inside.
     """
-    def __new__(cls, dep_parsers: typing.Optional[typing.Any] = None, resolver: typing.Optional[typing.Any] = None, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> PythonAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> PythonAdapter:
         r"""
         Args:
-        dep_parsers: custom manifest parsers (objects with `can_parse` and
-            `parse`). Defaults to the built-in ones: pyproject.toml,
-            requirements*.txt, setup.cfg.
-        resolver: a custom symbol resolver (an object with `resolve_all`).
-            Defaults to the embedded ty.
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` in the metadata becomes
             `unavailable`.
+        resolver: a custom symbol resolver, replacing the embedded ty. An
+            object with `prepare(root, files)`, `resolve_all(queries)` and
+            `status()`.
+        dep_parsers: custom manifest parsers, replacing the built-in ones
+            (pyproject.toml, requirements*.txt, setup.cfg). Each is an object
+            with `can_parse(root)` and `parse(root)`.
         boundary_extractors: extra boundary extractors, run in **addition**
             to the built-in ones. Each is an object with
             `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
@@ -721,11 +766,17 @@ class RustAdapter:
     r"""
     The language adapter for Rust crates.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> RustAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> RustAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing the `rust-analyzer
+            scip` index. An object with `prepare(root, files)`,
+            `resolve_all(queries)` and `status()`.
+        dep_parsers: custom manifest parsers, replacing the built-in
+            `Cargo.toml` reader. Each is an object with `can_parse(root)` and
+            `parse(root)`.
         boundary_extractors: extra boundary extractors, run in **addition**
             to the built-in ones. Each is an object with
             `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
@@ -841,11 +892,17 @@ class TypeScriptAdapter:
     r"""
     The language adapter for TypeScript projects.
     """
-    def __new__(cls, *, resolve: builtins.bool = ..., boundary_extractors: typing.Optional[typing.Any] = None) -> TypeScriptAdapter:
+    def __new__(cls, *, resolve: builtins.bool = ..., resolver: typing.Optional[typing.Any] = None, dep_parsers: typing.Optional[typing.Any] = None, boundary_extractors: typing.Optional[typing.Any] = None) -> TypeScriptAdapter:
         r"""
         Args:
         resolve: False turns the resolution phase off — the graph stays
             structural and `resolver_status` becomes `unavailable`.
+        resolver: a custom symbol resolver, replacing the embedded
+            typescript-go. An object with `prepare(root, files)`,
+            `resolve_all(queries)` and `status()`.
+        dep_parsers: custom manifest parsers, replacing the built-in
+            `package.json` reader. Each is an object with `can_parse(root)`
+            and `parse(root)`.
         boundary_extractors: extra boundary extractors, run in **addition**
             to the built-in ones. Each is an object with
             `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.

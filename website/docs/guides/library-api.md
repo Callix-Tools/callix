@@ -28,23 +28,21 @@ graph = adapter.analyze(root, strict=True)   # AdapterError unless status is 'ok
 
 ## Adapter options
 
-Every adapter takes `resolve`:
+Every adapter takes the same four keyword-only arguments, so code that switches
+languages does not have to switch shape:
 
 ```python
-PythonAdapter(resolve=False)        # structure only
-TypeScriptAdapter(resolve=False)
-GoAdapter(resolve=False)
-RustAdapter(resolve=False)
+Adapter(resolve=False)                     # structure only
+Adapter(resolver=my_resolver)              # replaces the native backend
+Adapter(dep_parsers=[my_parser])           # replaces the manifest reader
+Adapter(boundary_extractors=[my_finder])   # runs alongside the built-in ones
 ```
 
-`PythonAdapter` additionally takes replacements for its two pluggable parts:
+`YamlAdapter` takes `resolve` and `boundary_extractors` only: YAML declares no
+symbols, so there is nothing for a resolver to answer.
 
-```python
-PythonAdapter(resolver=my_resolver)          # a custom symbol resolver
-PythonAdapter(dep_parsers=[my_parser])       # custom manifest parsers
-```
-
-See [Custom resolvers](./custom-resolvers.md) for the protocols.
+See [Custom resolvers and parsers](./custom-resolvers.md) for the protocols and
+for what each adapter's native backend is.
 
 ## Merging graphs
 

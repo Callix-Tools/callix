@@ -22,6 +22,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use indexmap::IndexMap;
 use pyo3::prelude::*;
@@ -30,15 +31,18 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
 use crate::boundaries::run_extractors;
-use crate::dependencies::declare_dependencies;
+use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
 use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
 use crate::node::{Node, NodeKind};
-use crate::python::apply_boundaries_rust;
+use crate::occurrence::OccurrenceRef;
+use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
 use crate::relation::{Relation, RelationKind};
+use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
 use crate::roots::filter_nested_root_files;
+use crate::span_index::SpanIndex;
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
 
 use super::boundary::extract_boundaries;
@@ -48,7 +52,7 @@ use super::detector::{
     is_cpp, project_name,
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs};
-use super::resolver::CFamilyIndex;
+use super::resolver::{CFamilyIndex, SymbolTable};
 use super::visitor::{CFamilyEmitter, FileFacts, Owner, declared_scopes, read_file};
 use super::{Dialect, parse_tree};
 
@@ -57,6 +61,9 @@ type FileBoundaries = (String, String, Vec<BoundaryRef>);
 /// One file, carried between the four passes.
 struct Analysed {
     file_rel: String,
+    /// The path as walked. Kept because a custom resolver is asked about
+    /// absolute positions, the way the other adapters ask theirs.
+    file_abs: String,
     file_id: String,
     facts: FileFacts,
     boundaries: Vec<BoundaryRef>,
@@ -186,6 +193,7 @@ fn build_root(
     project_root: &Path,
     lang_root: &Path,
     files: &[PathBuf],
+    declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<(String, Vec<Analysed>)> {
     let project = project_name(lang_root);
@@ -211,13 +219,17 @@ fn build_root(
     // Pass 2 — read every file, and record every declaring site before the
     // first node exists.
     let mut ledger = DeclLedger::new();
-    let mut read: Vec<(String, FileFacts, Vec<u8>)> = Vec::with_capacity(sources.len());
+    let mut read: Vec<(String, String, FileFacts, Vec<u8>)> = Vec::with_capacity(sources.len());
     for (file, file_rel, source) in &sources {
         let tree = parse_tree(source, dialect)?;
         let facts = read_file(tree.root_node(), source, dialect, file_rel, &records);
         facts.survey(&mut ledger);
-        let _ = file;
-        read.push((file_rel.clone(), facts, source.clone()));
+        read.push((
+            file_rel.clone(),
+            file.to_string_lossy().into_owned(),
+            facts,
+            source.clone(),
+        ));
     }
 
     // The PROJECT node and its dependencies.
@@ -234,7 +246,8 @@ fn build_root(
         };
         graph.insert_node(project_id.clone(), Py::new(py, node)?);
     }
-    declare_dependencies(py, graph, &project, &project_id, &dependencies(lang_root))?;
+    let libraries = declared.unwrap_or_else(|| dependencies(lang_root));
+    declare_dependencies(py, graph, &project, &project_id, &libraries)?;
 
     // MODULE is the DIRECTORY, in both dialects. A C++ namespace groups
     // declarations, but it does not contain files — it spans them — and every
@@ -245,13 +258,13 @@ fn build_root(
     // file of its own belongs.
     let mut modules: IndexMap<String, String> = IndexMap::new();
 
-    let known_files: HashSet<String> = read.iter().map(|(rel, _, _)| rel.clone()).collect();
+    let known_files: HashSet<String> = read.iter().map(|(rel, _, _, _)| rel.clone()).collect();
     let search_dirs = include_search_dirs(lang_root);
 
     // FILE nodes, before the emitter runs: an include has to be able to point
     // at a header's FILE node whichever order the files are walked in.
     let mut file_ids: HashMap<String, String> = HashMap::new();
-    for (file_rel, _, _) in &read {
+    for (file_rel, _, _, _) in &read {
         let file_id = node_id(&project, file_rel, NodeKind::File.as_str());
         if !graph.has_node(&file_id) {
             let node = Node {
@@ -278,7 +291,7 @@ fn build_root(
     // Pass 3 — emit.
     let emitter = CFamilyEmitter::new(py, &project, &ledger, &search_dirs, &known_files);
     let mut analysed = Vec::with_capacity(read.len());
-    for (file_rel, facts, source) in read {
+    for (file_rel, file_abs, facts, source) in read {
         let file_id = file_ids[&file_rel].clone();
         emitter.emit(graph, &facts, &file_id)?;
 
@@ -286,10 +299,18 @@ fn build_root(
         let mut boundaries = extract_boundaries(tree.root_node(), &source, dialect);
         boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
 
-        analysed.push(Analysed { file_rel, file_id, facts, boundaries });
+        analysed.push(Analysed { file_rel, file_abs, file_id, facts, boundaries });
     }
 
     Ok((project, analysed))
+}
+
+/// The enclosing node for a use-site, whatever owns it.
+fn enclosing_id(project: &str, file: &Analysed, owner: &Owner) -> String {
+    match owner {
+        Owner::File => file.file_id.clone(),
+        Owner::Decl { qualified_name, kind } => node_id(project, qualified_name, kind.as_str()),
+    }
 }
 
 /// Resolves every occurrence against the sources that were parsed.
@@ -298,7 +319,7 @@ fn build_root(
 /// and map the answer back through a `SpanIndex`. There is no such backend
 /// here, so the direction is reversed: the index is keyed by name, and
 /// `#include` reachability decides which declaration of that name a file means.
-fn resolve(
+fn resolve_with_table(
     py: Python<'_>,
     graph: &mut Graph,
     project: &str,
@@ -330,12 +351,7 @@ fn resolve(
             };
             metrics.queries += 1;
 
-            let enclosing_id = match &occurrence.owner {
-                Owner::File => file.file_id.clone(),
-                Owner::Decl { qualified_name, kind } => {
-                    node_id(project, qualified_name, kind.as_str())
-                }
-            };
+            let enclosing_id = enclosing_id(project, file, &occurrence.owner);
             if !graph.has_node(&enclosing_id) {
                 metrics.unresolved += 1;
                 continue;
@@ -378,11 +394,78 @@ fn resolve(
     Ok(metrics)
 }
 
+/// Resolves through a caller's own resolver, position by position.
+///
+/// A custom resolver is asked the question the other four adapters ask theirs —
+/// "what is defined at this position?" — because a caller who has gone to the
+/// trouble of wiring up `scip-clang` or clangd has positions to answer with, and
+/// the shared `apply_resolutions_rust` already knows how to turn those answers
+/// into edges. The built-in table cannot be driven this way, which is the whole
+/// reason for the two paths.
+///
+/// Use-sites whose enclosing node is missing from the graph are dropped rather
+/// than sent, so no edge can hang off a node that does not exist; they are still
+/// counted, as unresolved.
+fn resolve_with_custom(
+    py: Python<'_>,
+    resolver: &Py<PyAny>,
+    graph: &mut Graph,
+    span_index: &mut SpanIndex,
+    project: &str,
+    project_root: &Path,
+    analysed: &[Analysed],
+) -> PyResult<ResolverMetrics> {
+    let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
+    let mut dropped = 0u64;
+    for file in analysed {
+        for occurrence in &file.facts.occurrences {
+            if role_to_kind(occurrence.role).is_none() {
+                continue;
+            }
+            let enclosing = enclosing_id(project, file, &occurrence.owner);
+            if !graph.has_node(&enclosing) {
+                dropped += 1;
+                continue;
+            }
+            occurrences.push((
+                file.file_abs.clone(),
+                OccurrenceRef {
+                    role: occurrence.role.to_string(),
+                    line: occurrence.span.start_line,
+                    col: occurrence.span.start_col,
+                    enclosing_id: enclosing,
+                    span: occurrence.span,
+                },
+            ));
+        }
+    }
+
+    let started = Instant::now();
+    let refs = custom_resolve_all(py, resolver, &occurrences)?;
+    let elapsed = started.elapsed().as_secs_f64();
+
+    let mut metrics = apply_resolutions_rust(
+        py,
+        graph,
+        project,
+        project_root,
+        span_index,
+        &occurrences,
+        &refs,
+    )?;
+    metrics.seconds = elapsed;
+    metrics.queries += dropped;
+    metrics.unresolved += dropped;
+    Ok(metrics)
+}
+
 /// The body both adapters share.
+#[allow(clippy::too_many_arguments)]
 fn analyze_family(
     py: Python<'_>,
     dialect: Dialect,
-    resolve_symbols: bool,
+    resolver: &mut ResolverSlot<SymbolTable>,
+    dep_parsers: Option<&Py<PyAny>>,
     extractors: Option<&Py<PyAny>>,
     project_root: PathBuf,
     files: Option<Vec<PathBuf>>,
@@ -421,20 +504,43 @@ fn analyze_family(
             &project_root,
             lang_root,
             root_files,
+            custom_declared(py, dep_parsers, lang_root)?,
             extractors,
         )?);
     }
 
     let mut metrics = ResolverMetrics::default();
     let mut status = ResolverStatus::Unavailable;
-    if resolve_symbols {
-        for (project, analysed) in &built {
-            let pass = resolve(py, &mut graph, project, analysed)?;
-            metrics.merge(&pass);
+    match resolver {
+        ResolverSlot::Disabled => {}
+        ResolverSlot::Native(SymbolTable) => {
+            for (project, analysed) in &built {
+                let pass = resolve_with_table(py, &mut graph, project, analysed)?;
+                metrics.merge(&pass);
+            }
+            // A symbol table, never a type checker: see resolver.rs for the
+            // reasoning and for what it cannot answer.
+            status = ResolverStatus::Degraded;
         }
-        // A symbol table, never a type checker: see resolver.rs for the
-        // reasoning and for what it cannot answer.
-        status = ResolverStatus::Degraded;
+        ResolverSlot::Custom(object) => {
+            let all_files: Vec<PathBuf> =
+                root_files.iter().flat_map(|(_, files)| files.clone()).collect();
+            custom_prepare(py, object, &project_root, &all_files)?;
+            let mut span_index = SpanIndex::from_graph(py, &graph)?;
+            for (project, analysed) in &built {
+                let pass = resolve_with_custom(
+                    py,
+                    object,
+                    &mut graph,
+                    &mut span_index,
+                    project,
+                    &project_root,
+                    analysed,
+                )?;
+                metrics.merge(&pass);
+            }
+            status = custom_status(py, object)?;
+        }
     }
 
     for (_project, analysed) in &built {
@@ -451,11 +557,20 @@ fn analyze_family(
     graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
 
     if strict && status != ResolverStatus::Ok {
+        // The hint only holds for the built-in table, which can never report
+        // `ok`. A caller who passed their own resolver already knows what it is,
+        // and telling them the family has no resolver would be wrong.
+        let hint = match resolver {
+            ResolverSlot::Native(_) => {
+                " The C family has no compiler-backed resolver — see the docs for why."
+            }
+            _ => "",
+        };
         return Err(AdapterError::new_err(format!(
-            "{} resolver status is '{}'; refusing to return a degraded graph in strict mode. \
-             The C family has no compiler-backed resolver — see the docs for why.",
+            "{} resolver status is '{}'; refusing to return a degraded graph in strict mode.{}",
             dialect.as_str(),
-            status.as_str()
+            status.as_str(),
+            hint
         )));
     }
 
@@ -467,17 +582,47 @@ fn analyze_family(
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 pub struct CAdapter {
-    resolve: bool,
+    resolver: ResolverSlot<SymbolTable>,
+    dep_parsers: Option<Py<PyAny>>,
     boundary_extractors: Option<Py<PyAny>>,
 }
 
 #[gen_stub_pymethods]
 #[pymethods]
 impl CAdapter {
+    /// Args:
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` becomes `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing the built-in symbol
+    ///         table. An object with `prepare(root, files)`,
+    ///         `resolve_all(queries)` and `status()`. This is where a
+    ///         `compile_commands.json`-based indexer belongs: it is asked about
+    ///         positions, while the built-in table resolves by name.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in CMake,
+    ///         vcpkg, conan and meson readers. Each is an object with
+    ///         `can_parse(root)` and `parse(root)`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
-        Self { resolve, boundary_extractors }
+    #[pyo3(signature = (
+        *,
+        resolve = true,
+        resolver = None,
+        dep_parsers = None,
+        boundary_extractors = None,
+    ))]
+    fn new(
+        resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
+        boundary_extractors: Option<Py<PyAny>>,
+    ) -> PyResult<Self> {
+        Ok(Self {
+            resolver: ResolverSlot::new(resolve, resolver, || Ok(SymbolTable))?,
+            dep_parsers,
+            boundary_extractors,
+        })
     }
 
     fn language(&self) -> &'static str {
@@ -508,7 +653,8 @@ impl CAdapter {
         analyze_family(
             py,
             Dialect::C,
-            self.resolve,
+            &mut self.resolver,
+            self.dep_parsers.as_ref(),
             self.boundary_extractors.as_ref(),
             project_root,
             files,
@@ -517,10 +663,7 @@ impl CAdapter {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "CAdapter(resolver={})",
-            if self.resolve { "symbol table" } else { "off" }
-        )
+        format!("CAdapter(resolver={})", self.resolver.label("symbol table"))
     }
 }
 
@@ -528,17 +671,47 @@ impl CAdapter {
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 pub struct CppAdapter {
-    resolve: bool,
+    resolver: ResolverSlot<SymbolTable>,
+    dep_parsers: Option<Py<PyAny>>,
     boundary_extractors: Option<Py<PyAny>>,
 }
 
 #[gen_stub_pymethods]
 #[pymethods]
 impl CppAdapter {
+    /// Args:
+    ///     resolve: False turns the resolution phase off — the graph stays
+    ///         structural and `resolver_status` becomes `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing the built-in symbol
+    ///         table. An object with `prepare(root, files)`,
+    ///         `resolve_all(queries)` and `status()`. This is where a
+    ///         `compile_commands.json`-based indexer belongs: it is asked about
+    ///         positions, while the built-in table resolves by name.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in CMake,
+    ///         vcpkg, conan and meson readers. Each is an object with
+    ///         `can_parse(root)` and `parse(root)`.
+    ///     boundary_extractors: extra boundary extractors, run in **addition**
+    ///         to the built-in ones. Each is an object with
+    ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
-        Self { resolve, boundary_extractors }
+    #[pyo3(signature = (
+        *,
+        resolve = true,
+        resolver = None,
+        dep_parsers = None,
+        boundary_extractors = None,
+    ))]
+    fn new(
+        resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
+        boundary_extractors: Option<Py<PyAny>>,
+    ) -> PyResult<Self> {
+        Ok(Self {
+            resolver: ResolverSlot::new(resolve, resolver, || Ok(SymbolTable))?,
+            dep_parsers,
+            boundary_extractors,
+        })
     }
 
     fn language(&self) -> &'static str {
@@ -569,7 +742,8 @@ impl CppAdapter {
         analyze_family(
             py,
             Dialect::Cpp,
-            self.resolve,
+            &mut self.resolver,
+            self.dep_parsers.as_ref(),
             self.boundary_extractors.as_ref(),
             project_root,
             files,
@@ -578,9 +752,6 @@ impl CppAdapter {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "CppAdapter(resolver={})",
-            if self.resolve { "symbol table" } else { "off" }
-        )
+        format!("CppAdapter(resolver={})", self.resolver.label("symbol table"))
     }
 }

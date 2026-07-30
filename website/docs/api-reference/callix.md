@@ -13,18 +13,32 @@ from callix import Graph, NodeKind, PythonAdapter
 
 ## Adapters
 
+Every adapter takes the same four keyword-only arguments:
+
 ```python
-PythonAdapter(dep_parsers=None, resolver=None, *, resolve=True)
-TypeScriptAdapter(*, resolve=True)
-GoAdapter(*, resolve=True)
-RustAdapter(*, resolve=True)
+PythonAdapter(*, resolve=True, resolver=None, dep_parsers=None, boundary_extractors=None)
+TypeScriptAdapter(...)   # identical
+GoAdapter(...)
+RustAdapter(...)
+PhpAdapter(...)
+CAdapter(...)
+CppAdapter(...)
+
+YamlAdapter(*, resolve=True, boundary_extractors=None)
 ```
+
+`resolver` and `dep_parsers` replace the native backend and the built-in manifest
+reader; `boundary_extractors` runs in addition to the built-in ones. See
+[Custom resolvers and parsers](../guides/custom-resolvers.md) for the protocols
+and for [what each adapter replaces](../guides/custom-resolvers.md#backends).
+`YamlAdapter` takes neither, because YAML declares no symbols and has no
+project-root manifest.
 
 Shared methods:
 
 | Method | Returns |
 |---|---|
-| `language()` | `str` — `'python'`, `'typescript'`, `'go'`, `'rust'` |
+| `language()` | `str` — `'python'`, `'typescript'`, `'go'`, `'rust'`, `'php'`, `'c'`, `'cpp'`, `'yaml'` |
 | `file_extensions()` | `set[str]` |
 | `can_handle(project_root)` | `bool` |
 | `collect_files(project_root)` | `list[Path]` |
@@ -52,8 +66,8 @@ Shared methods:
 **Queries**
 
 `callees(id)`, `callers(id)`, `references_to(id)`, `neighbors(id, depth=1)`,
-`nodes_by_kind(kind)`, `nodes_in_file(path)`, `find_by_name(name)`,
-`subgraph(ids)`, `file_subgraph(path)`.
+`nodes_by_kind(kind)`, `nodes_in_file(path)`, `nodes_by_name(name)`,
+`subgraph(ids)`, `subgraph_for_file(path)`, `link_boundaries()`.
 
 **Attributes**
 
@@ -67,10 +81,17 @@ TyResolver(base_prefix=None)     # Python, wraps the embedded ty
 TsResolver()                     # TypeScript
 GoResolver()                     # Go
 RustResolver()                   # Rust
+PhpResolver()                    # PHP
+CFamilyResolver()                # C and C++ — reports its status only
 ```
 
 Each implements `prepare(project_root, files=None)`,
 `resolve_all(queries)`, `definition_at(file, line, col)` and `status()`.
+
+`CFamilyResolver` is the exception: it answers `status()` and nothing else. The C
+family's table is keyed by name and built during `analyze` from the declarations
+and includes the survey pass found, so there is no index to prepare or query from
+outside. See [C and C++](../adapters/c-family.md).
 
 ## Functions
 

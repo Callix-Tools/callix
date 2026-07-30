@@ -139,10 +139,24 @@ Because the status is never `ok`, `strict=True` always raises for this family.
 That is deliberate: `strict` means "refuse to hand back a graph you cannot
 vouch for", and here callix cannot.
 
-A `scip-clang` backend would slot in — `src/rustlang/scip.rs` already holds a
-decoder that does not care which indexer produced the index. It would have to be
-selected explicitly rather than detected, so that the same folder cannot yield
-structurally different graphs depending on whether `cmake` happened to have run.
+A compiler-backed backend plugs in through `resolver=`, like every other
+adapter's:
+
+```python
+CppAdapter(resolver=MyScipIndex()).analyze(root)
+```
+
+With one difference worth knowing. The built-in table resolves **by name** and
+`#include` visibility, because that is what the language does and because no
+position-keyed index exists without a compdb. A custom resolver is asked the
+question every other adapter asks its backend — "what is defined at this
+position?" — which is exactly the shape a `scip-clang` or clangd index has, and
+`src/rustlang/scip.rs` already holds a decoder that does not care which indexer
+produced the index.
+
+It has to be selected explicitly rather than detected, so that the same folder
+cannot yield structurally different graphs depending on whether `cmake` happened
+to have run.
 
 ## Include guards
 

@@ -15,7 +15,7 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
 use crate::boundaries::run_extractors;
-use crate::dependencies::declare_dependencies;
+use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -24,6 +24,7 @@ use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::ResolvedRef;
 use crate::relation::{Relation, RelationKind};
+use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span_index::SpanIndex;
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
@@ -187,12 +188,17 @@ fn push_relation(
 }
 
 /// Structure and imports for one Go module root.
+///
+/// `declared` overrides the module paths read from `go.mod`; `None` means no
+/// custom manifest parsers were supplied.
+#[allow(clippy::too_many_arguments)]
 fn build_root_structure(
     py: Python<'_>,
     graph: &mut Graph,
     project_root: &Path,
     go_root: &Path,
     files: &[PathBuf],
+    declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let module = module_path(go_root).unwrap_or_else(|| {
@@ -207,7 +213,7 @@ fn build_root_structure(
         .next()
         .unwrap_or(&module)
         .to_string();
-    let required = required_modules(go_root);
+    let required = declared.unwrap_or_else(|| required_modules(go_root));
 
     let project_id = node_id(&project, &module, NodeKind::Project.as_str());
     if !graph.has_node(&project_id) {
@@ -326,7 +332,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
 pub struct GoAdapter {
     /// Extra boundary extractors, run in addition to the built-in ones.
     boundary_extractors: Option<Py<PyAny>>,
-    resolver: Option<GoResolver>,
+    dep_parsers: Option<Py<PyAny>>,
+    resolver: ResolverSlot<GoResolver>,
 }
 
 #[gen_stub_pymethods]
@@ -335,16 +342,34 @@ impl GoAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing `go/packages`. An
+    ///         object with `prepare(root, files)`, `resolve_all(queries)` and
+    ///         `status()`.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in `go.mod`
+    ///         reader. Each is an object with `can_parse(root)` and
+    ///         `parse(root)`.
     ///     boundary_extractors: extra boundary extractors, run in **addition**
     ///         to the built-in ones. Each is an object with
     ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
-        Self {
+    #[pyo3(signature = (
+        *,
+        resolve = true,
+        resolver = None,
+        dep_parsers = None,
+        boundary_extractors = None,
+    ))]
+    fn new(
+        resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
+        boundary_extractors: Option<Py<PyAny>>,
+    ) -> PyResult<Self> {
+        Ok(Self {
             boundary_extractors,
-            resolver: resolve.then(GoResolver::empty),
-        }
+            dep_parsers,
+            resolver: ResolverSlot::new(resolve, resolver, || Ok(GoResolver::empty()))?,
+        })
     }
 
     fn language(&self) -> &'static str {
@@ -399,6 +424,7 @@ impl GoAdapter {
                 &project_root,
                 go_root,
                 module_files,
+                custom_declared(py, self.dep_parsers.as_ref(), go_root)?,
                 self.boundary_extractors.as_ref(),
             )?);
         }
@@ -407,13 +433,15 @@ impl GoAdapter {
         // calls resolve and the workspace is not reloaded per module.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
-        if let Some(resolver) = &mut self.resolver {
-            resolver.prepare_rust(&project_root)?;
+        if !self.resolver.is_disabled() {
+            let all_files: Vec<PathBuf> =
+                root_files.iter().flat_map(|(_, files)| files.clone()).collect();
+            self.resolver.prepare(py, &project_root, &all_files)?;
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
             for (project, occurrences, _boundaries) in &built {
                 let pass = resolve_pass(
                     py,
-                    resolver,
+                    &self.resolver,
                     &mut graph,
                     &mut span_index,
                     project,
@@ -422,7 +450,7 @@ impl GoAdapter {
                 )?;
                 metrics.merge(&pass);
             }
-            status = resolver.status_rust();
+            status = self.resolver.status(py)?;
         }
 
         // Phase 3 — boundaries, after resolution.
@@ -448,16 +476,13 @@ impl GoAdapter {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "GoAdapter(resolver={})",
-            if self.resolver.is_some() { "go/packages" } else { "off" }
-        )
+        format!("GoAdapter(resolver={})", self.resolver.label("go/packages"))
     }
 }
 
 fn resolve_pass(
     py: Python<'_>,
-    resolver: &GoResolver,
+    resolver: &ResolverSlot<GoResolver>,
     graph: &mut Graph,
     span_index: &mut SpanIndex,
     project: &str,
@@ -473,10 +498,7 @@ fn resolve_pass(
     }
 
     let started = Instant::now();
-    let refs: Vec<Option<ResolvedRef>> = occurrences
-        .iter()
-        .map(|(path, occurrence)| resolver.resolve_rust(path, occurrence.line, occurrence.col))
-        .collect();
+    let refs: Vec<Option<ResolvedRef>> = resolver.resolve_all(py, occurrences)?;
     metrics.seconds = started.elapsed().as_secs_f64();
 
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {

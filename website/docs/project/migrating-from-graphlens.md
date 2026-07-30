@@ -23,7 +23,7 @@ astral-sh/ruff.
 ## What changed
 
 **Packaging.** graphlens was a workspace of nine Python packages with one
-adapter each. callix is one wheel with all four adapters inside.
+adapter each. callix is one wheel with every adapter inside.
 
 **Resolvers.** graphlens drove language servers over JSON-RPC and asked you to
 install them: `ty`, `gopls`, `rust-analyzer`, `intelephense`. callix links ty

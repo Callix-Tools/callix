@@ -14,7 +14,7 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pyme
 
 use crate::boundaries::BoundaryRef;
 use crate::boundaries::run_extractors;
-use crate::dependencies::declare_dependencies;
+use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -23,6 +23,7 @@ use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::ResolvedRef;
 use crate::relation::RelationKind;
+use crate::resolver_slot::ResolverSlot;
 use crate::roots::{collect_files, filter_nested_root_files};
 use crate::span_index::SpanIndex;
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
@@ -59,12 +60,17 @@ pub fn collect_typescript_files(root: &Path) -> Vec<PathBuf> {
 }
 
 /// Structure and imports for one TypeScript project root.
+///
+/// `declared` overrides the package names read from `package.json`; `None` means
+/// no custom manifest parsers were supplied.
+#[allow(clippy::too_many_arguments)]
 fn build_root_structure(
     py: Python<'_>,
     graph: &mut Graph,
     project_root: &Path,
     lang_root: &Path,
     files: &[PathBuf],
+    declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let project = project_name(lang_root);
@@ -78,7 +84,7 @@ fn build_root_structure(
         }
     }
 
-    let third_party = dependencies(lang_root);
+    let third_party = declared.unwrap_or_else(|| dependencies(lang_root));
     // Root-level configs (next.config.ts and friends) push names like "next"
     // into internal_tops; when a name is declared in package.json, the
     // manifest wins.
@@ -247,7 +253,8 @@ fn push_relation(
 pub struct TypeScriptAdapter {
     /// Extra boundary extractors, run in addition to the built-in ones.
     boundary_extractors: Option<Py<PyAny>>,
-    resolver: Option<TsResolver>,
+    dep_parsers: Option<Py<PyAny>>,
+    resolver: ResolverSlot<TsResolver>,
 }
 
 #[gen_stub_pymethods]
@@ -256,16 +263,34 @@ impl TypeScriptAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing the embedded
+    ///         typescript-go. An object with `prepare(root, files)`,
+    ///         `resolve_all(queries)` and `status()`.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in
+    ///         `package.json` reader. Each is an object with `can_parse(root)`
+    ///         and `parse(root)`.
     ///     boundary_extractors: extra boundary extractors, run in **addition**
     ///         to the built-in ones. Each is an object with
     ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
-        Self {
+    #[pyo3(signature = (
+        *,
+        resolve = true,
+        resolver = None,
+        dep_parsers = None,
+        boundary_extractors = None,
+    ))]
+    fn new(
+        resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
+        boundary_extractors: Option<Py<PyAny>>,
+    ) -> PyResult<Self> {
+        Ok(Self {
             boundary_extractors,
-            resolver: resolve.then(TsResolver::empty),
-        }
+            dep_parsers,
+            resolver: ResolverSlot::new(resolve, resolver, || Ok(TsResolver::empty()))?,
+        })
     }
 
     fn language(&self) -> &'static str {
@@ -322,6 +347,7 @@ impl TypeScriptAdapter {
                 &project_root,
                 lang_root,
                 file_list,
+                custom_declared(py, self.dep_parsers.as_ref(), lang_root)?,
                 self.boundary_extractors.as_ref(),
             )?);
         }
@@ -329,13 +355,15 @@ impl TypeScriptAdapter {
         // Phase 2 — one resolver for the whole project_root.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
-        if let Some(resolver) = &mut self.resolver {
-            resolver.prepare_rust(&project_root)?;
+        if !self.resolver.is_disabled() {
+            let all_files: Vec<PathBuf> =
+                root_files.iter().flat_map(|(_, files)| files.clone()).collect();
+            self.resolver.prepare(py, &project_root, &all_files)?;
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
             for (project, occurrences, _boundaries) in &built {
                 let pass = resolve_pass(
                     py,
-                    resolver,
+                    &self.resolver,
                     &mut graph,
                     &mut span_index,
                     project,
@@ -344,7 +372,7 @@ impl TypeScriptAdapter {
                 )?;
                 metrics.merge(&pass);
             }
-            status = resolver.status_rust();
+            status = self.resolver.status(py)?;
         }
 
         // Phase 3 — boundaries, after resolution.
@@ -370,16 +398,13 @@ impl TypeScriptAdapter {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "TypeScriptAdapter(resolver={})",
-            if self.resolver.is_some() { "tsgo" } else { "off" }
-        )
+        format!("TypeScriptAdapter(resolver={})", self.resolver.label("tsgo"))
     }
 }
 
 fn resolve_pass(
     py: Python<'_>,
-    resolver: &TsResolver,
+    resolver: &ResolverSlot<TsResolver>,
     graph: &mut Graph,
     span_index: &mut SpanIndex,
     project: &str,
@@ -390,10 +415,7 @@ fn resolve_pass(
         return Ok(ResolverMetrics::default());
     }
     let started = Instant::now();
-    let refs: Vec<Option<ResolvedRef>> = occurrences
-        .iter()
-        .map(|(path, occurrence)| resolver.resolve_rust(path, occurrence.line, occurrence.col))
-        .collect();
+    let refs: Vec<Option<ResolvedRef>> = resolver.resolve_all(py, occurrences)?;
     let elapsed = started.elapsed().as_secs_f64();
 
     let mut metrics = crate::python::apply_resolutions_rust(
@@ -421,7 +443,7 @@ pub fn ts_build_root_structure(
     files: Vec<PathBuf>,
 ) -> PyResult<BuiltRoot> {
     let mut graph = graph.borrow_mut();
-    build_root_structure(py, &mut graph, &project_root, &lang_root, &files, None)
+    build_root_structure(py, &mut graph, &project_root, &lang_root, &files, None, None)
 }
 
 /// Every TypeScript file under the root, declarations excluded.

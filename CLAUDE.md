@@ -150,6 +150,28 @@ Resolvers are swappable from Python — any object with `prepare`/`resolve_all`/
 `status` — as are dependency parsers (`can_parse`/`parse`). Rust calls them
 through the ordinary Python protocol.
 
+### One constructor, seven adapters
+
+`src/resolver_slot.rs` holds `ResolverSlot<N>` — `Native(N)` / `Custom(Py<PyAny>)`
+/ `Disabled` — plus the Python-protocol helpers and `coerce_ref`. Every adapter
+takes the same keyword-only arguments (`resolve`, `resolver`, `dep_parsers`,
+`boundary_extractors`); `custom_declared` in `src/dependencies.rs` is the
+`dep_parsers` half. Three things about it are load-bearing:
+
+- **The enum carries no trait bound.** `NativeResolver` (position-keyed:
+  `resolve(path, line, col)`) is implemented by the four real backends, and the
+  methods that need it live in a separate impl. That is what lets the C family
+  use the same enum with a `SymbolTable` marker that resolves **by name** — a
+  custom resolver there goes through a second, position-keyed path built on
+  `apply_resolutions_rust`.
+- **A custom resolver must answer every query.** Answers are zipped to queries by
+  index, so a short list would silently shift them onto the wrong use-sites;
+  `custom_resolve_all` raises instead.
+- **`YamlAdapter` deliberately does not take `resolver`/`dep_parsers`.** It emits
+  no occurrences and its Helm dependencies are per-file, so both arguments would
+  be accepted and provably ignored. `tests/api/test_adapter_api.py` pins the
+  `TypeError`.
+
 ## Parity with graphlens
 
 This is the project's correctness harness. graphlens lives at

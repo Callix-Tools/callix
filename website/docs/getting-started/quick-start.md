@@ -22,18 +22,24 @@ source tree: no daemon, no cache directory, no side effects.
 
 ## Swap the language
 
-The four adapters share one interface, so nothing above changes:
+Every adapter shares one interface, so nothing above changes:
 
 ```python
-from callix import GoAdapter, PythonAdapter, RustAdapter, TypeScriptAdapter
+from callix import (
+    CAdapter, CppAdapter, GoAdapter, PhpAdapter,
+    PythonAdapter, RustAdapter, TypeScriptAdapter, YamlAdapter,
+)
 
 graph = TypeScriptAdapter().analyze("path/to/ts-project")
 graph = GoAdapter().analyze("path/to/go-module")
 graph = RustAdapter().analyze("path/to/workspace")
+graph = PhpAdapter().analyze("path/to/php-project")
+graph = CAdapter().analyze("path/to/c-project")
 ```
 
 Each one discovers its own project roots — `pyproject.toml`, `package.json`,
-`go.mod`, `Cargo.toml` — and handles monorepos with several of them.
+`go.mod`, `Cargo.toml`, `composer.json`, `CMakeLists.txt` — and handles monorepos
+with several of them.
 
 ## Structure only
 

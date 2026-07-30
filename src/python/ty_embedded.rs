@@ -193,3 +193,19 @@ impl EmbeddedTyResolver {
         )
     }
 }
+
+/// ty indexes the root itself, from the project metadata it finds there, so the
+/// file list the walk collected is not passed on.
+impl crate::resolver_slot::NativeResolver for EmbeddedTyResolver {
+    fn prepare(&mut self, project_root: &Path, _files: &[PathBuf]) -> PyResult<()> {
+        self.prepare_rust(&project_root.to_string_lossy())
+    }
+
+    fn resolve(&self, path: &str, line: u32, col: u32) -> Option<ResolvedRef> {
+        self.resolve_rust(path, line, col)
+    }
+
+    fn status(&self) -> ResolverStatus {
+        self.status_rust()
+    }
+}

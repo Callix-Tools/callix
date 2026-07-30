@@ -215,3 +215,19 @@ impl Drop for GoResolver {
         }
     }
 }
+
+/// `go/packages` loads by pattern from the root, so the file list is not passed
+/// on.
+impl crate::resolver_slot::NativeResolver for GoResolver {
+    fn prepare(&mut self, project_root: &Path, _files: &[PathBuf]) -> PyResult<()> {
+        self.prepare_rust(project_root)
+    }
+
+    fn resolve(&self, path: &str, line: u32, col: u32) -> Option<ResolvedRef> {
+        self.resolve_rust(path, line, col)
+    }
+
+    fn status(&self) -> ResolverStatus {
+        self.status_rust()
+    }
+}

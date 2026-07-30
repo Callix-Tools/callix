@@ -13,12 +13,12 @@ use indexmap::IndexMap;
 use std::path::{Path, PathBuf};
 
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
 use crate::boundaries::run_extractors;
-use crate::dependencies::declare_dependencies;
+use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::graph::Graph;
 use crate::ids::{boundary_id, node_id};
 use crate::error::AdapterError;
@@ -26,6 +26,7 @@ use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
 use crate::node::{Node, NodeKind};
 use crate::occurrence::{ImportClassifier, OccurrenceRef};
 use crate::relation::{Relation, RelationKind};
+use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span::Span;
 use crate::span_index::SpanIndex;
@@ -684,58 +685,6 @@ fn add_boundary(
     )
 }
 
-/// Where symbol definitions come from.
-enum ResolverSlot {
-    /// ty, linked into the module.
-    Embedded(EmbeddedTyResolver),
-    /// A Python object with `prepare` / `resolve_all` / `status`.
-    Custom(Py<PyAny>),
-    /// The resolution phase is off: the graph stays structural.
-    Disabled,
-}
-
-/// Coerces an arbitrary resolver's answer into a native ResolvedRef.
-fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
-    if item.is_none() {
-        return Ok(None);
-    }
-    if let Ok(reference) = item.extract::<ResolvedRef>() {
-        return Ok(Some(reference));
-    }
-    let attr_str = |name: &str| -> PyResult<String> {
-        Ok(item
-            .getattr(name)
-            .ok()
-            .filter(|v| !v.is_none())
-            .map(|v| v.str())
-            .transpose()?
-            .map(|v| v.to_string())
-            .unwrap_or_default())
-    };
-    let file_path = item
-        .getattr("file_path")
-        .ok()
-        .filter(|v| !v.is_none())
-        .map(|v| v.str())
-        .transpose()?
-        .map(|v| v.to_string());
-    let attr_u32 = |name: &str| -> u32 {
-        item.getattr(name)
-            .ok()
-            .and_then(|v| v.extract::<u32>().ok())
-            .unwrap_or(0)
-    };
-    let origin = attr_str("origin")?;
-    Ok(Some(ResolvedRef {
-        full_name: attr_str("full_name")?,
-        file_path,
-        line: attr_u32("line"),
-        col: attr_u32("col"),
-        kind: attr_str("kind")?,
-        origin: if origin.is_empty() { "unknown".to_string() } else { origin },
-    }))
-}
-
 /// The language adapter for Python projects.
 ///
 /// `analyze()` runs in three phases: structure per root, then a single
@@ -745,31 +694,16 @@ fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
 #[pyclass(module = "callix._core", unsendable)]
 pub struct PythonAdapter {
     dep_parsers: Option<Py<PyAny>>,
-    resolver: ResolverSlot,
+    resolver: ResolverSlot<EmbeddedTyResolver>,
     /// Extra boundary extractors, run in addition to the built-in ones.
     boundary_extractors: Option<Py<PyAny>>,
 }
 
 impl PythonAdapter {
-    /// Third-party package names: the built-in parsers, or custom ones.
+    /// Third-party distribution names: custom parsers, or the built-in ones.
     fn third_party(&self, py: Python<'_>, py_root: &Path) -> PyResult<HashSet<String>> {
-        let Some(parsers) = &self.dep_parsers else {
-            return Ok(parse_dependencies(&py_root.to_string_lossy()));
-        };
-        let root = py_root.to_string_lossy().into_owned();
-        let path = py.import("pathlib")?.getattr("Path")?.call1((root,))?;
-        let mut names = HashSet::new();
-        for parser in parsers.bind(py).try_iter()? {
-            let parser = parser?;
-            if parser.call_method1("can_parse", (&path,))?.is_truthy()? {
-                names.extend(
-                    parser
-                        .call_method1("parse", (&path,))?
-                        .extract::<HashSet<String>>()?,
-                );
-            }
-        }
-        Ok(names)
+        Ok(custom_declared(py, self.dep_parsers.as_ref(), py_root)?
+            .unwrap_or_else(|| parse_dependencies(&py_root.to_string_lossy())))
     }
 
     /// Asks the resolver for definitions for every use-site.
@@ -786,30 +720,11 @@ impl PythonAdapter {
         if occurrences.is_empty() {
             return Ok(ResolverMetrics::default());
         }
+        if self.resolver.is_disabled() {
+            return Ok(ResolverMetrics::default());
+        }
         let started = Instant::now();
-        let refs: Vec<Option<ResolvedRef>> = match &self.resolver {
-            ResolverSlot::Disabled => return Ok(ResolverMetrics::default()),
-            ResolverSlot::Embedded(resolver) => occurrences
-                .iter()
-                .map(|(path, occurrence)| {
-                    resolver.resolve_rust(path, occurrence.line, occurrence.col)
-                })
-                .collect(),
-            ResolverSlot::Custom(resolver) => {
-                let path_type = py.import("pathlib")?.getattr("Path")?;
-                let queries = PyList::empty(py);
-                for (path, occurrence) in occurrences {
-                    let path = path_type.call1((path,))?;
-                    queries.append((path, occurrence.line, occurrence.col))?;
-                }
-                let answers = resolver.bind(py).call_method1("resolve_all", (queries,))?;
-                let mut refs = Vec::with_capacity(occurrences.len());
-                for item in answers.try_iter()? {
-                    refs.push(coerce_ref(&item?)?);
-                }
-                refs
-            }
-        };
+        let refs = self.resolver.resolve_all(py, occurrences)?;
         let elapsed = started.elapsed().as_secs_f64();
 
         let mut metrics =
@@ -831,37 +746,36 @@ impl PythonAdapter {
 #[pymethods]
 impl PythonAdapter {
     /// Args:
-    ///     dep_parsers: custom manifest parsers (objects with `can_parse` and
-    ///         `parse`). Defaults to the built-in ones: pyproject.toml,
-    ///         requirements*.txt, setup.cfg.
-    ///     resolver: a custom symbol resolver (an object with `resolve_all`).
-    ///         Defaults to the embedded ty.
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` in the metadata becomes
     ///         `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing the embedded ty. An
+    ///         object with `prepare(root, files)`, `resolve_all(queries)` and
+    ///         `status()`.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in ones
+    ///         (pyproject.toml, requirements*.txt, setup.cfg). Each is an object
+    ///         with `can_parse(root)` and `parse(root)`.
     ///     boundary_extractors: extra boundary extractors, run in **addition**
     ///         to the built-in ones. Each is an object with
     ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
     #[pyo3(signature = (
-        dep_parsers = None,
-        resolver = None,
         *,
         resolve = true,
+        resolver = None,
+        dep_parsers = None,
         boundary_extractors = None,
     ))]
     fn new(
         py: Python<'_>,
-        dep_parsers: Option<Py<PyAny>>,
-        resolver: Option<Py<PyAny>>,
         resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
         boundary_extractors: Option<Py<PyAny>>,
     ) -> PyResult<Self> {
-        let resolver = match (resolve, resolver) {
-            (false, _) => ResolverSlot::Disabled,
-            (true, Some(custom)) => ResolverSlot::Custom(custom),
-            (true, None) => ResolverSlot::Embedded(EmbeddedTyResolver::for_running_python(py)?),
-        };
+        let resolver = ResolverSlot::new(resolve, resolver, || {
+            EmbeddedTyResolver::for_running_python(py)
+        })?;
         Ok(Self { dep_parsers, resolver, boundary_extractors })
     }
 
@@ -945,10 +859,12 @@ impl PythonAdapter {
         // workspace once per root.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
-        if !matches!(self.resolver, ResolverSlot::Disabled) {
-            let all_files: Vec<String> =
-                root_files.iter().flat_map(|(_, fs)| fs.clone()).collect();
-            self.prepare_resolver(py, &root_str, all_files)?;
+        if !self.resolver.is_disabled() {
+            let all_files: Vec<PathBuf> = root_files
+                .iter()
+                .flat_map(|(_, files)| files.iter().map(PathBuf::from))
+                .collect();
+            self.resolver.prepare(py, &project_root, &all_files)?;
 
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
             for (project, occurrences, _boundaries) in &built {
@@ -962,7 +878,7 @@ impl PythonAdapter {
                 )?;
                 metrics.merge(&pass);
             }
-            status = self.resolver_status(py)?;
+            status = self.resolver.status(py)?;
         }
 
         // Phase 3 — boundaries. After resolution, so BOUNDARY nodes land in
@@ -989,46 +905,6 @@ impl PythonAdapter {
     }
 
     fn __repr__(&self) -> String {
-        let resolver = match &self.resolver {
-            ResolverSlot::Embedded(_) => "ty",
-            ResolverSlot::Custom(_) => "custom",
-            ResolverSlot::Disabled => "off",
-        };
-        format!("PythonAdapter(resolver={resolver})")
-    }
-}
-
-impl PythonAdapter {
-    fn prepare_resolver(
-        &mut self,
-        py: Python<'_>,
-        project_root: &str,
-        files: Vec<String>,
-    ) -> PyResult<()> {
-        match &mut self.resolver {
-            ResolverSlot::Embedded(resolver) => resolver.prepare_rust(project_root),
-            ResolverSlot::Custom(resolver) => {
-                let path_type = py.import("pathlib")?.getattr("Path")?;
-                let root = path_type.call1((project_root,))?;
-                let paths = PyList::empty(py);
-                for file in files {
-                    paths.append(path_type.call1((file,))?)?;
-                }
-                resolver.bind(py).call_method1("prepare", (root, paths))?;
-                Ok(())
-            }
-            ResolverSlot::Disabled => Ok(()),
-        }
-    }
-
-    fn resolver_status(&self, py: Python<'_>) -> PyResult<ResolverStatus> {
-        match &self.resolver {
-            ResolverSlot::Embedded(resolver) => Ok(resolver.status_rust()),
-            ResolverSlot::Custom(resolver) => {
-                let value = resolver.bind(py).call_method0("status")?;
-                Ok(ResolverStatus::coerce(&value, ResolverStatus::Unavailable))
-            }
-            ResolverSlot::Disabled => Ok(ResolverStatus::Unavailable),
-        }
+        format!("PythonAdapter(resolver={})", self.resolver.label("ty"))
     }
 }

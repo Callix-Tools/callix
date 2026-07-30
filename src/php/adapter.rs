@@ -20,7 +20,7 @@ use pyo3::types::PyDict;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::{BoundaryRef, run_extractors};
-use crate::dependencies::declare_dependencies;
+use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -29,6 +29,7 @@ use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::ResolvedRef;
 use crate::relation::{Relation, RelationKind};
+use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span_index::SpanIndex;
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
@@ -221,16 +222,18 @@ fn file_namespaces(files: &[PathBuf]) -> PyResult<Vec<(PathBuf, String)>> {
 }
 
 /// Structure, imports and boundaries for one PHP project root.
+#[allow(clippy::too_many_arguments)]
 fn build_root_structure(
     py: Python<'_>,
     graph: &mut Graph,
     project_root: &Path,
     php_root: &Path,
     files: &[PathBuf],
+    declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
 ) -> PyResult<BuiltRoot> {
     let project = project_name(php_root);
-    let vendors = dependencies(php_root);
+    let vendors = declared.unwrap_or_else(|| dependencies(php_root));
     let internal = internal_prefixes(php_root);
 
     let project_id = node_id(&project, &project, NodeKind::Project.as_str());
@@ -346,7 +349,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
 pub struct PhpAdapter {
     /// Extra boundary extractors, run in addition to the built-in ones.
     boundary_extractors: Option<Py<PyAny>>,
-    resolver: Option<PhpResolver>,
+    dep_parsers: Option<Py<PyAny>>,
+    resolver: ResolverSlot<PhpResolver>,
 }
 
 #[gen_stub_pymethods]
@@ -355,16 +359,34 @@ impl PhpAdapter {
     /// Args:
     ///     resolve: False turns the resolution phase off — the graph stays
     ///         structural and `resolver_status` becomes `unavailable`.
+    ///     resolver: a custom symbol resolver, replacing the built-in symbol
+    ///         table. An object with `prepare(root, files)`,
+    ///         `resolve_all(queries)` and `status()`.
+    ///     dep_parsers: custom manifest parsers, replacing the built-in
+    ///         `composer.json` reader. Each is an object with `can_parse(root)` and
+    ///         `parse(root)`.
     ///     boundary_extractors: extra boundary extractors, run in **addition**
     ///         to the built-in ones. Each is an object with
     ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
-    #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
-        Self {
+    #[pyo3(signature = (
+        *,
+        resolve = true,
+        resolver = None,
+        dep_parsers = None,
+        boundary_extractors = None,
+    ))]
+    fn new(
+        resolve: bool,
+        resolver: Option<Py<PyAny>>,
+        dep_parsers: Option<Py<PyAny>>,
+        boundary_extractors: Option<Py<PyAny>>,
+    ) -> PyResult<Self> {
+        Ok(Self {
             boundary_extractors,
-            resolver: resolve.then(PhpResolver::empty),
-        }
+            dep_parsers,
+            resolver: ResolverSlot::new(resolve, resolver, || Ok(PhpResolver::empty()))?,
+        })
     }
 
     fn language(&self) -> &'static str {
@@ -424,6 +446,7 @@ impl PhpAdapter {
                 &project_root,
                 php_root,
                 root_sources,
+                custom_declared(py, self.dep_parsers.as_ref(), php_root)?,
                 self.boundary_extractors.as_ref(),
             )?);
         }
@@ -434,17 +457,17 @@ impl PhpAdapter {
         // exactly what a monorepo is for.
         let mut metrics = ResolverMetrics::default();
         let mut status = ResolverStatus::Unavailable;
-        if let Some(resolver) = &mut self.resolver {
+        if !self.resolver.is_disabled() {
             let indexed: Vec<PathBuf> = root_files
                 .iter()
                 .flat_map(|(_root, sources)| sources.iter().cloned())
                 .collect();
-            resolver.prepare_rust(&project_root, &indexed)?;
+            self.resolver.prepare(py, &project_root, &indexed)?;
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
             for (project, occurrences, _boundaries) in &built {
                 let pass = resolve_pass(
                     py,
-                    resolver,
+                    &self.resolver,
                     &mut graph,
                     &mut span_index,
                     project,
@@ -453,7 +476,7 @@ impl PhpAdapter {
                 )?;
                 metrics.merge(&pass);
             }
-            status = resolver.status_rust();
+            status = self.resolver.status(py)?;
         }
 
         // Phase 3 — boundaries, after resolution.
@@ -479,16 +502,13 @@ impl PhpAdapter {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "PhpAdapter(resolver={})",
-            if self.resolver.is_some() { "symbol table" } else { "off" }
-        )
+        format!("PhpAdapter(resolver={})", self.resolver.label("symbol table"))
     }
 }
 
 fn resolve_pass(
     py: Python<'_>,
-    resolver: &PhpResolver,
+    resolver: &ResolverSlot<PhpResolver>,
     graph: &mut Graph,
     span_index: &mut SpanIndex,
     project: &str,
@@ -504,10 +524,7 @@ fn resolve_pass(
     }
 
     let started = Instant::now();
-    let refs: Vec<Option<ResolvedRef>> = occurrences
-        .iter()
-        .map(|(path, occurrence)| resolver.resolve_rust(path, occurrence.line, occurrence.col))
-        .collect();
+    let refs: Vec<Option<ResolvedRef>> = resolver.resolve_all(py, occurrences)?;
     metrics.seconds = started.elapsed().as_secs_f64();
 
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {

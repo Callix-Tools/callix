@@ -30,11 +30,14 @@
 //!   The call binds to the single candidate when there is one and to the first
 //!   in declaration order when there are several, and says so in the edge.
 //!
-//! `ScipClangResolver` is a natural future addition — `src/rustlang/scip.rs`
-//! already holds a decoder that does not care which indexer produced the index.
-//! It would have to be selected explicitly rather than detected, so that the
-//! same folder cannot yield structurally different graphs depending on whether
-//! `cmake` happened to have run.
+//! A compiler-backed backend plugs in through the adapters' `resolver=`
+//! argument, and `src/rustlang/scip.rs` already holds a decoder that does not
+//! care which indexer produced the index. Note the asymmetry: a custom resolver
+//! is asked "what is defined at this position?", the way every other adapter
+//! asks its backend, while the table below answers by name — a compdb-derived
+//! index has positions, and this one cannot. Selection stays explicit rather
+//! than detected, so that the same folder cannot yield structurally different
+//! graphs depending on whether `cmake` happened to have run.
 
 use std::collections::{HashMap, HashSet};
 
@@ -43,6 +46,21 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::node::NodeKind;
 use crate::status::ResolverStatus;
+
+/// The built-in backend, as the adapter's `ResolverSlot` records it.
+///
+/// A marker with no state, because unlike the other four backends this one
+/// cannot exist before analysis: [`CFamilyIndex`] is keyed by name and assembled
+/// from the declarations and includes the survey pass found, none of which exist
+/// until the files have been read. The slot records only *that* the table is in
+/// use, and `analyze` builds it.
+///
+/// It deliberately does not implement `NativeResolver`: that trait's
+/// `resolve(path, line, col)` asks "what is defined at this position?", which is
+/// the question this family answers in the other direction. A custom resolver
+/// passed to `CAdapter` or `CppAdapter` *is* asked that question, because a
+/// caller who has a compiler-backed index has positions to answer with.
+pub struct SymbolTable;
 
 /// One name a translation unit can see.
 #[derive(Clone)]

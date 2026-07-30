@@ -4,9 +4,24 @@ sidebar_position: 4
 
 # Custom resolvers and parsers
 
-Analysis moved to Rust, but the two pluggable points did not disappear: both
+Analysis moved to Rust, but the pluggable points did not disappear: all three
 are called back through the ordinary Python protocol, so a plain Python object
 still works.
+
+Every adapter takes the same four keyword-only arguments, and they mean the same
+thing in each:
+
+```python
+Adapter(
+    resolve=True,               # False: skip resolution, keep the structure
+    resolver=None,              # replaces the native backend
+    dep_parsers=None,           # replaces the built-in manifest reader
+    boundary_extractors=None,   # runs in addition to the built-in ones
+)
+```
+
+`YamlAdapter` is the one exception, and takes `resolve` and
+`boundary_extractors` only — [see below](#why-yaml-is-different).
 
 ## A resolver
 
@@ -51,6 +66,23 @@ graph = PythonAdapter(resolver=ConstantResolver()).analyze(root)
 
 `origin` decides what the edge points at. `internal` means "look this position
 up in the graph"; anything else sends the edge to an `EXTERNAL_SYMBOL`.
+
+Three properties of the protocol are worth knowing before you write one:
+
+- **A custom resolver replaces the native one; it is not consulted after it.**
+  There is no fallback chain to reason about, and no way for two backends to
+  answer the same use-site differently.
+- **`resolve_all` must answer every query.** Answers are matched to queries by
+  index, so returning a shorter list would shift every later answer onto the
+  wrong use-site. Callix raises `AdapterError` rather than accept that; use
+  `None` for the ones you do not know.
+- **`resolve=False` wins.** Passing both `resolve=False` and a resolver leaves
+  the graph structural and never calls the resolver, because that combination is
+  almost always someone switching resolution off to time the structural phase.
+
+The status you report is the one recorded in `graph.metadata["resolver_status"]`,
+and it is what `analyze(..., strict=True)` checks — so a resolver that reports
+`ok` when it is guessing defeats the one guard a caller has.
 
 ## The bundled ty resolver
 
@@ -124,7 +156,7 @@ Extractors run **in addition** to the built-in ones, so adding Django support
 does not mean reimplementing FastAPI. Anything they raise propagates — a broken
 extractor should be noticed, not quietly yield an empty graph.
 
-All four adapters accept the argument.
+Every adapter accepts the argument.
 
 ## A dependency parser
 
@@ -137,16 +169,54 @@ class LockfileParser:
         return (project_root / "my.lock").is_file()
 
     def parse(self, project_root):
-        return frozenset({"requests", "httpx"})
+        return ["requests", "httpx"]
 
 graph = PythonAdapter(dep_parsers=[LockfileParser()]).analyze(root)
 ```
 
-The names returned here are what import classification compares against, so
-they decide whether an import is `third_party` or `unknown`.
+Any iterable of names will do. They are what import classification compares
+against, so they decide whether an import is `third_party` or `unknown`, and they
+are also what becomes the graph's DEPENDENCY nodes.
 
-:::note
-`resolver` and `dep_parsers` are currently accepted by `PythonAdapter` only.
-The other three adapters take `resolve=False` to skip resolution, but their
-backends are not swappable from Python yet.
-:::
+Custom parsers **replace** the built-in reader rather than adding to it, so a
+parser that only understands your lockfile will hide `pyproject.toml`. Every
+built-in reader is exported — `parse_dependencies`, `ts_parse_dependencies`,
+`go_parse_dependencies`, `rust_parse_dependencies`, `php_parse_dependencies`,
+`c_parse_dependencies` — so a parser that wants to add rather than replace can
+call one and return the union.
+
+What a name means is the language's business: a distribution name in Python, a
+package name in TypeScript, a module path in Go, a crate in Rust, a vendor prefix
+in PHP, a library in the C family. A parser is written for one language, not for
+all of them.
+
+## Which backend each adapter replaces {#backends}
+
+| Adapter | `resolver=` replaces | `dep_parsers=` replaces |
+|---|---|---|
+| `PythonAdapter` | the embedded ty | pyproject.toml, requirements*.txt, setup.cfg |
+| `TypeScriptAdapter` | the embedded typescript-go | package.json |
+| `GoAdapter` | `go/packages` + `go/types` | go.mod |
+| `RustAdapter` | the `rust-analyzer scip` index | Cargo.toml |
+| `PhpAdapter` | the built-in symbol table | composer.json |
+| `CAdapter`, `CppAdapter` | the built-in symbol table | CMake, vcpkg, conan, meson |
+
+The C family is the one place where a custom resolver is asked a *different*
+question than the built-in backend. The shipped symbol table resolves by name and
+`#include` visibility, because that is what C and C++ actually do and because no
+position-keyed index can be built without a `compile_commands.json`. A custom
+resolver is asked about positions like every other adapter's — which is exactly
+the shape a `scip-clang` or clangd index has. See
+[C and C++](../adapters/c-family.md#resolution-and-why-it-is-degraded).
+
+## Why YAML is different {#why-yaml-is-different}
+
+`YamlAdapter` takes `resolve` and `boundary_extractors` only. YAML declares no
+symbols, so there is no resolution phase to redirect and no use-site a resolver
+could be asked about; its dependencies come from a Helm `Chart.yaml` wherever one
+is found, not from a manifest at the project root, so the `can_parse(root)` /
+`parse(root)` protocol has nothing to bind to.
+
+Accepting the two arguments and ignoring them would be worse than refusing them:
+a caller who passed a resolver would be told nothing while it was never called.
+Passing either raises `TypeError`.

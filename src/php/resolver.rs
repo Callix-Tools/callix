@@ -1658,3 +1658,20 @@ impl PhpResolver {
         )
     }
 }
+
+/// The only backend that needs the file list: there is no manifest that names
+/// every source, so the symbol table is built from exactly the files the walk
+/// collected.
+impl crate::resolver_slot::NativeResolver for PhpResolver {
+    fn prepare(&mut self, project_root: &Path, files: &[PathBuf]) -> PyResult<()> {
+        self.prepare_rust(project_root, files)
+    }
+
+    fn resolve(&self, path: &str, line: u32, col: u32) -> Option<ResolvedRef> {
+        self.resolve_rust(path, line, col)
+    }
+
+    fn status(&self) -> ResolverStatus {
+        self.status_rust()
+    }
+}

@@ -384,3 +384,23 @@ impl RustResolver {
         )
     }
 }
+
+/// `rust-analyzer scip` indexes the whole workspace in one subprocess run, so
+/// the file list is not passed on. `prepare` cannot fail: a missing
+/// rust-analyzer, a workspace that will not load and an unreadable index all
+/// leave the resolver in a status the adapter reports rather than raising, so
+/// that a project with one broken crate still yields its structural graph.
+impl crate::resolver_slot::NativeResolver for RustResolver {
+    fn prepare(&mut self, project_root: &Path, _files: &[PathBuf]) -> PyResult<()> {
+        self.prepare_rust(project_root);
+        Ok(())
+    }
+
+    fn resolve(&self, path: &str, line: u32, col: u32) -> Option<ResolvedRef> {
+        self.resolve_rust(path, line, col)
+    }
+
+    fn status(&self) -> ResolverStatus {
+        self.status_rust()
+    }
+}

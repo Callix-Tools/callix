@@ -18,6 +18,7 @@ mod occurrence;
 mod php;
 mod python;
 mod relation;
+mod resolver_slot;
 mod roots;
 mod rustlang;
 mod serde;

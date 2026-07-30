@@ -166,11 +166,16 @@ The site lives in [`website/`](website) (Docusaurus) and deploys to GitHub
 Pages on every push touching that directory.
 
 ```bash
-cd website
-pnpm install
-pnpm start      # local preview
-pnpm build      # what CI runs; fails on a broken link
+task docs:install   # pnpm install --frozen-lockfile, in website/
+task docs           # local preview with hot reload
+task docs:build     # what CI runs
 ```
+
+Run `task docs:build` before pushing a docs change. It fails on two things a
+reader would otherwise hit in production: `onBrokenLinks: 'throw'` rejects a link
+to a heading that no longer exists, and MDX parses `{...}` in a heading as a JSX
+expression — so Docusaurus's own `{#custom-anchor}` syntax breaks the build here
+and the auto-generated slug is what to link to.
 
 ## Benchmarks
 

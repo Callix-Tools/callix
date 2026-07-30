@@ -115,6 +115,31 @@ tasks:
       - cargo clean
 
   # ---------------------------------------------------------------------------
+  # Docs
+  # ---------------------------------------------------------------------------
+
+  docs:install:
+    desc: Install the docs site's dependencies (pnpm, in website/)
+    dir: website
+    cmds:
+      - pnpm install --frozen-lockfile
+
+  docs:
+    desc: Serve the docs site with hot reload
+    dir: website
+    cmds:
+      - pnpm start
+
+  docs:build:
+    desc: Build the docs site — the check CI runs on any website/ change
+    # Worth running before pushing a docs change: MDX parses `{...}` in a
+    # heading as a JSX expression, and `onBrokenLinks: 'throw'` means a link to
+    # a heading that no longer exists fails the build rather than rotting.
+    dir: website
+    cmds:
+      - pnpm build
+
+  # ---------------------------------------------------------------------------
   # Release
   # ---------------------------------------------------------------------------
 

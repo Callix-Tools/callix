@@ -20,7 +20,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -93,7 +93,7 @@ jobs:
           - os: macos-latest
             target: x86_64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.tag }}
 
@@ -145,7 +145,7 @@ jobs:
     needs: version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.tag }}
       - uses: PyO3/maturin-action@v1
@@ -169,7 +169,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.tag }}
           fetch-depth: 0
@@ -178,7 +178,7 @@ jobs:
       - uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v9
       - uses: kenji-miyake/setup-git-cliff@v2
 
       - name: Collect artifacts

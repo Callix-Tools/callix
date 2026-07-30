@@ -190,7 +190,7 @@ package name in TypeScript, a module path in Go, a crate in Rust, a vendor prefi
 in PHP, a library in the C family. A parser is written for one language, not for
 all of them.
 
-## Which backend each adapter replaces {#backends}
+## Which backend each adapter replaces
 
 | Adapter | `resolver=` replaces | `dep_parsers=` replaces |
 |---|---|---|
@@ -209,7 +209,7 @@ resolver is asked about positions like every other adapter's — which is exactl
 the shape a `scip-clang` or clangd index has. See
 [C and C++](../adapters/c-family.md#resolution-and-why-it-is-degraded).
 
-## Why YAML is different {#why-yaml-is-different}
+## Why YAML is different
 
 `YamlAdapter` takes `resolve` and `boundary_extractors` only. YAML declares no
 symbols, so there is no resolution phase to redirect and no use-site a resolver

@@ -21,6 +21,7 @@ task check                       # cargo check, no module build
 task test                        # cargo test + example smoke run
 task stubs / task stubs:check    # regenerate / verify committed .pyi
 task example -- example/foo.py   # run a different script
+task docs:build                  # Docusaurus build — what the docs CI runs
 DEBUG=1 task ...                 # switch every cargo task to the debug profile
 ```
 

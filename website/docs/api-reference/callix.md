@@ -30,7 +30,7 @@ YamlAdapter(*, resolve=True, boundary_extractors=None)
 `resolver` and `dep_parsers` replace the native backend and the built-in manifest
 reader; `boundary_extractors` runs in addition to the built-in ones. See
 [Custom resolvers and parsers](../guides/custom-resolvers.md) for the protocols
-and for [what each adapter replaces](../guides/custom-resolvers.md#backends).
+and for [what each adapter replaces](../guides/custom-resolvers.md#which-backend-each-adapter-replaces).
 `YamlAdapter` takes neither, because YAML declares no symbols and has no
 project-root manifest.
 

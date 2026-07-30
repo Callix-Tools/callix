@@ -9460,6 +9460,29 @@
   },
   "project": "apache/superset",
   "ref": "6.1.0",
+  "resolution": {
+    "metrics": {
+      "external": 78575,
+      "internal": 160222,
+      "queries": 281667,
+      "resolved": 238797,
+      "unresolved": 42870
+    },
+    "relations": {
+      "calls": 54840,
+      "consumes": 188,
+      "contains": 3791,
+      "declares": 97542,
+      "depends_on": 175,
+      "exposes": 230,
+      "has_type": 13906,
+      "imports": 12720,
+      "inherits_from": 2036,
+      "references": 168015,
+      "resolves_to": 17321
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 1886,
     "nodes": 102726,

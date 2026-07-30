@@ -514,6 +514,28 @@
   },
   "project": "gin-gonic/gin",
   "ref": "v1.12.0",
+  "resolution": {
+    "metrics": {
+      "external": 8891,
+      "internal": 4983,
+      "queries": 13916,
+      "resolved": 13874,
+      "unresolved": 42
+    },
+    "relations": {
+      "calls": 8837,
+      "contains": 104,
+      "declares": 4188,
+      "depends_on": 35,
+      "exposes": 201,
+      "has_type": 1207,
+      "imports": 511,
+      "inherits_from": 26,
+      "references": 3804,
+      "resolves_to": 511
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 97,
     "nodes": 4218,

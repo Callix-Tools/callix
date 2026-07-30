@@ -2320,6 +2320,29 @@
   },
   "project": "casdoor/casdoor",
   "ref": "v3.98.0",
+  "resolution": {
+    "metrics": {
+      "external": 19175,
+      "internal": 17386,
+      "queries": 36633,
+      "resolved": 36561,
+      "unresolved": 72
+    },
+    "relations": {
+      "calls": 19353,
+      "consumes": 2,
+      "contains": 492,
+      "declares": 15953,
+      "depends_on": 309,
+      "exposes": 2,
+      "has_type": 3121,
+      "imports": 2394,
+      "inherits_from": 28,
+      "references": 14059,
+      "resolves_to": 2394
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 458,
     "nodes": 14152,

@@ -1510,6 +1510,29 @@
   },
   "project": "tokio-rs/axum",
   "ref": "axum-v0.8.9",
+  "resolution": {
+    "metrics": {
+      "external": 7124,
+      "internal": 3865,
+      "queries": 12625,
+      "resolved": 10989,
+      "unresolved": 1636
+    },
+    "relations": {
+      "calls": 8474,
+      "consumes": 320,
+      "contains": 592,
+      "declares": 5658,
+      "depends_on": 458,
+      "exposes": 365,
+      "has_type": 1185,
+      "imports": 1361,
+      "inherits_from": 286,
+      "references": 1044,
+      "resolves_to": 1375
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 296,
     "nodes": 7390,

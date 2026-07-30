@@ -2047,6 +2047,27 @@
   },
   "project": "colinhacks/zod",
   "ref": "v4.4.3",
+  "resolution": {
+    "metrics": {
+      "external": 5633,
+      "internal": 9590,
+      "queries": 17067,
+      "resolved": 15223,
+      "unresolved": 1844
+    },
+    "relations": {
+      "calls": 4434,
+      "contains": 1011,
+      "declares": 8411,
+      "depends_on": 96,
+      "has_type": 2416,
+      "imports": 1206,
+      "inherits_from": 580,
+      "references": 7793,
+      "resolves_to": 1387
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 404,
     "nodes": 9699,

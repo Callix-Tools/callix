@@ -517,6 +517,27 @@
   },
   "project": "BurntSushi/ripgrep",
   "ref": "14.1.1",
+  "resolution": {
+    "metrics": {
+      "external": 7502,
+      "internal": 8484,
+      "queries": 16156,
+      "resolved": 15986,
+      "unresolved": 170
+    },
+    "relations": {
+      "calls": 11314,
+      "contains": 196,
+      "declares": 6088,
+      "depends_on": 68,
+      "has_type": 1890,
+      "imports": 255,
+      "inherits_from": 231,
+      "references": 2551,
+      "resolves_to": 259
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 98,
     "nodes": 5855,

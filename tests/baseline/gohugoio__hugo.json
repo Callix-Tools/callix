@@ -4515,6 +4515,29 @@
   },
   "project": "gohugoio/hugo",
   "ref": "v0.163.3",
+  "resolution": {
+    "metrics": {
+      "external": 45584,
+      "internal": 40069,
+      "queries": 87043,
+      "resolved": 85653,
+      "unresolved": 1390
+    },
+    "relations": {
+      "calls": 47812,
+      "consumes": 12,
+      "contains": 1088,
+      "declares": 31672,
+      "depends_on": 185,
+      "exposes": 4,
+      "has_type": 8904,
+      "imports": 5947,
+      "inherits_from": 457,
+      "references": 28480,
+      "resolves_to": 5947
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 897,
     "nodes": 29518,

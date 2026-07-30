@@ -9377,6 +9377,27 @@
   },
   "project": "astral-sh/ruff",
   "ref": "0.15.18",
+  "resolution": {
+    "metrics": {
+      "external": 88217,
+      "internal": 128216,
+      "queries": 216936,
+      "resolved": 216433,
+      "unresolved": 503
+    },
+    "relations": {
+      "calls": 154920,
+      "contains": 3737,
+      "declares": 79624,
+      "depends_on": 868,
+      "has_type": 29378,
+      "imports": 14825,
+      "inherits_from": 3992,
+      "references": 28143,
+      "resolves_to": 15121
+    },
+    "status": "ok"
+  },
   "totals": {
     "files": 1870,
     "nodes": 82349,

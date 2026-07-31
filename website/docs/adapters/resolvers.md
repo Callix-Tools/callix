@@ -18,6 +18,7 @@ sources.
 | Rust | `rust-analyzer scip` | subprocess, index decoded natively | rust-analyzer, Cargo | `ok` |
 | PHP | a symbol table over the parsed sources | in-process | none | `degraded` |
 | C / C++ | a symbol table over the parsed sources | in-process | none | `degraded` |
+| C / C++ (opt-in) | `scip-clang`, via `ClangScipResolver` | subprocess, index decoded natively | scip-clang, a `compile_commands.json` | `ok` |
 | YAML | — | — | — | `ok`, with zero queries |
 
 The last column is what the graph can report at best, and it is what to read
@@ -58,7 +59,12 @@ C++ by declaration visibility through `#include`, and a table encodes exactly
 that — but it is not type inference, and the status says so.
 
 Both accept `resolver=` if you have something better; see
-[Custom resolvers and parsers](../guides/custom-resolvers.md).
+[Custom resolvers and parsers](../guides/custom-resolvers.md). For C and C++
+specifically, "something better" does not have to be one you write:
+[`ClangScipResolver`](./c-family.md#clangscipresolver-the-real-thing-if-you-have-a-compdb)
+ships in the module and drives `scip-clang` — real Clang semantic analysis,
+overloads resolved and all — over a project's own `compile_commands.json` when
+one exists. It reports `ok`, not `degraded`, because it is not a symbol table.
 
 ## Cost
 

@@ -135,15 +135,59 @@ What it will not do:
 - **Resolve overloads.** A call site names a function; choosing which overload
   it selects needs the argument types, which needs a type checker.
 
-Because the status is never `ok`, `strict=True` always raises for this family.
-That is deliberate: `strict` means "refuse to hand back a graph you cannot
-vouch for", and here callix cannot.
+Because the status is never `ok` for the built-in table, `strict=True` always
+raises for this family unless a better resolver is given. That is deliberate:
+`strict` means "refuse to hand back a graph you cannot vouch for", and a
+symbol table cannot.
 
-A compiler-backed backend plugs in through `resolver=`, like every other
-adapter's:
+### `ClangScipResolver`: the real thing, if you have a compdb
+
+If a `compile_commands.json` exists — generated (`cmake
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`, `bear -- make`, a Meson or Bazel build) or
+already checked in — [scip-clang](https://github.com/sourcegraph/scip-clang)
+drives Clang's actual semantic analysis over it, and `ClangScipResolver` wires
+that in:
 
 ```python
-CppAdapter(resolver=MyScipIndex()).analyze(root)
+from callix import ClangScipResolver, CppAdapter
+
+resolver = ClangScipResolver(compdb_path="build/compile_commands.json")
+graph = CppAdapter(resolver=resolver).analyze(root)
+```
+
+This is not a heuristic improvement on the table — it is what the table cannot
+be. Clang has already picked which overload a call binds to, so the SCIP index
+records `leveldb::Arena::AllocateNewBlock(size_t)`, not "the first declaration
+named `AllocateNewBlock`." `graph.metadata["resolver_status"]` reports `ok`
+when the index built cleanly.
+
+`compdb_path` is relative to the `project_root` passed to `analyze()` unless
+given as an absolute path; an out-of-tree CMake build (`cmake -B build`, the
+common case) means it is almost always `"build/compile_commands.json"`, never
+the default `"compile_commands.json"`.
+
+Coverage follows the compilation database, not the file walk: a source file
+`CppAdapter` collected because it exists in the tree but that no build target
+actually compiles (a test suite built only with `-DBUILD_TESTS=ON`, a
+platform-specific file excluded by the current configuration) has nothing in
+the index to answer with, and its occurrences fall through to `unresolved`
+rather than to a wrong guess. That is expected, not a bug in the resolver — the
+graph is honest about covering exactly what was built.
+
+`ClangScipResolver` plugs in through the same `resolver=` extension point
+described in [Custom resolvers and parsers](../guides/custom-resolvers.md) —
+nothing in the adapter itself knows this type exists, it is simply a
+native-Rust object satisfying the same `prepare`/`resolve_all`/`status`
+protocol a Python object would. It has to be selected explicitly rather than
+detected, so that the same folder cannot yield structurally different graphs
+depending on whether `cmake` happened to have run.
+
+### Writing your own instead
+
+A compiler-backed backend plugs in through `resolver=` the same way:
+
+```python
+CppAdapter(resolver=MyOwnIndex()).analyze(root)
 ```
 
 With one difference worth knowing. The built-in table resolves **by name** and
@@ -151,12 +195,9 @@ With one difference worth knowing. The built-in table resolves **by name** and
 position-keyed index exists without a compdb. A custom resolver is asked the
 question every other adapter asks its backend — "what is defined at this
 position?" — which is exactly the shape a `scip-clang` or clangd index has, and
-`src/rustlang/scip.rs` already holds a decoder that does not care which indexer
-produced the index.
-
-It has to be selected explicitly rather than detected, so that the same folder
-cannot yield structurally different graphs depending on whether `cmake` happened
-to have run.
+`src/scip.rs`'s decoder — shared with the Rust adapter — does not care which
+indexer produced the index; `ClangScipResolver` itself is a working example of
+building on it.
 
 ## Include guards
 

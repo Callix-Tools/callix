@@ -179,18 +179,37 @@ be declared below its `impl`.
 | Python | `ty` linked as a library (`src/python/ty_embedded.rs`) | none |
 | TypeScript | typescript-go via a Go c-archive (`go/bridge.go`) | none |
 | Go | `go/packages` + `go/types` via the same c-archive (`go/bridge_go.go`) | Go toolchain |
-| Rust | `rust-analyzer scip` subprocess + own SCIP decoder (`src/rustlang/scip.rs`) | rust-analyzer + Cargo |
+| Rust | `rust-analyzer scip` subprocess + shared SCIP decoder (`src/scip.rs`) | rust-analyzer + Cargo |
 | PHP | a `SymbolTable` built from the sources (`src/php/resolver.rs`) | none |
 | C / C++ | a `SymbolTable` over the parsed sources (`src/cfamily/resolver.rs`) | none |
+| C / C++ (opt-in) | `scip-clang` subprocess + the same shared decoder (`src/cfamily/clang_resolver.rs`) | scip-clang + a `compile_commands.json` |
 | YAML | none — it declares no symbols | none |
 
-PHP and the C family report **`degraded`**, deliberately: a symbol table is not
-a type checker and says so. Every precise C/C++ option needs a
-`compile_commands.json` that almost no repository ships, which is why there is
-no subprocess to shell out to. Note that the C family's `unresolved` is always
-0 — every miss becomes an `EXTERNAL_SYMBOL` rather than a dropped edge, so
-`resolved == queries` and that ratio means nothing; the internal/external split
-is the signal.
+PHP and the default C-family backend report **`degraded`**, deliberately: a
+symbol table is not a type checker and says so. Every precise C/C++ option
+needs a `compile_commands.json` that almost no repository ships, which is why
+the *default* has no subprocess to shell out to. Note that the symbol table's
+`unresolved` is always 0 — every miss becomes an `EXTERNAL_SYMBOL` rather than
+a dropped edge, so `resolved == queries` and that ratio means nothing; the
+internal/external split is the signal.
+
+`ClangScipResolver` is the opt-in exception — a real, position-keyed backend a
+caller wires in explicitly via `resolver=`, the same as any custom resolver.
+Unlike the symbol table it genuinely has a nonzero `unresolved`: a position
+`scip-clang` never indexed (most commonly a source file the file-walk
+collected but that no build target actually compiles under the current
+configuration) just does not resolve, rather than falling back to
+`EXTERNAL_SYMBOL`. That is correct — a symbol table always answers something,
+right or wrong, because that is what "a symbol table" means; a real semantic
+index says nothing when it has nothing, which is the more honest failure mode.
+Verified empirically against google/leveldb: 90% of positions in files the
+compilation database actually covered resolved correctly, including a call
+through an overload set — something the default table cannot do at all,
+`AllocateNewBlock`, not "the first `AllocateNewBlock` declared." `ScipIndex` in
+`src/scip.rs` needed no changes to serve both backends — `rust-analyzer scip`'s
+`local N` scope-local symbols and its position-keyed names for macros are
+exactly what `scip-clang` already emits; only the symbol *scheme* (how an
+unresolved name's origin is classified) differs and stays per-resolver.
 
 Go and Rust cannot be compiled in: both need their standard library's sources
 and a real workspace load. `build.rs` clones typescript-go into `.ts-go/`
@@ -229,6 +248,13 @@ load-bearing:
   no occurrences and its Helm dependencies are per-file, so both arguments would
   be accepted and provably ignored. `tests/api/test_adapter_api.py` pins the
   `TypeError`.
+- **`ClangScipResolver` is `NativeResolver`-shaped but plugs in through
+  `Custom`, not `Native`.** `CAdapter`/`CppAdapter`'s `ResolverSlot<SymbolTable>`
+  is fixed to one native type, already spoken for. Rather than fork it into an
+  enum of two native backends, `ClangScipResolver` is just a pyclass a caller
+  passes as `resolver=` — it happens to answer position queries the same way
+  `RustResolver` does, but the adapter has no idea it is anything other than an
+  ordinary custom resolver honoring `prepare`/`resolve_all`/`status`.
 
 ## Parity with graphlens — historical
 

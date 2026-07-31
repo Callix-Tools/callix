@@ -77,12 +77,13 @@ Shared methods:
 ## Resolvers
 
 ```python
-TyResolver(base_prefix=None)     # Python, wraps the embedded ty
-TsResolver()                     # TypeScript
-GoResolver()                     # Go
-RustResolver()                   # Rust
-PhpResolver()                    # PHP
-CFamilyResolver()                # C and C++ — reports its status only
+TyResolver(base_prefix=None)             # Python, wraps the embedded ty
+TsResolver()                             # TypeScript
+GoResolver()                             # Go
+RustResolver()                           # Rust
+PhpResolver()                            # PHP
+CFamilyResolver()                        # C and C++ — reports its status only
+ClangScipResolver(compdb_path=None)      # C and C++ — opt-in, real, via scip-clang
 ```
 
 Each implements `prepare(project_root, files=None)`,
@@ -92,6 +93,13 @@ Each implements `prepare(project_root, files=None)`,
 family's table is keyed by name and built during `analyze` from the declarations
 and includes the survey pass found, so there is no index to prepare or query from
 outside. See [C and C++](../adapters/c-family.md).
+
+`ClangScipResolver` implements the full protocol like the other five, but it is
+never the default for `CAdapter`/`CppAdapter` — pass it explicitly as
+`resolver=ClangScipResolver()`. It drives `scip-clang` over a project's own
+`compile_commands.json` and reports `ok`, not `degraded`, because it is Clang's
+own semantic analysis rather than a name-based table. See
+[C and C++](../adapters/c-family.md#clangscipresolver-the-real-thing-if-you-have-a-compdb).
 
 ## Functions
 

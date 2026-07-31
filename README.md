@@ -48,6 +48,11 @@ installed indexer worth shelling out to — every precise C/C++ option requires 
 symbol table from the sources and reports `degraded`, honest about being a symbol
 table and not a type checker.
 
+If a project *does* have a `compile_commands.json`, `ClangScipResolver` drives
+[scip-clang](https://github.com/sourcegraph/scip-clang) — real Clang semantic
+analysis, overloads resolved and all — as an opt-in `resolver=` for `CAdapter`
+and `CppAdapter`. See [C and C++](https://callix-tools.github.io/callix/docs/adapters/c-family#clangscipresolver-the-real-thing-if-you-have-a-compdb).
+
 ## Installation
 
 ```bash

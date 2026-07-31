@@ -206,7 +206,10 @@ question than the built-in backend. The shipped symbol table resolves by name an
 `#include` visibility, because that is what C and C++ actually do and because no
 position-keyed index can be built without a `compile_commands.json`. A custom
 resolver is asked about positions like every other adapter's — which is exactly
-the shape a `scip-clang` or clangd index has. See
+the shape a `scip-clang` or clangd index has, and
+[`ClangScipResolver`](../adapters/c-family.md#clangscipresolver-the-real-thing-if-you-have-a-compdb)
+ships in the module as exactly such a resolver, wired to `scip-clang`, for
+projects that have a compilation database. See
 [C and C++](../adapters/c-family.md#resolution-and-why-it-is-degraded).
 
 ## Why YAML is different

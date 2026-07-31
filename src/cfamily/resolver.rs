@@ -28,7 +28,19 @@
 //! - **Overload resolution.** A C++ call site names a function; picking which
 //!   overload it selects needs the argument types, which needs a type checker.
 //!   The call binds to the single candidate when there is one and to the first
-//!   in declaration order when there are several, and says so in the edge.
+//!   in declaration order when there are several, and says so in the edge
+//!   (`ambiguous` in the relation's metadata, set by `CFamilyIndex::lookup`).
+//!
+//! One thing it does do, because there is no reason not to: `lookup` is asked
+//! for a name **and** the kinds a use-site of that role could mean — a call
+//! can name a function, a method or a class; a read or a write can only name
+//! data. Every declaration shares one bare-name table regardless of kind, so
+//! without that filter a struct field and an unrelated method of the same name
+//! compete for the same query, and the loser is silent — a "call" to `key()`
+//! resolving to the `key` *parameter* of an unrelated function, say, rather
+//! than to nothing. That is a wrong answer with certainty, not a
+//! missing-type-checker gap, so it is filtered before ambiguity is even
+//! considered.
 //!
 //! A compiler-backed backend plugs in through the adapters' `resolver=`
 //! argument, and `src/rustlang/scip.rs` already holds a decoder that does not
@@ -173,21 +185,46 @@ impl CFamilyIndex {
 
     /// The definition a use-site names, if exactly one is a credible answer.
     ///
+    /// `wanted` restricts candidates to the kinds a use-site of this role could
+    /// possibly mean — a call can only mean a function, a method or a
+    /// constructed class, never a field or a parameter. Without this filter
+    /// every declaration sharing the bare name competes regardless of what
+    /// kind of thing it is: a struct's own `key` field, sharing the name with
+    /// an unrelated method `key()`, could out-rank the method that was
+    /// actually called, and the edge would point at a PARAMETER or an
+    /// ATTRIBUTE rather than anything callable. That is a wrong answer with
+    /// certainty, not a missing-type-checker limitation, which is why it is
+    /// filtered before the local/visible split below rather than left to
+    /// overload resolution to someday fix.
+    ///
     /// Returns the qualified name, the kind, and whether the answer was
     /// ambiguous — several visible candidates, which is where overload
     /// resolution would be needed and is not available.
-    pub fn lookup(&self, name: &str, from_file: &str) -> Option<(String, NodeKind, bool)> {
-        let candidates = self.by_name.get(name)?;
+    pub fn lookup(
+        &self,
+        name: &str,
+        from_file: &str,
+        wanted: &[NodeKind],
+    ) -> Option<(String, NodeKind, bool)> {
+        let candidates: Vec<&Symbol> = self
+            .by_name
+            .get(name)?
+            .iter()
+            .filter(|s| wanted.contains(&s.kind))
+            .collect();
+        if candidates.is_empty() {
+            return None;
+        }
 
         // A file-local symbol wins inside its own file even when an
         // external-linkage symbol of the same name exists elsewhere: that is
         // what `static` means, and getting it backwards would bind a call to
         // the wrong function in exactly the codebases that use the idiom most.
-        let local: Vec<&Symbol> = candidates
+        let local: Vec<&&Symbol> = candidates
             .iter()
             .filter(|s| s.internal && s.file_rel == from_file)
             .collect();
-        let visible: Vec<&Symbol> = if local.is_empty() {
+        let visible: Vec<&&Symbol> = if local.is_empty() {
             candidates
                 .iter()
                 .filter(|s| !s.internal && self.reachable(from_file, &s.file_rel))
@@ -199,8 +236,20 @@ impl CFamilyIndex {
         // Nothing reachable was declared. Falling back to an unreachable
         // candidate would be guessing: `#include` visibility is the language's
         // own rule for which name a translation unit means.
-        let chosen = visible.first()?;
-        Some((chosen.qualified_name.clone(), chosen.kind, visible.len() > 1))
+        let chosen = **visible.first()?;
+
+        // Ambiguity is about distinct *answers*, not raw entries: a forward
+        // declaration and its definition are two Symbols with the same
+        // qualified name — `static void usage(const char *); ... usage(const
+        // char *progname) { ... }` is one function declared twice in the same
+        // file, an idiom common enough that skipping this check flagged a
+        // sizeable share of ordinary, unambiguous C calls as guesses.
+        let distinct_answers = visible
+            .iter()
+            .map(|s| s.qualified_name.as_str())
+            .collect::<HashSet<_>>()
+            .len();
+        Some((chosen.qualified_name.clone(), chosen.kind, distinct_answers > 1))
     }
 
 }

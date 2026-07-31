@@ -6544,21 +6544,21 @@
   "ref": "v11.1.2",
   "resolution": {
     "metrics": {
-      "external": 195664,
-      "internal": 238150,
+      "external": 201311,
+      "internal": 232503,
       "queries": 433814,
       "resolved": 433814,
       "unresolved": 0
     },
     "relations": {
-      "calls": 218307,
+      "calls": 287473,
       "contains": 1369,
       "declares": 146982,
       "depends_on": 17,
-      "has_type": 71330,
+      "has_type": 76117,
       "imports": 11322,
-      "inherits_from": 1979,
-      "references": 50583,
+      "inherits_from": 1982,
+      "references": 68242,
       "resolves_to": 11322
     },
     "status": "degraded"

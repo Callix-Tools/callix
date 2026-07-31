@@ -12,6 +12,7 @@ __all__ = [
     "CAdapter",
     "CFamilyResolver",
     "CallixError",
+    "ClangScipResolver",
     "CppAdapter",
     "DuplicateNodeError",
     "EmbeddedTyResolver",
@@ -225,6 +226,29 @@ class CallixError(builtins.Exception):
     Base callix error.
     """
     ...
+
+@typing.final
+class ClangScipResolver:
+    def __new__(cls, compdb_path: typing.Optional[builtins.str | os.PathLike | pathlib.Path] = None) -> ClangScipResolver:
+        r"""
+        `compdb_path` is relative to the project root passed to `prepare`
+        unless given as an absolute path — pass it explicitly whenever the
+        build directory is not the project root itself, which for an
+        out-of-tree CMake build (`cmake -B build`) it never is.
+        """
+    def prepare(self, project_root: builtins.str | os.PathLike | pathlib.Path, files: typing.Optional[typing.Sequence[builtins.str | os.PathLike | pathlib.Path]] = None) -> None:
+        r"""
+        Runs `scip-clang` over the project's compilation database.
+        
+        `files` is accepted and ignored: `scip-clang` reads the compilation
+        database itself and indexes exactly the translation units it lists,
+        the same reason `rust-analyzer scip` ignores the file list callix
+        already collected.
+        """
+    def resolve_all(self, queries: typing.Sequence[tuple[builtins.str | os.PathLike | pathlib.Path, builtins.int, builtins.int]]) -> builtins.list[typing.Optional[ResolvedRef]]: ...
+    def definition_at(self, file: builtins.str | os.PathLike | pathlib.Path, line: builtins.int, col: builtins.int) -> typing.Optional[ResolvedRef]: ...
+    def status(self) -> ResolverStatus: ...
+    def __repr__(self) -> builtins.str: ...
 
 @typing.final
 class CppAdapter:

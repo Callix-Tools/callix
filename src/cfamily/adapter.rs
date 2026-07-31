@@ -42,6 +42,7 @@ use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
 use crate::roots::filter_nested_root_files;
+use crate::span::Span;
 use crate::span_index::SpanIndex;
 use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
 
@@ -51,6 +52,7 @@ use super::detector::{
     C_EXTENSIONS, CPP_EXTENSIONS, c_roots, collect_c_files, collect_cpp_files, cpp_roots, is_c,
     is_cpp, project_name,
 };
+use super::clang_resolver::ClangScipResolver;
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs};
 use super::resolver::{CFamilyIndex, SymbolTable};
 use super::visitor::{CFamilyEmitter, FileFacts, Owner, declared_scopes, read_file};
@@ -100,6 +102,35 @@ fn push_relation(
         kind,
         metadata: PyDict::new(py).unbind(),
     };
+    graph.push_relation(Py::new(py, relation)?);
+    Ok(())
+}
+
+/// Like [`push_relation`], but for an occurrence-derived edge: it carries the
+/// use-site's span, the way the other four adapters' CALLS/REFERENCES edges
+/// always do. Without it, every occurrence edge from this family had *empty*
+/// metadata and so was silently collapsed by `dedupe_structural_relations` —
+/// three call sites to the same function looked like one. `ambiguous` records
+/// what `CFamilyIndex::lookup` found and this file used to throw away: that
+/// more than one declaration with this bare name was visible from the calling
+/// file, so the target is the first in declaration order rather than a
+/// checked answer. Left unset when the lookup was unambiguous, matching how
+/// `access` is only set for a read or a write.
+fn push_occurrence_relation(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    span: Span,
+    ambiguous: bool,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    if ambiguous {
+        metadata.set_item("ambiguous", true)?;
+    }
+    let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
     graph.push_relation(Py::new(py, relation)?);
     Ok(())
 }
@@ -182,6 +213,25 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "read" | "write" => RelationKind::References,
         _ => return None,
     })
+}
+
+/// The declaration kinds a use-site of this role could possibly mean.
+///
+/// `CFamilyIndex` declares every kind of thing under one bare-name table, so
+/// without this a "call" query and a "read" query for the same identifier
+/// compete over the same candidates — a struct field named `key` next to an
+/// unrelated method `key()` — and one can silently win the other's query. A
+/// call binds to a function, a method, or (via `new Foo(...)`) the class
+/// itself; a base clause and a type annotation both name a type; a read or a
+/// write names data.
+fn wanted_kinds(role: &str) -> &'static [NodeKind] {
+    match role {
+        "call" => &[NodeKind::Function, NodeKind::Method, NodeKind::Class],
+        "base" => &[NodeKind::Class],
+        "annotation" => &[NodeKind::Class, NodeKind::TypeAlias],
+        "read" | "write" => &[NodeKind::Variable, NodeKind::Attribute, NodeKind::Parameter],
+        _ => &[],
+    }
 }
 
 /// Analyses one language root and returns its files, fully emitted.
@@ -357,8 +407,8 @@ fn resolve_with_table(
                 continue;
             }
 
-            match index.lookup(&occurrence.name, &file.file_rel) {
-                Some((qualified_name, target_kind, _ambiguous)) => {
+            match index.lookup(&occurrence.name, &file.file_rel, wanted_kinds(occurrence.role)) {
+                Some((qualified_name, target_kind, ambiguous)) => {
                     let target_id = node_id(project, &qualified_name, target_kind.as_str());
                     if !graph.has_node(&target_id) {
                         metrics.unresolved += 1;
@@ -366,7 +416,15 @@ fn resolve_with_table(
                     }
                     metrics.resolved += 1;
                     metrics.internal += 1;
-                    push_relation(py, graph, enclosing_id, target_id, kind)?;
+                    push_occurrence_relation(
+                        py,
+                        graph,
+                        enclosing_id,
+                        target_id,
+                        kind,
+                        occurrence.span,
+                        ambiguous,
+                    )?;
                 }
                 None => {
                     // Not declared in anything this translation unit can see: a
@@ -386,7 +444,15 @@ fn resolve_with_table(
                         ensure_external_symbol(py, graph, project, &key, "unknown")?;
                     metrics.resolved += 1;
                     metrics.external += 1;
-                    push_relation(py, graph, enclosing_id, target_id, kind)?;
+                    push_occurrence_relation(
+                        py,
+                        graph,
+                        enclosing_id,
+                        target_id,
+                        kind,
+                        occurrence.span,
+                        false,
+                    )?;
                 }
             }
         }
@@ -459,6 +525,67 @@ fn resolve_with_custom(
     Ok(metrics)
 }
 
+/// Identical to [`resolve_with_custom`], except the answers come from a
+/// native, position-keyed backend queried directly — one Rust call per
+/// occurrence rather than one batched call across the Python boundary. Used
+/// for the `scip-clang` auto-detection path, where there is no Python object
+/// to hand `apply_resolutions_rust` a batch through.
+fn resolve_with_native<R: crate::resolver_slot::NativeResolver>(
+    py: Python<'_>,
+    resolver: &R,
+    graph: &mut Graph,
+    span_index: &mut SpanIndex,
+    project: &str,
+    project_root: &Path,
+    analysed: &[Analysed],
+) -> PyResult<ResolverMetrics> {
+    let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
+    let mut dropped = 0u64;
+    for file in analysed {
+        for occurrence in &file.facts.occurrences {
+            if role_to_kind(occurrence.role).is_none() {
+                continue;
+            }
+            let enclosing = enclosing_id(project, file, &occurrence.owner);
+            if !graph.has_node(&enclosing) {
+                dropped += 1;
+                continue;
+            }
+            occurrences.push((
+                file.file_abs.clone(),
+                OccurrenceRef {
+                    role: occurrence.role.to_string(),
+                    line: occurrence.span.start_line,
+                    col: occurrence.span.start_col,
+                    enclosing_id: enclosing,
+                    span: occurrence.span,
+                },
+            ));
+        }
+    }
+
+    let started = Instant::now();
+    let refs: Vec<Option<crate::python::ResolvedRef>> = occurrences
+        .iter()
+        .map(|(path, occurrence)| resolver.resolve(path, occurrence.line, occurrence.col))
+        .collect();
+    let elapsed = started.elapsed().as_secs_f64();
+
+    let mut metrics = apply_resolutions_rust(
+        py,
+        graph,
+        project,
+        project_root,
+        span_index,
+        &occurrences,
+        &refs,
+    )?;
+    metrics.seconds = elapsed;
+    metrics.queries += dropped;
+    metrics.unresolved += dropped;
+    Ok(metrics)
+}
+
 /// The body both adapters share.
 #[allow(clippy::too_many_arguments)]
 fn analyze_family(
@@ -511,16 +638,58 @@ fn analyze_family(
 
     let mut metrics = ResolverMetrics::default();
     let mut status = ResolverStatus::Unavailable;
+    // Only meaningful for the `Native(SymbolTable)` arm below: whether the
+    // scip-clang auto-detection found something to run, which the strict-mode
+    // hint needs to word correctly — "no compiler-backed resolver" would be
+    // false the moment one actually ran, even if it came back `degraded`.
+    let mut used_scip_clang = false;
     match resolver {
         ResolverSlot::Disabled => {}
         ResolverSlot::Native(SymbolTable) => {
-            for (project, analysed) in &built {
-                let pass = resolve_with_table(py, &mut graph, project, analysed)?;
-                metrics.merge(&pass);
+            // Try the real thing before the name-based fallback: a
+            // `compile_commands.json` at the project root, with `scip-clang`
+            // on PATH, answers with actual Clang semantic analysis rather
+            // than declaration visibility. Both are cheap to rule out —
+            // `prepare` is a single `is_file` check away from returning
+            // `Unavailable` when either is missing — so this costs nothing
+            // for the many repositories that have neither, which is still
+            // most of them. See `clang_resolver.rs` for why this one type is
+            // driven natively instead of only through `resolver=`.
+            let all_files: Vec<PathBuf> =
+                root_files.iter().flat_map(|(_, files)| files.clone()).collect();
+            let mut scip = ClangScipResolver::new(None);
+            <ClangScipResolver as crate::resolver_slot::NativeResolver>::prepare(
+                &mut scip,
+                &project_root,
+                &all_files,
+            )?;
+            let scip_status =
+                <ClangScipResolver as crate::resolver_slot::NativeResolver>::status(&scip);
+            if scip_status == ResolverStatus::Unavailable {
+                for (project, analysed) in &built {
+                    let pass = resolve_with_table(py, &mut graph, project, analysed)?;
+                    metrics.merge(&pass);
+                }
+                // A symbol table, never a type checker: see resolver.rs for
+                // the reasoning and for what it cannot answer.
+                status = ResolverStatus::Degraded;
+            } else {
+                used_scip_clang = true;
+                let mut span_index = SpanIndex::from_graph(py, &graph)?;
+                for (project, analysed) in &built {
+                    let pass = resolve_with_native(
+                        py,
+                        &scip,
+                        &mut graph,
+                        &mut span_index,
+                        project,
+                        &project_root,
+                        analysed,
+                    )?;
+                    metrics.merge(&pass);
+                }
+                status = scip_status;
             }
-            // A symbol table, never a type checker: see resolver.rs for the
-            // reasoning and for what it cannot answer.
-            status = ResolverStatus::Degraded;
         }
         ResolverSlot::Custom(object) => {
             let all_files: Vec<PathBuf> =
@@ -557,12 +726,18 @@ fn analyze_family(
     graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
 
     if strict && status != ResolverStatus::Ok {
-        // The hint only holds for the built-in table, which can never report
-        // `ok`. A caller who passed their own resolver already knows what it is,
-        // and telling them the family has no resolver would be wrong.
+        // A caller who passed their own resolver already knows what it is,
+        // and telling them the family has no resolver would be wrong — the
+        // hint is only for the two `Native` outcomes, and they need different
+        // wording: scip-clang ran and came back short of `ok` is a different
+        // situation from it never running at all.
         let hint = match resolver {
+            ResolverSlot::Native(_) if used_scip_clang => {
+                " scip-clang ran but the index came back incomplete — see the docs for what that means."
+            }
             ResolverSlot::Native(_) => {
-                " The C family has no compiler-backed resolver — see the docs for why."
+                " No compile_commands.json (or no scip-clang on PATH), so this fell back to the \
+                  name-based table — see the docs for why."
             }
             _ => "",
         };

@@ -5,7 +5,7 @@
       "boundary": 1,
       "class": 2,
       "dependency": 1,
-      "external_symbol": 18,
+      "external_symbol": 21,
       "file": 3,
       "function": 7,
       "import": 5,
@@ -27,8 +27,8 @@
       "resolves_to": 5
     },
     "resolver": {
-      "external": 15,
-      "internal": 13,
+      "external": 18,
+      "internal": 10,
       "queries": 28,
       "resolved": 28,
       "unresolved": 0

@@ -629,21 +629,21 @@
   "ref": "1.23",
   "resolution": {
     "metrics": {
-      "external": 7216,
-      "internal": 7106,
+      "external": 7446,
+      "internal": 6876,
       "queries": 14322,
       "resolved": 14322,
       "unresolved": 0
     },
     "relations": {
-      "calls": 7948,
+      "calls": 9550,
       "contains": 128,
       "declares": 6892,
       "depends_on": 10,
-      "has_type": 2565,
+      "has_type": 2762,
       "imports": 740,
       "inherits_from": 76,
-      "references": 1501,
+      "references": 1934,
       "resolves_to": 740
     },
     "status": "degraded"

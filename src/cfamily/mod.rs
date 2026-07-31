@@ -33,6 +33,7 @@
 
 mod adapter;
 mod boundary;
+mod clang_resolver;
 mod deps;
 mod detector;
 mod headers;
@@ -41,6 +42,7 @@ mod visitor;
 
 pub use adapter::{CAdapter, CppAdapter};
 pub use boundary::{extract_c_boundaries, extract_cpp_boundaries};
+pub use clang_resolver::ClangScipResolver;
 pub use deps::c_parse_dependencies;
 pub use detector::{
     c_detect_project_name, cpp_detect_project_name, find_c_roots, find_cpp_roots,

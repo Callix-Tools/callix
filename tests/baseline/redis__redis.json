@@ -3923,20 +3923,20 @@
   "ref": "8.10.0",
   "resolution": {
     "metrics": {
-      "external": 111424,
-      "internal": 50053,
+      "external": 112659,
+      "internal": 48818,
       "queries": 161477,
       "resolved": 161477,
       "unresolved": 0
     },
     "relations": {
-      "calls": 73217,
+      "calls": 80126,
       "contains": 809,
       "declares": 52916,
       "depends_on": 21,
-      "has_type": 21869,
+      "has_type": 22099,
       "imports": 3127,
-      "references": 45285,
+      "references": 59252,
       "resolves_to": 3128
     },
     "status": "degraded"

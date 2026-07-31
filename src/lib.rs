@@ -21,6 +21,7 @@ mod relation;
 mod resolver_slot;
 mod roots;
 mod rustlang;
+mod scip;
 mod serde;
 mod serialization;
 mod span;
@@ -39,7 +40,7 @@ pub use error::{
 pub use golang::{GoAdapter, GoResolver};
 pub use graph::Graph;
 pub use node::{Node, NodeKind};
-pub use cfamily::{CAdapter, CFamilyResolver, CppAdapter};
+pub use cfamily::{CAdapter, CFamilyResolver, ClangScipResolver, CppAdapter};
 pub use php::{PhpAdapter, PhpResolver};
 pub use metrics::ResolverMetrics;
 pub use occurrence::{ImportClassifier, OccurrenceRef};
@@ -99,6 +100,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<CAdapter>()?;
     m.add_class::<CppAdapter>()?;
     m.add_class::<CFamilyResolver>()?;
+    m.add_class::<ClangScipResolver>()?;
     m.add_function(wrap_pyfunction!(cfamily::is_c_project, m)?)?;
     m.add_function(wrap_pyfunction!(cfamily::find_c_roots, m)?)?;
     m.add_function(wrap_pyfunction!(cfamily::c_detect_project_name, m)?)?;

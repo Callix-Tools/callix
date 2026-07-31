@@ -1,11 +1,11 @@
-//! A decoder for the subset of SCIP the resolver consumes.
+//! A decoder for the subset of SCIP the resolvers consume, and the position
+//! tables built on top of it.
 //!
-//! SCIP (<https://github.com/sourcegraph/scip>) is the protobuf index emitted
-//! by `rust-analyzer scip`. Only three things are needed per occurrence — the
-//! symbol, the roles bitfield, and the start of the range — so rather than
-//! pull in a protobuf runtime the wire format is decoded directly. The field
-//! numbers come from
-//! `scip.proto`:
+//! SCIP (<https://github.com/sourcegraph/scip>) is the protobuf index format
+//! emitted by `rust-analyzer scip` and by `scip-clang`. Only three things are
+//! needed per occurrence — the symbol, the roles bitfield, and the start of
+//! the range — so rather than pull in a protobuf runtime the wire format is
+//! decoded directly. The field numbers come from `scip.proto`:
 //!
 //! * `Index.documents` = 2
 //! * `Document.relative_path` = 1, `Document.occurrences` = 2
@@ -13,6 +13,18 @@
 //!   `Occurrence.symbol_roles` = 3
 //!
 //! Coordinates in SCIP are 0-based: `[start_line, start_char, ...]`.
+//!
+//! [`ScipIndex`] is the part above the raw decoder that is *also*
+//! indexer-agnostic: which document and position a symbol occurs at, and
+//! where — if anywhere in this index — it is defined. Verified empirically
+//! rather than assumed: `rust-analyzer`'s `local N` convention for a
+//! scope-local symbol and its position-keyed synthetic names for things with
+//! no stable identifier turn out to be exactly what `scip-clang` emits too, so
+//! one set of tables serves both. What is *not* shared is the symbol
+//! **scheme** — `rust-analyzer cargo callix 0.1.0 ids/node_id().` reads
+//! nothing like `cxx . . $ leveldb/Arena#Allocate(4b58d6ff543a4736).` — so
+//! classifying an unresolved symbol's origin (stdlib, third-party, unknown)
+//! stays with each resolver.
 
 /// The `Occurrence.symbol_roles` bit set at a definition site.
 pub const ROLE_DEFINITION: u32 = 0x1;
@@ -172,6 +184,145 @@ pub fn for_each_document(data: &[u8], mut visit: impl FnMut(String, Vec<ScipOccu
             visit(relative_path, occurrences);
         }
     });
+}
+
+// ---------------------------------------------------------------------------
+// Position tables
+// ---------------------------------------------------------------------------
+
+use std::collections::HashMap;
+
+/// A definition's location: the document index and 0-based coordinates.
+pub type ScipLocation = (u32, u32, u32);
+
+/// What a position resolves to.
+pub enum ScipAnswer {
+    /// Defined somewhere in this index — a candidate for an internal edge.
+    /// Whether that document is actually one the caller's project walked is
+    /// for the caller to find out; a header outside the project tree lands
+    /// here too; and the shared `apply_resolutions_inner` already treats a
+    /// file it does not recognize as external, so nothing further is needed
+    /// here to handle that case correctly.
+    Definition { doc: u32, line: u32, col: u32 },
+    /// Named, but never defined in this index — a symbol from outside what
+    /// was indexed (the standard library, a dependency, a vendored header).
+    External { symbol: String },
+}
+
+/// The position tables built from decoding a SCIP index.
+///
+/// Everything here reads only the document path, the occurrence's position
+/// and its symbol string — nothing that depends on how a particular indexer
+/// spells a symbol. See the module docs for why one implementation serves
+/// both `rust-analyzer scip` and `scip-clang`.
+#[derive(Default)]
+pub struct ScipIndex {
+    docs: Vec<String>,
+    doc_index: HashMap<String, u32>,
+    /// The symbol pool: one string for many occurrences.
+    symbols: Vec<String>,
+    symbol_index: HashMap<String, u32>,
+    /// Document → `(line, column)` → symbol. Coordinates are 0-based.
+    by_doc: Vec<HashMap<(u32, u32), u32>>,
+    /// Global symbol → the location of its definition.
+    defs: HashMap<u32, ScipLocation>,
+    /// Document → a `local …` symbol → its definition site within the
+    /// document.
+    local_defs: Vec<HashMap<u32, (u32, u32)>>,
+}
+
+impl ScipIndex {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.docs.is_empty()
+    }
+
+    pub fn doc_path(&self, doc: u32) -> &str {
+        &self.docs[doc as usize]
+    }
+
+    pub fn doc_count(&self) -> usize {
+        self.docs.len()
+    }
+
+    pub fn symbol_count(&self) -> usize {
+        self.symbols.len()
+    }
+
+    fn intern_symbol(&mut self, symbol: &str) -> u32 {
+        if let Some(index) = self.symbol_index.get(symbol) {
+            return *index;
+        }
+        let index = self.symbols.len() as u32;
+        self.symbols.push(symbol.to_string());
+        self.symbol_index.insert(symbol.to_string(), index);
+        index
+    }
+
+    fn intern_doc(&mut self, relative_path: &str) -> u32 {
+        if let Some(index) = self.doc_index.get(relative_path) {
+            return *index;
+        }
+        let index = self.docs.len() as u32;
+        self.docs.push(relative_path.to_string());
+        self.doc_index.insert(relative_path.to_string(), index);
+        self.by_doc.push(HashMap::new());
+        self.local_defs.push(HashMap::new());
+        index
+    }
+
+    /// Folds a SCIP index into the lookup tables.
+    pub fn ingest(&mut self, data: &[u8]) {
+        for_each_document(data, |relative_path, occurrences| {
+            let mut doc: Option<u32> = None;
+            for occurrence in occurrences {
+                if occurrence.symbol.is_empty() {
+                    continue;
+                }
+                // A document is only created once it has something to find.
+                let doc = *doc.get_or_insert_with(|| self.intern_doc(&relative_path));
+                let is_local = occurrence.symbol.starts_with("local ");
+                let index = self.intern_symbol(&occurrence.symbol);
+                let position = (occurrence.start_line, occurrence.start_col);
+                // Last one wins here while `defs` below keeps the first, and
+                // the asymmetry is deliberate rather than an oversight. Two
+                // occurrences can share a start position — a derive or a macro
+                // expansion maps several symbols onto one source range — and
+                // there is no principled way to prefer one, so the tie-break is
+                // arbitrary either way. `defs` keeps the first because a
+                // symbol's definition site should not depend on how many
+                // references follow it.
+                self.by_doc[doc as usize].insert(position, index);
+                if occurrence.roles & ROLE_DEFINITION == 0 {
+                    continue;
+                }
+                if is_local {
+                    self.local_defs[doc as usize].entry(index).or_insert(position);
+                } else {
+                    self.defs.entry(index).or_insert((doc, position.0, position.1));
+                }
+            }
+        });
+    }
+
+    /// The symbol at a document-relative, 0-based position, resolved to
+    /// either its definition site or an external symbol name.
+    pub fn lookup(&self, relative_doc: &str, line: u32, col: u32) -> Option<ScipAnswer> {
+        let doc = *self.doc_index.get(relative_doc)?;
+        let symbol = *self.by_doc[doc as usize].get(&(line, col))?;
+        let name = &self.symbols[symbol as usize];
+        if name.starts_with("local ") {
+            let (l, c) = *self.local_defs[doc as usize].get(&symbol)?;
+            return Some(ScipAnswer::Definition { doc, line: l, col: c });
+        }
+        if let Some(&(d, l, c)) = self.defs.get(&symbol) {
+            return Some(ScipAnswer::Definition { doc: d, line: l, col: c });
+        }
+        Some(ScipAnswer::External { symbol: name.clone() })
+    }
 }
 
 #[cfg(test)]
@@ -540,5 +691,100 @@ mod tests {
         let recorded = decoded[0].1[0].1;
         assert_eq!(recorded, roles);
         assert_ne!(recorded & ROLE_DEFINITION, 0);
+    }
+
+    // --- ScipIndex --------------------------------------------------------
+
+    #[test]
+    fn a_reference_resolves_to_its_definition_site() {
+        let mut idx = ScipIndex::new();
+        idx.ingest(&index(&[
+            document("def.h", &[occurrence("pkg/Widget#make().", 1, &[10, 4])]),
+            document("use.cc", &[occurrence("pkg/Widget#make().", 0, &[20, 8])]),
+        ]));
+        match idx.lookup("use.cc", 20, 8) {
+            Some(ScipAnswer::Definition { doc, line, col }) => {
+                assert_eq!(idx.doc_path(doc), "def.h");
+                assert_eq!((line, col), (10, 4));
+            }
+            _ => panic!("expected a definition"),
+        }
+    }
+
+    #[test]
+    fn a_symbol_with_no_definition_anywhere_is_external() {
+        let mut idx = ScipIndex::new();
+        idx.ingest(&index(&[document("use.cc", &[occurrence("std/free().", 0, &[3, 1])])]));
+        match idx.lookup("use.cc", 3, 1) {
+            Some(ScipAnswer::External { symbol }) => assert_eq!(symbol, "std/free()."),
+            _ => panic!("expected an external symbol"),
+        }
+    }
+
+    #[test]
+    fn a_local_symbol_resolves_within_its_own_document_only() {
+        // `local 1` in two different documents names two unrelated things —
+        // resolving one must never leak into the other's definition site.
+        let mut idx = ScipIndex::new();
+        idx.ingest(&index(&[
+            document(
+                "a.cc",
+                &[
+                    occurrence("local 1", 1, &[1, 0]),
+                    occurrence("local 1", 0, &[2, 0]),
+                ],
+            ),
+            document(
+                "b.cc",
+                &[
+                    occurrence("local 1", 1, &[5, 0]),
+                    occurrence("local 1", 0, &[6, 0]),
+                ],
+            ),
+        ]));
+        match idx.lookup("a.cc", 2, 0) {
+            Some(ScipAnswer::Definition { doc, line, col }) => {
+                assert_eq!(idx.doc_path(doc), "a.cc");
+                assert_eq!((line, col), (1, 0));
+            }
+            _ => panic!("expected a.cc's own local definition"),
+        }
+        match idx.lookup("b.cc", 6, 0) {
+            Some(ScipAnswer::Definition { doc, line, col }) => {
+                assert_eq!(idx.doc_path(doc), "b.cc");
+                assert_eq!((line, col), (5, 0));
+            }
+            _ => panic!("expected b.cc's own local definition, not a.cc's"),
+        }
+    }
+
+    #[test]
+    fn no_occurrence_at_a_position_is_none_not_a_guess() {
+        let mut idx = ScipIndex::new();
+        idx.ingest(&index(&[document("a.cc", &[occurrence("f().", 1, &[1, 0])])]));
+        assert!(idx.lookup("a.cc", 99, 99).is_none());
+        assert!(idx.lookup("unknown.cc", 1, 0).is_none());
+    }
+
+    #[test]
+    fn an_empty_index_is_empty_and_answers_nothing() {
+        let idx = ScipIndex::new();
+        assert!(idx.is_empty());
+        assert_eq!(idx.doc_count(), 0);
+        assert_eq!(idx.symbol_count(), 0);
+        assert!(idx.lookup("a.cc", 0, 0).is_none());
+    }
+
+    #[test]
+    fn ingest_accumulates_across_calls() {
+        // A resolver's `prepare` re-creates the index rather than ingesting
+        // twice into the same one, but ingest itself has no reason to refuse
+        // a second call — nothing here assumes it is the only one.
+        let mut idx = ScipIndex::new();
+        idx.ingest(&index(&[document("a.cc", &[occurrence("f().", 1, &[1, 0])])]));
+        idx.ingest(&index(&[document("b.cc", &[occurrence("g().", 1, &[2, 0])])]));
+        assert_eq!(idx.doc_count(), 2);
+        assert!(idx.lookup("a.cc", 1, 0).is_some());
+        assert!(idx.lookup("b.cc", 2, 0).is_some());
     }
 }

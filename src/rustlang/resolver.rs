@@ -8,7 +8,6 @@
 //! As with Go, the language cannot be compiled in wholesale: `rust-analyzer`
 //! (and Cargo) must be installed — but a Rust project has them anyway.
 
-use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -20,7 +19,7 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::python::ResolvedRef;
 use crate::status::ResolverStatus;
 
-use super::scip::{ROLE_DEFINITION, for_each_document};
+use crate::scip::{ScipAnswer, ScipIndex};
 
 /// The ceiling on one `rust-analyzer scip` run. Large workspaces finish well
 /// under it; the cap only guards against a hang.
@@ -116,42 +115,17 @@ fn wait_with_timeout(child: &mut Child, timeout: Duration) -> Option<i32> {
     }
 }
 
-/// A definition's location: the document index and 0-based coordinates.
-type Location = (u32, u32, u32);
-
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 pub struct RustResolver {
     root: Option<PathBuf>,
     status: ResolverStatus,
-    /// The index's document paths and the reverse lookup over them.
-    docs: Vec<String>,
-    doc_index: HashMap<String, u32>,
-    /// The symbol pool: one string for many occurrences.
-    symbols: Vec<String>,
-    symbol_index: HashMap<String, u32>,
-    /// Document → `(line, column)` → symbol. Coordinates are 0-based.
-    by_doc: Vec<HashMap<(u32, u32), u32>>,
-    /// Global symbol → the location of its definition.
-    defs: HashMap<u32, Location>,
-    /// Document → a `local …` symbol → its definition site within the
-    /// document.
-    local_defs: Vec<HashMap<u32, (u32, u32)>>,
+    index: ScipIndex,
 }
 
 impl Default for RustResolver {
     fn default() -> Self {
-        Self {
-            root: None,
-            status: ResolverStatus::Unavailable,
-            docs: Vec::new(),
-            doc_index: HashMap::new(),
-            symbols: Vec::new(),
-            symbol_index: HashMap::new(),
-            by_doc: Vec::new(),
-            defs: HashMap::new(),
-            local_defs: Vec::new(),
-        }
+        Self { root: None, status: ResolverStatus::Unavailable, index: ScipIndex::new() }
     }
 }
 
@@ -160,70 +134,8 @@ impl RustResolver {
         Self::default()
     }
 
-    fn intern_symbol(&mut self, symbol: &str) -> u32 {
-        if let Some(index) = self.symbol_index.get(symbol) {
-            return *index;
-        }
-        let index = self.symbols.len() as u32;
-        self.symbols.push(symbol.to_string());
-        self.symbol_index.insert(symbol.to_string(), index);
-        index
-    }
-
-    fn intern_doc(&mut self, relative_path: &str) -> u32 {
-        if let Some(index) = self.doc_index.get(relative_path) {
-            return *index;
-        }
-        let index = self.docs.len() as u32;
-        self.docs.push(relative_path.to_string());
-        self.doc_index.insert(relative_path.to_string(), index);
-        self.by_doc.push(HashMap::new());
-        self.local_defs.push(HashMap::new());
-        index
-    }
-
     fn reset(&mut self) {
-        self.docs.clear();
-        self.doc_index.clear();
-        self.symbols.clear();
-        self.symbol_index.clear();
-        self.by_doc.clear();
-        self.defs.clear();
-        self.local_defs.clear();
-    }
-
-    /// Folds a SCIP index into the lookup tables.
-    fn ingest(&mut self, data: &[u8]) {
-        for_each_document(data, |relative_path, occurrences| {
-            let mut doc: Option<u32> = None;
-            for occurrence in occurrences {
-                if occurrence.symbol.is_empty() {
-                    continue;
-                }
-                // A document is only created once it has something to find.
-                let doc = *doc.get_or_insert_with(|| self.intern_doc(&relative_path));
-                let is_local = occurrence.symbol.starts_with("local ");
-                let index = self.intern_symbol(&occurrence.symbol);
-                let position = (occurrence.start_line, occurrence.start_col);
-                // Last one wins here while `defs` below keeps the first, and
-                // the asymmetry is deliberate rather than an oversight. Two
-                // occurrences can share a start position — a derive or a macro
-                // expansion maps several symbols onto one source range — and
-                // there is no principled way to prefer one, so the tie-break is
-                // arbitrary either way. `defs` keeps the first because a
-                // symbol's definition site should not depend on how many
-                // references follow it.
-                self.by_doc[doc as usize].insert(position, index);
-                if occurrence.roles & ROLE_DEFINITION == 0 {
-                    continue;
-                }
-                if is_local {
-                    self.local_defs[doc as usize].entry(index).or_insert(position);
-                } else {
-                    self.defs.entry(index).or_insert((doc, position.0, position.1));
-                }
-            }
-        });
+        self.index = ScipIndex::new();
     }
 
     /// Runs `rust-analyzer scip`; returns `(index bytes, exit code)`.
@@ -255,36 +167,16 @@ impl RustResolver {
         (data, code)
     }
 
-    fn definition_ref(&self, doc: u32, line: u32, col: u32, origin: &str) -> ResolvedRef {
+    fn definition_ref(&self, doc: u32, line: u32, col: u32) -> ResolvedRef {
         let root = self.root.as_ref().expect("root is set during prepare");
         ResolvedRef {
             full_name: String::new(),
-            file_path: Some(root.join(&self.docs[doc as usize]).to_string_lossy().into_owned()),
+            file_path: Some(root.join(self.index.doc_path(doc)).to_string_lossy().into_owned()),
             line: line + 1,
             col: col + 1,
             kind: String::new(),
-            origin: origin.to_string(),
+            origin: "internal".to_string(),
         }
-    }
-
-    /// A symbol → its definition, or an external reference.
-    fn symbol_to_ref(&self, symbol: u32, doc: u32) -> Option<ResolvedRef> {
-        let name = &self.symbols[symbol as usize];
-        if name.starts_with("local ") {
-            let (line, col) = *self.local_defs[doc as usize].get(&symbol)?;
-            return Some(self.definition_ref(doc, line, col, "internal"));
-        }
-        if let Some((target_doc, line, col)) = self.defs.get(&symbol) {
-            return Some(self.definition_ref(*target_doc, *line, *col, "internal"));
-        }
-        Some(ResolvedRef {
-            full_name: name.clone(),
-            file_path: None,
-            line: 0,
-            col: 0,
-            kind: String::new(),
-            origin: symbol_origin(name).to_string(),
-        })
     }
 
     /// An absolute path → a path relative to the index root.
@@ -303,9 +195,18 @@ impl RustResolver {
 
     fn resolve_one(&self, file: &Path, line: u32, col: u32) -> Option<ResolvedRef> {
         self.root.as_ref()?;
-        let doc = *self.doc_index.get(&self.relative(file))?;
-        let symbol = *self.by_doc[doc as usize].get(&(line.checked_sub(1)?, col.checked_sub(1)?))?;
-        self.symbol_to_ref(symbol, doc)
+        let relative = self.relative(file);
+        match self.index.lookup(&relative, line.checked_sub(1)?, col.checked_sub(1)?)? {
+            ScipAnswer::Definition { doc, line, col } => Some(self.definition_ref(doc, line, col)),
+            ScipAnswer::External { symbol } => Some(ResolvedRef {
+                full_name: symbol.clone(),
+                file_path: None,
+                line: 0,
+                col: 0,
+                kind: String::new(),
+                origin: symbol_origin(&symbol).to_string(),
+            }),
+        }
     }
 
     pub fn prepare_rust(&mut self, project_root: &Path) {
@@ -345,9 +246,9 @@ impl RustResolver {
         let Some(data) = data else {
             return;
         };
-        self.ingest(&data);
+        self.index.ingest(&data);
 
-        self.status = if self.docs.is_empty() {
+        self.status = if self.index.is_empty() {
             ResolverStatus::Degraded
         } else if code != Some(0) {
             // rust-analyzer errored mid-run (a crate failed to load, say) but
@@ -378,8 +279,8 @@ impl RustResolver {
         format!(
             "RustResolver(root={:?}, documents={}, symbols={}, status={})",
             self.root.as_ref().map(|r| r.to_string_lossy()),
-            self.docs.len(),
-            self.symbols.len(),
+            self.index.doc_count(),
+            self.index.symbol_count(),
             self.status.as_str()
         )
     }

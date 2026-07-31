@@ -5,7 +5,6 @@ mod adapter;
 mod boundary;
 mod deps;
 mod resolver;
-mod scip;
 mod visitor;
 
 pub use adapter::RustAdapter;

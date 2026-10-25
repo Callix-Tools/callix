@@ -217,13 +217,18 @@ fn doctor() -> Result<()> {
 
     // rust-analyzer on PATH is often a rustup proxy that exits with
     // "Unknown binary" when the component is not installed, so it has to run.
-    let checks: [(&str, Option<String>, &str); 6] = [
+    let checks: [(&str, Option<String>, &str); 7] = [
         ("python", Some("built in".into()), "resolves Python (ty is linked in)"),
         ("typescript", Some("built in".into()), "resolves TypeScript (typescript-go is linked in)"),
         ("go", probe("go", &["version"]), "resolves Go (needs the toolchain and the module cache)"),
         ("cargo", probe("cargo", &["--version"]), "needed by rust-analyzer to load a workspace"),
         ("rust-analyzer", probe("rust-analyzer", &["--version"]), "resolves Rust"),
         ("npm", probe("npm", &["--version"]), "optional: --prepare installs JavaScript dependencies"),
+        (
+            "python3",
+            probe("python3", &["--version"]),
+            "optional: where a Python project's packages are installed, for ty to find",
+        ),
     ];
     for (name, found, purpose) in checks {
         match found {
@@ -231,16 +236,9 @@ fn doctor() -> Result<()> {
             None => writeln!(out, "  missing  {name:<14} {purpose}")?,
         }
     }
-    let python = probe("python3", &["--version"]);
     writeln!(
         out,
-        "\nPython packages of an analysed project are found through a `python3` on PATH \
-         (or a .venv in the project): {}",
-        python.as_deref().unwrap_or("none found — third-party Python symbols will not resolve")
-    )?;
-    writeln!(
-        out,
-        "PHP, C and C++ are resolved by a symbol table and always report `degraded`; \
+        "\nPHP, C and C++ are resolved by a symbol table and always report `degraded`; \
          YAML declares no symbols."
     )?;
     out.flush()?;

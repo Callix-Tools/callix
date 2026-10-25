@@ -9,8 +9,12 @@ The [command line](./cli.md) ships as two images, for `linux/amd64` and
 
 | Image | Contains | Resolves |
 |---|---|---|
-| `ghcr.io/callix-tools/callix:full` (also `:latest`) | `callix`, Python, **Go**, **Rust** with `rust-analyzer` and the standard library's sources, Node and npm | Python, TypeScript, Go, Rust — fully |
-| `ghcr.io/callix-tools/callix:slim` | `callix` and Python | Python and TypeScript fully; Go and Rust come back structural |
+| `ghcr.io/callix-tools/callix:full` (also `:latest`) | `callix`, **Go**, **Rust** with `rust-analyzer` and the standard library's sources, Node and npm, Python with pip | Python, TypeScript, Go, Rust — fully |
+| `ghcr.io/callix-tools/callix:slim` | `callix` and git, on Debian slim | Python (in-repo and stdlib) and TypeScript; Go and Rust come back structural |
+
+`callix` itself needs none of that: it is one native binary that links only libc.
+What `full` adds is the toolchains the Go and Rust resolvers drive, and the
+Python where a project's packages get installed.
 
 Both resolve PHP, C and C++ through the symbol table and report `degraded`, and
 YAML declares no symbols. No image changes that: it is what those resolvers are,
@@ -35,7 +39,7 @@ and a resolver can only answer for code it can read:
 
 | Language | The image has | The project must have |
 |---|---|---|
-| Python | ty, linked in; Python 3.13 | its packages installed in the container's Python (`pip install -r requirements.txt`) |
+| Python | ty, linked in; in `full`, `python3` and pip | its packages installed in the container's Python (`pip install -r requirements.txt`), or a `.venv` in the project |
 | TypeScript | typescript-go, linked in | `node_modules` (`npm ci`, or `--prepare`) |
 | Go | the toolchain | the module cache (`go mod download`, or `--prepare`) |
 | Rust | cargo, rust-analyzer, `rust-src` | the registry sources (`cargo fetch`, or `--prepare`) |
@@ -100,7 +104,7 @@ task docker:slim       # the slim image, as callix:dev-slim
 task docker:smoke      # run the smoke test against callix:dev
 ```
 
-The binary links `libpython3.X`, so both images are built from the same
-`python:3.X` Debian base and `PYTHON_VERSION` is one argument for the file. A
-cold build compiles ty and typescript-go and takes a while; the BuildKit cache
-mounts keep the compiled tree between local builds.
+The images are plain Debian (bookworm). A cold build compiles ty and
+typescript-go and takes a while; the BuildKit cache mounts keep the compiled
+tree between local builds. `GO_VERSION`, `RUST_VERSION` and `NODE_VERSION` are
+build arguments.

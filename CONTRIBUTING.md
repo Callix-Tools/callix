@@ -43,12 +43,21 @@ resolvers, the graph. Two crates sit beside it in a Cargo workspace:
 | Crate | What it is |
 |---|---|
 | `crates/callix-export` | Reads the canonical graph JSON **without Python** and writes LSIF, CycloneDX, CSV, DOT, Mermaid and the text/Markdown/JSON reports. Pure functions of the JSON, streamed to a `Write`. |
-| `crates/callix-cli` | The `callix` binary. The adapters are Python classes, so it embeds the interpreter (pyo3 `auto-initialize`), registers the native module as `_core` and runs `src/driver.py` — the only Python in the crate. |
+| `crates/callix-cli` | The `callix` binary, on the native build of the core (no `python` feature): one executable that links only libc. |
+| `crates/callix-compat` | No-op stand-ins for the PyO3 attribute macros, which is what lets the core build without PyO3. |
+
+The core builds two ways from one source. `--features python` is the extension
+module (maturin selects it); without it `src/py/native.rs` supplies the few PyO3
+types the adapters use, as plain Rust. Native is the default, so
+`cargo build --workspace` builds the command line; anything touching PyO3 needs
+`--features python`, which the tasks pass for you. Import from `crate::py`, never
+from `pyo3`, and put code that needs the interpreter behind
+`#[cfg(feature = "python")]`.
 
 ```bash
 task cli                         # build the binary
 task cli:run -- export tests/fixtures/python -f lsif
-task test:rust                   # the whole workspace: the 137 core tests, the exporters, the CLI end to end
+task test:rust                   # native: core, exporters, the CLI end to end; then the 137 PyO3-layer tests
 task docker / docker:smoke       # the image, and the smoke test against the fixtures
 ```
 

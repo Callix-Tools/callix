@@ -16,10 +16,18 @@ callix export . -f cyclonedx            # an SBOM of the declared dependencies
 callix report . -t status               # how complete symbol resolution was
 ```
 
-There is no standalone download. The adapters are Python classes, so the binary
-embeds the interpreter that drives them and links `libpython` — which is why it
-ships as a [Docker image](./docker.md) that carries both. To build it from a
-checkout, `task cli` (Rust ≥ 1.95, Go ≥ 1.26, the same as the library).
+The binary is native: the same adapters and resolvers as the library, built
+without the Python bindings, with ty and typescript-go inside. It links nothing
+but libc and needs no Python to run. Get it as
+
+- a tarball from the GitHub Release — Linux (x86_64, aarch64) and macOS (Apple
+  Silicon, Intel), each with a `.sha256`;
+- the [Docker image](./docker.md), which also carries the Go and Rust toolchains
+  that resolving those languages needs;
+- `task cli` from a checkout (Rust ≥ 1.95, Go ≥ 1.26, the same as the library).
+
+Go and Rust projects are resolved with the toolchains already on the machine, as
+with the library — `callix doctor` says which are there.
 
 ## Commands
 

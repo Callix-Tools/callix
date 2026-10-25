@@ -57,6 +57,14 @@ jobs:
         # not here, so for a while nothing in CI executed them.
         run: task test:rust
 
+      - name: The CLI links no Python
+        # The command line is the native build of the core: one binary that
+        # needs nothing but libc. A pyo3 dependency creeping back in would
+        # show up here before it showed up as a broken image.
+        run: |
+          ! ldd target/release/callix | grep -i python
+          ! cargo tree -p callix-cli | grep -i pyo3
+
       - name: Unit and API tests
         # Pure Python against the built module; needs no language toolchain.
         run: task unit

@@ -1,10 +1,9 @@
 //! The engine behind the `callix` command line: every adapter, no Python.
 //!
 //! This module exists only in the build without the `python` feature. It is the
-//! orchestration `driver.py` used to do inside an embedded interpreter — detect
-//! the languages under a tree, run each adapter, merge the graphs, sum the
-//! resolver counters — written once, in Rust, against the same adapters the
-//! extension module exposes.
+//! orchestration of a whole tree: detect the languages under it, run each
+//! adapter, merge the graphs, sum the resolver counters — written in Rust,
+//! against the same adapters the extension module exposes.
 
 use std::path::{Path, PathBuf};
 use std::time::Instant;

@@ -200,10 +200,93 @@ jobs:
         run: task release:github TAG=${{ needs.version.outputs.tag }}
 
   # ---------------------------------------------------------------------------
-  # 5. Container images: ghcr.io/<owner>/callix, `full` and `slim`, for amd64
+  # 5. The command line as a plain binary. It links nothing but libc (the
+  #    engine is native, with no interpreter inside), so a tarball is a
+  #    complete install; the Go and Rust toolchains it can drive are the
+  #    user's own. Built on the oldest hosted glibc so it loads on anything
+  #    newer. Attached to the GitHub Release once `publish` has created it.
+  # ---------------------------------------------------------------------------
+  cli:
+    needs: version
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,     target: x86_64-unknown-linux-gnu,  name: linux-x86_64 }
+          - { os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, name: linux-aarch64 }
+          - { os: macos-latest,     target: aarch64-apple-darwin,      name: macos-aarch64 }
+          # macos-latest is Apple Silicon, so the Intel binary is cross-built;
+          # build.rs passes the architecture on to Go and clang.
+          - { os: macos-latest,     target: x86_64-apple-darwin,       name: macos-x86_64 }
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go/go.sum
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --locked --release -p callix-cli --target ${{ matrix.target }}
+
+      - name: Package
+        run: |
+          version="${{ needs.version.outputs.version }}"
+          dir="callix-${version}-${{ matrix.name }}"
+          mkdir "$dir"
+          cp "target/${{ matrix.target }}/release/callix" LICENSE "$dir/"
+          tar czf "$dir.tar.gz" "$dir"
+          if command -v sha256sum >/dev/null; then
+            sha256sum "$dir.tar.gz" > "$dir.tar.gz.sha256"
+          else
+            shasum -a 256 "$dir.tar.gz" > "$dir.tar.gz.sha256"
+          fi
+
+      - name: Smoke test
+        run: |
+          dir="callix-${{ needs.version.outputs.version }}-${{ matrix.name }}"
+          # Only the host can run its own binary; the cross-built Intel one
+          # runs under Rosetta on the Apple Silicon runner.
+          "$dir/callix" --version
+          "$dir/callix" analyze tests/fixtures/yaml -q > /dev/null
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cli-${{ matrix.name }}
+          path: |
+            callix-*.tar.gz
+            callix-*.tar.gz.sha256
+
+  cli-release:
+    needs: [version, publish, cli]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: cli
+          pattern: cli-*
+          merge-multiple: true
+
+      - name: Attach to the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.version.outputs.tag }}" cli/* --clobber --repo "$GITHUB_REPOSITORY"
+
+  # ---------------------------------------------------------------------------
+  # 6. Container images: ghcr.io/<owner>/callix, `full` and `slim`, for amd64
   #    and arm64.
   #
-  #    The binary links libpython and the Go bridge, so an image is built per
+  #    The binary carries ty and the Go bridge, so an image is built per
   #    architecture on a native runner (emulating the ty tree would not fit the
   #    timeout), smoke-tested there, and pushed by digest. The manifest job
   #    then stitches the two digests into one multi-arch tag. Nothing here

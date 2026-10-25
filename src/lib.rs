@@ -54,7 +54,7 @@ pub use typescript::TsResolver;
 pub use yaml::YamlAdapter;
 
 #[pymodule]
-fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     let py = m.py();
 
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;

@@ -3,6 +3,12 @@ name = "callix"
 version = "1.0.0"
 edition = "2024"
 
+[workspace]
+# `callix` stays the Python binding (maturin and the stub generator build it);
+# the command line and the exporters live beside it. Versions are bumped
+# together by `task release:bump`.
+members = ["crates/callix-export", "crates/callix-cli"]
+
 [lib]
 name = "callix"
 # rlib is needed so the stub-generator binary can link against the library

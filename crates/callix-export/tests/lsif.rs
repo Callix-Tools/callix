@@ -1,0 +1,155 @@
+mod common;
+
+use callix_export::lsif::Lsif;
+use callix_export::model::Graph;
+use callix_export::{Exporter, Options};
+use common::{SAMPLE, check_lsif, edges, labelled};
+
+fn export(options: &Options) -> (String, Vec<callix_export::Warning>) {
+    let graph = Graph::from_json(SAMPLE).unwrap();
+    let mut out = Vec::new();
+    let warnings = Lsif.export(&graph, &mut out, options).unwrap();
+    (String::from_utf8(out).unwrap(), warnings)
+}
+
+#[test]
+fn output_is_well_formed_lsif() {
+    let (text, _) = export(&Options::default());
+    check_lsif(&text);
+}
+
+#[test]
+fn documents_ranges_and_results() {
+    let (text, _) = export(&Options { tool_version: "9.9".into(), ..Options::default() });
+    let el = check_lsif(&text);
+
+    let meta = &el[0];
+    assert_eq!(meta["version"], "0.4.3");
+    assert_eq!(meta["toolInfo"]["name"], "callix");
+    assert_eq!(meta["toolInfo"]["version"], "9.9");
+
+    // a.py and b.py have ranges; both are documents
+    let docs = labelled(&el, "document");
+    assert_eq!(docs.len(), 2);
+    assert!(docs[0]["uri"].as_str().unwrap().ends_with("/a.py"));
+    assert_eq!(docs[0]["languageId"], "python");
+
+    // definitions: charge, rate (a.py); checkout, refund (b.py) = 4;
+    // references: charge x2 distinct sites (dup collapsed), httpx.get, rate = 4
+    assert_eq!(labelled(&el, "range").len(), 8);
+
+    // three internal symbols with a definition result + the variable: charge, rate,
+    // checkout, refund -> 4 definitionResults; httpx.get has none
+    assert_eq!(labelled(&el, "definitionResult").len(), 4);
+    assert_eq!(labelled(&el, "referenceResult").len(), 5);
+    assert_eq!(labelled(&el, "resultSet").len(), 5);
+
+    // the external symbol becomes an import moniker
+    let monikers = labelled(&el, "moniker");
+    assert_eq!(monikers.len(), 1);
+    assert_eq!(monikers[0]["identifier"], "httpx.get");
+    assert_eq!(monikers[0]["scheme"], "third_party");
+    assert_eq!(monikers[0]["kind"], "import");
+}
+
+#[test]
+fn positions_are_zero_based() {
+    let (text, _) = export(&Options::default());
+    let el = check_lsif(&text);
+    // charge's name_span is 1:5-1:11 -> line 0, characters 4..10
+    let hit = labelled(&el, "range").into_iter().any(|r| {
+        r["start"] == serde_json::json!({"line": 0, "character": 4})
+            && r["end"] == serde_json::json!({"line": 0, "character": 10})
+    });
+    assert!(hit, "definition of charge not found at 0:4-0:10");
+}
+
+#[test]
+fn references_are_listed_per_document() {
+    let (text, _) = export(&Options::default());
+    let el = check_lsif(&text);
+    let items = edges(&el, "item");
+    let refs: Vec<_> = items.iter().filter(|i| i["property"] == "references").collect();
+    // charge is referenced from b.py (two sites), httpx.get from b.py, rate from b.py
+    let total: usize = refs.iter().map(|i| i["inVs"].as_array().unwrap().len()).sum();
+    assert_eq!(total, 4);
+}
+
+#[test]
+fn warns_when_unresolved_and_without_root() {
+    let unresolved = SAMPLE.replace(r#""resolver_status": "ok""#, r#""resolver_status": "degraded""#);
+    let graph = Graph::from_json(&unresolved).unwrap();
+    let mut out = Vec::new();
+    let warnings = Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let codes: Vec<_> = warnings.iter().map(|w| w.code).collect();
+    assert!(codes.contains(&"resolver-status"));
+    assert!(codes.contains(&"no-source-root"));
+}
+
+#[test]
+fn structural_graph_exports_definitions_and_warns() {
+    let mut value: serde_json::Value = serde_json::from_str(SAMPLE).unwrap();
+    let relations = value["relations"].as_array_mut().unwrap();
+    relations.retain(|r| r["metadata"].get("span").is_none());
+    value["metadata"]["resolver_status"] = "unavailable".into();
+    let graph = Graph::from_value(value).unwrap();
+    let mut out = Vec::new();
+    let warnings = Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    assert_eq!(labelled(&el, "range").len(), 4);
+    assert!(warnings.iter().any(|w| w.code == "no-references"));
+}
+
+#[test]
+fn columns_become_utf16_when_the_source_is_available() {
+    let dir = std::env::temp_dir().join(format!("callix-lsif-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    // "é" is 2 bytes in UTF-8 and 1 unit in UTF-16; the name starts after it.
+    std::fs::write(dir.join("a.py"), "def é_charge(): pass\n").unwrap();
+    std::fs::write(dir.join("b.py"), "x = 1\n").unwrap();
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"f","kind":"function","qualified_name":"a.é_charge","name":"é_charge","file_path":"a.py","span":[1,1,1,21],
+        "metadata":{"name_span":{"__span__":[1,5,1,15]}}}],
+      "relations":[]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options { source_root: Some(dir.clone()), ..Options::default() })
+        .unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let range = labelled(&el, "range")[0];
+    // byte columns 4..14 ("é_charge" is 9 bytes: 2 + 7 ... start 4, end 14)
+    assert_eq!(range["start"]["character"], 4);
+    // 10 bytes between col 5 and 15 are 9 UTF-16 units: end = 4 + 9 = 13
+    assert_eq!(range["end"]["character"], 13);
+    std::fs::remove_dir_all(dir).ok();
+}
+
+#[test]
+fn site_keyed_external_symbols_are_named_from_the_source() {
+    let dir = std::env::temp_dir().join(format!("callix-lsif-site-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("a.py"), "def f():\n    return int(1)\n").unwrap();
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"f","kind":"function","qualified_name":"a.f","name":"f","file_path":"a.py","span":[1,1,2,16],
+        "metadata":{"name_span":{"__span__":[1,5,1,6]}}},
+       {"id":"e","kind":"external_symbol","qualified_name":"call@a.py:2:12","name":"py:2:12","file_path":null,"span":null,
+        "metadata":{"origin":"stdlib"}}],
+      "relations":[{"source_id":"f","target_id":"e","kind":"calls","metadata":{"span":{"__span__":[2,12,2,15]}}}]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options { source_root: Some(dir.clone()), ..Options::default() })
+        .unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    // No moniker for a node that is only a site, and the hover names the callee.
+    assert!(labelled(&el, "moniker").is_empty());
+    let hovers: Vec<String> = labelled(&el, "hoverResult")
+        .iter()
+        .map(|h| h["result"]["contents"][0]["value"].as_str().unwrap().to_owned())
+        .collect();
+    assert!(hovers.iter().any(|h| h == "int  (external, stdlib)"), "{hovers:?}");
+    std::fs::remove_dir_all(dir).ok();
+}

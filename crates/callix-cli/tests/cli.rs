@@ -260,3 +260,15 @@ fn cyclonedx_for_a_python_project() {
     let bom: Value = serde_json::from_str(&text).unwrap();
     assert_eq!(bom["components"][0]["purl"], "pkg:pypi/httpx");
 }
+
+#[test]
+fn prepare_runs_for_the_manifests_it_finds() {
+    // A Go module with no requirements: `go mod download` succeeds offline.
+    let dir = scratch("prepare");
+    copy_dir(&fixture("go"), &dir);
+    let out = callix(&["analyze", p(&dir), "--prepare", "-l", "go"]);
+    assert!(out.status.success(), "{}", String::from_utf8_lossy(&out.stderr));
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(err.contains("preparing Go modules"), "{err}");
+    fs::remove_dir_all(dir).ok();
+}

@@ -1,0 +1,12 @@
+# The image builds the CLI from source; keep the context to what cargo reads.
+**
+!Cargo.toml
+!Cargo.lock
+!build.rs
+!src
+!go
+!crates
+# local build output and caches that may live inside the kept directories
+**/target
+**/__pycache__
+**/*.pyc

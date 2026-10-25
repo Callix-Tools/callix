@@ -8,6 +8,10 @@ edition = "2024"
 # the command line and the exporters live beside it. Versions are bumped
 # together by `task release:bump`.
 members = ["crates/callix-export", "crates/callix-cli"]
+# The Rust fixture is a project to *analyse*: cargo, and with it rust-analyzer,
+# must see it as a workspace of its own, or "current package believes it's in
+# a workspace when it's not" and the resolver finds nothing.
+exclude = ["tests/fixtures/rust"]
 
 [lib]
 name = "callix"

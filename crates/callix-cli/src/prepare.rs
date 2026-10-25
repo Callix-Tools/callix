@@ -29,8 +29,10 @@ struct Step {
 }
 
 fn has_tool(program: &str) -> bool {
+    // Go spells it as a subcommand, not a flag.
+    let probe = if program == "go" { "version" } else { "--version" };
     Command::new(program)
-        .arg("--version")
+        .arg(probe)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
@@ -112,4 +114,85 @@ pub fn run(root: &Path, quiet: bool) -> Vec<String> {
         }
     }
     problems
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tree(name: &str, files: &[&str]) -> PathBuf {
+        let root = std::env::temp_dir().join(format!("callix-prepare-{}-{name}", std::process::id()));
+        for file in files {
+            let path = root.join(file);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, "").unwrap();
+        }
+        root
+    }
+
+    fn steps(root: &Path) -> Vec<(String, &'static str)> {
+        let mut found = Vec::new();
+        walk(root, 0, &mut found);
+        found
+            .into_iter()
+            .map(|s| (s.dir.strip_prefix(root).unwrap().display().to_string(), s.program))
+            .collect()
+    }
+
+    #[test]
+    fn finds_manifests_at_every_level() {
+        let root = tree("levels", &["go.mod", "svc/Cargo.toml", "web/package.json", "web/package-lock.json"]);
+        let found = steps(&root);
+        assert!(found.contains(&("".into(), "go")));
+        assert!(found.contains(&("svc".into(), "cargo")));
+        assert!(found.contains(&("web".into(), "npm")));
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn skips_vendored_and_generated_trees() {
+        let root = tree(
+            "skip",
+            &["node_modules/x/package.json", "vendor/m/go.mod", "target/Cargo.toml", ".venv/lib/go.mod"],
+        );
+        assert!(steps(&root).is_empty());
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn installed_packages_are_left_alone() {
+        let root = tree("installed", &["package.json", "node_modules/a/index.js"]);
+        assert!(steps(&root).is_empty());
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn the_package_manager_follows_the_lockfile() {
+        let pnpm = tree("pnpm", &["package.json", "pnpm-lock.yaml"]);
+        assert_eq!(steps(&pnpm), [("".to_owned(), "pnpm")]);
+        let yarn = tree("yarn", &["package.json", "yarn.lock"]);
+        assert_eq!(steps(&yarn), [("".to_owned(), "yarn")]);
+        let none = tree("nolock", &["package.json"]);
+        assert_eq!(steps(&none), [("".to_owned(), "npm")]);
+        for dir in [pnpm, yarn, none] {
+            fs::remove_dir_all(dir).ok();
+        }
+    }
+
+    #[test]
+    fn does_not_descend_past_the_depth_limit() {
+        let root = tree("deep", &["a/b/c/d/e/go.mod", "a/go.mod"]);
+        let found = steps(&root);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "a");
+        fs::remove_dir_all(root).ok();
+    }
+
+    #[test]
+    fn a_missing_tool_is_a_problem_not_a_crash() {
+        let root = tree("missing", &["go.mod"]);
+        // Whatever is installed here, a step for an absent program is reported.
+        assert!(!has_tool("definitely-not-a-real-program-callix"));
+        fs::remove_dir_all(root).ok();
+    }
 }

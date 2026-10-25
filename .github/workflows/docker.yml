@@ -1,0 +1,52 @@
+name: Docker
+
+# Builds both images on any change that can affect them and runs the smoke test
+# against the repository's own fixtures. Nothing is pushed: publishing is the
+# release workflow's job.
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - docker/**
+      - crates/**
+      - src/**
+      - go/**
+      - build.rs
+      - Cargo.toml
+      - Cargo.lock
+      - .github/workflows/docker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    # A cold build compiles ty and typescript-go; a warm one reuses layers.
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [slim, full]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          load: true
+          tags: callix:ci
+          cache-from: type=gha,scope=${{ matrix.target }}-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}-amd64
+
+      - name: Smoke test
+        run: sh docker/smoke.sh callix:ci ${{ matrix.target }}

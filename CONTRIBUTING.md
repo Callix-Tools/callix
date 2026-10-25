@@ -10,7 +10,7 @@ task                             # build → generate .pyi → run example/test.
 task example -- example/foo.py   # run a different script
 task lint                        # clippy with -D warnings, same as CI
 task check                       # compile check without building the module
-task test                        # cargo test plus a smoke run of the example
+task test                        # unit, golden, the whole cargo workspace, and the example
 task --list                      # everything else
 ```
 
@@ -34,6 +34,38 @@ them together and is meant for a debugger, not for measuring anything.
 `cargo fmt` is deliberately not a task: formatting is hand-tuned in places and
 it would rewrite the code into its own style. Strictness is clippy's job
 instead — `task lint` runs it with `-D warnings`, and so does CI.
+
+## Workspace layout
+
+`callix` — the root package — is the Python binding: the language adapters, the
+resolvers, the graph. Two crates sit beside it in a Cargo workspace:
+
+| Crate | What it is |
+|---|---|
+| `crates/callix-export` | Reads the canonical graph JSON **without Python** and writes LSIF, CycloneDX, CSV, DOT, Mermaid and the text/Markdown/JSON reports. Pure functions of the JSON, streamed to a `Write`. |
+| `crates/callix-cli` | The `callix` binary. The adapters are Python classes, so it embeds the interpreter (pyo3 `auto-initialize`), registers the native module as `_core` and runs `src/driver.py` — the only Python in the crate. |
+
+```bash
+task cli                         # build the binary
+task cli:run -- export tests/fixtures/python -f lsif
+task test:rust                   # the whole workspace: the 137 core tests, the exporters, the CLI end to end
+task docker / docker:smoke       # the image, and the smoke test against the fixtures
+```
+
+Two things are easy to get wrong:
+
+- **Keep the three versions together.** `task release:bump` edits every
+  manifest; a CLI test fails if `callix --version` and the root `Cargo.toml`
+  disagree.
+- **`tests/fixtures/rust` is excluded from the workspace** in the root
+  `Cargo.toml`. It is a project to *analyse*: without the exclusion cargo walks up,
+  finds this workspace, refuses the fixture ("current package believes it's in a
+  workspace when it's not") and rust-analyzer resolves nothing — silently, as an
+  `unavailable` status.
+
+The exporters read only the JSON, so a new format needs no Rust-side change to
+the adapters; a fixture graph in `crates/callix-export/tests/data/` is enough to
+test one. LSIF output is validated structurally by `callix_export::lsif::check`.
 
 ## Stubs
 

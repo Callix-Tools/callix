@@ -21,10 +21,13 @@ task check                       # cargo check, no module build
 task test                        # unit + golden + test:rust + example
 task unit                        # pytest over tests/unit and tests/api
 task golden                      # fixture graphs vs tests/golden (UPDATE=1 rewrites)
-task test:rust                   # cargo test — 137 Rust-side tests
+task test:rust                   # cargo test --workspace — 137 core tests + exporters + the CLI end to end
 task baseline                    # fingerprints of 14 real projects (not in CI)
 task stubs / task stubs:check    # regenerate / verify committed .pyi
 task example -- example/foo.py   # run a different script
+task cli                         # build the `callix` binary
+task docker / docker:slim        # build the images (callix:dev, callix:dev-slim)
+task docker:smoke                # smoke-test callix:dev against tests/fixtures
 task docs:build                  # Docusaurus build — what the docs CI runs
 DEBUG=1 task ...                 # switch every cargo task to the debug profile
 ```
@@ -229,6 +232,53 @@ load-bearing:
   no occurrences and its Helm dependencies are per-file, so both arguments would
   be accepted and provably ignored. `tests/api/test_adapter_api.py` pins the
   `TypeError`.
+
+## The command line and the images
+
+A Cargo workspace beside the binding (the root package stays `callix`, so maturin,
+`stub_gen` and the wheel matrix are untouched):
+
+- **`crates/callix-export`** reads the canonical graph JSON into its own model —
+  no pyo3, no Python — and writes LSIF, CycloneDX, CSV, DOT, Mermaid and the
+  text/Markdown/JSON reports. Each exporter is `fn(&Graph, &mut dyn Write,
+  &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
+  could not carry instead of silently dropping it. `lsif::check::validate` is the
+  structural checker the tests use.
+- **`crates/callix-cli`** is the `callix` binary. The adapters are Python classes
+  (`Graph` holds `Py<Node>`, metadata is a `PyDict` that Python may mutate), so
+  it **embeds the interpreter**: pyo3 `auto-initialize`, the native module
+  registered as `_core` with `append_to_inittab!`, and `src/driver.py` — included
+  with `include_str!` — chooses adapters, merges graphs and speaks JSON both
+  ways. Rust never touches a Python object. `libpython3.X` is linked
+  dynamically, which is why there is no standalone download and why both images
+  derive from the same `python:3.X` base.
+
+Things that are easy to get wrong:
+
+- **`tests/fixtures/rust` is `exclude`d from the workspace.** Without it cargo
+  finds the repo's workspace from inside the fixture, refuses it, and
+  rust-analyzer resolves nothing — as a quiet `unavailable`, which the golden run
+  reports as a mismatch only when rust-analyzer is installed.
+- **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
+  looks at the root itself, so a Go module in a subdirectory fails it while the
+  sources are found.
+- **LSIF needs positions, and only some edges have them.** Python, TypeScript, Go,
+  Rust and PHP record `metadata["span"]` on every resolved edge; the C family
+  does not (its edges carry no metadata, so `dedupe_structural_relations` also
+  collapses them to one per pair). A C/C++ LSIF dump has definitions and hovers
+  and no references. Fixing that changes C/C++ graphs and their baselines.
+- **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
+  The LSIF exporter reads the identifier from the source for its hover and gives
+  it no moniker.
+- **`--strict` always fails for PHP, C and C++**, by the same design that makes
+  them `degraded`.
+
+The Docker images (`Dockerfile`, `docker/smoke.sh`) are `slim` (callix + Python)
+and `full` (+ Go, Rust with rust-analyzer and rust-src, Node). They bring the
+tools, not the analysed project's dependencies — `--prepare` fetches those for Go,
+Cargo and npm; Python's are installed by the user into the container's Python.
+`.github/workflows/docker.yml` builds and smoke-tests on PRs; `release.yml` pushes
+per-architecture digests to ghcr.io and stitches the multi-arch manifest.
 
 ## Parity with graphlens — historical
 

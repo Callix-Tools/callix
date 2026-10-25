@@ -85,6 +85,23 @@ calling `fetch("/users/1")` produce the **same** boundary node, so merging
 their graphs links the two services. See
 [Cross-language analysis](https://callix-tools.github.io/callix/docs/guides/cross-language).
 
+## Command line and Docker
+
+The same analysis without writing Python — and the formats other tools read:
+
+```bash
+docker run --rm -v "$PWD:/workspace" ghcr.io/callix-tools/callix:full \
+  export . -f lsif -o dump.lsif        # GitLab code navigation, Sourcegraph-style tools
+```
+
+`callix export` also writes CycloneDX, CSV, Graphviz and Mermaid; `callix report`
+prints summaries, resolver status, dependencies, boundaries and call lists. The
+`full` image carries the Go and Rust toolchains, so every language that has a
+real resolver gets it. See
+[Command line](https://callix-tools.github.io/callix/docs/guides/cli),
+[Export formats](https://callix-tools.github.io/callix/docs/guides/export-formats) and
+[Docker](https://callix-tools.github.io/callix/docs/guides/docker).
+
 ## Documentation
 
 <https://callix-tools.github.io/callix/>

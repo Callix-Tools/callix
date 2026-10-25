@@ -57,6 +57,18 @@ the reverse. Raising it therefore means a major release.
 
 ## Not covered by semver
 
+### The command line and the exporters
+
+The [`callix` command line](../guides/cli.md) and the
+[export formats](../guides/export-formats.md) are new in 1.1 and carry no
+stability promise yet. Flags may be renamed and a format's mapping refined —
+what an LSIF dump holds, which relations a Graphviz picture draws — in a minor
+release while they settle. What does not move is what they read: the graph
+contract above, and the JSON of `SCHEMA_VERSION` 1.
+
+An exporter is a function of the graph, so a change in a resolver's answers
+shows up in its output without the exporter having changed.
+
 ### What the resolvers answer
 
 The edges that resolution produces — `CALLS`, `REFERENCES`, `HAS_TYPE`,

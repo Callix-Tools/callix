@@ -19,3 +19,6 @@ clap = { version = "4", features = ["derive", "wrap_help"] }
 pyo3 = { version = "0.29.0", features = ["abi3-py310", "auto-initialize"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
+
+[build-dependencies]
+pyo3-build-config = { version = "0.29.0", features = ["resolve-config"] }

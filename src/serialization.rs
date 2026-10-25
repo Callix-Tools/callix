@@ -4,9 +4,9 @@
 //! byte-for-byte identical to graphlens (including `ensure_ascii=False`),
 //! and the dump itself still runs in CPython's C code.
 
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
+use crate::py::derive::gen_stub_pyfunction;
 
 use crate::error::SerializationError;
 use crate::node::{Node, NodeKind};
@@ -14,7 +14,7 @@ use crate::relation::{Relation, RelationKind};
 use crate::serde::{decode_metadata, encode_metadata, span_from_list, span_to_list};
 use crate::span::Span;
 
-pub const SCHEMA_VERSION: u32 = 1;
+pub use crate::json::SCHEMA_VERSION;
 
 /// A required key, or SerializationError.
 ///

@@ -16,7 +16,9 @@ pub use module_resolver::{
     ts_file_to_qualified_name, ts_find_source_roots, ts_load_path_aliases,
     ts_resolve_relative_import,
 };
-pub use adapter::{TypeScriptAdapter, collect_typescript_files_py, ts_build_root_structure};
+#[cfg(feature = "python")]
+pub use adapter::ts_build_root_structure;
+pub use adapter::{TypeScriptAdapter, collect_typescript_files_py};
 pub use boundary::extract_typescript_boundaries;
 pub use resolver::TsResolver;
 pub use visitor::{TsImportClassifier, TsVisitor};
@@ -26,9 +28,9 @@ use std::collections::BTreeMap;
 
 use indexmap::IndexMap;
 
-use pyo3::prelude::*;
-use pyo3::types::PyBytes;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::types::PyBytes;
+use crate::py::derive::gen_stub_pyfunction;
 use tree_sitter::{Parser, Tree};
 
 use crate::error::ParseError;
@@ -64,6 +66,7 @@ pub fn parse_tree(source: &[u8], tsx: bool) -> Result<Tree, PyErr> {
 }
 
 /// Parses one TypeScript file and fills the graph with its structure.
+#[cfg(feature = "python")]
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, file_path, module_qualified_name, file_node_id, source, source_root_name, classifier = None, modules = None, path_aliases = None, tsx = false))]

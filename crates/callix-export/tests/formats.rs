@@ -164,3 +164,78 @@ fn a_foreign_schema_version_is_rejected() {
     let unknown = r#"{"schema_version":1,"metadata":{},"nodes":[{"id":"a","kind":"gadget","qualified_name":"a","name":"a"}],"relations":[]}"#;
     assert!(Graph::from_json(unknown).unwrap_err().to_string().contains("unknown NodeKind"));
 }
+
+// ---------------------------------------------------------------------------
+// Whole-graph operations
+// ---------------------------------------------------------------------------
+
+use callix_export::ops;
+
+/// Graphs written by `Graph.to_json()` in the library: the model must write
+/// them back byte for byte, or a graph that passes through the command line
+/// would change under diff.
+#[test]
+fn written_graphs_round_trip_byte_for_byte() {
+    for (text, indent) in [
+        (include_str!("data/python.compact.json"), None),
+        (include_str!("data/cpp.compact.json"), None),
+        (include_str!("data/typescript.indent2.json"), Some(2)),
+    ] {
+        let graph = Graph::from_json(text).unwrap();
+        assert_eq!(graph.to_json(indent).unwrap(), text);
+    }
+}
+
+#[test]
+fn floats_print_the_way_python_repr_does() {
+    for (value, expected) in [
+        (0.0, "0.0"), (0.9, "0.9"), (100.0, "100.0"), (1e16, "1e+16"), (1e-5, "1e-05"),
+        (1.5e-7, "1.5e-07"), (0.0001, "0.0001"), (123456789012345.0, "123456789012345.0"),
+        (0.30000000000000004, "0.30000000000000004"), (-2.5, "-2.5"), (5e-324, "5e-324"),
+    ] {
+        assert_eq!(ops::float_repr(value), expected);
+    }
+}
+
+#[test]
+fn merging_identical_shared_nodes_is_allowed_and_status_is_the_worst() {
+    let mut a = graph();
+    let mut b = graph();
+    b.metadata.insert("resolver_status".into(), "degraded".into());
+    // Every node of `b` is already in `a`: with allow_shared they coincide.
+    let nodes = a.nodes.len();
+    let relations = a.relations.len();
+    a.merge(&b, true).unwrap();
+    assert_eq!(a.nodes.len(), nodes);
+    assert_eq!(a.relations.len(), relations * 2, "relations are appended, not deduplicated");
+    assert_eq!(a.resolver_status(), Some("degraded"));
+}
+
+#[test]
+fn merging_different_nodes_with_one_id_fails_and_changes_nothing() {
+    let mut a = graph();
+    let mut b = graph();
+    b.nodes[4].name = "renamed".into();
+    let before = a.to_json(None).unwrap();
+    assert!(a.merge(&b, true).is_err());
+    assert_eq!(a.to_json(None).unwrap(), before, "a failed merge must leave the graph alone");
+    // and without allow_shared even identical nodes collide
+    assert!(graph().merge(&graph(), false).is_err());
+}
+
+#[test]
+fn diff_lists_what_changed_in_a_stable_order() {
+    let old = graph();
+    // The last node and the last edge removed, one node renamed.
+    let mut value: serde_json::Value = serde_json::from_str(SAMPLE).unwrap();
+    value["nodes"].as_array_mut().unwrap().pop();
+    value["relations"].as_array_mut().unwrap().pop();
+    value["nodes"][4]["name"] = "renamed".into();
+    let new = Graph::from_value(value).unwrap();
+    let d = ops::diff(&old, &new);
+    assert!(!d.is_empty());
+    assert_eq!(d.changed_nodes.len(), 1);
+    assert_eq!(d.removed_nodes.len(), 1);
+    assert_eq!(d.removed_relations.len(), 1);
+    assert!(ops::diff(&old, &graph()).is_empty());
+}

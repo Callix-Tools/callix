@@ -31,8 +31,8 @@
 
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3::types::PyList;
+use crate::py::prelude::*;
+use crate::py::types::PyList;
 
 use crate::occurrence::OccurrenceRef;
 use crate::python::ResolvedRef;
@@ -140,6 +140,7 @@ impl<N: NativeResolver> ResolverSlot<N> {
 /// Paths are `Path` rather than `str` because that is what a resolver written
 /// against graphlens expects, and because a resolver almost always ends up
 /// joining or comparing them.
+#[cfg(feature = "python")]
 pub(crate) fn custom_prepare(
     py: Python<'_>,
     resolver: &Py<PyAny>,
@@ -160,6 +161,7 @@ pub(crate) fn custom_prepare(
 ///
 /// A short return would silently shift every later answer onto the wrong
 /// use-site, so the length is checked rather than zipped away.
+#[cfg(feature = "python")]
 pub(crate) fn custom_resolve_all(
     py: Python<'_>,
     resolver: &Py<PyAny>,
@@ -188,6 +190,7 @@ pub(crate) fn custom_resolve_all(
 }
 
 /// Reads a custom resolver's `status`, tolerating a plain string.
+#[cfg(feature = "python")]
 pub(crate) fn custom_status(py: Python<'_>, resolver: &Py<PyAny>) -> PyResult<ResolverStatus> {
     let value = resolver.bind(py).call_method0("status")?;
     Ok(ResolverStatus::coerce(&value, ResolverStatus::Unavailable))
@@ -200,6 +203,7 @@ pub(crate) fn custom_status(py: Python<'_>, resolver: &Py<PyAny>) -> PyResult<Re
 /// attributes become empty rather than an error: a resolver that knows a
 /// definition's position but not its name is still useful, because the position
 /// is what binds the edge.
+#[cfg(feature = "python")]
 pub(crate) fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef>> {
     if item.is_none() {
         return Ok(None);
@@ -239,4 +243,36 @@ pub(crate) fn coerce_ref(item: &Bound<'_, PyAny>) -> PyResult<Option<ResolvedRef
         kind: attr_str("kind")?,
         origin: if origin.is_empty() { "unknown".to_string() } else { origin },
     }))
+}
+
+/// Without Python there is no object to call.
+#[cfg(not(feature = "python"))]
+fn no_python() -> PyErr {
+    crate::error::AdapterError::new_err(
+        "a custom resolver is a Python object, and this build has no Python",
+    )
+}
+
+#[cfg(not(feature = "python"))]
+pub(crate) fn custom_prepare(
+    _py: Python<'_>,
+    _resolver: &Py<PyAny>,
+    _project_root: &Path,
+    _files: &[PathBuf],
+) -> PyResult<()> {
+    Err(no_python())
+}
+
+#[cfg(not(feature = "python"))]
+pub(crate) fn custom_resolve_all(
+    _py: Python<'_>,
+    _resolver: &Py<PyAny>,
+    _occurrences: &[(String, OccurrenceRef)],
+) -> PyResult<Vec<Option<ResolvedRef>>> {
+    Err(no_python())
+}
+
+#[cfg(not(feature = "python"))]
+pub(crate) fn custom_status(_py: Python<'_>, _resolver: &Py<PyAny>) -> PyResult<ResolverStatus> {
+    Err(no_python())
 }

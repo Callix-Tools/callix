@@ -249,7 +249,7 @@ fn merge_and_diff() {
 #[test]
 fn doctor_reports_the_toolchains() {
     let text = ok(&["doctor"]);
-    assert!(text.contains("embedded Python"));
+    assert!(text.contains("no Python in this binary"));
     assert!(text.contains("rust-analyzer"));
     assert!(text.contains("PHP, C and C++"));
 }

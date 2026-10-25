@@ -8,9 +8,9 @@ use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
 use indexmap::IndexMap;
-use pyo3::prelude::*;
-use pyo3::types::PyBytes;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::types::PyBytes;
+use crate::py::derive::gen_stub_pyfunction;
 use tree_sitter::{Node as TsNode, Query};
 
 use crate::boundaries::{BoundaryRef, normalize_http_path};

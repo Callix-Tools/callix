@@ -1,8 +1,8 @@
 //! Deterministic node IDs: the same input yields the same ID across runs,
 //! which is what makes incremental updates and diffing possible.
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 use sha2::{Digest, Sha256};
 
 fn digest16(key: &str) -> String {

@@ -56,7 +56,7 @@ tasks:
     desc: Regenerate the .pyi stubs from the pyo3-stub-gen annotations
     cmds:
       # Without pyo3/extension-module, or the binary will not link libpython.
-      - cargo run --quiet {{.PROFILE}} --bin stub_gen
+      - cargo run --quiet {{.PROFILE}} --features python --bin stub_gen
 
   stubs:check:
     desc: Check the committed .pyi files match the generated ones
@@ -70,14 +70,18 @@ tasks:
       - uv run python {{.SCRIPT}}
 
   lint:
-    desc: Run clippy over the whole workspace (any warning is an error)
+    desc: Run clippy over the workspace, in both builds of the core (any warning is an error)
     cmds:
+      # The native engine and everything that depends on it...
       - cargo clippy --workspace --all-targets {{.PROFILE}} -- -D warnings
+      # ...and the Python extension module.
+      - cargo clippy -p callix --features python --all-targets {{.PROFILE}} -- -D warnings
 
   check:
     desc: Quick compile check without building the module
     cmds:
       - cargo check --workspace --all-targets {{.PROFILE}}
+      - cargo check -p callix --features python --all-targets {{.PROFILE}}
 
   test:
     desc: Unit/API tests, golden fixtures, cargo test, and a smoke run of the example
@@ -94,7 +98,10 @@ tasks:
     # SCIP decoder and the dependency parsers — and, for the other two crates,
     # the exporters and the command line run end to end on the fixtures.
     cmds:
+      # Native: the engine's own tests, the exporters, the CLI end to end.
       - cargo test --workspace {{.PROFILE}}
+      # Python: the 137 tests that exercise the PyO3 layer.
+      - cargo test -p callix --features python {{.PROFILE}}
 
   # ---------------------------------------------------------------------------
   # Command line and image

@@ -1,36 +1,15 @@
 //! Getting a graph: analyse a directory, or read one saved earlier.
 
-use std::cell::OnceCell;
 use std::fs;
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
+use callix::native::{self, Analysis, Language};
 use callix_export::Graph;
 
-use crate::bridge::{AnalyzeInfo, Bridge};
 use crate::cli::Source;
 use crate::failure::{Failure, Result};
 use crate::prepare;
-
-/// The languages the adapters cover, as `--lang` spells them.
-pub const LANGUAGES: [&str; 8] = ["python", "typescript", "go", "rust", "php", "c", "cpp", "yaml"];
-
-/// The embedded interpreter, started the first time something needs it: a
-/// saved graph can be exported without ever loading Python.
-#[derive(Default)]
-pub struct Engine {
-    cell: OnceCell<Bridge>,
-}
-
-impl Engine {
-    pub fn get(&self) -> Result<&Bridge> {
-        if self.cell.get().is_none() {
-            let bridge = Bridge::start()?;
-            let _ = self.cell.set(bridge);
-        }
-        Ok(self.cell.get().expect("just set"))
-    }
-}
 
 pub struct Loaded {
     pub graph: Graph,
@@ -38,34 +17,25 @@ pub struct Loaded {
     pub source_root: Option<PathBuf>,
 }
 
-/// `--lang` values, spelled however the user likes, to the canonical names.
-pub fn normalize_languages(raw: &[String]) -> Result<Vec<String>> {
-    let mut out: Vec<String> = Vec::new();
+/// `--lang` values, spelled however the user likes, to the languages.
+pub fn parse_languages(raw: &[String]) -> Result<Vec<Language>> {
+    let mut out: Vec<Language> = Vec::new();
     for item in raw {
-        let name = match item.trim().to_ascii_lowercase().as_str() {
-            "py" | "python" => "python",
-            "ts" | "tsx" | "js" | "javascript" | "typescript" => "typescript",
-            "go" | "golang" => "go",
-            "rs" | "rust" => "rust",
-            "php" => "php",
-            "c" => "c",
-            "cpp" | "c++" | "cxx" => "cpp",
-            "yml" | "yaml" => "yaml",
-            other => {
-                return Err(Failure::new(format!(
-                    "unknown language {other:?}; expected one of: {}",
-                    LANGUAGES.join(", ")
-                )));
-            }
-        };
-        if !out.iter().any(|l| l == name) {
-            out.push(name.to_owned());
+        let language = Language::parse(item).ok_or_else(|| {
+            Failure::new(format!(
+                "unknown language {:?}; expected one of: {}",
+                item.trim(),
+                Language::ALL.map(Language::name).join(", ")
+            ))
+        })?;
+        if !out.contains(&language) {
+            out.push(language);
         }
     }
     Ok(out)
 }
 
-fn count(n: u64) -> String {
+fn count(n: usize) -> String {
     let digits = n.to_string();
     let mut out = String::new();
     for (i, c) in digits.chars().enumerate() {
@@ -77,15 +47,14 @@ fn count(n: u64) -> String {
     out
 }
 
-/// Analyses a directory and returns the graph JSON as the driver wrote it.
+/// Analyses a directory and returns the graph JSON as the engine wrote it.
 pub fn analyze_dir(
-    engine: &Engine,
     dir: &Path,
     source: &Source,
     pretty: bool,
     quiet: bool,
 ) -> Result<(String, PathBuf)> {
-    let languages = normalize_languages(&source.lang)?;
+    let languages = parse_languages(&source.lang)?;
     let root = dir
         .canonicalize()
         .map_err(|e| Failure::new(format!("{}: {e}", dir.display())))?;
@@ -99,10 +68,9 @@ pub fn analyze_dir(
     }
 
     let started = std::time::Instant::now();
-    let bridge = engine.get()?;
-    let (text, info) = bridge.analyze(&root, &languages, !source.no_resolve, pretty)?;
-    report_analysis(&root, &languages, &info, started.elapsed().as_secs_f64(), source, quiet)?;
-    Ok((text, root))
+    let analysis = native::analyze_tree(&root, &languages, !source.no_resolve, pretty.then_some(2));
+    report_analysis(&root, &languages, &analysis, started.elapsed().as_secs_f64(), source, quiet)?;
+    Ok((analysis.json, root))
 }
 
 /// Prints the per-language summary and applies the failure rules:
@@ -110,29 +78,34 @@ pub fn analyze_dir(
 /// detection only a warning, and `--strict` refuses anything not `ok`.
 fn report_analysis(
     root: &Path,
-    requested: &[String],
-    info: &AnalyzeInfo,
+    requested: &[Language],
+    analysis: &Analysis,
     seconds: f64,
     source: &Source,
     quiet: bool,
 ) -> Result<()> {
-    if info.empty {
-        let tried = if requested.is_empty() { LANGUAGES.join(", ") } else { requested.join(", ") };
-        let details: Vec<String> = info
+    if analysis.empty {
+        let tried = if requested.is_empty() {
+            Language::ALL.map(Language::name).join(", ")
+        } else {
+            requested.iter().map(|l| l.name()).collect::<Vec<_>>().join(", ")
+        };
+        let details: Vec<String> = analysis
             .languages
             .iter()
-            .filter_map(|l| l.error.as_ref().map(|e| format!("{}: {e}", l.language)))
+            .filter_map(|l| l.error.as_ref().map(|e| format!("{}: {e}", l.language.name())))
             .collect();
-        let mut message = format!("nothing to analyse under {} (looked for: {tried})", root.display());
-        if !details.is_empty() {
-            message = format!("analysis failed under {}:\n  {}", root.display(), details.join("\n  "));
-        }
+        let message = if details.is_empty() {
+            format!("nothing to analyse under {} (looked for: {tried})", root.display())
+        } else {
+            format!("analysis failed under {}:\n  {}", root.display(), details.join("\n  "))
+        };
         return Err(Failure::new(message));
     }
 
-    for entry in &info.languages {
+    for entry in &analysis.languages {
         if let Some(error) = &entry.error {
-            let line = format!("{}: {error}", entry.language);
+            let line = format!("{}: {error}", entry.language.name());
             if requested.contains(&entry.language) {
                 return Err(Failure::new(line));
             }
@@ -144,10 +117,10 @@ fn report_analysis(
 
     if !quiet {
         eprintln!("analysed {} in {seconds:.1}s", root.display());
-        for entry in info.languages.iter().filter(|e| e.error.is_none()) {
+        for entry in analysis.languages.iter().filter(|e| e.error.is_none()) {
             eprintln!(
                 "  {:<11} {:<12} {:>10} nodes {:>10} relations {:>7.1}s",
-                entry.language,
+                entry.language.name(),
                 entry.status.as_deref().unwrap_or("-"),
                 count(entry.nodes),
                 count(entry.relations),
@@ -157,17 +130,14 @@ fn report_analysis(
     }
 
     if source.strict {
-        let weak: Vec<String> = info
+        let weak: Vec<String> = analysis
             .languages
             .iter()
             .filter(|e| e.error.is_none() && e.status.as_deref() != Some("ok"))
-            .map(|e| format!("{} ({})", e.language, e.status.as_deref().unwrap_or("unknown")))
+            .map(|e| format!("{} ({})", e.language.name(), e.status.as_deref().unwrap_or("unknown")))
             .collect();
         if !weak.is_empty() {
-            return Err(Failure::strict(format!(
-                "--strict: not fully resolved: {}",
-                weak.join(", ")
-            )));
+            return Err(Failure::strict(format!("--strict: not fully resolved: {}", weak.join(", "))));
         }
     }
     Ok(())
@@ -183,11 +153,16 @@ fn read_input(path: &Path) -> Result<String> {
     }
 }
 
+/// Reads a saved graph (a file, or `-` for stdin).
+pub fn read_graph(path: &Path) -> Result<Graph> {
+    Graph::from_json(&read_input(path)?).map_err(|e| Failure::new(format!("{}: {e}", path.display())))
+}
+
 /// Loads the graph for `export` and `report`.
-pub fn load(engine: &Engine, source: &Source, quiet: bool) -> Result<Loaded> {
+pub fn load(source: &Source, quiet: bool) -> Result<Loaded> {
     let input = &source.input;
     if input != Path::new("-") && input.is_dir() {
-        let (text, root) = analyze_dir(engine, input, source, false, quiet)?;
+        let (text, root) = analyze_dir(input, source, false, quiet)?;
         return Ok(Loaded { graph: Graph::from_json(&text)?, source_root: Some(root) });
     }
 
@@ -197,8 +172,7 @@ pub fn load(engine: &Engine, source: &Source, quiet: bool) -> Result<Loaded> {
     if (!source.lang.is_empty() || source.prepare || source.no_resolve) && !quiet {
         eprintln!("warning: --lang, --prepare and --no-resolve apply to a directory; ignored for a saved graph");
     }
-    let graph = Graph::from_json(&read_input(input)?)
-        .map_err(|e| Failure::new(format!("{}: {e}", input.display())))?;
+    let graph = read_graph(input)?;
     if source.strict && graph.resolver_status() != Some("ok") {
         return Err(Failure::strict(format!(
             "--strict: the saved graph's resolver status is {:?}",

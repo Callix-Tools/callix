@@ -9,8 +9,8 @@
 use std::collections::HashSet;
 use std::path::Path;
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
 
 use crate::graph::Graph;
 use crate::ids::node_id;
@@ -36,6 +36,7 @@ use crate::relation::{Relation, RelationKind};
 /// a package name in TypeScript, a module path in Go, a crate in Rust, a vendor
 /// prefix in PHP, a library in the C family. A parser is written for one
 /// language, not for all of them.
+#[cfg(feature = "python")]
 pub(crate) fn custom_declared(
     py: Python<'_>,
     parsers: Option<&Py<PyAny>>,
@@ -104,4 +105,20 @@ pub(crate) fn declare_dependencies(
         graph.push_relation(Py::new(py, relation)?);
     }
     Ok(())
+}
+
+/// Without Python there are no custom parsers to ask: either none were given,
+/// or the caller wanted something this build cannot do.
+#[cfg(not(feature = "python"))]
+pub(crate) fn custom_declared(
+    _py: Python<'_>,
+    parsers: Option<&Py<PyAny>>,
+    _project_root: &Path,
+) -> PyResult<Option<HashSet<String>>> {
+    match parsers {
+        None => Ok(None),
+        Some(_) => Err(crate::error::AdapterError::new_err(
+            "custom dependency parsers are Python objects, and this build has no Python",
+        )),
+    }
 }

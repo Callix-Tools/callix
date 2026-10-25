@@ -16,8 +16,8 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 use serde_json::Value;
 
 use super::detector::composer;

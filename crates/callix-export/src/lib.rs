@@ -12,6 +12,7 @@ pub mod dot;
 pub mod error;
 pub mod lsif;
 pub mod model;
+pub mod ops;
 pub mod report;
 
 use std::io::Write;

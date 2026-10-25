@@ -5,8 +5,8 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 
 /// Extensions stripped when turning a path into a module name.
 const TS_EXTENSIONS: [&str; 4] = ["ts", "tsx", "mts", "cts"];
@@ -222,7 +222,7 @@ pub fn resolve_relative(current_module_qname: &str, import_path: &str) -> String
 #[pyfunction]
 pub fn ts_file_to_qualified_name(file_path: PathBuf, source_root: PathBuf) -> PyResult<String> {
     qualified_name(&file_path, &source_root).ok_or_else(|| {
-        pyo3::exceptions::PyValueError::new_err(format!(
+        crate::py::exceptions::PyValueError::new_err(format!(
             "{file_path:?} is not in the subpath of {source_root:?}"
         ))
     })

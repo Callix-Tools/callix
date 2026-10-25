@@ -1,8 +1,8 @@
 //! A range in a source file. Every value is 1-based (tree-sitter reports
 //! 0-based — convert at the visitor boundary).
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, eq, hash, get_all, from_py_object)]

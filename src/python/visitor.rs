@@ -9,8 +9,8 @@
 
 use std::collections::HashMap;
 
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
 use tree_sitter::Node as TsNode;
 
 use crate::graph::Graph;

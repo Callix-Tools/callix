@@ -1,12 +1,26 @@
 //! The native callix core: graph models, parsing via tree-sitter, and the
 //! language adapters built on top of them.
 
-use pyo3::prelude::*;
+// Without the `python` feature the Python-facing layer (the functions and
+// re-exports only the extension module registers) has no caller. It is still
+// compiled, because the adapters' own methods live in the same `impl` blocks,
+// so the dead-code and unused-import lints say nothing useful in that build.
+#![cfg_attr(not(feature = "python"), allow(dead_code, unused_imports, unused_variables))]
+
+pub mod py;
+
+#[cfg(not(feature = "python"))]
+pub mod native;
+
+#[cfg(feature = "python")]
+use crate::py::prelude::*;
+#[cfg(feature = "python")]
 use pyo3_stub_gen::define_stub_info_gatherer;
 
 mod boundaries;
 mod cfamily;
 mod dependencies;
+#[cfg(feature = "python")]
 mod diffing;
 mod error;
 mod golang;
@@ -21,7 +35,10 @@ mod relation;
 mod resolver_slot;
 mod roots;
 mod rustlang;
+mod json;
+#[cfg(feature = "python")]
 mod serde;
+#[cfg(feature = "python")]
 mod serialization;
 mod span;
 mod span_index;
@@ -31,6 +48,7 @@ mod typescript;
 mod yaml;
 
 pub use boundaries::{BoundaryRef, normalize_http_path};
+#[cfg(feature = "python")]
 pub use diffing::{GraphDiff, diff_graphs};
 pub use error::{
     AdapterError, CallixError, CoreError, DuplicateNodeError, ParseError, ResolverTimeout,
@@ -53,12 +71,13 @@ pub use status::ResolverStatus;
 pub use typescript::TsResolver;
 pub use yaml::YamlAdapter;
 
+#[cfg(feature = "python")]
 #[pymodule]
 pub fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     let py = m.py();
 
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
-    m.add("SCHEMA_VERSION", serialization::SCHEMA_VERSION)?;
+    m.add("SCHEMA_VERSION", json::SCHEMA_VERSION)?;
     m.add("RESOLVER_STATUS_KEY", status::RESOLVER_STATUS_KEY)?;
     m.add("RESOLVER_METRICS_KEY", metrics::RESOLVER_METRICS_KEY)?;
 
@@ -175,4 +194,5 @@ pub fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
+#[cfg(feature = "python")]
 define_stub_info_gatherer!(stub_info);

@@ -4,8 +4,8 @@
 //! it, missing CALLS/REFERENCES/HAS_TYPE is indistinguishable from "there
 //! genuinely are none".
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::{gen_stub_pyclass_enum, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::derive::{gen_stub_pyclass_enum, gen_stub_pymethods};
 
 /// The `graph.metadata` key the status is stored under.
 pub const RESOLVER_STATUS_KEY: &str = "resolver_status";
@@ -50,6 +50,7 @@ impl ResolverStatus {
     }
 
     /// Coerces a stored value back into a status, tolerating garbage.
+    #[cfg(feature = "python")]
     pub fn coerce(value: &Bound<'_, PyAny>, default: Self) -> Self {
         if let Ok(status) = value.extract::<Self>() {
             return status;
@@ -58,6 +59,16 @@ impl ResolverStatus {
             .str()
             .ok()
             .and_then(|s| Self::parse(&s.to_string()))
+            .unwrap_or(default)
+    }
+
+    /// The same, for a value that can only be the status's string.
+    #[cfg(not(feature = "python"))]
+    pub fn coerce(value: &Bound<'_, PyAny>, default: Self) -> Self {
+        value
+            .extract::<String>()
+            .ok()
+            .and_then(|s| Self::parse(&s))
             .unwrap_or(default)
     }
 }

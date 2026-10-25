@@ -521,12 +521,12 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8], file_path: &str) -> V
 }
 
 /// Boundaries in a single source — the entry point for checks.
-#[pyo3_stub_gen::derive::gen_stub_pyfunction]
-#[pyo3::pyfunction]
+#[crate::py::derive::gen_stub_pyfunction]
+#[crate::py::prelude::pyfunction]
 pub fn extract_yaml_boundaries(
-    source: &pyo3::Bound<'_, pyo3::types::PyBytes>,
-) -> pyo3::PyResult<Vec<BoundaryRef>> {
-    use pyo3::prelude::*;
+    source: &crate::py::prelude::Bound<'_, crate::py::types::PyBytes>,
+) -> crate::py::prelude::PyResult<Vec<BoundaryRef>> {
+    use crate::py::prelude::*;
     let source = source.as_bytes();
     let tree = super::parse_tree(source)?;
     Ok(extract_boundaries(tree.root_node(), source, ""))

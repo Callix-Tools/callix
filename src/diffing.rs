@@ -2,9 +2,9 @@
 
 use std::collections::BTreeMap;
 
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::graph::Graph;
 use crate::node::Node;

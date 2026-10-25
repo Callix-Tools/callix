@@ -2,8 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 
 /// Python source roots: the `src/` layout first, otherwise the project root.
 pub fn source_roots(project_root: &Path, files: &[PathBuf]) -> Vec<PathBuf> {
@@ -56,7 +56,7 @@ pub fn source_root_for<'a>(file: &Path, roots: &'a [PathBuf]) -> Option<&'a Path
 #[pyfunction]
 pub fn file_to_qualified_name(file_path: &str, source_root: &str) -> PyResult<String> {
     qualified_name(Path::new(file_path), Path::new(source_root)).ok_or_else(|| {
-        pyo3::exceptions::PyValueError::new_err(format!(
+        crate::py::exceptions::PyValueError::new_err(format!(
             "{file_path:?} is not in the subpath of {source_root:?}"
         ))
     })

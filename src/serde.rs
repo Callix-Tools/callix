@@ -4,8 +4,8 @@
 //! JSON-compatible shape; `Span` survives the round-trip via a
 //! `{"__span__": [l, c, l, c]}` tag, so a parsed graph equals the original.
 
-use pyo3::prelude::*;
-use pyo3::types::{PyBool, PyDict, PyFloat, PyInt, PyList, PyString, PyTuple};
+use crate::py::prelude::*;
+use crate::py::types::{PyBool, PyDict, PyFloat, PyInt, PyList, PyString, PyTuple};
 
 use crate::span::Span;
 

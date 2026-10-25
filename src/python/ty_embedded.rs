@@ -8,8 +8,8 @@
 
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use ruff_db::files::{FilePath, system_path_to_file};
 use ruff_db::source::{line_index, source_text};
 use ruff_db::system::{OsSystem, SystemPath, SystemPathBuf};
@@ -38,9 +38,28 @@ pub struct EmbeddedTyResolver {
 impl EmbeddedTyResolver {
     /// A resolver for the running interpreter: stdlib is recognized by its
     /// `sys.base_prefix`.
+    #[cfg(feature = "python")]
     pub fn for_running_python(py: Python<'_>) -> PyResult<Self> {
         let base_prefix: String = py.import("sys")?.getattr("base_prefix")?.extract()?;
         Ok(Self { db: None, root: None, base_prefix: PathBuf::from(base_prefix) })
+    }
+
+    /// A resolver for the environment the process runs in. There is no running
+    /// interpreter, so the `base_prefix` is asked of whichever `python3` is on
+    /// the path; with none, no path outside typeshed is taken for stdlib.
+    #[cfg(not(feature = "python"))]
+    pub fn for_running_python(_py: Python<'_>) -> PyResult<Self> {
+        let probe = std::process::Command::new("python3")
+            .args(["-c", "import sys; print(sys.base_prefix)"])
+            .stderr(std::process::Stdio::null())
+            .output()
+            .ok()
+            .filter(|out| out.status.success())
+            .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
+            .filter(|prefix| !prefix.is_empty());
+        // An empty prefix would match every path, so absent means unmatchable.
+        let base_prefix = probe.map_or_else(|| PathBuf::from("/nonexistent-python-prefix"), PathBuf::from);
+        Ok(Self { db: None, root: None, base_prefix })
     }
 
     pub fn prepare_rust(&mut self, project_root: &str) -> PyResult<()> {
@@ -151,13 +170,13 @@ impl EmbeddedTyResolver {
         let _ = files;
         let root = SystemPathBuf::from(project_root);
         if !root.as_std_path().is_absolute() {
-            return Err(pyo3::exceptions::PyValueError::new_err(
+            return Err(crate::py::exceptions::PyValueError::new_err(
                 "project_root must be an absolute path",
             ));
         }
         let system = OsSystem::new(&root);
         let metadata = ProjectMetadata::discover(&root, &system).map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(format!("ty could not read the project: {e}"))
+            crate::py::exceptions::PyRuntimeError::new_err(format!("ty could not read the project: {e}"))
         })?;
         self.db = Some(ProjectDatabase::use_defaults(metadata, system));
         self.root = Some(PathBuf::from(project_root));

@@ -5,8 +5,8 @@
 
 use std::collections::HashSet;
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
 use tree_sitter::Node as TsNode;
 
 use crate::graph::Graph;

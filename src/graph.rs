@@ -7,15 +7,21 @@
 use std::collections::{HashMap, HashSet};
 
 use indexmap::IndexMap;
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
+#[cfg(feature = "python")]
 use crate::diffing::{GraphDiff, diff_graphs};
-use crate::error::{DuplicateNodeError, SerializationError};
+use crate::error::DuplicateNodeError;
+#[cfg(feature = "python")]
+use crate::error::SerializationError;
+use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
 use crate::node::{Node, NodeKind};
 use crate::relation::{Relation, RelationKind};
+#[cfg(feature = "python")]
 use crate::serde::{decode_metadata, encode_metadata};
+#[cfg(feature = "python")]
 use crate::serialization::{
     SCHEMA_VERSION, dict_list, ensure_schema_version, json_dumps, json_loads, node_from_dict,
     node_to_dict, relation_from_dict, relation_to_dict,
@@ -88,14 +94,20 @@ impl Graph {
         Self::new(py)
     }
 
-    /// Stores a value in the graph metadata.
-    pub(crate) fn set_metadata_item(
-        &self,
-        py: Python<'_>,
-        key: &str,
-        value: &Bound<'_, PyAny>,
-    ) -> PyResult<()> {
-        self.metadata.bind(py).set_item(key, value)
+    /// The graph-level metadata dictionary.
+    #[cfg(not(feature = "python"))]
+    pub(crate) fn metadata_dict<'py>(&'py self, py: Python<'py>) -> &'py Bound<'py, PyDict> {
+        self.metadata.bind(py)
+    }
+
+    /// Records how complete resolution was (`resolver_status`).
+    pub(crate) fn set_resolver_status(&self, py: Python<'_>, status: ResolverStatus) -> PyResult<()> {
+        self.metadata.bind(py).set_item(RESOLVER_STATUS_KEY, status.as_str())
+    }
+
+    /// Records what the resolution pass did (`resolver_metrics`).
+    pub(crate) fn set_resolver_metrics(&self, py: Python<'_>, metrics: &ResolverMetrics) -> PyResult<()> {
+        self.metadata.bind(py).set_item(RESOLVER_METRICS_KEY, &metrics.as_dict(py)?)
     }
 
     pub(crate) fn has_node(&self, id: &str) -> bool {
@@ -234,7 +246,7 @@ impl Graph {
     /// without deduplication, so merging the same graph twice doubles its
     /// edges — call it once per source graph.
     #[pyo3(signature = (other, *, allow_shared = false))]
-    fn merge(&mut self, py: Python<'_>, other: &Self, allow_shared: bool) -> PyResult<()> {
+    pub fn merge(&mut self, py: Python<'_>, other: &Self, allow_shared: bool) -> PyResult<()> {
         // Every id is checked before any is inserted. Validating as it went
         // left a failed merge with part of the other graph already in this
         // one: whether the caller was corrupted depended on where the
@@ -279,6 +291,7 @@ impl Graph {
 
     // -- serialization / diff --------------------------------------------
 
+    #[cfg(feature = "python")]
     /// Serializes the graph into a JSON-compatible dict.
     fn to_dict<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let out = PyDict::new(py);
@@ -299,12 +312,14 @@ impl Graph {
         Ok(out)
     }
 
+    #[cfg(feature = "python")]
     /// Serializes the graph into a JSON string.
     #[pyo3(signature = (*, indent = None))]
     fn to_json(&self, py: Python<'_>, indent: Option<u32>) -> PyResult<String> {
         json_dumps(py, self.to_dict(py)?.as_any(), indent)
     }
 
+    #[cfg(feature = "python")]
     /// Rebuilds a graph from `to_dict` output.
     #[staticmethod]
     fn from_dict(py: Python<'_>, data: &Bound<'_, PyDict>) -> PyResult<Self> {
@@ -320,6 +335,7 @@ impl Graph {
         Ok(graph)
     }
 
+    #[cfg(feature = "python")]
     /// Rebuilds a graph from `to_json` output.
     #[staticmethod]
     fn from_json(py: Python<'_>, text: &str) -> PyResult<Self> {
@@ -330,6 +346,7 @@ impl Graph {
         Self::from_dict(py, data)
     }
 
+    #[cfg(feature = "python")]
     /// The structural diff from this graph (the old one) to `other`.
     fn diff(&self, py: Python<'_>, other: &Self) -> PyResult<GraphDiff> {
         diff_graphs(py, self, other)
@@ -630,5 +647,69 @@ impl Graph {
                 (r.source_id.clone(), confidence)
             })
             .collect()
+    }
+}
+
+/// Helpers the command line's orchestration needs, without Python objects.
+#[cfg(not(feature = "python"))]
+impl Graph {
+    pub(crate) fn node_count(&self) -> usize {
+        self.nodes.len()
+    }
+
+    pub(crate) fn relation_count(&self) -> usize {
+        self.relations.len()
+    }
+
+    /// `metadata["resolver_status"]` as text.
+    pub(crate) fn status_text(&self, py: Python<'_>) -> Option<String> {
+        self.metadata
+            .bind(py)
+            .get_item(RESOLVER_STATUS_KEY)
+            .ok()
+            .flatten()
+            .and_then(|v| v.extract::<String>().ok())
+    }
+
+    /// `[queries, resolved, internal, external, unresolved, seconds]` from
+    /// `metadata["resolver_metrics"]`, when present.
+    pub(crate) fn metric_counters(&self, py: Python<'_>) -> Option<[f64; 6]> {
+        let metrics = self.metadata.bind(py).get_item(RESOLVER_METRICS_KEY).ok().flatten()?;
+        let crate::py::Value::Dict(map) = metrics.value().clone() else { return None };
+        let number = |key: &str| {
+            map.get(key).and_then(|v| match v {
+                crate::py::Value::Int(n) => Some(*n as f64),
+                crate::py::Value::Float(x) => Some(*x),
+                _ => None,
+            })
+        };
+        Some([
+            number("queries").unwrap_or(0.0),
+            number("resolved").unwrap_or(0.0),
+            number("internal").unwrap_or(0.0),
+            number("external").unwrap_or(0.0),
+            number("unresolved").unwrap_or(0.0),
+            number("seconds").unwrap_or(0.0),
+        ])
+    }
+
+    /// Replaces `resolver_metrics` with the sums over every language that ran.
+    pub(crate) fn set_summed_metrics(&self, py: Python<'_>, parts: &[[f64; 6]]) {
+        let mut total = [0.0f64; 6];
+        for part in parts {
+            for (sum, value) in total.iter_mut().zip(part) {
+                *sum += value;
+            }
+        }
+        let percent = if total[0] > 0.0 { (total[1] * 100.0 / total[0] * 10.0).round() / 10.0 } else { 0.0 };
+        let metrics = PyDict::new(py);
+        for (key, value) in
+            ["queries", "resolved", "internal", "external", "unresolved"].iter().zip(total)
+        {
+            let _ = metrics.set_item(*key, value as i64);
+        }
+        let _ = metrics.set_item("seconds", (total[5] * 1000.0).round() / 1000.0);
+        let _ = metrics.set_item("resolved_pct", percent);
+        let _ = self.metadata.bind(py).set_item(RESOLVER_METRICS_KEY, &metrics);
     }
 }

@@ -10,8 +10,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 use walkdir::WalkDir;
 
 use crate::roots::{EXCLUDED_DIRS, collect_files, collect_marker_roots};

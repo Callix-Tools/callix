@@ -4,9 +4,9 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
 
 use crate::span::Span;
 
@@ -98,12 +98,89 @@ impl NodeKind {
     #[staticmethod]
     fn from_value(value: &str) -> PyResult<Self> {
         Self::parse(value).ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(format!("unknown NodeKind: {value:?}"))
+            crate::py::exceptions::PyValueError::new_err(format!("unknown NodeKind: {value:?}"))
         })
     }
 
     fn __str__(&self) -> String {
         format!("NodeKind.{}", self.as_str().to_uppercase())
+    }
+}
+
+
+
+#[gen_stub_pyclass]
+#[pyclass(module = "callix._core", frozen, get_all)]
+pub struct Node {
+    pub id: String,
+    pub kind: NodeKind,
+    pub qualified_name: String,
+    pub name: String,
+    pub file_path: Option<String>,
+    pub span: Option<Span>,
+    pub metadata: Py<PyDict>,
+}
+
+#[gen_stub_pymethods]
+#[pymethods]
+impl Node {
+    #[new]
+    #[pyo3(signature = (id, kind, qualified_name, name, file_path = None, span = None, metadata = None))]
+    // The signature is the node's public API: every field is set on creation.
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        py: Python<'_>,
+        id: String,
+        kind: NodeKind,
+        qualified_name: String,
+        name: String,
+        file_path: Option<String>,
+        span: Option<Span>,
+        metadata: Option<Py<PyDict>>,
+    ) -> Self {
+        Self {
+            id,
+            kind,
+            qualified_name,
+            name,
+            file_path,
+            span,
+            metadata: metadata.unwrap_or_else(|| PyDict::new(py).unbind()),
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "Node(id={:?}, kind={}, qualified_name={:?})",
+            self.id,
+            self.kind.as_str(),
+            self.qualified_name
+        )
+    }
+
+    pub fn __eq__(&self, py: Python<'_>, other: &Self) -> PyResult<bool> {
+        Ok(self.id == other.id
+            && self.kind == other.kind
+            && self.qualified_name == other.qualified_name
+            && self.name == other.name
+            && self.file_path == other.file_path
+            && self.span == other.span
+            && self.metadata.bind(py).eq(other.metadata.bind(py))?)
+    }
+
+    /// Hashes the id alone.
+    ///
+    /// Defining `__eq__` in Python removes the inherited `__hash__`, which
+    /// left nodes unhashable — `set(graph.nodes.values())` raised a TypeError
+    /// on a graph library. A content hash is not available because `__eq__`
+    /// compares a metadata dict, but the id is enough: equality requires the
+    /// ids to match, so equal nodes always hash equal, which is the direction
+    /// the contract demands. Two nodes sharing an id and differing in metadata
+    /// collide, and colliding is allowed.
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.id.hash(&mut hasher);
+        hasher.finish()
     }
 }
 
@@ -189,80 +266,5 @@ mod kind_tests {
         for value in ["", "FUNCTION", "typealias", "external symbol", "unknown"] {
             assert_eq!(NodeKind::parse(value), None, "{value:?} was accepted");
         }
-    }
-}
-
-#[gen_stub_pyclass]
-#[pyclass(module = "callix._core", frozen, get_all)]
-pub struct Node {
-    pub id: String,
-    pub kind: NodeKind,
-    pub qualified_name: String,
-    pub name: String,
-    pub file_path: Option<String>,
-    pub span: Option<Span>,
-    pub metadata: Py<PyDict>,
-}
-
-#[gen_stub_pymethods]
-#[pymethods]
-impl Node {
-    #[new]
-    #[pyo3(signature = (id, kind, qualified_name, name, file_path = None, span = None, metadata = None))]
-    // The signature is the node's public API: every field is set on creation.
-    #[allow(clippy::too_many_arguments)]
-    fn new(
-        py: Python<'_>,
-        id: String,
-        kind: NodeKind,
-        qualified_name: String,
-        name: String,
-        file_path: Option<String>,
-        span: Option<Span>,
-        metadata: Option<Py<PyDict>>,
-    ) -> Self {
-        Self {
-            id,
-            kind,
-            qualified_name,
-            name,
-            file_path,
-            span,
-            metadata: metadata.unwrap_or_else(|| PyDict::new(py).unbind()),
-        }
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "Node(id={:?}, kind={}, qualified_name={:?})",
-            self.id,
-            self.kind.as_str(),
-            self.qualified_name
-        )
-    }
-
-    pub fn __eq__(&self, py: Python<'_>, other: &Self) -> PyResult<bool> {
-        Ok(self.id == other.id
-            && self.kind == other.kind
-            && self.qualified_name == other.qualified_name
-            && self.name == other.name
-            && self.file_path == other.file_path
-            && self.span == other.span
-            && self.metadata.bind(py).eq(other.metadata.bind(py))?)
-    }
-
-    /// Hashes the id alone.
-    ///
-    /// Defining `__eq__` in Python removes the inherited `__hash__`, which
-    /// left nodes unhashable — `set(graph.nodes.values())` raised a TypeError
-    /// on a graph library. A content hash is not available because `__eq__`
-    /// compares a metadata dict, but the id is enough: equality requires the
-    /// ids to match, so equal nodes always hash equal, which is the direction
-    /// the contract demands. Two nodes sharing an id and differing in metadata
-    /// collide, and colliding is allowed.
-    fn __hash__(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        self.id.hash(&mut hasher);
-        hasher.finish()
     }
 }

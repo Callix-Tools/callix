@@ -8,9 +8,9 @@ use std::collections::{BTreeMap, HashSet};
 
 use indexmap::IndexMap;
 
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use tree_sitter::Node as TsNode;
 
 use crate::graph::Graph;

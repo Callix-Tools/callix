@@ -1,8 +1,8 @@
 //! End-to-end tests: the built binary against the repository's fixtures.
 //!
-//! These run the embedded interpreter and the real adapters, so they need the
-//! same build the rest of the suite does and nothing else — every fixture is
-//! analysed with a resolver that ships inside the binary.
+//! These run the real adapters, so they need the same build the rest of the
+//! suite does and nothing else — every fixture is analysed with a resolver that
+//! ships inside the binary.
 
 use std::fs;
 use std::path::{Path, PathBuf};

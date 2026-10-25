@@ -2,21 +2,20 @@
 #
 # The callix command line, as two images:
 #
-#   slim   callix + the Python it embeds. Resolves Python and TypeScript (ty and
-#          typescript-go are linked into the binary), PHP, C, C++ and YAML.
-#   full   slim + the Go and Rust toolchains (and Node, for `--prepare`), so the
-#          Go and Rust resolvers run too. This is the default: `docker build .`
+#   slim   callix. Resolves Python and TypeScript (ty and typescript-go are
+#          linked into the binary), PHP, C, C++ and YAML.
+#   full   slim + the Go and Rust toolchains, Node and Python. The Go and Rust
+#          resolvers run too, and `--prepare` can fetch JavaScript dependencies.
+#          This is the default: `docker build .`
 #
-# Why Python at all: the language adapters are Python classes, so the binary
-# embeds the interpreter that drives them. It links libpython3.X dynamically,
-# which is why both images derive from the same python:3.X Debian base and why
-# PYTHON_VERSION is one argument for the whole file.
+# The binary is native — it embeds no interpreter and links nothing but libc —
+# so the images are plain Debian. Python is in `full` for a different reason: it
+# is where a project's packages get installed, and ty finds them there.
 #
 #   docker build -t callix .                       # full
 #   docker build --target slim -t callix:slim .
 #   docker run --rm -v "$PWD:/workspace" callix export . -f lsif -o dump.lsif
 
-ARG PYTHON_VERSION=3.13
 ARG GO_VERSION=1.26.0
 ARG RUST_VERSION=1.97.0
 ARG NODE_VERSION=22
@@ -27,12 +26,15 @@ ARG NODE_VERSION=22
 # and, with rust-analyzer and the standard library's sources, resolves Rust.
 # Pinned, because what a resolver answers depends on its version.
 # -----------------------------------------------------------------------------
-FROM python:${PYTHON_VERSION}-bookworm AS toolchains
+FROM debian:bookworm AS toolchains
 ARG GO_VERSION
 ARG RUST_VERSION
 ENV RUSTUP_HOME=/opt/rustup \
     CARGO_HOME=/opt/cargo \
     PATH=/opt/cargo/bin:/usr/local/go/bin:${PATH}
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl git gcc libc6-dev \
+ && rm -rf /var/lib/apt/lists/*
 RUN set -eux; \
     arch="$(dpkg --print-architecture)"; \
     curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${arch}.tar.gz" | tar -C /usr/local -xz; \
@@ -51,7 +53,6 @@ COPY Cargo.toml Cargo.lock build.rs ./
 COPY src ./src
 COPY go ./go
 COPY crates ./crates
-ENV PYO3_PYTHON=/usr/local/bin/python3
 # .ts-go is the typescript-go checkout build.rs clones (~370 MB); the cache
 # mounts keep it, the registry and the compiled ty tree between local builds.
 RUN --mount=type=cache,target=/opt/cargo/registry \
@@ -64,7 +65,7 @@ RUN --mount=type=cache,target=/opt/cargo/registry \
 # -----------------------------------------------------------------------------
 # slim
 # -----------------------------------------------------------------------------
-FROM python:${PYTHON_VERSION}-slim-bookworm AS slim
+FROM debian:bookworm-slim AS slim
 # git: cargo and Go fetch some dependencies through it.
 # safe.directory: a workspace mounted from the host belongs to another uid, and
 # git (and with it `go list`) refuses such a tree otherwise.
@@ -88,9 +89,10 @@ FROM node:${NODE_VERSION}-bookworm-slim AS node
 
 FROM slim AS full
 # A C toolchain: rust-analyzer runs the project's build scripts to see what they
-# generate, and cgo needs one for Go projects.
+# generate, and cgo needs one for Go projects. Python, with pip and venv, is
+# where `pip install -r requirements.txt` puts a project's packages for ty.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends gcc libc6-dev \
+ && apt-get install -y --no-install-recommends gcc libc6-dev python3 python3-pip python3-venv \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=toolchains /usr/local/go /usr/local/go
 COPY --from=toolchains /opt/rustup /opt/rustup
@@ -107,4 +109,5 @@ ENV RUSTUP_HOME=/opt/rustup \
     GOPATH=/go \
     GOCACHE=/tmp/callix-cache/go-build \
     GOFLAGS=-buildvcs=false \
+    PIP_BREAK_SYSTEM_PACKAGES=1 \
     PATH=/opt/cargo/bin:/usr/local/go/bin:${PATH}

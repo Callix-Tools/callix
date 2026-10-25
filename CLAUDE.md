@@ -244,14 +244,41 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
   structural checker the tests use.
-- **`crates/callix-cli`** is the `callix` binary. The adapters are Python classes
-  (`Graph` holds `Py<Node>`, metadata is a `PyDict` that Python may mutate), so
-  it **embeds the interpreter**: pyo3 `auto-initialize`, the native module
-  registered as `_core` with `append_to_inittab!`, and `src/driver.py` — included
-  with `include_str!` — chooses adapters, merges graphs and speaks JSON both
-  ways. Rust never touches a Python object. `libpython3.X` is linked
-  dynamically, which is why there is no standalone download and why both images
-  derive from the same `python:3.X` base.
+- **`crates/callix-cli`** is the `callix` binary. It depends on `callix` with the
+  default features, i.e. **without** `python`: the native engine, with nothing
+  linked to libpython (`cargo tree -p callix-cli` has no pyo3, `ldd` no python).
+- **`crates/callix-compat`** is a proc-macro crate of no-op `pyclass`,
+  `pymethods`, `pyfunction`, `pymodule` and `gen_stub_*` attributes.
+
+**The crate has two builds from one source.** `--features python` (what maturin
+selects in `pyproject.toml`) is the extension module. Without it, `src/py/native.rs`
+stands in for the parts of PyO3 the adapters touch — `Python`, `Py`, `Bound`,
+`PyDict`, `PyList`, `PyErr`, `Value` — as plain Rust, and `callix-compat` turns the
+attributes into no-ops, so a `#[pymethods]` block is an ordinary `impl` whose
+methods the native code calls. `crate::py` re-exports PyO3 or the stand-ins;
+every file imports from there, never from `pyo3` directly. Rules that follow:
+
+- **Native is the default** (`default = []`), because cargo unifies features across
+  workspace members: with `python` on by default, `cargo build --workspace` would
+  build the CLI against the Python build. Anything Python needs says
+  `--features python` (`task stubs`, `task test:rust`, `task lint` do).
+- Code that talks to the interpreter — `serde.rs`, `serialization.rs`,
+  `diffing.rs`, the `custom_*` helpers in `resolver_slot.rs`, `custom_declared`,
+  `run_extractors`, the low-level `#[pyfunction]`s that take a `Bound<Graph>` — is
+  `#[cfg(feature = "python")]`, with an error-returning stub where the native
+  build still calls it. Custom resolvers, dependency parsers and boundary
+  extractors are Python-only by nature.
+- `src/native.rs` (native build only) is the engine's front door: `detect`,
+  `analyze_tree` (run each language, merge with `allow_shared`, sum the resolver
+  counters). `src/json.rs` writes the graph with `json.dumps`' layout and Python's
+  float repr; `tests/api/test_native_engine.py` requires the CLI's bytes to equal
+  `Graph.to_json()` for every fixture, so a divergence in either engine is caught.
+- `PythonAdapter` classifies imports with `sys.stdlib_module_names` in the Python
+  build and with the list in `src/python/stdlib.rs` (3.13) in the native one; ty
+  finds the project's packages through a `python3` on PATH or a `.venv`.
+- Both builds must stay clippy-clean: `task lint` runs the workspace (native) and
+  `-p callix --features python`. `dead_code` and `unused_imports` are allowed in
+  the native build, where the Python-facing layer has no caller.
 
 Things that are easy to get wrong:
 
@@ -273,8 +300,10 @@ Things that are easy to get wrong:
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
 
-The Docker images (`Dockerfile`, `docker/smoke.sh`) are `slim` (callix + Python)
-and `full` (+ Go, Rust with rust-analyzer and rust-src, Node). They bring the
+The Docker images (`Dockerfile`, `docker/smoke.sh`) are plain Debian: `slim`
+(callix) and `full` (+ Go, Rust with rust-analyzer and rust-src, Node, Python+pip).
+`release.yml` also attaches `callix-<version>-<os>-<arch>.tar.gz` to the GitHub
+Release (Linux glibc, macOS). They bring the
 tools, not the analysed project's dependencies — `--prepare` fetches those for Go,
 Cargo and npm; Python's are installed by the user into the container's Python.
 `.github/workflows/docker.yml` builds and smoke-tests on PRs; `release.yml` pushes

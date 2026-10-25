@@ -32,9 +32,14 @@ echo "== doctor"
 doctor="$(run doctor)"
 echo "$doctor"
 if [ "$FLAVOUR" = full ]; then
-    for tool in go cargo rust-analyzer npm; do
+    for tool in go cargo rust-analyzer npm python3; do
         echo "$doctor" | grep -q "^  ok  *$tool " || fail "$tool is missing from the full image"
     done
+fi
+
+echo "== the binary links no libpython"
+if docker run --rm --entrypoint sh "$IMAGE" -c 'ldd /usr/local/bin/callix' | grep -qi python; then
+    fail "callix links libpython; the image is meant to need no Python for it"
 fi
 
 echo "== python fixture: LSIF"

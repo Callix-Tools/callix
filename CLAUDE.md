@@ -262,11 +262,11 @@ Things that are easy to get wrong:
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.
-- **LSIF needs positions, and only some edges have them.** Python, TypeScript, Go,
-  Rust and PHP record `metadata["span"]` on every resolved edge; the C family
-  does not (its edges carry no metadata, so `dedupe_structural_relations` also
-  collapses them to one per pair). A C/C++ LSIF dump has definitions and hovers
-  and no references. Fixing that changes C/C++ graphs and their baselines.
+- **LSIF needs positions, and every resolved edge has them.** Each adapter records
+  `metadata["span"]` (and `access` on a `REFERENCES`) on the edges it builds from a
+  use-site; `tests/api/test_edge_spans.py` pins it. The C family once pushed those
+  edges bare, which also let `dedupe_structural_relations` fold two call sites into
+  one — an edge without metadata is "structural" to it.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

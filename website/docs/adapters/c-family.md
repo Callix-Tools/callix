@@ -123,6 +123,11 @@ what `static` means. Include reachability is closed transitively, so a two-hop
 include chain resolves — iteratively rather than recursively, because a cyclic
 include is legal and was common before `#pragma once`.
 
+As in every other adapter, each edge the table produces records where it was
+written: `metadata["span"]`, plus `access` on a `REFERENCES`. Two calls to one
+function are therefore two edges, and an index built from the graph — an LSIF
+dump, say — can place every reference.
+
 What it will not do:
 
 - **Evaluate the preprocessor.** Every arm of an `#if` is in the graph, so two

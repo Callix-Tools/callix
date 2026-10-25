@@ -272,3 +272,14 @@ fn prepare_runs_for_the_manifests_it_finds() {
     assert!(err.contains("preparing Go modules"), "{err}");
     fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn c_and_cpp_dumps_have_references() {
+    // The C family resolves through a symbol table; its edges must still say
+    // where they were written, or the dump has nothing to find.
+    for lang in ["c", "cpp"] {
+        let text = ok(&["export", p(&fixture(lang)), "-f", "lsif", "-q"]);
+        validate(&text).unwrap_or_else(|p| panic!("{lang}: {p:#?}"));
+        assert!(text.contains("\"property\":\"references\""), "{lang}: no references in the dump");
+    }
+}

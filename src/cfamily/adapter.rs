@@ -39,6 +39,7 @@ use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
 use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
+use crate::span::Span;
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
 use crate::roots::filter_nested_root_files;
@@ -100,6 +101,30 @@ fn push_relation(
         kind,
         metadata: PyDict::new(py).unbind(),
     };
+    graph.push_relation(Py::new(py, relation)?);
+    Ok(())
+}
+
+/// An edge a resolver produced from a use-site.
+///
+/// It records where it was written, as every other adapter's does — `span`, and
+/// `access` on a `REFERENCES` — which is what lets two call sites of the same
+/// function stay two edges and what an index (LSIF) needs to place a reference.
+fn push_reference(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    role: &str,
+    span: Span,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    if role == "read" || role == "write" {
+        metadata.set_item("access", role)?;
+    }
+    let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
     graph.push_relation(Py::new(py, relation)?);
     Ok(())
 }
@@ -366,7 +391,9 @@ fn resolve_with_table(
                     }
                     metrics.resolved += 1;
                     metrics.internal += 1;
-                    push_relation(py, graph, enclosing_id, target_id, kind)?;
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence.role, occurrence.span,
+                    )?;
                 }
                 None => {
                     // Not declared in anything this translation unit can see: a
@@ -386,7 +413,9 @@ fn resolve_with_table(
                         ensure_external_symbol(py, graph, project, &key, "unknown")?;
                     metrics.resolved += 1;
                     metrics.external += 1;
-                    push_relation(py, graph, enclosing_id, target_id, kind)?;
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence.role, occurrence.span,
+                    )?;
                 }
             }
         }

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "resolver_status": "ok",
+    "resolver_metrics": {"queries": 3, "resolved": 3, "internal": 2, "external": 1, "unresolved": 0, "seconds": 0.5, "resolved_pct": 100.0}
+  },
+  "nodes": [
+    {"id": "p1", "kind": "project", "qualified_name": "shop", "name": "shop", "file_path": null, "span": null, "metadata": {}},
+    {"id": "d1", "kind": "dependency", "qualified_name": "httpx", "name": "httpx", "file_path": null, "span": null, "metadata": {}},
+    {"id": "fa", "kind": "file", "qualified_name": "a.py", "name": "a.py", "file_path": "a.py", "span": null, "metadata": {}},
+    {"id": "fb", "kind": "file", "qualified_name": "b.py", "name": "b.py", "file_path": "b.py", "span": null, "metadata": {}},
+    {"id": "f", "kind": "function", "qualified_name": "a.charge", "name": "charge", "file_path": "a.py", "span": [1, 1, 2, 12], "metadata": {"name_span": {"__span__": [1, 5, 1, 11]}}},
+    {"id": "g", "kind": "function", "qualified_name": "b.checkout", "name": "checkout", "file_path": "b.py", "span": [3, 1, 6, 20], "metadata": {"name_span": {"__span__": [3, 5, 3, 13]}}},
+    {"id": "h", "kind": "function", "qualified_name": "b.refund", "name": "refund", "file_path": "b.py", "span": [8, 1, 9, 20], "metadata": {"name_span": {"__span__": [8, 5, 8, 11]}}},
+    {"id": "x", "kind": "variable", "qualified_name": "a.rate", "name": "rate", "file_path": "a.py", "span": [4, 1, 4, 9], "metadata": {"name_span": {"__span__": [4, 1, 4, 5]}}},
+    {"id": "e1", "kind": "external_symbol", "qualified_name": "httpx.get", "name": "get", "file_path": null, "span": null, "metadata": {"origin": "third_party"}},
+    {"id": "bd", "kind": "boundary", "qualified_name": "http:GET /pay/{}", "name": "GET /pay/{}", "file_path": null, "span": null, "metadata": {"key": "GET /pay/{}", "mechanism": "http"}}
+  ],
+  "relations": [
+    {"source_id": "p1", "target_id": "d1", "kind": "depends_on", "metadata": {}},
+    {"source_id": "fa", "target_id": "f", "kind": "contains", "metadata": {}},
+    {"source_id": "g", "target_id": "f", "kind": "calls", "metadata": {"span": {"__span__": [4, 5, 4, 11]}}},
+    {"source_id": "g", "target_id": "f", "kind": "calls", "metadata": {"span": {"__span__": [4, 5, 4, 11]}}},
+    {"source_id": "h", "target_id": "f", "kind": "calls", "metadata": {"span": {"__span__": [9, 5, 9, 11]}}},
+    {"source_id": "g", "target_id": "e1", "kind": "calls", "metadata": {"span": {"__span__": [5, 5, 5, 14]}}},
+    {"source_id": "g", "target_id": "bd", "kind": "consumes", "metadata": {"line": 5, "col": 5, "mechanism": "http", "key": "GET /pay/{}", "role": "client"}},
+    {"source_id": "f", "target_id": "bd", "kind": "exposes", "metadata": {"line": 1, "col": 1, "mechanism": "http", "key": "GET /pay/{}", "role": "server"}},
+    {"source_id": "g", "target_id": "x", "kind": "references", "metadata": {"span": {"__span__": [6, 5, 6, 9]}, "access": "read"}}
+  ]
+}

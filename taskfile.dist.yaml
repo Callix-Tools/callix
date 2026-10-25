@@ -70,14 +70,14 @@ tasks:
       - uv run python {{.SCRIPT}}
 
   lint:
-    desc: Run clippy (any warning is an error)
+    desc: Run clippy over the whole workspace (any warning is an error)
     cmds:
-      - cargo clippy --all-targets {{.PROFILE}} -- -D warnings
+      - cargo clippy --workspace --all-targets {{.PROFILE}} -- -D warnings
 
   check:
     desc: Quick compile check without building the module
     cmds:
-      - cargo check --all-targets {{.PROFILE}}
+      - cargo check --workspace --all-targets {{.PROFILE}}
 
   test:
     desc: Unit/API tests, golden fixtures, cargo test, and a smoke run of the example
@@ -88,12 +88,42 @@ tasks:
       - task: example
 
   test:rust:
-    desc: cargo test — the Rust-side unit tests (wire values, path sorting, SCIP)
+    desc: cargo test — the Rust-side tests (wire values, path sorting, SCIP, exporters, the CLI)
     # A task of its own so CI runs it as a step without respelling the profile.
     # These cover what Python cannot see: the enum wire values, sort_paths, the
-    # SCIP decoder and the dependency parsers.
+    # SCIP decoder and the dependency parsers — and, for the other two crates,
+    # the exporters and the command line run end to end on the fixtures.
     cmds:
-      - cargo test {{.PROFILE}}
+      - cargo test --workspace {{.PROFILE}}
+
+  # ---------------------------------------------------------------------------
+  # Command line and image
+  # ---------------------------------------------------------------------------
+
+  cli:
+    desc: Build the `callix` binary (target/release/callix, or target/debug with DEBUG=1)
+    cmds:
+      - cargo build -p callix-cli {{.PROFILE}}
+
+  cli:run:
+    desc: Run the CLI from source (task cli:run -- export tests/fixtures/python -f lsif)
+    cmds:
+      - cargo run -p callix-cli {{.PROFILE}} -- {{.CLI_ARGS}}
+
+  docker:
+    desc: Build the full image (callix + Go + Rust toolchains) as callix:dev
+    cmds:
+      - docker build --target full -t callix:dev .
+
+  docker:slim:
+    desc: Build the slim image (no Go or Rust toolchain) as callix:dev-slim
+    cmds:
+      - docker build --target slim -t callix:dev-slim .
+
+  docker:smoke:
+    desc: Run the image smoke test against tests/fixtures (IMAGE=callix:dev)
+    cmds:
+      - sh docker/smoke.sh {{default "callix:dev" .IMAGE}}
 
   unit:
     desc: pytest over tests/unit and tests/api (the public Python API)
@@ -168,27 +198,29 @@ tasks:
         fi
 
   release:bump:
-    desc: Bump the version in Cargo.toml and Cargo.lock (requires VERSION=x.y.z)
+    desc: Bump the version in every Cargo.toml and in Cargo.lock (requires VERSION=x.y.z)
     requires:
       vars: [VERSION]
-    # The package version lives only in Cargo.toml: in pyproject.toml it is
-    # `dynamic` and maturin reads it from there. The first `version =` inside
-    # the [package] section is edited, so dependency versions stay untouched.
+    # The package version lives only in the Cargo manifests: in pyproject.toml
+    # it is `dynamic` and maturin reads it from there. The first `version =`
+    # inside the [package] section is edited, so dependency versions stay
+    # untouched. The three crates of the workspace move together.
     cmds:
       - |
         python3 - "{{.VERSION}}" <<'PY'
         import pathlib, re, sys
         version = sys.argv[1]
-        path = pathlib.Path("Cargo.toml")
-        text = path.read_text(encoding="utf-8")
-        head, sep, tail = text.partition("\n[")
-        new_head, count = re.subn(
-            r'(?m)^version = ".*"$', f'version = "{version}"', head, count=1
-        )
-        if count != 1:
-            sys.exit("no version found in Cargo.toml's [package] section")
-        path.write_text(new_head + sep + tail, encoding="utf-8")
-        print(f"Cargo.toml -> {version}")
+        manifests = [pathlib.Path("Cargo.toml"), *sorted(pathlib.Path("crates").glob("*/Cargo.toml"))]
+        for path in manifests:
+            text = path.read_text(encoding="utf-8")
+            head, sep, tail = text.partition("\n[")
+            new_head, count = re.subn(
+                r'(?m)^version = ".*"$', f'version = "{version}"', head, count=1
+            )
+            if count != 1:
+                sys.exit(f"no version found in {path}'s [package] section")
+            path.write_text(new_head + sep + tail, encoding="utf-8")
+            print(f"{path} -> {version}")
         PY
       - cargo update --workspace --quiet
 
@@ -205,7 +237,7 @@ tasks:
       vars: [TAG]
     cmds:
       - |
-        git add Cargo.toml Cargo.lock CHANGELOG.md
+        git add Cargo.toml crates/*/Cargo.toml Cargo.lock CHANGELOG.md
         git commit -m "chore(release): {{.TAG}}"
         git tag -a "{{.TAG}}" -m "Release {{.TAG}}"
 

@@ -1,0 +1,21 @@
+[package]
+name = "callix-cli"
+version = "1.0.0"
+edition = "2024"
+description = "The callix command line: analyse a project and export its graph as LSIF, CycloneDX and more"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "callix"
+path = "src/main.rs"
+
+[dependencies]
+callix = { path = "../.." }
+callix-export = { path = "../callix-export" }
+clap = { version = "4", features = ["derive", "wrap_help"] }
+# The adapters are Python classes, so the binary embeds the interpreter that
+# runs them. `auto-initialize` starts it on first use.
+pyo3 = { version = "0.29.0", features = ["abi3-py310", "auto-initialize"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }

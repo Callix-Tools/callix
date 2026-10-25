@@ -1,0 +1,13 @@
+[package]
+name = "callix-export"
+version = "1.0.0"
+edition = "2024"
+description = "Exporters for the callix graph: LSIF, CycloneDX, CSV, DOT and text reports"
+license = "MIT"
+publish = false
+
+[dependencies]
+# preserve_order keeps metadata keys in file order, the way a Python dict does
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+thiserror = "2.0.19"

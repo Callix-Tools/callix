@@ -221,6 +221,7 @@ dependencies = [
  "callix-export",
  "clap",
  "pyo3",
+ "pyo3-build-config",
  "serde",
  "serde_json",
 ]

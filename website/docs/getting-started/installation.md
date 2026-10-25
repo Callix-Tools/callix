@@ -33,6 +33,11 @@ extension module inside it about 61 MB. Two type checkers, typeshed and
 `lib.d.ts` are what fill it; eight tree-sitter grammars are a rounding error
 beside them.
 
+## Without Python: the container
+
+The [command line](../guides/cli.md) ships as a Docker image that carries
+everything below, Go and Rust included — see [Docker](../guides/docker.md).
+
 ## What you have to provide
 
 | Analysing | Requires |

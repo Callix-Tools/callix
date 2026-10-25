@@ -3,6 +3,6 @@
   "position": 3,
   "link": {
     "type": "generated-index",
-    "description": "Working with the graph from Python: building it, querying it, and swapping the parts."
+    "description": "Working with the graph from Python, from the command line, and from a container: building it, querying it, exporting it, swapping the parts."
   }
 }

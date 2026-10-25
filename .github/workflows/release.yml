@@ -198,3 +198,136 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: task release:github TAG=${{ needs.version.outputs.tag }}
+
+  # ---------------------------------------------------------------------------
+  # 5. Container images: ghcr.io/<owner>/callix, `full` and `slim`, for amd64
+  #    and arm64.
+  #
+  #    The binary links libpython and the Go bridge, so an image is built per
+  #    architecture on a native runner (emulating the ty tree would not fit the
+  #    timeout), smoke-tested there, and pushed by digest. The manifest job
+  #    then stitches the two digests into one multi-arch tag. Nothing here
+  #    gates PyPI: the wheels publish regardless.
+  # ---------------------------------------------------------------------------
+  docker:
+    needs: version
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [slim, full]
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - name: Name the image
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      # The ty tree plus the typescript-go checkout fill a hosted runner's disk.
+      - name: Free disk space
+        if: matrix.arch == 'amd64'
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build into the local daemon first and test that exact image; the push
+      # below reuses every layer from this build.
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          tags: callix:ci
+          cache-from: type=gha,scope=${{ matrix.target }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}-${{ matrix.arch }}
+
+      - name: Smoke test
+        run: sh docker/smoke.sh callix:ci ${{ matrix.target }}
+
+      - name: Push by digest
+        id: push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          platforms: linux/${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.target }}-${{ matrix.arch }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.push.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.target }}-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  docker-manifest:
+    needs: [version, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [slim, full]
+    steps:
+      - name: Name the image
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ matrix.target }}-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # `full` is the image people mean by "callix", so it owns the bare tags;
+      # `slim` carries a suffix.
+      - name: Tag and push the multi-arch manifest
+        working-directory: /tmp/digests
+        run: |
+          version="${{ needs.version.outputs.version }}"
+          minor="${version%.*}"
+          major="${version%%.*}"
+          if [ "${{ matrix.target }}" = full ]; then
+            suffix=""; floating=latest
+          else
+            suffix="-slim"; floating=slim
+          fi
+          docker buildx imagetools create \
+            -t "$IMAGE:${version}${suffix}" \
+            -t "$IMAGE:${minor}${suffix}" \
+            -t "$IMAGE:${major}${suffix}" \
+            -t "$IMAGE:${floating}" \
+            $(printf "$IMAGE@sha256:%s " *)
+
+      - name: Inspect
+        run: docker buildx imagetools inspect "$IMAGE:${{ needs.version.outputs.version }}${{ matrix.target == 'slim' && '-slim' || '' }}"

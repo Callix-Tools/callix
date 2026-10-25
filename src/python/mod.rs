@@ -5,14 +5,16 @@ mod boundary;
 mod deps;
 mod detector;
 mod module_resolver;
+#[cfg(not(feature = "python"))]
+mod stdlib;
 mod ty_embedded;
 mod visitor;
 
 use std::cell::RefCell;
 
-use pyo3::prelude::*;
-use pyo3::types::PyBytes;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::types::PyBytes;
+use crate::py::derive::gen_stub_pyfunction;
 use tree_sitter::{Parser, Tree};
 
 use crate::error::ParseError;
@@ -22,10 +24,9 @@ use crate::occurrence::{ImportClassifier, OccurrenceRef};
 pub(crate) use adapter::{
     add_boundary_rust, apply_boundaries_rust, apply_resolutions_rust, innermost_enclosing_rust,
 };
-pub use adapter::{
-    PythonAdapter, ResolvedRef, apply_boundaries, apply_resolutions, build_root_structure,
-    collect_python_files, filter_nested_files,
-};
+#[cfg(feature = "python")]
+pub use adapter::{apply_boundaries, apply_resolutions, build_root_structure};
+pub use adapter::{PythonAdapter, ResolvedRef, collect_python_files, filter_nested_files};
 pub use boundary::extract_python_boundaries;
 pub use deps::{get_stdlib_names, normalize_pkg_name, parse_dependencies};
 pub use detector::{detect_project_name, find_python_roots, is_python_project};
@@ -84,6 +85,7 @@ pub fn resolve_relative_import(
 /// CALLS/REFERENCES/HAS_TYPE/INHERITS_FROM edges are not created here —
 /// instead a list of use-sites is returned, which the resolution pass on the
 /// Python side binds to definitions.
+#[cfg(feature = "python")]
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, file_path, module_qualified_name, file_node_id, source, classifier = None))]

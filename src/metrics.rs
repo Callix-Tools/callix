@@ -3,9 +3,9 @@
 //! Without them, a fast run that built almost no edges is indistinguishable
 //! from a fast run that resolved everything.
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 /// The `graph.metadata` key the metrics are stored under.
 pub const RESOLVER_METRICS_KEY: &str = "resolver_metrics";

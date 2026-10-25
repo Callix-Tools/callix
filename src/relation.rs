@@ -3,9 +3,9 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pyclass_enum, gen_stub_pymethods};
 
 #[gen_stub_pyclass_enum]
 #[pyclass(module = "callix._core", eq, eq_int, frozen, hash, from_py_object)]
@@ -85,12 +85,71 @@ impl RelationKind {
     #[staticmethod]
     fn from_value(value: &str) -> PyResult<Self> {
         Self::parse(value).ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err(format!("unknown RelationKind: {value:?}"))
+            crate::py::exceptions::PyValueError::new_err(format!("unknown RelationKind: {value:?}"))
         })
     }
 
     fn __str__(&self) -> String {
         format!("RelationKind.{}", self.as_str().to_uppercase())
+    }
+}
+
+
+
+#[gen_stub_pyclass]
+#[pyclass(module = "callix._core", frozen, get_all)]
+pub struct Relation {
+    pub source_id: String,
+    pub target_id: String,
+    pub kind: RelationKind,
+    pub metadata: Py<PyDict>,
+}
+
+#[gen_stub_pymethods]
+#[pymethods]
+impl Relation {
+    #[new]
+    #[pyo3(signature = (source_id, target_id, kind, metadata = None))]
+    fn new(
+        py: Python<'_>,
+        source_id: String,
+        target_id: String,
+        kind: RelationKind,
+        metadata: Option<Py<PyDict>>,
+    ) -> Self {
+        Self {
+            source_id,
+            target_id,
+            kind,
+            metadata: metadata.unwrap_or_else(|| PyDict::new(py).unbind()),
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "Relation({:?} -{}-> {:?})",
+            self.source_id,
+            self.kind.as_str(),
+            self.target_id
+        )
+    }
+
+    pub fn __eq__(&self, py: Python<'_>, other: &Self) -> PyResult<bool> {
+        Ok(self.source_id == other.source_id
+            && self.target_id == other.target_id
+            && self.kind == other.kind
+            && self.metadata.bind(py).eq(other.metadata.bind(py))?)
+    }
+
+    /// Hashes the endpoints and the kind — everything `__eq__` compares except
+    /// the metadata dict, which is not hashable. See `Node::__hash__` for why
+    /// a partial hash is the right answer rather than no hash at all.
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.source_id.hash(&mut hasher);
+        self.target_id.hash(&mut hasher);
+        self.kind.hash(&mut hasher);
+        hasher.finish()
     }
 }
 
@@ -168,62 +227,5 @@ mod kind_tests {
         for value in ["", "CALLS", "dependson", "depends-on", "communicates with"] {
             assert_eq!(RelationKind::parse(value), None, "{value:?} was accepted");
         }
-    }
-}
-
-#[gen_stub_pyclass]
-#[pyclass(module = "callix._core", frozen, get_all)]
-pub struct Relation {
-    pub source_id: String,
-    pub target_id: String,
-    pub kind: RelationKind,
-    pub metadata: Py<PyDict>,
-}
-
-#[gen_stub_pymethods]
-#[pymethods]
-impl Relation {
-    #[new]
-    #[pyo3(signature = (source_id, target_id, kind, metadata = None))]
-    fn new(
-        py: Python<'_>,
-        source_id: String,
-        target_id: String,
-        kind: RelationKind,
-        metadata: Option<Py<PyDict>>,
-    ) -> Self {
-        Self {
-            source_id,
-            target_id,
-            kind,
-            metadata: metadata.unwrap_or_else(|| PyDict::new(py).unbind()),
-        }
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "Relation({:?} -{}-> {:?})",
-            self.source_id,
-            self.kind.as_str(),
-            self.target_id
-        )
-    }
-
-    pub fn __eq__(&self, py: Python<'_>, other: &Self) -> PyResult<bool> {
-        Ok(self.source_id == other.source_id
-            && self.target_id == other.target_id
-            && self.kind == other.kind
-            && self.metadata.bind(py).eq(other.metadata.bind(py))?)
-    }
-
-    /// Hashes the endpoints and the kind — everything `__eq__` compares except
-    /// the metadata dict, which is not hashable. See `Node::__hash__` for why
-    /// a partial hash is the right answer rather than no hash at all.
-    fn __hash__(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        self.source_id.hash(&mut hasher);
-        self.target_id.hash(&mut hasher);
-        self.kind.hash(&mut hasher);
-        hasher.finish()
     }
 }

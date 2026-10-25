@@ -187,6 +187,7 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 name = "callix"
 version = "1.0.0"
 dependencies = [
+ "callix-compat",
  "get-size2",
  "indexmap",
  "pyo3",
@@ -220,10 +221,16 @@ dependencies = [
  "callix",
  "callix-export",
  "clap",
- "pyo3",
- "pyo3-build-config",
- "serde",
  "serde_json",
+]
+
+[[package]]
+name = "callix-compat"
+version = "1.0.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

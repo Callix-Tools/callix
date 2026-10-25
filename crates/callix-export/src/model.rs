@@ -315,6 +315,12 @@ impl Graph {
         Ok(graph)
     }
 
+    /// Adds a node whose id the caller has already checked.
+    pub(crate) fn push_node_unchecked(&mut self, node: Node) {
+        self.index.insert(node.id.clone(), self.nodes.len());
+        self.nodes.push(node);
+    }
+
     fn push_node(&mut self, node: Node) -> Result<()> {
         if self.index.contains_key(&node.id) {
             return Err(Error::Invalid(format!("duplicate node id {}", node.id)));

@@ -12,9 +12,9 @@ use std::time::Instant;
 use indexmap::IndexMap;
 use std::path::{Path, PathBuf};
 
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 use crate::boundaries::BoundaryRef;
 use crate::boundaries::run_extractors;
@@ -22,7 +22,7 @@ use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::graph::Graph;
 use crate::ids::{boundary_id, node_id};
 use crate::error::AdapterError;
-use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
+use crate::metrics::ResolverMetrics;
 use crate::node::{Node, NodeKind};
 use crate::occurrence::{ImportClassifier, OccurrenceRef};
 use crate::relation::{Relation, RelationKind};
@@ -30,7 +30,7 @@ use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span::Span;
 use crate::span_index::SpanIndex;
-use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
+use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
 use super::deps::{parse_dependencies, stdlib_names};
@@ -218,6 +218,7 @@ pub fn filter_nested_files(
 /// Returns `(project_name, [(absolute path, use-site)])`. Resolution and
 /// boundary extraction happen later at project level, so that a single
 /// resolver and a full `SpanIndex` serve every root at once.
+#[cfg(feature = "python")]
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_root, py_root, files, stdlib, third_party))]
@@ -386,6 +387,7 @@ fn build_root_structure_inner(
 /// Per use-site: an internal definition is looked up in the `SpanIndex`,
 /// everything else falls through to an EXTERNAL_SYMBOL — so the edge is never
 /// lost, even when the target lies outside the graph.
+#[cfg(feature = "python")]
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, project_name, project_root, span_index, occurrences, refs))]
@@ -462,7 +464,7 @@ fn apply_resolutions_inner(
         return Ok(metrics);
     }
     if occurrences.len() != refs.len() {
-        return Err(pyo3::exceptions::PyValueError::new_err(
+        return Err(crate::py::exceptions::PyValueError::new_err(
             "occurrences and refs must have the same length",
         ));
     }
@@ -551,6 +553,7 @@ fn innermost_enclosing(candidates: &[(String, Span)], line: u32, col: u32) -> Op
 /// A boundary's ID derives from `mechanism` + `key` alone, so a server in one
 /// language and a client in another produce the same node and join up when
 /// graphs are merged.
+#[cfg(feature = "python")]
 #[gen_stub_pyfunction]
 #[pyfunction]
 #[pyo3(signature = (graph, files))]
@@ -766,7 +769,7 @@ impl PythonAdapter {
         dep_parsers = None,
         boundary_extractors = None,
     ))]
-    fn new(
+    pub fn new(
         py: Python<'_>,
         resolve: bool,
         resolver: Option<Py<PyAny>>,
@@ -792,13 +795,13 @@ impl PythonAdapter {
     }
 
     /// Every source under the root, excluding service directories.
-    fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
+    pub fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
         collect_files(&project_root, &PY_EXTENSIONS, &EXCLUDED_DIRS, &[])
     }
 
     /// Analyses the project and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
-    fn analyze(
+    pub fn analyze(
         &mut self,
         py: Python<'_>,
         project_root: PathBuf,
@@ -887,9 +890,9 @@ impl PythonAdapter {
             apply_boundaries_inner(py, &mut graph, boundaries)?;
         }
 
-        let status_value = status.as_str().into_pyobject(py)?;
-        graph.set_metadata_item(py, RESOLVER_STATUS_KEY, status_value.as_any())?;
-        graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
+        graph.set_resolver_status(py, status)?;
+
+        graph.set_resolver_metrics(py, &metrics)?;
 
         if strict && status != ResolverStatus::Ok {
             return Err(AdapterError::new_err(format!(

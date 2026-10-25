@@ -1,0 +1,1215 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "resolver_status": "ok",
+    "resolver_metrics": {
+      "queries": 29,
+      "resolved": 19,
+      "internal": 16,
+      "external": 3,
+      "unresolved": 10,
+      "seconds": 0.067,
+      "resolved_pct": 65.5
+    }
+  },
+  "nodes": [
+    {
+      "id": "0f867cb0416ba557",
+      "kind": "project",
+      "qualified_name": "fixture",
+      "name": "fixture",
+      "file_path": null,
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "eece0e3696617097",
+      "kind": "dependency",
+      "qualified_name": "axios",
+      "name": "axios",
+      "file_path": null,
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "2c6568370f08cc8f",
+      "kind": "module",
+      "qualified_name": "service",
+      "name": "service",
+      "file_path": null,
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "1690a444faecaa80",
+      "kind": "file",
+      "qualified_name": "src/service.ts",
+      "name": "service.ts",
+      "file_path": "src/service.ts",
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "14b0fbd5fb9a5cf9",
+      "kind": "import",
+      "qualified_name": "service.Base",
+      "name": "Base",
+      "file_path": "src/service.ts",
+      "span": null,
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "original_name": "store.Base",
+        "is_star": false,
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "ebdaeab08ddcab18",
+      "kind": "external_symbol",
+      "qualified_name": "store.Base",
+      "name": "Base",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "da197e2d16bd93df",
+      "kind": "import",
+      "qualified_name": "service.Engine",
+      "name": "Engine",
+      "file_path": "src/service.ts",
+      "span": null,
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "original_name": "store.Engine",
+        "is_star": false,
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "8b94f5511064af5f",
+      "kind": "external_symbol",
+      "qualified_name": "store.Engine",
+      "name": "Engine",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "140d285615c1c40a",
+      "kind": "import",
+      "qualified_name": "service.Identifier",
+      "name": "Identifier",
+      "file_path": "src/service.ts",
+      "span": null,
+      "metadata": {
+        "alias": null,
+        "is_relative": false,
+        "original_name": "store.Identifier",
+        "is_star": false,
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "a88b6ba554af3280",
+      "kind": "external_symbol",
+      "qualified_name": "store.Identifier",
+      "name": "Identifier",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "internal"
+      }
+    },
+    {
+      "id": "d499fec7c4272044",
+      "kind": "variable",
+      "qualified_name": "service.DEFAULT_REGION",
+      "name": "DEFAULT_REGION",
+      "file_path": "src/service.ts",
+      "span": [
+        5,
+        14,
+        5,
+        43
+      ],
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            5,
+            14,
+            5,
+            28
+          ]
+        }
+      }
+    },
+    {
+      "id": "f0b2109ffebd6c12",
+      "kind": "function",
+      "qualified_name": "service.build",
+      "name": "build",
+      "file_path": "src/service.ts",
+      "span": [
+        7,
+        8,
+        11,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "return_annotation": "Engine",
+        "name_span": {
+          "__span__": [
+            7,
+            17,
+            7,
+            22
+          ]
+        }
+      }
+    },
+    {
+      "id": "1f8eb263c893a804",
+      "kind": "parameter",
+      "qualified_name": "service.build.region",
+      "name": "region",
+      "file_path": "src/service.ts",
+      "span": [
+        7,
+        23,
+        7,
+        37
+      ],
+      "metadata": {
+        "annotation": "string",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            7,
+            23,
+            7,
+            29
+          ]
+        }
+      }
+    },
+    {
+      "id": "4f4330ec42ff9f50",
+      "kind": "variable",
+      "qualified_name": "service.build.engine",
+      "name": "engine",
+      "file_path": "src/service.ts",
+      "span": [
+        8,
+        9,
+        8,
+        36
+      ],
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            8,
+            9,
+            8,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "id": "0152fed75d08918b",
+      "kind": "function",
+      "qualified_name": "service.inspect",
+      "name": "inspect",
+      "file_path": "src/service.ts",
+      "span": [
+        13,
+        8,
+        15,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "return_annotation": "string",
+        "name_span": {
+          "__span__": [
+            13,
+            17,
+            13,
+            24
+          ]
+        }
+      }
+    },
+    {
+      "id": "74827646143cd909",
+      "kind": "parameter",
+      "qualified_name": "service.inspect.item",
+      "name": "item",
+      "file_path": "src/service.ts",
+      "span": [
+        13,
+        25,
+        13,
+        35
+      ],
+      "metadata": {
+        "annotation": "Base",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            13,
+            25,
+            13,
+            29
+          ]
+        }
+      }
+    },
+    {
+      "id": "7c68350bc2566dac",
+      "kind": "function",
+      "qualified_name": "service.fetchOne",
+      "name": "fetchOne",
+      "file_path": "src/service.ts",
+      "span": [
+        17,
+        8,
+        20,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": true,
+        "return_annotation": "Promise<string>",
+        "name_span": {
+          "__span__": [
+            17,
+            23,
+            17,
+            31
+          ]
+        }
+      }
+    },
+    {
+      "id": "43f01cae1de3c25e",
+      "kind": "parameter",
+      "qualified_name": "service.fetchOne.ident",
+      "name": "ident",
+      "file_path": "src/service.ts",
+      "span": [
+        17,
+        32,
+        17,
+        49
+      ],
+      "metadata": {
+        "annotation": "Identifier",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            17,
+            32,
+            17,
+            37
+          ]
+        }
+      }
+    },
+    {
+      "id": "29754fa897541a63",
+      "kind": "variable",
+      "qualified_name": "service.fetchOne.response",
+      "name": "response",
+      "file_path": "src/service.ts",
+      "span": [
+        18,
+        9,
+        18,
+        52
+      ],
+      "metadata": {
+        "is_constant": true,
+        "name_span": {
+          "__span__": [
+            18,
+            9,
+            18,
+            17
+          ]
+        }
+      }
+    },
+    {
+      "id": "ec720ad133a23056",
+      "kind": "module",
+      "qualified_name": "store",
+      "name": "store",
+      "file_path": null,
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "e46e209b12d7ddd7",
+      "kind": "file",
+      "qualified_name": "src/store.ts",
+      "name": "store.ts",
+      "file_path": "src/store.ts",
+      "span": null,
+      "metadata": {}
+    },
+    {
+      "id": "57ae1b858cec9b52",
+      "kind": "type_alias",
+      "qualified_name": "store.Identifier",
+      "name": "Identifier",
+      "file_path": "src/store.ts",
+      "span": [
+        3,
+        8,
+        3,
+        33
+      ],
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            3,
+            13,
+            3,
+            23
+          ]
+        }
+      }
+    },
+    {
+      "id": "9a317e6fde3e4f00",
+      "kind": "class",
+      "qualified_name": "store.Labeled",
+      "name": "Labeled",
+      "file_path": "src/store.ts",
+      "span": [
+        5,
+        8,
+        7,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "bases": [],
+        "is_abstract": true,
+        "is_interface": true,
+        "name_span": {
+          "__span__": [
+            5,
+            18,
+            5,
+            25
+          ]
+        }
+      }
+    },
+    {
+      "id": "c77f4a5f4e42c089",
+      "kind": "method",
+      "qualified_name": "store.Labeled.describe",
+      "name": "describe",
+      "file_path": "src/store.ts",
+      "span": [
+        6,
+        3,
+        6,
+        21
+      ],
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            6,
+            3,
+            6,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "id": "5e0c7882ab1da228",
+      "kind": "class",
+      "qualified_name": "store.Base",
+      "name": "Base",
+      "file_path": "src/store.ts",
+      "span": [
+        9,
+        8,
+        15,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "bases": [],
+        "is_abstract": false,
+        "name_span": {
+          "__span__": [
+            9,
+            14,
+            9,
+            18
+          ]
+        }
+      }
+    },
+    {
+      "id": "33f5dbfdd3cd064d",
+      "kind": "attribute",
+      "qualified_name": "store.Base.label",
+      "name": "label",
+      "file_path": "src/store.ts",
+      "span": [
+        10,
+        3,
+        10,
+        25
+      ],
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            10,
+            3,
+            10,
+            8
+          ]
+        }
+      }
+    },
+    {
+      "id": "f91e5eb5cadc3f19",
+      "kind": "method",
+      "qualified_name": "store.Base.describe",
+      "name": "describe",
+      "file_path": "src/store.ts",
+      "span": [
+        12,
+        3,
+        14,
+        4
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "return_annotation": "string",
+        "name_span": {
+          "__span__": [
+            12,
+            3,
+            12,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "id": "a7fb6dcec4d7b505",
+      "kind": "class",
+      "qualified_name": "store.Engine",
+      "name": "Engine",
+      "file_path": "src/store.ts",
+      "span": [
+        17,
+        8,
+        28,
+        2
+      ],
+      "metadata": {
+        "decorators": [],
+        "bases": [
+          "Base"
+        ],
+        "is_abstract": false,
+        "name_span": {
+          "__span__": [
+            17,
+            14,
+            17,
+            20
+          ]
+        }
+      }
+    },
+    {
+      "id": "c22ff94437cf7f7d",
+      "kind": "attribute",
+      "qualified_name": "store.Engine.region",
+      "name": "region",
+      "file_path": "src/store.ts",
+      "span": [
+        18,
+        3,
+        18,
+        17
+      ],
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            18,
+            3,
+            18,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "id": "8d8283edabff3a54",
+      "kind": "method",
+      "qualified_name": "store.Engine.constructor",
+      "name": "constructor",
+      "file_path": "src/store.ts",
+      "span": [
+        20,
+        3,
+        23,
+        4
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "return_annotation": null,
+        "name_span": {
+          "__span__": [
+            20,
+            3,
+            20,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "id": "d6f587cbd34ef290",
+      "kind": "parameter",
+      "qualified_name": "store.Engine.constructor.region",
+      "name": "region",
+      "file_path": "src/store.ts",
+      "span": [
+        20,
+        15,
+        20,
+        29
+      ],
+      "metadata": {
+        "annotation": "string",
+        "has_default": false,
+        "is_variadic": false,
+        "name_span": {
+          "__span__": [
+            20,
+            15,
+            20,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "id": "8ecb3897ce2dcbe5",
+      "kind": "method",
+      "qualified_name": "store.Engine.ping",
+      "name": "ping",
+      "file_path": "src/store.ts",
+      "span": [
+        25,
+        3,
+        27,
+        4
+      ],
+      "metadata": {
+        "decorators": [],
+        "is_async": false,
+        "return_annotation": "boolean",
+        "name_span": {
+          "__span__": [
+            25,
+            3,
+            25,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "id": "fdebb3b347985fce",
+      "kind": "external_symbol",
+      "qualified_name": "annotation@src/service.ts:17:52",
+      "name": "ts:17:52",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "stdlib"
+      }
+    },
+    {
+      "id": "3ffa66b8d3dd799b",
+      "kind": "external_symbol",
+      "qualified_name": "call@src/service.ts:18:26",
+      "name": "ts:18:26",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "stdlib"
+      }
+    },
+    {
+      "id": "cc70bf2a26bc5364",
+      "kind": "external_symbol",
+      "qualified_name": "call@src/service.ts:19:19",
+      "name": "ts:19:19",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "origin": "stdlib"
+      }
+    },
+    {
+      "id": "acfc953e2d84d7b4",
+      "kind": "boundary",
+      "qualified_name": "http:GET /engines/{}",
+      "name": "GET /engines/{}",
+      "file_path": null,
+      "span": null,
+      "metadata": {
+        "mechanism": "http",
+        "key": "GET /engines/{}"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source_id": "0f867cb0416ba557",
+      "target_id": "eece0e3696617097",
+      "kind": "depends_on",
+      "metadata": {}
+    },
+    {
+      "source_id": "2c6568370f08cc8f",
+      "target_id": "1690a444faecaa80",
+      "kind": "contains",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "14b0fbd5fb9a5cf9",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "ebdaeab08ddcab18",
+      "kind": "imports",
+      "metadata": {}
+    },
+    {
+      "source_id": "14b0fbd5fb9a5cf9",
+      "target_id": "ebdaeab08ddcab18",
+      "kind": "resolves_to",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "da197e2d16bd93df",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "8b94f5511064af5f",
+      "kind": "imports",
+      "metadata": {}
+    },
+    {
+      "source_id": "da197e2d16bd93df",
+      "target_id": "8b94f5511064af5f",
+      "kind": "resolves_to",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "140d285615c1c40a",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "a88b6ba554af3280",
+      "kind": "imports",
+      "metadata": {}
+    },
+    {
+      "source_id": "140d285615c1c40a",
+      "target_id": "a88b6ba554af3280",
+      "kind": "resolves_to",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "d499fec7c4272044",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "f0b2109ffebd6c12",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "1f8eb263c893a804",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "4f4330ec42ff9f50",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "0152fed75d08918b",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "0152fed75d08918b",
+      "target_id": "74827646143cd909",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "7c68350bc2566dac",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "43f01cae1de3c25e",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "29754fa897541a63",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "ec720ad133a23056",
+      "target_id": "e46e209b12d7ddd7",
+      "kind": "contains",
+      "metadata": {}
+    },
+    {
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "57ae1b858cec9b52",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "9a317e6fde3e4f00",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "9a317e6fde3e4f00",
+      "target_id": "c77f4a5f4e42c089",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "5e0c7882ab1da228",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "5e0c7882ab1da228",
+      "target_id": "33f5dbfdd3cd064d",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "5e0c7882ab1da228",
+      "target_id": "f91e5eb5cadc3f19",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "e46e209b12d7ddd7",
+      "target_id": "a7fb6dcec4d7b505",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "c22ff94437cf7f7d",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "8d8283edabff3a54",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "8d8283edabff3a54",
+      "target_id": "d6f587cbd34ef290",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "8ecb3897ce2dcbe5",
+      "kind": "declares",
+      "metadata": {}
+    },
+    {
+      "source_id": "0f867cb0416ba557",
+      "target_id": "2c6568370f08cc8f",
+      "kind": "contains",
+      "metadata": {}
+    },
+    {
+      "source_id": "0f867cb0416ba557",
+      "target_id": "ec720ad133a23056",
+      "kind": "contains",
+      "metadata": {}
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "d499fec7c4272044",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            5,
+            14,
+            5,
+            28
+          ]
+        },
+        "access": "write"
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "a7fb6dcec4d7b505",
+      "kind": "has_type",
+      "metadata": {
+        "span": {
+          "__span__": [
+            7,
+            40,
+            7,
+            46
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "4f4330ec42ff9f50",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            8,
+            9,
+            8,
+            15
+          ]
+        },
+        "access": "write"
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "a7fb6dcec4d7b505",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            8,
+            22,
+            8,
+            28
+          ]
+        },
+        "access": "read"
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "1f8eb263c893a804",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            8,
+            29,
+            8,
+            35
+          ]
+        },
+        "access": "read"
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "8ecb3897ce2dcbe5",
+      "kind": "calls",
+      "metadata": {
+        "span": {
+          "__span__": [
+            9,
+            10,
+            9,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "f0b2109ffebd6c12",
+      "target_id": "4f4330ec42ff9f50",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            10,
+            10,
+            10,
+            16
+          ]
+        },
+        "access": "read"
+      }
+    },
+    {
+      "source_id": "0152fed75d08918b",
+      "target_id": "5e0c7882ab1da228",
+      "kind": "has_type",
+      "metadata": {
+        "span": {
+          "__span__": [
+            13,
+            31,
+            13,
+            35
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "0152fed75d08918b",
+      "target_id": "f91e5eb5cadc3f19",
+      "kind": "calls",
+      "metadata": {
+        "span": {
+          "__span__": [
+            14,
+            15,
+            14,
+            23
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "fdebb3b347985fce",
+      "kind": "has_type",
+      "metadata": {
+        "span": {
+          "__span__": [
+            17,
+            52,
+            17,
+            59
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "57ae1b858cec9b52",
+      "kind": "has_type",
+      "metadata": {
+        "span": {
+          "__span__": [
+            17,
+            39,
+            17,
+            49
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "29754fa897541a63",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            18,
+            9,
+            18,
+            17
+          ]
+        },
+        "access": "write"
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "3ffa66b8d3dd799b",
+      "kind": "calls",
+      "metadata": {
+        "span": {
+          "__span__": [
+            18,
+            26,
+            18,
+            31
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "43f01cae1de3c25e",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            18,
+            44,
+            18,
+            49
+          ]
+        },
+        "access": "read"
+      }
+    },
+    {
+      "source_id": "7c68350bc2566dac",
+      "target_id": "cc70bf2a26bc5364",
+      "kind": "calls",
+      "metadata": {
+        "span": {
+          "__span__": [
+            19,
+            19,
+            19,
+            23
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "5e0c7882ab1da228",
+      "target_id": "33f5dbfdd3cd064d",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            10,
+            3,
+            10,
+            8
+          ]
+        },
+        "access": "write"
+      }
+    },
+    {
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "5e0c7882ab1da228",
+      "kind": "inherits_from",
+      "metadata": {
+        "span": {
+          "__span__": [
+            17,
+            29,
+            17,
+            33
+          ]
+        }
+      }
+    },
+    {
+      "source_id": "a7fb6dcec4d7b505",
+      "target_id": "c22ff94437cf7f7d",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            18,
+            3,
+            18,
+            9
+          ]
+        },
+        "access": "write"
+      }
+    },
+    {
+      "source_id": "8d8283edabff3a54",
+      "target_id": "d6f587cbd34ef290",
+      "kind": "references",
+      "metadata": {
+        "span": {
+          "__span__": [
+            22,
+            19,
+            22,
+            25
+          ]
+        },
+        "access": "read"
+      }
+    },
+    {
+      "source_id": "1690a444faecaa80",
+      "target_id": "acfc953e2d84d7b4",
+      "kind": "consumes",
+      "metadata": {
+        "mechanism": "http",
+        "key": "GET /engines/{}",
+        "confidence": 0.9,
+        "role": "client",
+        "line": 18,
+        "col": 26,
+        "method": "GET",
+        "path": "/engines/{}"
+      }
+    }
+  ]
+}

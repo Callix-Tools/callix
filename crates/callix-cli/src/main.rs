@@ -1,11 +1,10 @@
 //! `callix` — analyse a project and hand back the graph, or a report from it.
 //!
 //! The command line is a thin shell: language adapters and their resolvers live
-//! in the `callix` crate and run inside an embedded interpreter (`bridge`);
-//! everything that turns a graph into a file format lives in `callix-export`
-//! and never touches Python.
+//! in the `callix` crate (built without its Python bindings, so nothing here
+//! links libpython); everything that turns a graph into a file format lives in
+//! `callix-export`.
 
-mod bridge;
 mod cli;
 mod commands;
 mod failure;

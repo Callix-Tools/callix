@@ -7,9 +7,9 @@
 
 use indexmap::IndexMap;
 
-use pyo3::prelude::*;
-use pyo3::types::PyBytes;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyBytes;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
 
 /// A single *port* on a cross-language boundary, found in the source.
 ///
@@ -184,6 +184,7 @@ pub fn normalize_http_path(raw: &str) -> String {
 ///
 /// Anything the extractor raises propagates: a broken extractor should be
 /// noticed, not silently produce an empty graph.
+#[cfg(feature = "python")]
 pub(crate) fn run_extractors(
     py: Python<'_>,
     extractors: Option<&Py<PyAny>>,
@@ -202,6 +203,22 @@ pub(crate) fn run_extractors(
         }
     }
     Ok(refs)
+}
+
+/// Without Python there are no custom extractors to run.
+#[cfg(not(feature = "python"))]
+pub(crate) fn run_extractors(
+    _py: Python<'_>,
+    extractors: Option<&Py<PyAny>>,
+    _source: &[u8],
+    _file_path: &str,
+) -> PyResult<Vec<BoundaryRef>> {
+    match extractors {
+        None => Ok(Vec::new()),
+        Some(_) => Err(crate::error::AdapterError::new_err(
+            "custom boundary extractors are Python objects, and this build has no Python",
+        )),
+    }
 }
 
 #[cfg(test)]

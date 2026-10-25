@@ -14,8 +14,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::python::ResolvedRef;
 use crate::status::ResolverStatus;

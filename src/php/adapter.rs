@@ -15,16 +15,16 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use indexmap::IndexMap;
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::{BoundaryRef, run_extractors};
 use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
 use crate::graph::Graph;
 use crate::ids::node_id;
-use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
+use crate::metrics::ResolverMetrics;
 use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::ResolvedRef;
@@ -32,7 +32,7 @@ use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span_index::SpanIndex;
-use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
+use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
 use super::deps::{dependencies, internal_prefixes};
@@ -376,7 +376,7 @@ impl PhpAdapter {
         dep_parsers = None,
         boundary_extractors = None,
     ))]
-    fn new(
+    pub fn new(
         resolve: bool,
         resolver: Option<Py<PyAny>>,
         dep_parsers: Option<Py<PyAny>>,
@@ -401,13 +401,13 @@ impl PhpAdapter {
         is_php(&project_root)
     }
 
-    fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
+    pub fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
         collect_php_files(&project_root)
     }
 
     /// Analyses the project and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
-    fn analyze(
+    pub fn analyze(
         &mut self,
         py: Python<'_>,
         project_root: PathBuf,
@@ -484,9 +484,9 @@ impl PhpAdapter {
             apply_boundaries(py, &mut graph, boundaries)?;
         }
 
-        let status_value = status.as_str().into_pyobject(py)?;
-        graph.set_metadata_item(py, RESOLVER_STATUS_KEY, status_value.as_any())?;
-        graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
+        graph.set_resolver_status(py, status)?;
+
+        graph.set_resolver_metrics(py, &metrics)?;
 
         if strict && status != ResolverStatus::Ok {
             return Err(AdapterError::new_err(format!(

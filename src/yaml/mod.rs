@@ -22,7 +22,7 @@ pub use detector::{find_yaml_roots, is_yaml_project, yaml_detect_project_name};
 
 use std::cell::RefCell;
 
-use pyo3::prelude::*;
+use crate::py::prelude::*;
 use tree_sitter::{Parser, Tree};
 
 use crate::error::ParseError;

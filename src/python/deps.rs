@@ -7,8 +7,8 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::gen_stub_pyfunction;
+use crate::py::prelude::*;
+use crate::py::derive::gen_stub_pyfunction;
 
 use crate::roots::ini_sections;
 
@@ -193,10 +193,17 @@ pub fn parse_dependencies(project_root: &str) -> HashSet<String> {
 ///
 /// Taken from `sys.stdlib_module_names` — a property of the running Python
 /// rather than of the build, so it is computed on the interpreter side.
+#[cfg(feature = "python")]
 pub fn stdlib_names(py: Python<'_>) -> PyResult<HashSet<String>> {
     py.import("sys")?
         .getattr("stdlib_module_names")?
         .extract::<HashSet<String>>()
+}
+
+/// Without an interpreter to ask, the names of the Python this was built with.
+#[cfg(not(feature = "python"))]
+pub fn stdlib_names(_py: Python<'_>) -> PyResult<HashSet<String>> {
+    Ok(super::stdlib::STDLIB_MODULES.iter().map(|name| (*name).to_owned()).collect())
 }
 
 #[gen_stub_pyfunction]

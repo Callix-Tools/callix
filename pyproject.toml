@@ -32,6 +32,6 @@ pythonpath = ["."]
 [tool.maturin]
 python-source = "python"
 module-name = "callix._core"
-features = ["pyo3/extension-module"]
+features = ["python", "pyo3/extension-module"]
 strip = true
 include = [{ path = "python/callix/py.typed", format = "wheel" }]

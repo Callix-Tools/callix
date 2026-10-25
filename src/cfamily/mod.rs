@@ -50,7 +50,7 @@ pub use resolver::CFamilyResolver;
 
 use std::cell::RefCell;
 
-use pyo3::prelude::*;
+use crate::py::prelude::*;
 use tree_sitter::{Parser, Tree};
 
 use crate::error::ParseError;

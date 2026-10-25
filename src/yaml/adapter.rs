@@ -9,19 +9,19 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use indexmap::IndexMap;
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::types::PyDict;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::boundaries::{BoundaryRef, run_extractors};
 use crate::dependencies::declare_dependencies;
 use crate::graph::Graph;
 use crate::ids::node_id;
-use crate::metrics::{RESOLVER_METRICS_KEY, ResolverMetrics};
+use crate::metrics::ResolverMetrics;
 use crate::node::{Node, NodeKind};
 use crate::relation::{Relation, RelationKind};
 use crate::roots::{EXCLUDED_DIRS, collect_files};
-use crate::status::{RESOLVER_STATUS_KEY, ResolverStatus};
+use crate::status::ResolverStatus;
 
 use super::boundary::{
     Flavour, Job, chart_dependencies, extract_boundaries, flavour, includes, items, jobs, pairs,
@@ -261,7 +261,7 @@ impl YamlAdapter {
     ///         `extract(source: bytes, file_path: str) -> list[BoundaryRef]`.
     #[new]
     #[pyo3(signature = (*, resolve = true, boundary_extractors = None))]
-    fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
+    pub fn new(resolve: bool, boundary_extractors: Option<Py<PyAny>>) -> Self {
         let _ = resolve;
         Self { boundary_extractors }
     }
@@ -278,13 +278,13 @@ impl YamlAdapter {
         is_yaml(&project_root)
     }
 
-    fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
+    pub fn collect_files(&self, project_root: PathBuf) -> Vec<PathBuf> {
         collect_yaml_files(&project_root)
     }
 
     /// Analyses the tree and returns the graph.
     #[pyo3(signature = (project_root, files = None, *, strict = false))]
-    fn analyze(
+    pub fn analyze(
         &mut self,
         py: Python<'_>,
         project_root: PathBuf,
@@ -469,10 +469,8 @@ impl YamlAdapter {
 
         // Nothing to resolve is not the same as resolution being unavailable:
         // the graph is as complete as this language allows.
-        let status = ResolverStatus::Ok.as_str().into_pyobject(py)?;
-        graph.set_metadata_item(py, RESOLVER_STATUS_KEY, status.as_any())?;
-        let metrics = ResolverMetrics::default();
-        graph.set_metadata_item(py, RESOLVER_METRICS_KEY, metrics.as_dict(py)?.as_any())?;
+        graph.set_resolver_status(py, ResolverStatus::Ok)?;
+        graph.set_resolver_metrics(py, &ResolverMetrics::default())?;
         // One structural edge per pair: visitors emit one per
         // occurrence, and the node they point at is already deduped.
         graph.dedupe_structural_relations(py);

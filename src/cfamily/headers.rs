@@ -29,7 +29,7 @@ use std::collections::HashSet;
 use std::path::Path;
 
 use indexmap::IndexMap;
-use pyo3::PyErr;
+use crate::py::PyErr;
 use tree_sitter::Node as TsNode;
 
 use crate::node::NodeKind;

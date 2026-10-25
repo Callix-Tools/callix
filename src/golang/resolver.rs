@@ -11,8 +11,8 @@ use std::os::raw::{c_char, c_int, c_uint};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use pyo3::prelude::*;
-use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::py::prelude::*;
+use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::python::ResolvedRef;
 use crate::status::ResolverStatus;

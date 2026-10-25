@@ -55,9 +55,6 @@ warning:
 - **No references without resolution.** A reference is a resolver's answer. A
   graph built with `--no-resolve`, or whose toolchain was missing, exports its
   definitions only.
-- **C and C++ references carry no position.** The symbol table that resolves
-  them records the edge but not where it was written, so a C or C++ dump has
-  definitions and hovers but no find-references.
 - **Hover is thin.** The graph keeps no docstrings or signatures, so a hover is
   the symbol's kind and qualified name.
 - **One project per language.** A polyglot tree is written as several LSIF

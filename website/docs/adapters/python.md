@@ -49,6 +49,20 @@ Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.
 
+## Projects inside the directory
+
+A directory can hold Python projects of its own - `repo/backend` with a
+`pyproject.toml` and a `src/` layout is the usual one - and each is imported from
+its own source root (`repo/backend/src`), which is not the directory analysed.
+callix hands those roots to the type checker, so `from service.group_member import
+create` resolves whether `repo` or `repo/backend` is passed. Node names follow the
+source root: `backend/src/api/group_member.py` is the module `api.group_member`.
+
+`from pkg import name` brings in what `pkg/__init__.py` binds to `name` when it
+binds one - the function of a submodule of the same name, for instance - and not
+the submodule. The import then depends on the package, and the call is an edge to
+the function.
+
 ## Project detection
 
 A `pyproject.toml` counts only when it has a `[project]` section — otherwise a

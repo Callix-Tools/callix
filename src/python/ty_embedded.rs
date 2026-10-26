@@ -15,6 +15,8 @@ use ruff_db::source::{line_index, source_text};
 use ruff_db::system::{OsSystem, SystemPath, SystemPathBuf};
 use ruff_source_file::{OneIndexed, PositionEncoding, SourceLocation};
 use ty_ide::goto_definition;
+use ty_project::metadata::options::{EnvironmentOptions, Options};
+use ty_project::metadata::value::RelativePathBuf;
 use ty_project::{ProjectDatabase, ProjectMetadata};
 
 use super::adapter::ResolvedRef;
@@ -33,6 +35,8 @@ pub struct EmbeddedTyResolver {
     root: Option<PathBuf>,
     /// `sys.base_prefix` — used to recognize stdlib outside typeshed.
     base_prefix: PathBuf,
+    /// Source roots of projects inside the analysed directory.
+    search_roots: Vec<PathBuf>,
 }
 
 impl EmbeddedTyResolver {
@@ -41,7 +45,7 @@ impl EmbeddedTyResolver {
     #[cfg(feature = "python")]
     pub fn for_running_python(py: Python<'_>) -> PyResult<Self> {
         let base_prefix: String = py.import("sys")?.getattr("base_prefix")?.extract()?;
-        Ok(Self { db: None, root: None, base_prefix: PathBuf::from(base_prefix) })
+        Ok(Self { db: None, root: None, base_prefix: PathBuf::from(base_prefix), search_roots: Vec::new() })
     }
 
     /// A resolver for the environment the process runs in. There is no running
@@ -59,7 +63,7 @@ impl EmbeddedTyResolver {
             .filter(|prefix| !prefix.is_empty());
         // An empty prefix would match every path, so absent means unmatchable.
         let base_prefix = probe.map_or_else(|| PathBuf::from("/nonexistent-python-prefix"), PathBuf::from);
-        Ok(Self { db: None, root: None, base_prefix })
+        Ok(Self { db: None, root: None, base_prefix, search_roots: Vec::new() })
     }
 
     pub fn prepare_rust(&mut self, project_root: &str) -> PyResult<()> {
@@ -159,7 +163,7 @@ impl EmbeddedTyResolver {
     #[new]
     #[pyo3(signature = (base_prefix))]
     fn new(base_prefix: String) -> Self {
-        Self { db: None, root: None, base_prefix: PathBuf::from(base_prefix) }
+        Self { db: None, root: None, base_prefix: PathBuf::from(base_prefix), search_roots: Vec::new() }
     }
 
     /// Brings up ty's database for the project. `files` is unused: ty walks
@@ -186,6 +190,21 @@ impl EmbeddedTyResolver {
         if metadata.root() != root.as_path() {
             let name = root.file_name().unwrap_or("root");
             metadata = ProjectMetadata::new(name, root.clone());
+        }
+        // A project inside the analysed directory (`backend/src/api/x.py` importing
+        // `service.y`) is imported from its own source root, which is not the root
+        // analysed and which ty's layout detection, run at the root, does not see.
+        if !self.search_roots.is_empty() {
+            let mut roots: Vec<RelativePathBuf> = self
+                .search_roots
+                .iter()
+                .map(|p| RelativePathBuf::cli(SystemPathBuf::from(p.to_string_lossy().into_owned())))
+                .collect();
+            roots.push(RelativePathBuf::cli(root.as_path()));
+            metadata.apply_override_options(Options {
+                environment: Some(EnvironmentOptions { root: Some(roots), ..EnvironmentOptions::default() }),
+                ..Options::default()
+            });
         }
         self.db = Some(ProjectDatabase::use_defaults(metadata, system));
         self.root = Some(PathBuf::from(project_root));
@@ -235,5 +254,9 @@ impl crate::resolver_slot::NativeResolver for EmbeddedTyResolver {
 
     fn status(&self) -> ResolverStatus {
         self.status_rust()
+    }
+
+    fn set_search_roots(&mut self, roots: Vec<PathBuf>) {
+        self.search_roots = roots;
     }
 }

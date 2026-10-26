@@ -2633,7 +2633,7 @@
     "superset/mcp_service/app.py": {
       "hash": "a1cd3a0ccd7ae5eb",
       "nodes": 97,
-      "relations": 174
+      "relations": 157
     },
     "superset/mcp_service/auth.py": {
       "hash": "c52b801190aad990",
@@ -6373,7 +6373,7 @@
     "tests/integration_tests/base_tests.py": {
       "hash": "d49d62101326e2d3",
       "nodes": 290,
-      "relations": 369
+      "relations": 370
     },
     "tests/integration_tests/cache_tests.py": {
       "hash": "1a3ec63e331c5398",
@@ -8953,7 +8953,7 @@
     "tests/unit_tests/pandas_postprocessing/test_pivot.py": {
       "hash": "d950a6a470a9cd93",
       "nodes": 25,
-      "relations": 42
+      "relations": 41
     },
     "tests/unit_tests/pandas_postprocessing/test_prophet.py": {
       "hash": "62df2c0afc0b2ffc",
@@ -9454,7 +9454,7 @@
       "declares": 98863,
       "depends_on": 175,
       "exposes": 230,
-      "imports": 13968,
+      "imports": 13951,
       "resolves_to": 17042
     }
   },
@@ -9462,30 +9462,30 @@
   "ref": "6.1.0",
   "resolution": {
     "metrics": {
-      "external": 104777,
-      "internal": 212572,
+      "external": 104371,
+      "internal": 214654,
       "queries": 523793,
-      "resolved": 400679,
-      "unresolved": 78902
+      "resolved": 402696,
+      "unresolved": 76885
     },
     "relations": {
-      "calls": 60622,
+      "calls": 60626,
       "consumes": 188,
       "contains": 3791,
       "declares": 98863,
       "depends_on": 175,
       "exposes": 230,
       "has_type": 13906,
-      "imports": 13968,
+      "imports": 13951,
       "inherits_from": 2088,
-      "references": 234022,
-      "resolves_to": 25276
+      "references": 235495,
+      "resolves_to": 25281
     },
     "status": "ok"
   },
   "totals": {
     "files": 1886,
     "nodes": 103991,
-    "relations": 134257
+    "relations": 134240
   }
 }

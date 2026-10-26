@@ -16,6 +16,9 @@
 
 use tree_sitter::Node as TsNode;
 
+use crate::py::prelude::*;
+use crate::py::types::{PyDict, PyList};
+
 use crate::ts;
 
 /// Node kinds that are a comment in one grammar or another.
@@ -140,10 +143,15 @@ fn strip_markers(comment: &str) -> String {
 pub fn python_docstring(definition: TsNode<'_>, source: &[u8]) -> Option<String> {
     let body = definition.child_by_field_name("body")?;
     let first = ts::named_children(body).into_iter().find(|n| n.kind() != "comment")?;
-    if first.kind() != "expression_statement" {
+    string_statement_text(first, source)
+}
+
+/// The text of a statement that is a plain string, cleaned as PEP 257 describes.
+fn string_statement_text(statement: TsNode<'_>, source: &[u8]) -> Option<String> {
+    if statement.kind() != "expression_statement" {
         return None;
     }
-    let string = ts::named_children(first).into_iter().next().filter(|n| n.kind() == "string")?;
+    let string = ts::named_children(statement).into_iter().next().filter(|n| n.kind() == "string")?;
     let children = ts::children(string);
     // f-strings and bytes are not documentation.
     if let Some(start) = children.iter().find(|c| c.kind() == "string_start") {
@@ -159,6 +167,13 @@ pub fn python_docstring(definition: TsNode<'_>, source: &[u8]) -> Option<String>
         .collect();
     let cleaned = clean_docstring(&raw);
     (!cleaned.is_empty()).then_some(cleaned)
+}
+
+/// The docstring of a Python module: the string that is the first statement of the
+/// file.
+pub fn python_module_docstring(root: TsNode<'_>, source: &[u8]) -> Option<String> {
+    let first = ts::named_children(root).into_iter().find(|n| n.kind() != "comment")?;
+    string_statement_text(first, source)
 }
 
 /// PEP 257: the first line is stripped, the others lose their common indent,
@@ -179,6 +194,121 @@ fn clean_docstring(raw: &str) -> String {
         if line.len() >= indent { line[indent..].trim_end() } else { line.trim() }.to_string()
     }));
     out.join("\n").trim().to_string()
+}
+
+/// Definitions a comment inside belongs to rather than to the one around them.
+const NESTED_DEFINITIONS: [&str; 10] = [
+    "function_definition",
+    "class_definition",
+    "function_declaration",
+    "class_declaration",
+    "method_definition",
+    "method_declaration",
+    "function_item",
+    "impl_item",
+    "trait_item",
+    "abstract_class_declaration",
+];
+
+/// The comments written inside a definition: one entry per block of adjacent
+/// comment lines, or per comment that follows code on its line, as `(line, text)`
+/// with the line 1-based. The comments of a definition nested in it are its own.
+///
+/// What a docstring or the comment above says is `doc`; these are the rest of what
+/// the author wrote about the code, the explanations that sit next to the lines
+/// they explain.
+pub fn body_comments(definition: TsNode<'_>, source: &[u8]) -> Vec<(u32, String)> {
+    let mut found: Vec<TsNode<'_>> = Vec::new();
+    let mut stack: Vec<TsNode<'_>> = ts::children(definition);
+    while let Some(node) = stack.pop() {
+        if COMMENT_KINDS.contains(&node.kind()) {
+            found.push(node);
+            continue;
+        }
+        if NESTED_DEFINITIONS.contains(&node.kind()) {
+            continue;
+        }
+        stack.extend(ts::children(node));
+    }
+    found.sort_by_key(|c| c.start_byte());
+    let mut blocks: Vec<(u32, usize, Vec<String>)> = Vec::new();
+    for comment in found {
+        let row = comment.start_position().row;
+        let end_row = comment.end_position().row;
+        let text = strip_markers(&ts::text(comment, source));
+        if text.is_empty() {
+            continue;
+        }
+        let own_line = starts_its_line(comment, source);
+        match blocks.last_mut() {
+            // The next line of a block of comments that each have a line to themselves.
+            Some((_, last_row, lines)) if own_line && row == *last_row + 1 && lines_are_block(lines) => {
+                lines.push(text);
+                *last_row = end_row;
+            }
+            _ => blocks.push((row as u32 + 1, end_row, vec![text])),
+        }
+        // A comment after code ends its block: the next line is another thought.
+        if !own_line && let Some(last) = blocks.last_mut() {
+            last.1 = usize::MAX / 2;
+        }
+    }
+    blocks.into_iter().map(|(line, _, lines)| (line, lines.join("\n"))).collect()
+}
+
+fn lines_are_block(lines: &[String]) -> bool {
+    !lines.is_empty()
+}
+
+/// The comment that follows a definition on its last line: `x = 1  # why`.
+pub fn trailing_comment(node: TsNode<'_>, source: &[u8]) -> Option<String> {
+    let mut current = node;
+    loop {
+        let end_row = current.end_position().row;
+        let mut next = current.next_sibling();
+        while let Some(sibling) = next {
+            if sibling.start_position().row != end_row {
+                break;
+            }
+            if COMMENT_KINDS.contains(&sibling.kind()) {
+                let text = strip_markers(&ts::text(sibling, source));
+                return (!text.is_empty()).then_some(text);
+            }
+            next = sibling.next_sibling();
+        }
+        match current.parent() {
+            Some(parent) if WRAPPERS.contains(&parent.kind()) => current = parent,
+            _ => return None,
+        }
+    }
+}
+
+/// Writes `comments` and `trailing_comment` into a node's metadata, when there
+/// are any. A definition with a body gets the first; one that is a line gets the
+/// second.
+pub fn add_comments<'py>(
+    py: Python<'py>,
+    metadata: &Bound<'py, PyDict>,
+    definition: TsNode<'_>,
+    source: &[u8],
+) -> PyResult<()> {
+    const MAX_BLOCKS: usize = 200;
+    let comments = body_comments(definition, source);
+    if !comments.is_empty() {
+        let mut entries = Vec::new();
+        for (line, text) in comments.into_iter().take(MAX_BLOCKS) {
+            let entry = PyDict::new(py);
+            entry.set_item("line", line)?;
+            entry.set_item("text", text)?;
+            entries.push(entry);
+        }
+        let list = PyList::new(py, entries)?;
+        metadata.set_item("comments", list)?;
+    }
+    if let Some(text) = trailing_comment(definition, source) {
+        metadata.set_item("trailing_comment", text)?;
+    }
+    Ok(())
 }
 
 #[cfg(test)]

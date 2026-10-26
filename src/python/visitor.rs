@@ -112,6 +112,9 @@ pub struct PythonVisitor<'a> {
     /// Every module of the root, including those whose file has not been
     /// visited yet: an import must not depend on which file comes first.
     project_modules: Option<&'a std::collections::HashSet<String>>,
+    /// `pkg.name` for every name a package's `__init__.py` binds: `from pkg import
+    /// name` brings in that, and not a submodule `pkg/name.py` it shadows.
+    package_names: Option<&'a std::collections::HashSet<String>>,
     scope_stack: Vec<String>,
     container_stack: Vec<String>,
     kind_stack: Vec<NodeKind>,
@@ -156,6 +159,7 @@ impl<'a> PythonVisitor<'a> {
             classifier,
             module_index,
             project_modules: None,
+            package_names: None,
             scope_stack: vec![module_qname.to_string()],
             container_stack: vec![file_node_id.to_string()],
             kind_stack: vec![NodeKind::File],
@@ -168,6 +172,11 @@ impl<'a> PythonVisitor<'a> {
     }
 
     /// Gives the visitor the names of all the modules of the root.
+    pub fn with_package_names(mut self, names: &'a std::collections::HashSet<String>) -> Self {
+        self.package_names = Some(names);
+        self
+    }
+
     pub fn with_project_modules(mut self, modules: &'a std::collections::HashSet<String>) -> Self {
         self.project_modules = Some(modules);
         self
@@ -401,8 +410,18 @@ impl<'a> PythonVisitor<'a> {
 
         // An internal import targets a MODULE node when one is already in the
         // graph; otherwise an EXTERNAL_SYMBOL, so the edge is never lost.
+        // `from pkg import name` where `pkg/__init__.py` binds `name` - often to the
+        // function of a submodule of the same name - brings in that, not the submodule.
+        let shadowed = name_node.is_some()
+            && !is_star
+            && self.package_names.is_some_and(|names| names.contains(ext_qname));
+        let lookup = if shadowed {
+            ext_qname.rsplit_once('.').map(|(package, _)| package).unwrap_or(ext_qname)
+        } else {
+            ext_qname
+        };
         let mut target_id = if origin == "internal" {
-            self.find_module_node_id(ext_qname)
+            self.find_module_node_id(lookup)
         } else {
             None
         };
@@ -1751,11 +1770,17 @@ impl<'a> PythonVisitor<'a> {
             } else {
                 None
             };
-            if let Some(doc) =
-                docstring.or_else(|| crate::doc::leading_comment(definition, self.source))
+            let leading = crate::doc::leading_comment(definition, self.source);
+            // The comment above is kept even when a docstring takes the place of `doc`.
+            if docstring.is_some()
+                && let Some(leading) = &leading
             {
+                metadata.set_item("leading_comment", leading)?;
+            }
+            if let Some(doc) = docstring.or(leading) {
                 metadata.set_item("doc", doc)?;
             }
+            crate::doc::add_comments(self.py, &metadata, definition, self.source)?;
         }
         let node = Node {
             id: node_id(self.project_name, qualified_name, kind.as_str()),

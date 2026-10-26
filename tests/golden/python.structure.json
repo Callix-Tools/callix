@@ -43,7 +43,9 @@
       "file_path": null,
       "id": "1bdd980cd6a154be",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "doc": "Types the service layer annotates against."
+      },
       "name": "models",
       "qualified_name": "pkg.models",
       "span": null
@@ -52,7 +54,9 @@
       "file_path": "pkg/models.py",
       "id": "f12749ffdc52158d",
       "kind": "file",
-      "metadata": {},
+      "metadata": {
+        "doc": "Types the service layer annotates against."
+      },
       "name": "models.py",
       "qualified_name": "pkg/models.py",
       "span": null
@@ -477,7 +481,9 @@
       "file_path": null,
       "id": "d11cd84c31385bd7",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "doc": "Calls, references, annotations and a boundary."
+      },
       "name": "service",
       "qualified_name": "pkg.service",
       "span": null
@@ -486,7 +492,9 @@
       "file_path": "pkg/service.py",
       "id": "fd99ce866fe5afd6",
       "kind": "file",
-      "metadata": {},
+      "metadata": {
+        "doc": "Calls, references, annotations and a boundary."
+      },
       "name": "service.py",
       "qualified_name": "pkg/service.py",
       "span": null

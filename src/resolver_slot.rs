@@ -51,6 +51,11 @@ pub(crate) trait NativeResolver {
     fn resolve(&self, path: &str, line: u32, col: u32) -> Option<ResolvedRef>;
 
     fn status(&self) -> ResolverStatus;
+
+    /// Directories imports are written against that are not the project root: the
+    /// `src` of a project inside the analysed directory. Backends that find their
+    /// own modules ignore them.
+    fn set_search_roots(&mut self, _roots: Vec<PathBuf>) {}
 }
 
 /// The resolution backend an adapter was constructed with.
@@ -113,6 +118,13 @@ impl<N: NativeResolver> ResolverSlot<N> {
             Self::Native(resolver) => resolver.prepare(project_root, files),
             Self::Custom(object) => custom_prepare(py, object, project_root, files),
             Self::Disabled => Ok(()),
+        }
+    }
+
+    /// Tells a built-in backend where first-party modules are found, before `prepare`.
+    pub(crate) fn set_search_roots(&mut self, roots: Vec<PathBuf>) {
+        if let Self::Native(resolver) = self {
+            resolver.set_search_roots(roots);
         }
     }
 

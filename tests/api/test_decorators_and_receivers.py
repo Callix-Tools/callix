@@ -224,7 +224,7 @@ def test_a_rust_route_attribute_belongs_to_its_function(tmp_path: Path) -> None:
 def test_an_import_is_bound_whatever_order_the_files_are_read_in(tmp_path: Path) -> None:
     """`app/` sorts before `service/`, so the module is not in the graph yet.
 
-    `from service.group_member import create` is bound to the module the name
+    `from service.group_member import create` is bound to the package the name
     comes from, not to an external symbol; and the package's own
     `from service.group_member.create import create` is bound to the submodule
     it names, not to the package it sits in. Both then resolve to the function.
@@ -252,10 +252,15 @@ def test_an_import_is_bound_whatever_order_the_files_are_read_in(tmp_path: Path)
     ]
     assert leftover == []
 
-    for importer in ("app.group_member.create", "service.group_member.create"):
+    # The package's own import names the submodule; the importer's names a package
+    # whose `__init__` binds `create`, so what it brings in is that function - and
+    # the module it depends on is the package, not the submodule it shadows.
+    for importer, module in (
+        ("app.group_member.create", "service.group_member"),
+        ("service.group_member.create", "service.group_member.create"),
+    ):
         resolved = targets(graph, importer, RelationKind.RESOLVES_TO, NodeKind.IMPORT)
-        # The module the import names, and the function it brings in.
-        assert resolved == {"service.group_member.create", "service.group_member.create.create"}, importer
+        assert resolved == {module, "service.group_member.create.create"}, importer
     assert targets(graph, "app.group_member.handler", RelationKind.CALLS) == {
         "service.group_member.create.create"
     }

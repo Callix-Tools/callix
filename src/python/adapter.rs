@@ -103,6 +103,76 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
     })
 }
 
+/// The names a module binds at its top level: imports, definitions and assignments.
+fn bound_names(root: tree_sitter::Node<'_>, source: &[u8]) -> Vec<String> {
+    use crate::ts;
+    let text = |node: tree_sitter::Node<'_>| ts::text(node, source).into_owned();
+    let mut names = Vec::new();
+    for statement in ts::children(root) {
+        match statement.kind() {
+            "import_from_statement" => {
+                for child in ts::children(statement) {
+                    match child.kind() {
+                        "dotted_name" if Some(child) != statement.child_by_field_name("module_name") => {
+                            if let Some(last) = ts::children(child).into_iter().rev().find(|c| c.kind() == "identifier") {
+                                names.push(text(last));
+                            }
+                        }
+                        "aliased_import" => {
+                            if let Some(alias) = child.child_by_field_name("alias") {
+                                names.push(text(alias));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            "import_statement" => {
+                for child in ts::children(statement) {
+                    match child.kind() {
+                        "dotted_name" => {
+                            if let Some(first) = ts::children(child).into_iter().find(|c| c.kind() == "identifier") {
+                                names.push(text(first));
+                            }
+                        }
+                        "aliased_import" => {
+                            if let Some(alias) = child.child_by_field_name("alias") {
+                                names.push(text(alias));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            "function_definition" | "class_definition" => {
+                if let Some(name) = statement.child_by_field_name("name") {
+                    names.push(text(name));
+                }
+            }
+            "decorated_definition" => {
+                if let Some(name) = statement
+                    .child_by_field_name("definition")
+                    .and_then(|d| d.child_by_field_name("name"))
+                {
+                    names.push(text(name));
+                }
+            }
+            "expression_statement" => {
+                for child in ts::children(statement) {
+                    if child.kind() == "assignment"
+                        && let Some(left) = child.child_by_field_name("left")
+                        && left.kind() == "identifier"
+                    {
+                        names.push(text(left));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    names
+}
+
 fn add_node(py: Python<'_>, graph: &mut Graph, node: Node) -> PyResult<String> {
     let id = node.id.clone();
     graph.insert_node(id.clone(), Py::new(py, node)?);
@@ -282,6 +352,24 @@ fn build_root_structure_inner(
         }
     }
 
+    // The names each package's `__init__.py` binds.
+    let mut package_names: HashSet<String> = HashSet::new();
+    for file in &files {
+        if file.file_name().is_none_or(|n| n != "__init__.py") {
+            continue;
+        }
+        let root = source_root_for(file, &roots).unwrap_or(&roots[0]);
+        let Some(package) = qualified_name(file, root) else {
+            continue;
+        };
+        if let Ok(source) = std::fs::read(file) {
+            let tree = super::parse_tree(&source)?;
+            for name in bound_names(tree.root_node(), &source) {
+                package_names.insert(format!("{package}.{name}"));
+            }
+        }
+    }
+
     let declared = third_party.clone();
     let classifier = ImportClassifier::from_sets(stdlib, third_party, internal_tops);
 
@@ -356,6 +444,14 @@ fn build_root_structure_inner(
 
         let abs_path = file.to_string_lossy().into_owned();
         let tree = super::parse_tree(&source)?;
+        // What the file says about itself, on the module and on the file.
+        if let Some(doc) = crate::doc::python_module_docstring(tree.root_node(), &source) {
+            for id in [modules.get(&module_qname), Some(&file_id)].into_iter().flatten() {
+                if let Some(node) = graph.node_map().get(id) {
+                    node.get().metadata.bind(py).set_item("doc", doc.clone())?;
+                }
+            }
+        }
         let mut visitor = PythonVisitor::new(
             py,
             graph,
@@ -366,7 +462,8 @@ fn build_root_structure_inner(
             &file_id,
             &classifier,
         )
-        .with_project_modules(&project_modules);
+        .with_project_modules(&project_modules)
+        .with_package_names(&package_names);
         visitor.visit(tree.root_node())?;
         for occurrence in visitor.into_occurrences() {
             all_occurrences.push((abs_path.clone(), occurrence));
@@ -1237,6 +1334,18 @@ impl PythonAdapter {
                 .iter()
                 .flat_map(|(_, files)| files.iter().map(PathBuf::from))
                 .collect();
+            // Each project inside the directory is imported from its own source root
+            // (`backend/src`), which is not the directory analysed.
+            let mut search_roots: Vec<PathBuf> = Vec::new();
+            for (py_root, files) in &root_files {
+                let files: Vec<PathBuf> = files.iter().map(PathBuf::from).collect();
+                for root in source_roots(py_root, &files) {
+                    if root != project_root && !search_roots.contains(&root) {
+                        search_roots.push(root);
+                    }
+                }
+            }
+            self.resolver.set_search_roots(search_roots);
             self.resolver.prepare(py, &project_root, &all_files)?;
 
             let mut span_index = SpanIndex::from_graph(py, &graph)?;

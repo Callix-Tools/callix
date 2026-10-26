@@ -77,7 +77,7 @@ pub(crate) struct Flow {
     /// Calls of a call's result: (caller, function whose result is called, span, file).
     result_calls: Vec<(String, String, Option<crate::span::Span>, String)>,
     /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
-    iterations: Vec<(String, String, crate::span::Span)>,
+    iterations: Vec<(String, String, crate::span::Span, Option<String>)>,
 }
 
 impl Flow {
@@ -137,8 +137,77 @@ impl Flow {
 
     /// `for x in it:`: the scope calls `__iter__` and `__next__` of the class
     /// `it` holds an instance of.
-    pub(crate) fn iterate(&mut self, caller_id: &str, held: &str, span: crate::span::Span) {
-        self.iterations.push((caller_id.to_owned(), held.to_owned(), span));
+    ///
+    /// `variable` is the loop variable when the body calls it: it holds what the
+    /// iterable hands out.
+    pub(crate) fn iterate(
+        &mut self,
+        caller_id: &str,
+        held: &str,
+        span: crate::span::Span,
+        variable: Option<String>,
+    ) {
+        self.iterations.push((caller_id.to_owned(), held.to_owned(), span, variable));
+    }
+
+    /// What a loop variable holds: the elements of a container, what a generator
+    /// yields, what an iterator's `__next__` returns.
+    fn bind_iterations(&mut self, graph: &Graph) {
+        if self.iterations.is_empty() {
+            return;
+        }
+        let by_name: HashMap<String, String> = graph
+            .node_map()
+            .values()
+            .map(|n| n.get())
+            .map(|n| (n.qualified_name.clone(), n.id.clone()))
+            .collect();
+        let mut learned: Vec<(String, String)> = Vec::new();
+        for (_, held, _, variable) in &self.iterations {
+            let Some(variable) = variable else {
+                continue;
+            };
+            match graph.node_kind(held) {
+                // `for f in handlers`: the elements `handlers` holds.
+                Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
+                    learned.push((variable.clone(), held.clone()));
+                    for class in self.instances(graph, held) {
+                        learned.extend(self.next_results(graph, &by_name, &class, variable));
+                    }
+                }
+                // `for f in gen()`: what the generator yields.
+                Some(NodeKind::Function | NodeKind::Method) => {
+                    learned.push((variable.clone(), format!("{RESULT}{held}")));
+                }
+                // `for f in Cls()`: what `__next__` returns.
+                Some(NodeKind::Class) => {
+                    learned.extend(self.next_results(graph, &by_name, held, variable));
+                }
+                _ => {}
+            }
+        }
+        for (variable, held) in learned {
+            let list = self.holds.entry(variable).or_default();
+            if !list.contains(&held) {
+                list.push(held);
+            }
+        }
+    }
+
+    fn next_results(
+        &self,
+        graph: &Graph,
+        by_name: &HashMap<String, String>,
+        class: &str,
+        variable: &str,
+    ) -> Vec<(String, String)> {
+        let Some(name) = graph.node_map().get(class).map(|n| n.get().qualified_name.clone()) else {
+            return Vec::new();
+        };
+        by_name
+            .get(&format!("{name}.__next__"))
+            .map(|next| vec![(variable.to_owned(), format!("{RESULT}{next}"))])
+            .unwrap_or_default()
     }
 
     /// A call argument, when the occurrence says it is one.
@@ -194,6 +263,7 @@ impl Flow {
             return Ok(0);
         }
         self.bind_arguments(graph);
+        self.bind_iterations(graph);
         self.follow(py, graph)
     }
 
@@ -376,7 +446,7 @@ impl Flow {
                 .map(|n| n.get())
                 .map(|n| (n.qualified_name.clone(), n.id.clone()))
                 .collect();
-            for (caller, held, span) in &self.iterations {
+            for (caller, held, span, _) in &self.iterations {
                 // `for x in Cls():` resolves to the class itself.
                 let classes = if graph.node_kind(held) == Some(NodeKind::Class) {
                     vec![held.clone()]

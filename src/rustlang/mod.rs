@@ -101,16 +101,31 @@ pub fn blank_std_macros(source: &[u8], tree: &Tree, project_macros: &std::collec
             continue;
         }
         // Only inside a function: a macro among the items is not an expression.
+        // And in a place an expression goes: `Token![,]` in `parse::<Token![,]>()` is a
+        // type, and a pattern or an attribute is no expression either.
         let mut inside = false;
         let mut parent = node.parent();
         while let Some(p) = parent {
-            if matches!(p.kind(), "block" | "closure_expression") {
+            let kind = p.kind();
+            if matches!(kind, "block" | "closure_expression") {
                 inside = true;
+                break;
+            }
+            if kind.contains("type") || kind.contains("pattern") || kind.contains("attribute") {
                 break;
             }
             parent = p.parent();
         }
         if !inside {
+            continue;
+        }
+        // Only arguments that read as expressions on their own: a macro like `quote!`
+        // takes tokens that are not, and blanking its name would only confuse the
+        // parse of the function around it.
+        let mut probe = b"fn __probe() { let _ = ".to_vec();
+        probe.extend_from_slice(&source[arguments.start_byte()..arguments.end_byte()]);
+        probe.extend_from_slice(b"; }");
+        if parse_tree(&probe).map(|t| t.root_node().has_error()).unwrap_or(true) {
             continue;
         }
         let bytes = blanked.get_or_insert_with(|| source.to_vec());

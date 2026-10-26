@@ -77,8 +77,15 @@ def analyse(tmp_path: Path, source: str) -> callix.Graph:
     return callix.PythonAdapter().analyze(str(tmp_path))
 
 
-def targets(graph: callix.Graph, source: str, kind: RelationKind) -> set[str]:
-    (node,) = [n for n in graph.nodes.values() if n.qualified_name == source]
+def targets(
+    graph: callix.Graph, source: str, kind: RelationKind, node_kind: NodeKind | None = None
+) -> set[str]:
+    # An import and the module it names can share a qualified name.
+    (node,) = [
+        n
+        for n in graph.nodes.values()
+        if n.qualified_name == source and (node_kind is None or n.kind is node_kind)
+    ]
     return {
         graph.nodes[r.target_id].qualified_name
         for r in graph.relations
@@ -208,3 +215,92 @@ def test_a_rust_route_attribute_belongs_to_its_function(tmp_path: Path) -> None:
     assert [(s.kind, s.qualified_name, b.name) for s, b in exposed] == [
         (NodeKind.FUNCTION, "m::show", "GET /users/{}"),
     ]
+
+
+def test_an_import_is_bound_whatever_order_the_files_are_read_in(tmp_path: Path) -> None:
+    """`app/` sorts before `service/`, so the module is not in the graph yet.
+
+    `from service.group_member import create` is bound to the module the name
+    comes from, not to an external symbol; and the package's own
+    `from service.group_member.create import create` is bound to the submodule
+    it names, not to the package it sits in. Both then resolve to the function.
+    """
+    (tmp_path / "src" / "app").mkdir(parents=True)
+    (tmp_path / "src" / "service" / "group_member").mkdir(parents=True)
+    (tmp_path / "src" / "service" / "group_member" / "__init__.py").write_text(
+        "from service.group_member.create import create\n"
+    )
+    (tmp_path / "src" / "service" / "group_member" / "create.py").write_text(
+        "def create(name: str) -> dict:\n    return {'name': name}\n"
+    )
+    (tmp_path / "src" / "app" / "group_member.py").write_text(
+        "from service.group_member import create\n\n\ndef handler(name: str):\n    return create(name)\n"
+    )
+    graph = callix.PythonAdapter().analyze(str(tmp_path))
+
+    modules = {n.qualified_name for n in graph.nodes.values() if n.kind is NodeKind.MODULE}
+    assert "service.group_member.create" in modules
+    # Nothing internal is left as an external symbol.
+    leftover = [
+        n.qualified_name
+        for n in graph.nodes.values()
+        if n.kind is NodeKind.EXTERNAL_SYMBOL and n.metadata.get("origin") == "internal"
+    ]
+    assert leftover == []
+
+    for importer in ("app.group_member.create", "service.group_member.create"):
+        resolved = targets(graph, importer, RelationKind.RESOLVES_TO, NodeKind.IMPORT)
+        # The module the import names, and the function it brings in.
+        assert resolved == {"service.group_member.create", "service.group_member.create.create"}, importer
+    assert targets(graph, "app.group_member.handler", RelationKind.CALLS) == {
+        "service.group_member.create.create"
+    }
+
+
+def test_a_routers_prefix_comes_from_the_module_that_mounts_it(tmp_path: Path) -> None:
+    """Routers built in one module and mounted in another, two levels deep."""
+    package = tmp_path / "app" / "routers"
+    package.mkdir(parents=True)
+    (tmp_path / "app" / "__init__.py").write_text("")
+    (package / "__init__.py").write_text("")
+    (tmp_path / "app" / "main.py").write_text(
+        "from fastapi import FastAPI\n"
+        "from .routers import users, v1\n"
+        "from .routers.items import router as items_router\n\n"
+        "app = FastAPI()\n"
+        'app.include_router(users.router, prefix="/api")\n'
+        "app.include_router(items_router)\n"
+        'app.include_router(v1.v1, prefix="/api")\n'
+    )
+    (package / "users.py").write_text(
+        "from fastapi import APIRouter\n"
+        'router = APIRouter(prefix="/users")\n\n'
+        '@router.get("/{user_id}")\n'
+        "def one(user_id: int): ...\n"
+    )
+    (package / "items.py").write_text(
+        "from fastapi import APIRouter\n"
+        'router = APIRouter(prefix="/items")\n\n'
+        '@router.get("/")\n'
+        "def lst(): ...\n"
+    )
+    (package / "v1.py").write_text(
+        "from fastapi import APIRouter\n"
+        "from . import users\n"
+        'v1 = APIRouter(prefix="/v1")\n'
+        "v1.include_router(users.router)\n\n"
+        '@v1.get("/health")\n'
+        "def health(): ...\n"
+    )
+    graph = callix.PythonAdapter().analyze(str(tmp_path))
+    exposed = {
+        graph.nodes[r.source_id].qualified_name: graph.nodes[r.target_id].name
+        for r in graph.relations
+        if r.kind is RelationKind.EXPOSES
+    }
+    assert exposed == {
+        "app.routers.users.one": "GET /api/users/{}",
+        "app.routers.items.lst": "GET /items",
+        # `v1` is mounted under /api, so its own routes are /api/v1/...
+        "app.routers.v1.health": "GET /api/v1/health",
+    }

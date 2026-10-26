@@ -95,6 +95,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
         "read" | "write" => RelationKind::References,
+        // `from m import name`: the import resolves to where `name` is defined.
+        "import" => RelationKind::ResolvesTo,
         _ => return None,
     })
 }
@@ -265,6 +267,19 @@ fn build_root_structure_inner(
         }
     }
 
+    // Every module of the root, ancestors included, so an import can name a
+    // module whose file the walk has not reached yet.
+    let mut project_modules: HashSet<String> = HashSet::new();
+    for file in &files {
+        let root = source_root_for(file, &roots).unwrap_or(&roots[0]);
+        if let Some(qname) = qualified_name(file, root) {
+            let parts: Vec<&str> = qname.split('.').collect();
+            for length in 1..=parts.len() {
+                project_modules.insert(parts[..length].join("."));
+            }
+        }
+    }
+
     let declared = third_party.clone();
     let classifier = ImportClassifier::from_sets(stdlib, third_party, internal_tops);
 
@@ -288,6 +303,7 @@ fn build_root_structure_inner(
     let mut modules: IndexMap<String, String> = IndexMap::new();
     let mut all_occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut all_boundaries: Vec<FileBoundaries> = Vec::new();
+    let mut router_facts: Vec<super::routers::FileFacts> = Vec::new();
 
     for file in &files {
         let source_root = source_root_for(file, &roots).unwrap_or(&roots[0]);
@@ -347,7 +363,8 @@ fn build_root_structure_inner(
             &module_qname,
             &file_id,
             &classifier,
-        );
+        )
+        .with_project_modules(&project_modules);
         visitor.visit(tree.root_node())?;
         for occurrence in visitor.into_occurrences() {
             all_occurrences.push((abs_path.clone(), occurrence));
@@ -357,6 +374,12 @@ fn build_root_structure_inner(
         // nodes must land in the graph after the resolver's edges.
         let mut boundaries = extract_boundaries(tree.root_node(), &source);
         boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
+        router_facts.push(super::routers::FileFacts {
+            file: file_rel.clone(),
+            module: module_qname.clone(),
+            is_package: file.file_name().is_some_and(|name| name == "__init__.py"),
+            facts: super::routers::collect(tree.root_node(), &source),
+        });
         if !boundaries.is_empty() {
             // Keyed by the relative path, like the nodes: `apply_boundaries`
             // looks the enclosing function up by `file_path`.
@@ -380,6 +403,10 @@ fn build_root_structure_inner(
             None,
         )?;
     }
+
+    // A router built in one module and mounted in another gets its prefix now
+    // that every file of the root has been read.
+    super::routers::apply(&router_facts, &mut all_boundaries);
 
     Ok((project, all_occurrences, all_boundaries))
 }
@@ -490,6 +517,15 @@ fn apply_resolutions_inner(
             // Go and Rust adapters do the same.
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+        }
+
+        // An import is only worth an edge when it reaches a definition of the
+        // project; the module edge already says where it points otherwise, and
+        // an external symbol per imported name would only be noise.
+        if occurrence.role == "import" && target_id.is_none() {
+            metrics.unresolved += 1;
+            metrics.resolved -= 1;
+            continue;
         }
 
         match target_id {

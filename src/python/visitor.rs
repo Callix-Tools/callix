@@ -54,6 +54,9 @@ pub struct PythonVisitor<'a> {
     module_qname: &'a str,
     classifier: &'a ImportClassifier,
     module_index: HashMap<String, String>,
+    /// Every module of the root, including those whose file has not been
+    /// visited yet: an import must not depend on which file comes first.
+    project_modules: Option<&'a std::collections::HashSet<String>>,
     scope_stack: Vec<String>,
     container_stack: Vec<String>,
     kind_stack: Vec<NodeKind>,
@@ -87,11 +90,18 @@ impl<'a> PythonVisitor<'a> {
             module_qname,
             classifier,
             module_index,
+            project_modules: None,
             scope_stack: vec![module_qname.to_string()],
             container_stack: vec![file_node_id.to_string()],
             kind_stack: vec![NodeKind::File],
             occurrences: Vec::new(),
         }
+    }
+
+    /// Gives the visitor the names of all the modules of the root.
+    pub fn with_project_modules(mut self, modules: &'a std::collections::HashSet<String>) -> Self {
+        self.project_modules = Some(modules);
+        self
     }
 
     pub fn into_occurrences(self) -> Vec<OccurrenceRef> {
@@ -163,7 +173,7 @@ impl<'a> PythonVisitor<'a> {
             match child.kind() {
                 "dotted_name" => {
                     let name = self.dotted_name(child);
-                    self.emit_import(&name, &name, false, 0, None, false)?;
+                    self.emit_import(&name, &name, false, 0, None, false, None)?;
                 }
                 "aliased_import" => {
                     let Some(name_node) = ts::child_of_type(child, "dotted_name") else {
@@ -176,7 +186,7 @@ impl<'a> PythonVisitor<'a> {
                         None => name.clone(),
                     };
                     let alias = alias_node.map(|_| local.clone());
-                    self.emit_import(&local, &name, false, 0, alias.as_deref(), false)?;
+                    self.emit_import(&local, &name, false, 0, alias.as_deref(), false, None)?;
                 }
                 _ => {}
             }
@@ -235,7 +245,7 @@ impl<'a> PythonVisitor<'a> {
                 "dotted_name" => {
                     let imported = self.dotted_name(*child);
                     let ext_qname = qualify(&imported);
-                    self.emit_import(&imported, &ext_qname, is_relative, level, None, false)?;
+                    self.emit_import(&imported, &ext_qname, is_relative, level, None, false, Some(*child))?;
                 }
                 "aliased_import" => {
                     let Some(name_node) = ts::child_of_type(*child, "dotted_name") else {
@@ -256,6 +266,7 @@ impl<'a> PythonVisitor<'a> {
                         level,
                         alias.as_deref(),
                         false,
+                        Some(name_node),
                     )?;
                 }
                 "wildcard_import" => {
@@ -264,7 +275,7 @@ impl<'a> PythonVisitor<'a> {
                     } else {
                         format!("{source_module}.*")
                     };
-                    self.emit_import("*", &ext_qname, is_relative, level, None, true)?;
+                    self.emit_import("*", &ext_qname, is_relative, level, None, true, None)?;
                 }
                 _ => {}
             }
@@ -272,6 +283,7 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_import(
         &mut self,
         local_name: &str,
@@ -280,6 +292,7 @@ impl<'a> PythonVisitor<'a> {
         level: usize,
         alias: Option<&str>,
         is_star: bool,
+        name_node: Option<TsNode<'_>>,
     ) -> PyResult<()> {
         let top_level = ext_qname.split('.').next().unwrap_or(ext_qname);
         let origin = if is_relative {
@@ -322,7 +335,19 @@ impl<'a> PythonVisitor<'a> {
 
         let file_id = self.file_node_id.to_string();
         self.push_relation(file_id, target_id.clone(), RelationKind::Imports)?;
-        self.push_relation(import_id, target_id, RelationKind::ResolvesTo)?;
+        self.push_relation(import_id.clone(), target_id, RelationKind::ResolvesTo)?;
+
+        // The name an internal `from m import name` brings in is a use-site:
+        // the resolver follows it, through any re-export, to where `name` is
+        // defined, and that definition is what the import resolves to. The
+        // module edge above is the dependency; this one is the symbol.
+        if origin == "internal"
+            && !is_star
+            && let Some(name_node) = name_node
+            && let Some(last) = ts::children(name_node).into_iter().rev().find(|c| c.kind() == "identifier")
+        {
+            self.record_occurrence("import", last, &import_id);
+        }
         Ok(())
     }
 
@@ -336,6 +361,11 @@ impl<'a> PythonVisitor<'a> {
             let candidate = parts[..length].join(".");
             if let Some(id) = self.module_index.get(&candidate) {
                 return Some(id.clone());
+            }
+            // A module whose file comes later in the walk has no node yet, but
+            // its id is a function of its name, and the node will be there.
+            if self.project_modules.is_some_and(|known| known.contains(&candidate)) {
+                return Some(node_id(self.project_name, &candidate, NodeKind::Module.as_str()));
             }
         }
         None

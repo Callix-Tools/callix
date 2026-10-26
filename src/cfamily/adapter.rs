@@ -39,7 +39,6 @@ use crate::metrics::ResolverMetrics;
 use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
-use crate::span::Span;
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
 use crate::roots::filter_nested_root_files;
@@ -54,7 +53,7 @@ use super::detector::{
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs};
 use super::resolver::{CFamilyIndex, SymbolTable};
-use super::visitor::{CFamilyEmitter, FileFacts, Owner, declared_scopes, read_file};
+use super::visitor::{CFamilyEmitter, FileFacts, FoundOccurrence, Owner, declared_scopes, read_file};
 use super::{Dialect, parse_tree};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
@@ -116,14 +115,13 @@ fn push_reference(
     source_id: String,
     target_id: String,
     kind: RelationKind,
-    role: &str,
-    span: Span,
+    occurrence: &FoundOccurrence,
     site_file: &str,
 ) -> PyResult<()> {
     let metadata = PyDict::new(py);
-    metadata.set_item("span", span)?;
-    if role == "read" || role == "write" {
-        metadata.set_item("access", role)?;
+    metadata.set_item("span", occurrence.span)?;
+    if occurrence.role == "read" || occurrence.role == "write" {
+        metadata.set_item("access", occurrence.role)?;
     }
     graph.note_site_file(&source_id, site_file, &metadata)?;
     let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
@@ -393,16 +391,7 @@ fn resolve_with_table(
                     }
                     metrics.resolved += 1;
                     metrics.internal += 1;
-                    push_reference(
-                        py,
-                        graph,
-                        enclosing_id,
-                        target_id,
-                        kind,
-                        occurrence.role,
-                        occurrence.span,
-                        &file.file_rel,
-                    )?;
+                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
                 }
                 None => {
                     // Not declared in anything this translation unit can see: a
@@ -422,16 +411,7 @@ fn resolve_with_table(
                         ensure_external_symbol(py, graph, project, &key, "unknown")?;
                     metrics.resolved += 1;
                     metrics.external += 1;
-                    push_reference(
-                        py,
-                        graph,
-                        enclosing_id,
-                        target_id,
-                        kind,
-                        occurrence.role,
-                        occurrence.span,
-                        &file.file_rel,
-                    )?;
+                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
                 }
             }
         }

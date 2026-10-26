@@ -44,7 +44,16 @@ Resolution records where the edge was written:
 ```python
 relation.metadata["span"]      # the occurrence's span
 relation.metadata["access"]    # 'read' | 'write', on REFERENCES
+relation.metadata["file"]      # only when the edge was written in another file
+                               # than its source node's (see below)
 ```
+
+`file` exists because definitions that share a qualified name are one node, and
+that node lives in the first file that declared it. Go allows any number of
+`init` functions in a package, so a call written in the second one is an edge
+from a node in the first file. Where an edge was written, then, is `file` when
+present and the source node's `file_path` otherwise; the LSIF and SCIP exporters
+place a reference by it.
 
 Boundary edges carry the contract:
 

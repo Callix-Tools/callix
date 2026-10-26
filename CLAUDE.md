@@ -297,6 +297,12 @@ Things that are easy to get wrong:
   use-site; `tests/api/test_edge_spans.py` pins it. The C family once pushed those
   edges bare, which also let `dedupe_structural_relations` fold two call sites into
   one — an edge without metadata is "structural" to it.
+- **An edge's position belongs to `metadata["file"]` when it has one, else to its
+  source node's file.** Definitions with one qualified name are one node in the
+  first file that declared it (Go `init`, C++ overloads), so an edge from it may
+  have been written elsewhere; `Graph::note_site_file` records the file then and
+  only then. Placing a reference by the source node's file alone put eight gin
+  references in an eleven-line file.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

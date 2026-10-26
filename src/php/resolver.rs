@@ -1245,13 +1245,24 @@ impl PhpResolver {
             "object_creation_expression" => {
                 let namespace = scope.namespace.clone();
                 for child in ts::children(node) {
+                    let keyword = child.kind() == "name"
+                        && matches!(ts::text(child, source).to_ascii_lowercase().as_str(), "static" | "self" | "parent");
                     match child.kind() {
-                        "name" | "qualified_name" | "relative_name" => {
+                        "name" | "qualified_name" | "relative_name" if !keyword => {
                             self.record_name(doc, source, child, &namespace, NameKind::Class);
                         }
                         // `new static()`: the class the keyword stands for.
-                        "relative_scope" => {
-                            if let Some(ClassRef::Declared(key)) = self.infer(doc, source, child, scope)
+                        "relative_scope" | "name" => {
+                            let class = if child.kind() == "name"
+                                && ts::text(child, source).eq_ignore_ascii_case("parent")
+                            {
+                                scope.parent.clone()
+                            } else if child.kind() == "name" {
+                                scope.class.clone()
+                            } else {
+                                self.infer(doc, source, child, scope)
+                            };
+                            if let Some(ClassRef::Declared(key)) = class
                                 && let Some(entry) = self.classes.get(&key)
                             {
                                 let site = entry.site;

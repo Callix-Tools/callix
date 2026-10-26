@@ -81,9 +81,9 @@ writing:
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
-| PHP | 42 | 37 | 42 | 0.92 | 1.00 |
+| PHP | 42 | 38 | 42 | 0.94 | 1.00 |
 | C++ | 40 | 38 | 40 | 0.97 | 1.00 |
-| C | 27 | 24 | 27 | 0.93 | 1.00 |
+| C | 27 | 25 | 27 | 0.95 | 1.00 |
 
 How to read them:
 
@@ -118,7 +118,9 @@ expected edge, so that the number does not flatter:
   (tree-sitter-cpp reads `void (*f)() = g;` as an expression), macros, and a
   `delete` through a base pointer, which lands on the base's destructor because
   only the declared type is known.
-- **PHP**: a callable named by a string or an array (`'f'`, `[$o, 'm']`).
+- **PHP**: a callable named by a string or an array (`'f'`, `[$o, 'm']`), whether it
+  is handed to a built-in such as `array_map` or to a function that calls its
+  parameter.
 - **Python**: a function fetched from a container by an index the pass cannot
   tell apart from another, a polymorphic receiver (it lands on the declared
   class, not each subclass), `super(Cls, self)`.

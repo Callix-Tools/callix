@@ -215,7 +215,7 @@ impl CFamilyIndex {
         // the wrong function in exactly the codebases that use the idiom most.
         let local: Vec<&Symbol> = candidates
             .iter()
-            .filter(|s| s.internal && s.file_rel == from_file)
+            .filter(|s| s.internal && self.reachable(from_file, &s.file_rel))
             .collect();
         let visible: Vec<&Symbol> = if local.is_empty() {
             candidates
@@ -410,7 +410,7 @@ impl CFamilyIndex {
                 .filter(|s| {
                     let bare = s.qualified_name.split('(').next().unwrap_or(&s.qualified_name);
                     let full = format!("{scope}::{name}");
-                    (bare == full || bare.ends_with(&tail)) && (!s.internal || s.file_rel == from_file)
+                    (bare == full || bare.ends_with(&tail)) && (!s.internal || self.reachable(from_file, &s.file_rel))
                 })
                 .collect();
             if !in_scope.is_empty() {
@@ -437,7 +437,7 @@ impl CFamilyIndex {
             return Outcome::Outside;
         };
         let local: Vec<&Symbol> =
-            candidates.iter().filter(|s| s.internal && s.file_rel == from_file).collect();
+            candidates.iter().filter(|s| s.internal && self.reachable(from_file, &s.file_rel)).collect();
         let visible: Vec<&Symbol> = if local.is_empty() {
             candidates.iter().filter(|s| !s.internal && self.reachable(from_file, &s.file_rel)).collect()
         } else {

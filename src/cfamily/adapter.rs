@@ -118,12 +118,14 @@ fn push_reference(
     kind: RelationKind,
     role: &str,
     span: Span,
+    site_file: &str,
 ) -> PyResult<()> {
     let metadata = PyDict::new(py);
     metadata.set_item("span", span)?;
     if role == "read" || role == "write" {
         metadata.set_item("access", role)?;
     }
+    graph.note_site_file(&source_id, site_file, &metadata)?;
     let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
     graph.push_relation(Py::new(py, relation)?);
     Ok(())
@@ -392,7 +394,14 @@ fn resolve_with_table(
                     metrics.resolved += 1;
                     metrics.internal += 1;
                     push_reference(
-                        py, graph, enclosing_id, target_id, kind, occurrence.role, occurrence.span,
+                        py,
+                        graph,
+                        enclosing_id,
+                        target_id,
+                        kind,
+                        occurrence.role,
+                        occurrence.span,
+                        &file.file_rel,
                     )?;
                 }
                 None => {
@@ -414,7 +423,14 @@ fn resolve_with_table(
                     metrics.resolved += 1;
                     metrics.external += 1;
                     push_reference(
-                        py, graph, enclosing_id, target_id, kind, occurrence.role, occurrence.span,
+                        py,
+                        graph,
+                        enclosing_id,
+                        target_id,
+                        kind,
+                        occurrence.role,
+                        occurrence.span,
+                        &file.file_rel,
                     )?;
                 }
             }

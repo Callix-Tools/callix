@@ -188,7 +188,10 @@ impl<'g> Index<'g> {
                 self.skipped_references += 1;
                 continue;
             };
-            let Some(path) = &source.file_path else {
+            // The position belongs to the file the edge was written in, which
+            // is not the source node's file when several definitions share a
+            // qualified name and so are one node.
+            let Some(path) = relation.site_file().or(source.file_path.as_deref()) else {
                 self.skipped_references += 1;
                 continue;
             };

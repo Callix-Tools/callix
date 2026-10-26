@@ -57,8 +57,11 @@ ambiguous edges out of 4 375 is telling you which ones to distrust.
 It is a small, flow-insensitive and context-insensitive pass that runs after
 resolution. A variable assigned two functions holds both; a parameter holds the
 argument of every call site that passes it. It follows names, attribute chains,
-container literals and `table[key]`, the names a function returns and the result
-of a call that is called. It over-approximates where a call graph usually does,
+container literals and `table[key]`, the names a function returns, the result
+of a call that is called, a call's result handed on as an argument, a call made
+through a parameter that holds a function (its own arguments reach that
+function's parameters), and the iteration protocol: `for x in it` calls
+`__iter__` and `__next__` of the class `it` is shown to hold an instance of. It over-approximates where a call graph usually does,
 and the label says so. It follows nothing it cannot resolve to a node of the
 project.
 
@@ -77,7 +80,7 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 81 | 107 | 0.79 | 0.97 |
+| Python (PyCG) | 112 | 86 | 107 | 0.84 | 0.97 |
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
@@ -100,7 +103,7 @@ How to read them:
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
   nothing. The honest cost of that is recall: for Python, the 49 calls that stop
-  at a variable, and the function values no pass follows, are the 21 % missing.
+  at a variable, and the function values no pass follows, are the 16 % missing.
 - A callee outside the program has no name in the graph, so it is scored apart
   and leniently, and is not in these numbers.
 
@@ -121,9 +124,11 @@ expected edge, so that the number does not flatter:
 - **PHP**: a callable named by a string or an array is a call only when it is handed to one of
   a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
   Handed to a function of the project that calls its own parameter, it is not followed.
-- **Python**: a function fetched from a container by an index the pass cannot
-  tell apart from another, a polymorphic receiver (it lands on the declared
-  class, not each subclass), `super(Cls, self)`.
+- **Python**: a lambda (it is not a node of the graph, so there is nothing to call),
+  the value a generator yields or an iterator's `__next__` returns, a function
+  fetched from a container by an index the pass cannot tell apart from another,
+  a polymorphic receiver (it lands on the declared class, not each subclass),
+  `super(Cls, self)`.
 - **C and C++**: a callback handed to a library function (`qsort`, `.map(f)`) is a
   reference to the function, not a call: whether the library calls it is
   unknowable from the program.

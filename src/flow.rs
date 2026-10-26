@@ -76,6 +76,8 @@ pub(crate) struct Flow {
     returns: HashMap<String, Vec<String>>,
     /// Calls of a call's result: (caller, function whose result is called, span, file).
     result_calls: Vec<(String, String, Option<crate::span::Span>, String)>,
+    /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
+    iterations: Vec<(String, String, crate::span::Span)>,
 }
 
 impl Flow {
@@ -133,6 +135,12 @@ impl Flow {
         self.result_calls.push((caller_id.to_owned(), function_id.to_owned(), Some(span), file.to_owned()));
     }
 
+    /// `for x in it:`: the scope calls `__iter__` and `__next__` of the class
+    /// `it` holds an instance of.
+    pub(crate) fn iterate(&mut self, caller_id: &str, held: &str, span: crate::span::Span) {
+        self.iterations.push((caller_id.to_owned(), held.to_owned(), span));
+    }
+
     /// A call argument, when the occurrence says it is one.
     pub(crate) fn arg(&mut self, file: &str, occurrence: &OccurrenceRef, target: &str) {
         let Some(detail) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("arg:")) else {
@@ -171,7 +179,11 @@ impl Flow {
     /// Binds the arguments to parameters, follows the holders, and writes the
     /// `flow` edges. Returns how many it wrote.
     pub(crate) fn finish(mut self, py: Python<'_>, graph: &mut Graph) -> PyResult<usize> {
-        if self.holds.is_empty() && self.args.is_empty() && self.result_calls.is_empty() {
+        if self.holds.is_empty()
+            && self.args.is_empty()
+            && self.result_calls.is_empty()
+            && self.iterations.is_empty()
+        {
             return Ok(0);
         }
         self.bind_arguments(graph);
@@ -199,44 +211,70 @@ impl Flow {
             .map(|n| (n.qualified_name.as_str(), n.id.as_str()))
             .collect();
 
-        for arg in std::mem::take(&mut self.args) {
-            let Some(mut callee) = self.calls.get(&(arg.file.clone(), arg.call_line, arg.call_col)).cloned()
-            else {
-                continue;
-            };
-            // `A(x)` is a call of A's constructor.
-            if graph.node_kind(&callee) == Some(NodeKind::Class) {
-                let class_name = graph.node_map().get(&callee).map(|n| n.get().qualified_name.clone());
-                let constructor = class_name.and_then(|class_name| {
-                    CONSTRUCTORS.iter().find_map(|ctor| {
-                        by_name
-                            .get(format!("{class_name}.{ctor}").as_str())
-                            .or_else(|| by_name.get(format!("{class_name}\\{ctor}").as_str()))
+        let args = std::mem::take(&mut self.args);
+        // A call through a parameter or a variable (`a(b)`) hands its arguments to
+        // whatever `a` holds, which is known only once the arguments of the other
+        // calls are bound: so the binding is repeated until nothing new is learned.
+        for _ in 0..4 {
+            let mut learned: Vec<(String, String)> = Vec::new();
+            for arg in &args {
+                let Some(site_callee) = self.calls.get(&(arg.file.clone(), arg.call_line, arg.call_col)).cloned()
+                else {
+                    continue;
+                };
+                let callees: Vec<String> = match graph.node_kind(&site_callee) {
+                    Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
+                        self.callables(graph, &site_callee)
+                    }
+                    _ => vec![site_callee],
+                };
+                for mut callee in callees {
+                    // `A(x)` is a call of A's constructor.
+                    if graph.node_kind(&callee) == Some(NodeKind::Class) {
+                        let class_name = graph.node_map().get(&callee).map(|n| n.get().qualified_name.clone());
+                        let constructor = class_name.and_then(|class_name| {
+                            CONSTRUCTORS.iter().find_map(|ctor| {
+                                by_name
+                                    .get(format!("{class_name}.{ctor}").as_str())
+                                    .or_else(|| by_name.get(format!("{class_name}\\{ctor}").as_str()))
+                                    .copied()
+                            })
+                        });
+                        match constructor {
+                            Some(id) => callee = id.to_owned(),
+                            None => continue,
+                        }
+                    }
+                    let Some(list) = parameters.get(callee.as_str()) else {
+                        continue;
+                    };
+                    let skips_receiver = graph.node_kind(&callee) == Some(NodeKind::Method)
+                        && list
+                            .first()
+                            .and_then(|id| graph.node_map().get(*id))
+                            .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
+                    let parameter = match &arg.slot {
+                        Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied(),
+                        Slot::Keyword(name) => list
+                            .iter()
                             .copied()
-                    })
-                });
-                match constructor {
-                    Some(id) => callee = id.to_owned(),
-                    None => continue,
+                            .find(|id| graph.node_map().get(*id).is_some_and(|n| n.get().name == *name)),
+                    };
+                    if let Some(parameter) = parameter {
+                        learned.push((parameter.to_owned(), arg.target.clone()));
+                    }
                 }
             }
-            let Some(list) = parameters.get(callee.as_str()) else {
-                continue;
-            };
-            let skips_receiver = graph.node_kind(&callee) == Some(NodeKind::Method)
-                && list
-                    .first()
-                    .and_then(|id| graph.node_map().get(*id))
-                    .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
-            let parameter = match &arg.slot {
-                Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied(),
-                Slot::Keyword(name) => list
-                    .iter()
-                    .copied()
-                    .find(|id| graph.node_map().get(*id).is_some_and(|n| n.get().name == *name)),
-            };
-            if let Some(parameter) = parameter {
-                self.holds.entry(parameter.to_owned()).or_default().push(arg.target);
+            let mut changed = false;
+            for (parameter, target) in learned {
+                let held = self.holds.entry(parameter).or_default();
+                if !held.contains(&target) {
+                    held.push(target);
+                    changed = true;
+                }
+            }
+            if !changed {
+                break;
             }
         }
     }
@@ -287,8 +325,80 @@ impl Flow {
         found
     }
 
+    /// The classes a holder can be shown to hold an instance of: `c = Cls()`,
+    /// or a parameter handed `Cls()`.
+    fn instances(&self, graph: &Graph, start: &str) -> Vec<String> {
+        let mut found: Vec<String> = Vec::new();
+        let mut seen: HashSet<&str> = HashSet::new();
+        let mut frontier = vec![start];
+        for _ in 0..MAX_DEPTH {
+            let mut next = Vec::new();
+            for holder in frontier {
+                for held in self.holds.get(holder).into_iter().flatten() {
+                    if !seen.insert(held.as_str()) {
+                        continue;
+                    }
+                    if let Some(function) = held.strip_prefix(RESULT) {
+                        if graph.node_kind(function) == Some(NodeKind::Class) {
+                            found.push(function.to_owned());
+                        }
+                        continue;
+                    }
+                    if matches!(
+                        graph.node_kind(held),
+                        Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                    ) {
+                        next.push(held.as_str());
+                    }
+                }
+            }
+            if next.is_empty() {
+                break;
+            }
+            frontier = next;
+        }
+        found
+    }
+
     fn follow(&self, py: Python<'_>, graph: &mut Graph) -> PyResult<usize> {
         let mut added: Vec<Relation> = Vec::new();
+        if !self.iterations.is_empty() {
+            let by_name: HashMap<String, String> = graph
+                .node_map()
+                .values()
+                .map(|n| n.get())
+                .map(|n| (n.qualified_name.clone(), n.id.clone()))
+                .collect();
+            for (caller, held, span) in &self.iterations {
+                // `for x in Cls():` resolves to the class itself.
+                let classes = if graph.node_kind(held) == Some(NodeKind::Class) {
+                    vec![held.clone()]
+                } else {
+                    self.instances(graph, held)
+                };
+                for class in classes {
+                    let Some(class_name) = graph.node_map().get(&class).map(|n| n.get().qualified_name.clone())
+                    else {
+                        continue;
+                    };
+                    for protocol in ["__iter__", "__next__"] {
+                        let Some(target) = by_name.get(&format!("{class_name}.{protocol}")) else {
+                            continue;
+                        };
+                        let carried = PyDict::new(py);
+                        carried.set_item("span", *span)?;
+                        carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                        carried.set_item("via", class_name.clone())?;
+                        added.push(Relation {
+                            source_id: caller.clone(),
+                            target_id: target.clone(),
+                            kind: RelationKind::Calls,
+                            metadata: carried.unbind(),
+                        });
+                    }
+                }
+            }
+        }
         for relation in graph.relation_slice() {
             let relation = relation.get();
             if relation.kind != RelationKind::Calls {

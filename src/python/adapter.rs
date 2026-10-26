@@ -510,7 +510,7 @@ fn apply_resolutions_inner(
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
-            None if is_alias => RelationKind::References,
+            None if is_alias || occurrence.role == "iterate" => RelationKind::References,
             None => continue,
         };
 
@@ -534,6 +534,13 @@ fn apply_resolutions_inner(
                     Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
                     _ => flow.alias(&occurrence.enclosing_id, held),
                 }
+            }
+            continue;
+        }
+        // `for x in it:` is a call of the iteration protocol of whatever `it` holds.
+        if occurrence.role == "iterate" {
+            if let Some(held) = target_id.as_deref() {
+                flow.iterate(&occurrence.enclosing_id, held, occurrence.span);
             }
             continue;
         }

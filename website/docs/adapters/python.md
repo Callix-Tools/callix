@@ -26,6 +26,13 @@ class-level variables, attributes assigned through `self`, type aliases,
 parameters, and imports — absolute and relative alike, with `from . import x`
 resolved against the importing module's package.
 
+A `lambda` is a function nobody named: a `FUNCTION` node called `<lambdaN>` in the
+scope it is written in, numbered in the order that scope meets them
+(`app.<lambda1>`, `app.make.<lambda2>`), with `metadata["lambda"] = true`. Its
+parameters are `PARAMETER` nodes and its body belongs to it, so what a lambda
+calls is its own edge. A lambda that is assigned, passed as an argument or
+returned is followed to where it is called (`resolution: "flow"`).
+
 Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.

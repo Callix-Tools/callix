@@ -502,6 +502,22 @@ fn apply_resolutions_inner(
 
     let mut flow = Flow::default();
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
+        // A lambda handed on - assigned, passed or returned - names its own node,
+        // so there is nothing for the resolver to answer.
+        if let Some(detail) = occurrence.detail.as_deref()
+            && let Some((base, qname)) = detail.split_once("|lambda:")
+        {
+            let lambda_id = node_id(project_name, qname, NodeKind::Function.as_str());
+            if graph.has_node(&lambda_id) {
+                match base {
+                    "" => flow.alias(&occurrence.enclosing_id, &lambda_id),
+                    "return" => flow.returned(&occurrence.enclosing_id, &lambda_id),
+                    arg => flow.arg_detail(path, arg, &lambda_id),
+                }
+            }
+            metrics.queries -= 1;
+            continue;
+        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;

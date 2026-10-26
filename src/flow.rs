@@ -143,7 +143,14 @@ impl Flow {
 
     /// A call argument, when the occurrence says it is one.
     pub(crate) fn arg(&mut self, file: &str, occurrence: &OccurrenceRef, target: &str) {
-        let Some(detail) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("arg:")) else {
+        if let Some(detail) = occurrence.detail.as_deref() {
+            self.arg_detail(file, detail, target);
+        }
+    }
+
+    /// The same, from the `arg:LINE:COL:SLOT` text itself.
+    pub(crate) fn arg_detail(&mut self, file: &str, detail: &str, target: &str) {
+        let Some(detail) = detail.strip_prefix("arg:") else {
             return;
         };
         let mut parts = detail.splitn(3, ':');

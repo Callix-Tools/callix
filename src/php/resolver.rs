@@ -961,6 +961,7 @@ impl PhpResolver {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn push_pending(
         &mut self,
         doc: u32,

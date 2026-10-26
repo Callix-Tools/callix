@@ -266,9 +266,9 @@
       "relations": 12
     },
     "include/leveldb/slice.h": {
-      "hash": "923a8ace7084a02e",
-      "nodes": 15,
-      "relations": 24
+      "hash": "62aa3da8e8f58c0c",
+      "nodes": 17,
+      "relations": 26
     },
     "include/leveldb/status.h": {
       "hash": "2172e7affd60a6b9",
@@ -286,9 +286,9 @@
       "relations": 24
     },
     "include/leveldb/write_batch.h": {
-      "hash": "e8603d03bb79b5c6",
-      "nodes": 18,
-      "relations": 25
+      "hash": "d0b404383655aac8",
+      "nodes": 19,
+      "relations": 26
     },
     "issues/issue178_test.cc": {
       "hash": "0ba58b2da6c39b62",
@@ -471,9 +471,9 @@
       "relations": 45
     },
     "util/env_posix.cc": {
-      "hash": "51c7526d5c0dc9e5",
-      "nodes": 231,
-      "relations": 389
+      "hash": "48d02bfd0b32a1b5",
+      "nodes": 232,
+      "relations": 390
     },
     "util/env_posix_test.cc": {
       "hash": "1f122b047aee410b",
@@ -491,9 +491,9 @@
       "relations": 50
     },
     "util/env_windows.cc": {
-      "hash": "04d6cdbb0177c0aa",
-      "nodes": 204,
-      "relations": 343
+      "hash": "6dff850c9e3d2786",
+      "nodes": 205,
+      "relations": 344
     },
     "util/env_windows_test.cc": {
       "hash": "f6adfc8c3f8292b4",
@@ -615,11 +615,11 @@
       "parameter": 1488,
       "project": 1,
       "type_alias": 11,
-      "variable": 103
+      "variable": 108
     },
     "relations": {
       "contains": 128,
-      "declares": 6892,
+      "declares": 6897,
       "depends_on": 10,
       "imports": 740,
       "resolves_to": 740
@@ -629,28 +629,28 @@
   "ref": "1.23",
   "resolution": {
     "metrics": {
-      "external": 7216,
-      "internal": 7106,
-      "queries": 14322,
-      "resolved": 14322,
+      "external": 6318,
+      "internal": 9325,
+      "queries": 15643,
+      "resolved": 15643,
       "unresolved": 0
     },
     "relations": {
-      "calls": 9550,
+      "calls": 9838,
       "contains": 128,
-      "declares": 6892,
+      "declares": 6897,
       "depends_on": 10,
       "has_type": 2762,
       "imports": 740,
       "inherits_from": 76,
-      "references": 1934,
+      "references": 2055,
       "resolves_to": 740
     },
     "status": "degraded"
   },
   "totals": {
     "files": 120,
-    "nodes": 5019,
-    "relations": 8510
+    "nodes": 5024,
+    "relations": 8515
   }
 }

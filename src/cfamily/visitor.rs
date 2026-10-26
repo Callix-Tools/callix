@@ -108,7 +108,18 @@ fn callback_positions(callee: &str, in_std: bool) -> &'static [usize] {
         (false, "pthread_once" | "call_once" | "thrd_create" | "tss_create") => &[1],
         (false, "ftw" | "nftw") => &[1],
         (true, "sort" | "stable_sort" | "partial_sort" | "nth_element" | "for_each" | "find_if" | "find_if_not"
-            | "count_if" | "remove_if" | "all_of" | "any_of" | "none_of" | "replace_if" | "partition") => &[2],
+            | "count_if" | "remove_if" | "all_of" | "any_of" | "none_of" | "replace_if" | "partition"
+            | "stable_partition" | "generate" | "generate_n" | "for_each_n" | "max_element" | "min_element"
+            | "minmax_element" | "unique" | "is_sorted" | "is_sorted_until" | "adjacent_find" | "make_heap"
+            | "push_heap" | "pop_heap" | "sort_heap" | "is_partitioned" | "is_heap") => &[2],
+        (true, "lower_bound" | "upper_bound" | "binary_search" | "equal_range" | "accumulate" | "reduce"
+            | "partial_sum" | "copy_if" | "remove_copy_if" | "inclusive_scan" | "exclusive_scan"
+            | "transform_reduce" | "partition_copy") => &[3],
+        // unary `(first, last, out, f)` and binary `(first1, last1, first2, out, f)`
+        (true, "transform") => &[3, 4],
+        (true, "merge" | "set_union" | "set_intersection" | "set_difference" | "includes") => &[4, 5],
+        // `std::async(f)` and `std::async(std::launch::async, f)`; `std::invoke(f, ...)`.
+        (true, "async" | "invoke" | "invoke_r" | "bind" | "packaged_task") => &[0, 1],
         (true, "call_once") => &[1],
         _ => &[],
     }
@@ -573,6 +584,108 @@ impl FileFacts {
     }
 }
 
+/// Whether `text` is nothing but one identifier.
+fn is_plain_name(text: &str) -> bool {
+    let mut chars = text.chars();
+    chars.next().is_some_and(|c| c.is_alphabetic() || c == '_') && chars.all(|c| c.is_alphanumeric() || c == '_')
+}
+
+/// `a ## b` joined into `ab`.
+fn collapse_pastes(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(at) = rest.find("##") {
+        out.push_str(rest[..at].trim_end());
+        rest = rest[at + 2..].trim_start();
+    }
+    out.push_str(rest);
+    out
+}
+
+/// `text` with each whole identifier that is a key replaced by its value.
+fn replace_identifiers(text: &str, pairs: &[(String, String)]) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut word = String::new();
+    let flush = |word: &mut String, out: &mut String| {
+        if word.is_empty() {
+            return;
+        }
+        match pairs.iter().find(|(from, _)| from == word) {
+            Some((_, to)) => out.push_str(to),
+            None => out.push_str(word),
+        }
+        word.clear();
+    };
+    for c in text.chars() {
+        if c.is_alphanumeric() || c == '_' {
+            word.push(c);
+        } else {
+            flush(&mut word, &mut out);
+            out.push(c);
+        }
+    }
+    flush(&mut word, &mut out);
+    out
+}
+
+/// A `#define` of the project.
+#[derive(Clone, PartialEq)]
+pub struct MacroDef {
+    /// `None` for an object-like macro.
+    pub params: Option<Vec<String>>,
+    /// The last parameter is `...`.
+    pub variadic: bool,
+    /// The replacement text, with its line continuations joined.
+    pub body: String,
+}
+
+/// Every macro of the project by name: a name can be defined more than once, in
+/// the arms of an `#if`, and each distinct body is kept.
+pub type MacroTable = HashMap<String, Vec<MacroDef>>;
+
+/// Stage 1, too: the macros one file defines.
+pub fn declared_macros(root: TsNode<'_>, source: &[u8], table: &mut MacroTable) {
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        match node.kind() {
+            "preproc_def" | "preproc_function_def" => {
+                let Some(name) = node.child_by_field_name("name") else {
+                    continue;
+                };
+                let body = node
+                    .child_by_field_name("value")
+                    .map(|v| ts::text(v, source).into_owned())
+                    .unwrap_or_default()
+                    .replace("\\\r\n", " ")
+                    .replace("\\\n", " ");
+                let mut params = None;
+                let mut variadic = false;
+                if node.kind() == "preproc_function_def" {
+                    let mut names = Vec::new();
+                    if let Some(list) = node.child_by_field_name("parameters") {
+                        for child in ts::children(list) {
+                            match child.kind() {
+                                "identifier" => names.push(ts::text(child, source).into_owned()),
+                                "..." => variadic = true,
+                                _ => {}
+                            }
+                        }
+                    }
+                    params = Some(names);
+                }
+                let def = MacroDef { params, variadic, body: body.trim().to_string() };
+                let entry = table.entry(ts::text(name, source).into_owned()).or_default();
+                if !entry.contains(&def) {
+                    entry.push(def);
+                }
+            }
+            // A macro defined inside a function is rare; the bodies are not read.
+            "compound_statement" => {}
+            _ => stack.extend(ts::children(node)),
+        }
+    }
+}
+
 /// The scope names one file declares.
 #[derive(Default)]
 pub struct DeclaredScopes {
@@ -705,6 +818,9 @@ struct Reader<'a> {
     dialect: Dialect,
     file_rel: &'a str,
     records: &'a HashSet<String>,
+    macros: &'a MacroTable,
+    /// How many macro declarations deep this reader is.
+    macro_depth: usize,
     /// The qualified-name prefix, without the file component `qualify` adds for
     /// internal linkage.
     parts: Vec<String>,
@@ -719,12 +835,15 @@ pub fn read_file(
     dialect: Dialect,
     file_rel: &str,
     records: &HashSet<String>,
+    macros: &MacroTable,
 ) -> FileFacts {
     let mut reader = Reader {
         source,
         dialect,
         file_rel,
         records,
+        macros,
+        macro_depth: 0,
         parts: Vec::new(),
         frames: vec![Frame {
             parts: 0,
@@ -905,7 +1024,124 @@ impl<'a> Reader<'a> {
             "using_declaration" => self.on_using(node),
             "access_specifier" => self.on_access_specifier(node),
             "enumerator" => self.on_enumerator(node),
+            // `DEFINE_HANDLER(name)` at file scope, where the macro defines functions.
+            "expression_statement" => self.on_macro_declaration(node),
             _ => {}
+        }
+    }
+
+    /// A macro invoked where a declaration goes: what it expands to is declared
+    /// here, at the invocation, the way the compiler sees it.
+    ///
+    /// The body is read as a file of its own, with the arguments in place of the
+    /// parameters (and `##` joined), by a reader that starts in this scope; what
+    /// it finds is placed at the invocation, since that is the only place in the
+    /// file the declaration is written.
+    fn on_macro_declaration(&mut self, statement: TsNode<'_>) {
+        let Some(call) = ts::named_children(statement)
+            .into_iter()
+            .find(|c| c.kind() == "call_expression")
+        else {
+            return;
+        };
+        let Some(function) = call.child_by_field_name("function").filter(|f| f.kind() == "identifier") else {
+            return;
+        };
+        let args: Vec<TsNode<'_>> = call
+            .child_by_field_name("arguments")
+            .map(ts::named_children)
+            .unwrap_or_default();
+        self.expand_macro_declaration(function, &args, ts::span(call));
+    }
+
+    /// The same for a macro the grammar read as the type of the declaration after
+    /// it, which is what it does when the invocation has no `;`.
+    fn on_macro_type(&mut self, node: TsNode<'_>) {
+        let Some(specifier) = ts::child_of_type(node, "macro_type_specifier") else {
+            return;
+        };
+        let Some(function) = ts::child_of_type(specifier, "identifier") else {
+            return;
+        };
+        let args: Vec<TsNode<'_>> = ts::child_of_type(specifier, "type_descriptor")
+            .map(|d| vec![d])
+            .unwrap_or_default();
+        self.expand_macro_declaration(function, &args, ts::span(specifier));
+    }
+
+    fn expand_macro_declaration(&mut self, function: TsNode<'_>, args: &[TsNode<'_>], invocation: Span) {
+        if self.macro_depth > 3 {
+            return;
+        }
+        let macros = self.macros;
+        let Some(defs) = macros.get(&self.text(function)) else {
+            return;
+        };
+        let at = ts::span(function);
+        for def in defs {
+            let Some(params) = &def.params else {
+                continue;
+            };
+            if args.len() < params.len() || (!def.variadic && args.len() > params.len()) {
+                continue;
+            }
+            let mut pairs: Vec<(String, String)> = params
+                .iter()
+                .zip(args.iter())
+                .map(|(param, arg)| (param.clone(), self.text(*arg)))
+                .collect();
+            if def.variadic {
+                let rest: Vec<String> = args[params.len()..].iter().map(|a| self.text(*a)).collect();
+                pairs.push(("__VA_ARGS__".to_string(), rest.join(", ")));
+            }
+            let body = collapse_pastes(&replace_identifiers(&def.body, &pairs));
+            let bytes = body.as_bytes();
+            let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
+                continue;
+            };
+            if tree.root_node().has_error() {
+                continue;
+            }
+            let top = self.frames.last();
+            let mut sub = Reader {
+                source: bytes,
+                dialect: self.dialect,
+                file_rel: self.file_rel,
+                records: self.records,
+                macros,
+                macro_depth: self.macro_depth + 1,
+                parts: self.parts.clone(),
+                frames: vec![Frame {
+                    parts: 0,
+                    owner: top.map(|f| f.owner.clone()).unwrap_or(Owner::File),
+                    linkage: top.map(|f| f.linkage).unwrap_or(Linkage::External),
+                    access: top.map(|f| f.access).unwrap_or(""),
+                    member: top.is_some_and(|f| f.member),
+                }],
+                facts: FileFacts {
+                    file_rel: self.file_rel.to_string(),
+                    declarations: Vec::new(),
+                    occurrences: Vec::new(),
+                    includes: Vec::new(),
+                    namespace_aliases: Vec::new(),
+                },
+            };
+            sub.walk(tree.root_node());
+            for mut decl in sub.facts.declarations {
+                decl.span = invocation;
+                // The name is spelled by an argument, when one is that name.
+                decl.name_span = args
+                    .iter()
+                    .find(|arg| self.text(**arg) == decl.name)
+                    .map(|arg| ts::span(*arg))
+                    .unwrap_or(at);
+                decl.doc = None;
+                self.facts.declarations.push(decl);
+            }
+            for mut occurrence in sub.facts.occurrences {
+                occurrence.span = at;
+                self.facts.occurrences.push(occurrence);
+            }
         }
     }
 
@@ -1345,6 +1581,7 @@ impl<'a> Reader<'a> {
     }
 
     fn on_function_definition(&mut self, node: TsNode<'_>) {
+        self.on_macro_type(node);
         let Some(declarator) = node.child_by_field_name("declarator") else {
             return;
         };
@@ -1506,6 +1743,23 @@ impl<'a> Reader<'a> {
             if let Some(target) = target {
                 let site = CallSite { assigned_to: Some(self.text(left)), ..CallSite::default() };
                 self.push_site("alias", target, owner, site);
+            }
+        }
+        // `return g;`: calling the function yields `g`.
+        for node in &nodes {
+            if node.kind() != "return_statement" {
+                continue;
+            }
+            let Some(value) = ts::named_children(*node).into_iter().find(|c| c.kind() != "comment") else {
+                continue;
+            };
+            let target = match value.kind() {
+                "identifier" => Some(value),
+                "pointer_expression" => ts::named_children(value).first().copied().filter(|i| i.kind() == "identifier"),
+                _ => None,
+            };
+            if let Some(target) = target {
+                self.push_site("returned", target, owner, CallSite::default());
             }
         }
     }
@@ -2174,6 +2428,22 @@ impl<'a> Reader<'a> {
         for node in descendants(scope) {
             match node.kind() {
                 "call_expression" => {
+                    // `CALL(x)` where `CALL` is a macro of the project: what it expands to
+                    // is what is called, and the macro's own name is not a call.
+                    if let Some(function) = node.child_by_field_name("function")
+                        && function.kind() == "identifier"
+                        && let Some(defs) = self.macros.get(&self.text(function))
+                    {
+                        let arguments = node.child_by_field_name("arguments");
+                        let args: Vec<String> = arguments
+                            .map(|a| ts::named_children(a).into_iter().map(|n| self.text(n)).collect())
+                            .unwrap_or_default();
+                        let mut visiting = vec![self.text(function)];
+                        for def in defs {
+                            self.expand_macro(def, &args, ts::span(function), owner, context, &mut visiting, 0);
+                        }
+                        continue;
+                    }
                     // `f(1)` on an object calls its `operator()`.
                     if let Some(function) = node.child_by_field_name("function")
                         && function.kind() == "identifier"
@@ -2192,6 +2462,14 @@ impl<'a> Reader<'a> {
                             site,
                             name: "operator()".to_string(),
                         });
+                    }
+                    // `pick()(1)`: a call of whatever `pick` returns.
+                    if let Some(function) = node.child_by_field_name("function")
+                        && function.kind() == "call_expression"
+                        && let Some(inner) = function.child_by_field_name("function")
+                        && let Some(named) = self.called_name(inner)
+                    {
+                        self.push_site("result_call", named, owner, CallSite::default());
                     }
                     if let Some(function) = node.child_by_field_name("function")
                         && let Some(named) = self.called_name(function)
@@ -2354,6 +2632,31 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// `T x(a, b);` is read as a function declaration when every argument is a
+    /// bare name. When none of those names is a class of the project - a type
+    /// would make it a declaration - they are the arguments of a construction.
+    fn vexing_arguments<'t>(&self, declarator: TsNode<'t>) -> Option<Vec<TsNode<'t>>> {
+        if declarator.kind() != "function_declarator" {
+            return None;
+        }
+        let list = declarator.child_by_field_name("parameters")?;
+        let mut names = Vec::new();
+        for parameter in ts::named_children(list) {
+            if parameter.kind() != "parameter_declaration" {
+                return None;
+            }
+            let parts = ts::named_children(parameter);
+            let [only] = parts.as_slice() else {
+                return None;
+            };
+            if only.kind() != "type_identifier" || self.records.contains(&self.text(*only)) {
+                return None;
+            }
+            names.push(*only);
+        }
+        (!names.is_empty()).then_some(names)
+    }
+
     /// The constructions a local declaration spells.
     fn constructions(&mut self, declaration: TsNode<'_>, owner: &Owner, context: &BodyContext) {
         // C has no constructors: `struct s x;` declares an object and calls nothing.
@@ -2363,6 +2666,34 @@ impl<'a> Reader<'a> {
         let Some(type_node) = declaration.child_by_field_name("type") else {
             return;
         };
+        // `std::thread t(worker);` runs the function it is given.
+        if matches!(
+            self.text(type_node).trim_start_matches("::"),
+            "std::thread" | "std::jthread" | "thread" | "jthread"
+        ) {
+            let mut cursor = declaration.walk();
+            let declarators: Vec<TsNode<'_>> =
+                declaration.children_by_field_name("declarator", &mut cursor).collect();
+            for declarator in declarators {
+                let first = match self.vexing_arguments(declarator) {
+                    Some(names) => names.first().copied(),
+                    None => declarator
+                        .child_by_field_name("value")
+                        .filter(|v| matches!(v.kind(), "argument_list" | "initializer_list"))
+                        .and_then(|arguments| ts::named_children(arguments).first().copied())
+                        .filter(|first| first.kind() == "identifier"),
+                };
+                if let Some(first) = first {
+                    let site = CallSite {
+                        class_scope: context.class_scope.clone(),
+                        speculative: true,
+                        ..CallSite::default()
+                    };
+                    self.push_site("call", first, owner, site);
+                }
+            }
+            return;
+        }
         if self.type_key(type_node).is_none() {
             return;
         }
@@ -2375,13 +2706,34 @@ impl<'a> Reader<'a> {
         for declarator in declarators {
             // The arguments of the construction, when the declaration has them;
             // `T x = expr;` copies, and `expr` is a call of its own.
+            let mut constructs = true;
+            let mut vexing: Option<Vec<String>> = None;
             let arguments = match declarator.kind() {
                 "identifier" => None,
+                // `T x(a);` the grammar read as a function declaration.
+                "function_declarator" => match self.vexing_arguments(declarator) {
+                    Some(names) => {
+                        vexing = Some(
+                            names
+                                .iter()
+                                .map(|n| context.locals.get(&self.text(*n)).cloned().unwrap_or_else(|| "?".to_string()))
+                                .collect(),
+                        );
+                        None
+                    }
+                    None => continue,
+                },
                 "init_declarator" => {
                     let inner = declarator.child_by_field_name("declarator");
                     let value = declarator.child_by_field_name("value");
                     match (inner.map(|i| i.kind()), value) {
                         (Some("identifier"), Some(v)) if matches!(v.kind(), "argument_list" | "initializer_list") => Some(v),
+                        // `T x = expr;` copies: the constructor is not named, but the
+                        // object is still destroyed.
+                        (Some("identifier"), Some(_)) => {
+                            constructs = false;
+                            None
+                        }
                         _ => continue,
                     }
                 }
@@ -2398,7 +2750,158 @@ impl<'a> Reader<'a> {
                 site.arity = Some(ts::named_children(arguments).len());
                 site.arg_kinds = self.argument_kinds(arguments, context);
             }
-            self.push_site("call", named, owner, site);
+            if let Some(kinds) = vexing {
+                site.arity = Some(kinds.len());
+                site.arg_kinds = kinds;
+            }
+            if constructs {
+                self.push_site("call", named, owner, site);
+            }
+            // The object is destroyed when its scope ends: a call of the destructor
+            // when the class declares one, and nothing when it does not.
+            let variable = match declarator.kind() {
+                "identifier" => Some(declarator),
+                _ => declarator.child_by_field_name("declarator"),
+            };
+            if let Some(variable) = variable
+                && let Some(class) = self.type_key(type_node)
+            {
+                let bare = class.rsplit("::").next().unwrap_or(&class).to_string();
+                let destructor = CallSite {
+                    class_scope: context.class_scope.clone(),
+                    receiver_type: Some(class.clone()),
+                    receiver_name: Some(self.text(variable)),
+                    arity: Some(0),
+                    speculative: true,
+                    ..CallSite::default()
+                };
+                self.facts.occurrences.push(FoundOccurrence {
+                    role: "call",
+                    span: ts::span(variable),
+                    owner: owner.clone(),
+                    site: destructor,
+                    name: format!("~{bare}"),
+                });
+            }
+        }
+    }
+
+    /// What a macro invocation calls: the macro's body with the arguments in
+    /// place of the parameters, read as C and walked for calls.
+    ///
+    /// The calls are recorded at the invocation, since that is where the program
+    /// says them. A parameter called as a function (`#define APPLY(f, x) f(x)`)
+    /// is the argument, when that is a plain name. `##` makes a name this cannot
+    /// know, so such a macro is not expanded; neither is a body that does not
+    /// parse on its own.
+    #[allow(clippy::too_many_arguments)]
+    fn expand_macro(
+        &mut self,
+        def: &MacroDef,
+        args: &[String],
+        at: Span,
+        owner: &Owner,
+        context: &BodyContext,
+        visiting: &mut Vec<String>,
+        depth: usize,
+    ) {
+        if depth > 4 {
+            return;
+        }
+        // `##` makes a name out of the text of the arguments, which only the text
+        // itself can say: the parameters are replaced by what was passed, and
+        // the tokens are joined. (A call written in an argument is then seen twice.)
+        let pasting = def.body.contains("##");
+        let mut body = def.body.clone();
+        let mut bound: Vec<(String, String)> = Vec::new();
+        match &def.params {
+            Some(params) => {
+                if args.len() < params.len() || (!def.variadic && args.len() > params.len()) {
+                    return;
+                }
+                for (index, param) in params.iter().enumerate() {
+                    let to = if pasting { args[index].clone() } else { format!("__cx_p{index}") };
+                    bound.push((param.clone(), to));
+                }
+                if def.variadic {
+                    let rest = if pasting { args[params.len()..].join(", ") } else { "__cx_va".to_string() };
+                    bound.push(("__VA_ARGS__".to_string(), rest));
+                }
+                body = replace_identifiers(&body, &bound);
+                if pasting {
+                    body = collapse_pastes(&body);
+                }
+            }
+            // `#define HANDLER on_event` called as `HANDLER(x)`.
+            None => {
+                let placeholders: Vec<String> = (0..args.len()).map(|i| format!("__cx_p{i}")).collect();
+                body = format!("{body}({})", placeholders.join(", "));
+            }
+        }
+        let texts: Vec<&String> = args.iter().collect();
+        let unbind = |text: &str| -> String {
+            let mut out = text.to_string();
+            for (index, actual) in texts.iter().enumerate() {
+                out = replace_identifiers(&out, &[(format!("__cx_p{index}"), (*actual).clone())]);
+            }
+            out
+        };
+        let wrapped = format!("void __callix_macro(void) {{ {body} ; }}");
+        let bytes = wrapped.as_bytes();
+        let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
+            return;
+        };
+        if tree.root_node().has_error() {
+            return;
+        }
+        for node in descendants(tree.root_node()) {
+            if node.kind() != "call_expression" {
+                continue;
+            }
+            let Some(function) = node.child_by_field_name("function").filter(|f| f.kind() == "identifier") else {
+                continue;
+            };
+            let callee = ts::text(function, bytes).into_owned();
+            let inner: Vec<String> = node
+                .child_by_field_name("arguments")
+                .map(|a| ts::named_children(a).into_iter().map(|n| ts::text(n, bytes).into_owned()).collect())
+                .unwrap_or_default();
+            // A parameter called as a function: the argument names it.
+            let name = if let Some(index) = callee.strip_prefix("__cx_p").and_then(|i| i.parse::<usize>().ok()) {
+                match args.get(index) {
+                    Some(actual) if is_plain_name(actual) => actual.clone(),
+                    _ => continue,
+                }
+            } else {
+                callee
+            };
+            // A macro within a macro.
+            // (a macro is not expanded again inside its own expansion: that name is
+            // the function it wraps)
+            if !visiting.contains(&name)
+                && let Some(defs) = self.macros.get(&name)
+            {
+                let nested: Vec<String> = inner.iter().map(|text| unbind(text)).collect();
+                visiting.push(name.clone());
+                for def in defs {
+                    self.expand_macro(def, &nested, at, owner, context, visiting, depth + 1);
+                }
+                visiting.pop();
+                continue;
+            }
+            let site = CallSite {
+                class_scope: context.class_scope.clone(),
+                arity: Some(inner.len()),
+                arg_kinds: vec!["?".to_string(); inner.len()],
+                ..CallSite::default()
+            };
+            self.facts.occurrences.push(FoundOccurrence {
+                role: "call",
+                span: at,
+                owner: owner.clone(),
+                site,
+                name,
+            });
         }
     }
 

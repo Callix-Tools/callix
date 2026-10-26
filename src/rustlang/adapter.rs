@@ -272,6 +272,12 @@ fn build_crate_structure(
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
     let mut internal_imports: Vec<(String, String, String, String)> = Vec::new();
 
+    let mut project_macros: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for file in files {
+        if let Ok(source) = std::fs::read(file) {
+            project_macros.extend(super::defined_macros(&source));
+        }
+    }
     for file in files {
         let module = module_qname(file, crate_root, &project);
         let module_id = ensure_module(py, graph, &project, &module, &project_id, &mut modules)?;
@@ -281,7 +287,13 @@ fn build_crate_structure(
         let Ok(source) = std::fs::read(file) else {
             continue;
         };
-        let tree = super::parse_tree(&source)?;
+        let mut tree = super::parse_tree(&source)?;
+        // The calls in a macro's arguments are read as the expressions they are.
+        let mut source = source;
+        if let Some(blanked) = super::blank_std_macros(&source, &tree, &project_macros) {
+            source = blanked;
+            tree = super::parse_tree(&source)?;
+        }
 
         let mut extractor = RustExtractor::new(
             py,
@@ -544,7 +556,37 @@ fn resolve_pass(
     metrics.seconds = started.elapsed().as_secs_f64();
 
     let mut flow = Flow::default();
+    // The functions of the project by bare name, for a callee a macro's body wrote:
+    // the resolver is asked about places in files, and the body's tokens are not one.
+    let mut by_name: HashMap<String, Vec<String>> = HashMap::new();
+    for (id, node) in graph.node_map().iter() {
+        let node = node.get();
+        if matches!(node.kind, NodeKind::Function | NodeKind::Method) {
+            by_name.entry(node.name.clone()).or_default().push(id.clone());
+        }
+    }
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
+        if let Some(name) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("name:")) {
+            if let Some([only]) = by_name.get(name).map(Vec::as_slice) {
+                metrics.resolved += 1;
+                metrics.internal += 1;
+                flow.call(path, occurrence, Some(only));
+                let metadata = PyDict::new(py);
+                metadata.set_item("span", occurrence.span)?;
+                metadata.set_item(resolution::KEY, Resolution::Name.as_str())?;
+                metadata.set_item("via", "macro body")?;
+                graph.push_relation(Py::new(
+                    py,
+                    Relation {
+                        source_id: occurrence.enclosing_id.clone(),
+                        target_id: only.clone(),
+                        kind: RelationKind::Calls,
+                        metadata: metadata.unbind(),
+                    },
+                )?);
+            }
+            continue;
+        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
@@ -553,7 +595,7 @@ fn resolve_pass(
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
-            None if is_alias => RelationKind::References,
+            None if is_alias || occurrence.role == "callarg" => RelationKind::References,
             None => continue,
         };
 
@@ -565,6 +607,23 @@ fn resolve_pass(
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
+        // `iter.map(f)`: the library calls what it is given, unless the callee is a
+        // function of the project; the flow pass knows which.
+        if occurrence.role == "callarg" {
+            if let Some(held) = target_id.as_deref()
+                && matches!(
+                    graph.node_kind(held),
+                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                )
+                && let Some((line, col)) = occurrence.detail.as_deref().and_then(|d| {
+                    let mut parts = d.strip_prefix("c:")?.split(':');
+                    Some((parts.next()?.parse::<u32>().ok()?, parts.next()?.parse::<u32>().ok()?))
+                })
+            {
+                flow.library_callback(&occurrence.enclosing_id, path, line, col, held, occurrence.span);
+            }
+            continue;
+        }
         // What a call points at, and what a variable or a parameter holds, is
         // what the flow pass follows. An `alias` is not an edge of its own.
         if is_alias {

@@ -1,0 +1,1 @@
+{"main.php": ["App\\build"], "App\\build": ["App\\Made\\__construct"], "App\\Made\\__construct": []}

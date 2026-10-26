@@ -55,7 +55,9 @@ use super::detector::{
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
 use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
-use super::visitor::{CFamilyEmitter, FileFacts, FoundOccurrence, Owner, declared_scopes, read_file};
+use super::visitor::{
+    CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes, read_file,
+};
 use super::{Dialect, parse_tree};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
@@ -239,6 +241,7 @@ fn build_root(
     // Pass 1 — the scope names of every file, before anything is read in
     // earnest. `records` is what tells `Engine::ping` from `fixture::ping`.
     let mut records: HashSet<String> = HashSet::new();
+    let mut macros = MacroTable::new();
     let mut sources: Vec<(PathBuf, String, Vec<u8>)> = Vec::new();
     for file in files {
         let Some(source) = owned_source(dialect, file)? else {
@@ -246,6 +249,7 @@ fn build_root(
         };
         let tree = parse_tree(&source, dialect)?;
         let scopes = declared_scopes(tree.root_node(), &source);
+        declared_macros(tree.root_node(), &source, &mut macros);
         // Only `records` is wanted: it is what classifies `X::y` as a method
         // rather than a namespaced function. `scopes.namespaces` is dropped
         // because MODULE is the directory here; see below.
@@ -260,7 +264,7 @@ fn build_root(
     let mut read: Vec<(String, String, FileFacts, Vec<u8>)> = Vec::with_capacity(sources.len());
     for (file, file_rel, source) in &sources {
         let tree = parse_tree(source, dialect)?;
-        let facts = read_file(tree.root_node(), source, dialect, file_rel, &records);
+        let facts = read_file(tree.root_node(), source, dialect, file_rel, &records, &macros);
         facts.survey(&mut ledger);
         read.push((
             file_rel.clone(),
@@ -492,6 +496,23 @@ fn resolve_with_table(
                         && graph.has_node(&target)
                     {
                         flow.alias(&holder, &target);
+                    }
+                }
+                continue;
+            }
+            // `return g;` and `pick()(x)`: what a function returns, and a call of it.
+            if matches!(occurrence.role, "returned" | "result_call") {
+                if let Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) =
+                    index.lookup(&occurrence.name, &file.file_rel)
+                {
+                    let target = node_id(project, &qualified_name, kind.as_str());
+                    let owner = enclosing_id(project, file, &occurrence.owner);
+                    if graph.has_node(&target) && graph.has_node(&owner) {
+                        if occurrence.role == "returned" {
+                            flow.returned(&owner, &target);
+                        } else {
+                            flow.result_call(&owner, &target, occurrence.span, &file.file_rel);
+                        }
                     }
                 }
                 continue;

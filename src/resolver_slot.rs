@@ -85,6 +85,12 @@ impl<N> ResolverSlot<N> {
         matches!(self, Self::Disabled)
     }
 
+    /// Whether the backend is the one that ships with callix, which can be asked
+    /// about positions that are only guesses without anyone seeing the question.
+    pub(crate) fn is_native(&self) -> bool {
+        matches!(self, Self::Native(_))
+    }
+
     /// The `__repr__` name for this slot; `native` names the built-in backend.
     pub(crate) fn label(&self, native: &'static str) -> &'static str {
         match self {

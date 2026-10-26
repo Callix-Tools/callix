@@ -149,6 +149,13 @@ impl Graph {
         self.nodes.entry(id).or_insert(node);
     }
 
+    /// Drops the relations `keep` rejects, in order.
+    pub(crate) fn retain_relations(&mut self, mut keep: impl FnMut(&Relation) -> bool) {
+        self.relations.retain(|r| keep(r.get()));
+        self.out_index = None;
+        self.in_index = None;
+    }
+
     pub(crate) fn push_relation(&mut self, relation: Py<Relation>) {
         self.relations.push(relation);
         self.out_index = None;

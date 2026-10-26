@@ -203,38 +203,48 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "ty (embedded), by types",
             "calls through a name or an attribute whose type is known; a function carried in a \
              container, an argument or a return value is followed by a flow pass and marked `flow`; \
-             `getattr`, `**kwargs` forwarding and a polymorphic receiver are not followed",
+             decorators, receivers, keyed containers and the library's own callbacks (`map`, \
+             `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
+             `getattr` and `eval` are not followed",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
             "calls through a name or a member whose type is known; function values are followed by \
-             a flow pass and marked `flow`; `any`, dynamic `import()` and string-keyed lookups are \
+             a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
+             closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
              not followed",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
             "static calls and concrete methods; a function value is followed by a flow pass and \
-             marked `flow`; a call through an interface lands on the interface's method, never on \
-             an implementation",
+             marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
+             standard-library callbacks); a call through an interface lands on the interface's \
+             method, never on an implementation",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
             "static calls and concrete methods; a function value is followed by a flow pass and \
-             marked `flow`; a call through a trait lands on the trait's method, not on an impl",
+             marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
+             the calls in macro arguments are found and a `macro_rules!` of the same file is \
+             expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
+             calls (`Drop`, operators, `for` over an iterator) are not edges",
         ),
         "php" => (
             "symbol table, by names",
             "approximate: no type inference, so a method is found by the declared type of its \
-             receiver (or a `new` assigned to it) when there is one and otherwise by name; a \
-             callable named by a string or an array is followed only inside a built-in that calls it",
+             receiver (or a `new` assigned to it) when there is one and otherwise by name; an \
+             undeclared method goes to `__call` when the class declares it; a callable named by \
+             a string, an array or `g(...)` is followed to the parameter, local or property that \
+             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it",
         ),
         "c" | "cpp" => (
             "symbol table, by names",
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); macros are not expanded, and a callback \
-             handed to a library function is followed only for a closed list of them",
+             the name (such edges say `ambiguous`); macros of the project are expanded where they \
+             are invoked, conditionals are not evaluated, and a callback handed to a library \
+             function is followed only for a closed list of them",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

@@ -1,0 +1,1 @@
+{"main.php": ["App\\dispatch", "App\\Handler\\__construct"], "App\\dispatch": ["App\\Handler\\handle"], "App\\Handler\\handle": []}

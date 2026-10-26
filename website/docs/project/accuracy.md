@@ -13,12 +13,12 @@ found. This page is what those two things amount to.
 
 | Language | Backend | How a call is found | What it does not follow |
 |---|---|---|---|
-| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr`, `**kwargs` forwarding and monkey-patching are not followed at all. Polymorphic receivers resolve to the declared class, not to each subclass. |
-| TypeScript | typescript-go, linked in | by types | Destructured function values, calls through `any`, dynamic `import()` and string-keyed lookups. A callback handed to a library function is not assumed to be called. |
-| Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
-| Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
-| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces | A method called on a variable with no declared type has no edge. A callable named by a string or an array is followed only when it is handed to a built-in that calls it (`array_map`, `usort`, `call_user_func`, …). |
-| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, macros, the preprocessor. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
+| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr` and monkey-patching are not followed at all. A receiver whose class ty knows resolves to the declared class, not to each subclass. |
+| TypeScript | typescript-go, linked in | by types | Calls through `any`, dynamic `import()` and computed keys. Destructuring, literal keys and indexes, `bind`/`call`/`apply`, a property a constructor assigns, an object handed to a destructured parameter and a closed list of library callbacks (`map`, `forEach`, `then`, `setTimeout`, `addEventListener`, …) are followed by the flow pass; nested patterns are not read. |
+| Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a slice, a range loop, a channel or a variadic parameter is followed by the flow pass, and a closed list of standard-library callbacks (`sort.Slice`, `strings.Map`, `sync.Once.Do`, …) is a call. |
+| Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Implicit calls (`Drop::drop`, an operator's trait method, `Iterator::next` in a `for`) are not edges. The calls in a macro's arguments are found; a `macro_rules!` of the same file is expanded; a macro from another file, a procedural macro and macro-generated items are not. |
+| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces; an undeclared method of a class that declares `__call` (or `__callStatic`) is a call of that | A method called on a variable with no declared type has no edge. A callable written out (a string, `'A::m'`, `[$o, 'm']`, `g(...)`) is followed to the parameter it is handed to and to the locals and properties that hold it, and is a call where that parameter, local or property is called, by the flow pass; `$m` and `$class` are followed only while nothing else is assigned to them. |
+| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, the preprocessor's conditionals. A macro of the project is expanded (its body with the arguments in place, `##` joined), at the invocation. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
 
 "Resolved" never means "correct". `resolver_status: ok` means the backend came
 up; `degraded` means the backend is a table of names, not a type checker.
@@ -61,7 +61,14 @@ container literals and `table[key]`, the names a function returns, the result
 of a call that is called, a call's result handed on as an argument, a call made
 through a parameter that holds a function (its own arguments reach that
 function's parameters), and the iteration protocol: `for x in it` calls
-`__iter__` and `__next__` of the class `it` is shown to hold an instance of. It over-approximates where a call graph usually does,
+`__iter__` and `__next__` of the class `it` is shown to hold an instance of.
+Beyond that it follows a decorator (a decorated name stands for what the decorator
+returns, applied from the bottom up), a method called on a receiver (found on the
+classes the receiver holds an instance of, and on what they inherit), keyed
+containers (`d["a"]` and `l[1]` give back what was stored under that key,
+including through `append`, `update` and item assignment), unpacking, parameter
+defaults, and a closed list of library functions that call an argument (`map`,
+`filter`, `sorted(key=)`, `functools.reduce`, `itertools.starmap`, …). It over-approximates where a call graph usually does,
 and the label says so. It follows nothing it cannot resolve to a node of the
 project.
 
@@ -80,13 +87,13 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 93 | 107 | 0.88 | 0.97 |
-| TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
-| Go | 48 | 47 | 48 | 0.99 | 1.00 |
-| Rust | 43 | 42 | 43 | 0.98 | 1.00 |
-| PHP | 42 | 41 | 42 | 0.98 | 1.00 |
-| C++ | 41 | 41 | 41 | 1.00 | 1.00 |
-| C | 27 | 26 | 27 | 0.98 | 1.00 |
+| Python (PyCG) | 112 | 112 | 112 | 1.00 | 1.00 |
+| TypeScript | 65 | 65 | 65 | 1.00 | 1.00 |
+| Go | 58 | 58 | 58 | 1.00 | 1.00 |
+| Rust | 57 | 57 | 57 | 1.00 | 1.00 |
+| PHP | 62 | 62 | 61 | 1.00 | 0.99 |
+| C++ | 50 | 50 | 50 | 1.00 | 1.00 |
+| C | 40 | 40 | 40 | 1.00 | 1.00 |
 
 How to read them:
 
@@ -98,12 +105,23 @@ How to read them:
   on whether a call that stopped at a variable counts as wrong. PyCG's own paper
   reports 70 % recall and 99 % precision over *all* edges, library calls included,
   so the two are not the same measure and are not a comparison.
+- **The Python row is scored against a corrected expectation in one case.** In
+  PyCG's `decorators/nested_decorators`, `func` is decorated twice and then called
+  from the module, and the vendored ground truth lists the module as calling the
+  undecorated `main.func` as well. Python rebinds the name, so the call reaches
+  `dec1.inner`, which reaches `dec2.inner`, which reaches `func`; the module never
+  calls `func` itself. The vendored file is untouched, the correction is in
+  `suites/python/pycg/corrections.json` with that reason, and the run prints it.
+  Against the unmodified ground truth the row is 111 of 112 sound. A suite this
+  small is also one a resolver can be fitted to: that is why the numbers are
+  kept next to the rule that no case's expectation is bent to match the tool.
 - The suites for Go, Rust, TypeScript, PHP, C and C++ were written *after* looking
   at what the resolvers did badly, so they cover the features that had been
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
-  nothing. The honest cost of that is recall: for Python, the 49 calls that stop
-  at a variable, and the function values no pass follows, are the 12 % missing.
+  nothing. The honest cost of that is recall, which on Python's micro-benchmark
+  is now complete; on real code the calls that stop at a variable are what is
+  missing.
 - A callee outside the program has no name in the graph, so it is scored apart
   and leniently, and is not in these numbers.
 
@@ -117,20 +135,31 @@ The `idioms/` directory of each language holds the ways code is commonly written
 that a first pass did not cover. The cases that still fail are kept, with their
 expected edge, so that the number does not flatter:
 
-- **C++**: macros, and a `delete` through a base pointer, which lands on the base's
-  destructor because only the declared type is known.
-- **PHP**: a callable named by a string or an array is a call only when it is handed to one of
-  a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
-  Handed to a function of the project that calls its own parameter, it is not followed.
-- **Python**: a function
-  fetched from a container by an index the pass cannot tell apart from another,
-  a polymorphic receiver (it lands on the declared class, not each subclass),
-  `super(Cls, self)`.
+- **C++**: a `delete` through a base pointer lands on the base's destructor, because
+  only the declared type is known. An implicit copy or move constructor is not an
+  edge: whether a by-value argument copies depends on the callee's signature and on
+  elision, and the table does not look past the callee's name.
+- **PHP**: a flow-insensitive pass. A parameter reassigned before it is called holds
+  both what the caller passed and what was assigned, and `php/micro` keeps that case
+  (`parameter_shadowed_by_local`) failing so the limit stays visible. `$m` and
+  `$class` are followed only while a variable has one assignment, and a callable in a
+  property is followed only through `$this->name` of the declaring class. Magic
+  methods are taken as the callee only when no class in the hierarchy has a base
+  outside the project, since that base may declare the method.
+- **Python**: the micro-benchmark has no failing case left, which says the features
+  it isolates are handled and nothing about code that does not look like them. Known
+  limits: the pass is flow- and context-insensitive, so a name reassigned between
+  two calls holds both values; a library function that calls an argument is followed
+  only for the closed list above, and only where the callee is not a function of the
+  project (a project function named `map` is left alone); `getattr` and `eval` are
+  not followed.
 - **C and C++**: a callback handed to a library function is a call only for a closed
   list of them (`qsort`, `bsearch`, `signal`, `pthread_create`, `std::sort`,
-  `std::for_each`, …); handed to any other function it is a reference, because whether
-  that function calls it is unknowable from the program. A function-like macro is not
-  expanded.
+  `std::transform`, `std::thread`, …); handed to any other function it is a reference,
+  because whether that function calls it is unknowable from the program. A macro of the
+  project is expanded where it is invoked; a macro from a system header is not, and a
+  macro whose body is not valid C on its own (an unbalanced brace) is skipped. Every arm
+  of an `#if` is expanded, so two definitions of one macro are both followed.
 
 ### The floor
 

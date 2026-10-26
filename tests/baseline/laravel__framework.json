@@ -14396,17 +14396,17 @@
   "ref": "v13.23.0",
   "resolution": {
     "metrics": {
-      "external": 81068,
-      "internal": 117673,
-      "queries": 284145,
-      "resolved": 198741,
-      "unresolved": 85404
+      "external": 74709,
+      "internal": 125336,
+      "queries": 286269,
+      "resolved": 200045,
+      "unresolved": 86170
     },
     "relations": {
-      "calls": 128855,
+      "calls": 128784,
       "consumes": 962,
       "contains": 3369,
-      "declares": 74174,
+      "declares": 74267,
       "depends_on": 100,
       "exposes": 213,
       "has_type": 6539,

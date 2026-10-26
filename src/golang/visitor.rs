@@ -254,6 +254,11 @@ impl<'a> GoExtractor<'a> {
                     if let Some(name) = plain_name(argument) {
                         let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
                         self.add_occurrence_with("read", name, enclosing_id, Some(detail));
+                        // `sort.Slice(x, less)`: the library calls what it is given.
+                        if calls_its_arguments(&self.text(function)) {
+                            let detail = format!("c:{}:{}", site.start_line, site.start_col);
+                            self.add_occurrence_with("callarg", name, enclosing_id, Some(detail));
+                        }
                     }
                 }
             }
@@ -360,7 +365,8 @@ impl<'a> GoExtractor<'a> {
             return Ok(());
         };
         for declaration in ts::children(parameters) {
-            if declaration.kind() != "parameter_declaration" {
+            let variadic = declaration.kind() == "variadic_parameter_declaration";
+            if declaration.kind() != "parameter_declaration" && !variadic {
                 continue;
             }
             let type_node = declaration.child_by_field_name("type");
@@ -376,6 +382,7 @@ impl<'a> GoExtractor<'a> {
                 let metadata = PyDict::new(self.py);
                 metadata.set_item("annotation", type_node.map(|n| self.text(n)))?;
                 metadata.set_item("name_span", ts::span(name_node))?;
+                metadata.set_item("is_variadic", variadic)?;
 
                 let qname = format!("{callable_qname}.{name}");
                 let id = node_id(self.project_name, &qname, NodeKind::Parameter.as_str());
@@ -447,11 +454,46 @@ impl<'a> GoExtractor<'a> {
             }
         }
 
+        // A local that is only a container the called one is read from - ranged
+        // over, received from, indexed - holds the functions too.
+        let mut relevant = called.clone();
+        for _ in 0..3 {
+            for node in &nodes {
+                let (lefts, rights): (Vec<TsNode<'_>>, Vec<TsNode<'_>>) = match node.kind() {
+                    "short_var_declaration" | "assignment_statement" => (
+                        node.child_by_field_name("left").map(|l| ts::named_children(l)).unwrap_or_default(),
+                        node.child_by_field_name("right").map(|r| ts::named_children(r)).unwrap_or_default(),
+                    ),
+                    "range_clause" => (
+                        node.child_by_field_name("left").map(|l| ts::named_children(l)).unwrap_or_default(),
+                        node.child_by_field_name("right").into_iter().collect(),
+                    ),
+                    _ => continue,
+                };
+                if !lefts.iter().any(|l| relevant.contains(&self.text(*l))) {
+                    continue;
+                }
+                for right in rights {
+                    let source = match right.kind() {
+                        "identifier" => Some(right),
+                        "index_expression" | "unary_expression" => {
+                            right.child_by_field_name("operand").filter(|o| o.kind() == "identifier")
+                        }
+                        _ => None,
+                    };
+                    if let Some(source) = source {
+                        relevant.insert(self.text(source));
+                    }
+                }
+            }
+        }
+        let called = relevant;
+
         // Declarations first, so an assignment above a declaration still finds it.
         let mut locals: HashMap<String, String> = HashMap::new();
         for node in &nodes {
             let names: Vec<TsNode<'_>> = match node.kind() {
-                "short_var_declaration" => node
+                "short_var_declaration" | "range_clause" => node
                     .child_by_field_name("left")
                     .map(|left| ts::named_children(left))
                     .unwrap_or_default(),
@@ -515,6 +557,28 @@ impl<'a> GoExtractor<'a> {
                             continue;
                         };
                         self.record_aliases(right, &var_id, 0);
+                    }
+                }
+                // `for _, f := range fns`: the loop variable holds what the container holds.
+                "range_clause" => {
+                    let (Some(left), Some(right)) = (node.child_by_field_name("left"), node.child_by_field_name("right"))
+                    else {
+                        continue;
+                    };
+                    for variable in ts::named_children(left) {
+                        if let Some(var_id) = locals.get(&self.text(variable)).cloned() {
+                            self.record_aliases(right, &var_id, 0);
+                        }
+                    }
+                }
+                // `ch <- f`: the channel holds `f`.
+                "send_statement" => {
+                    let (Some(channel), Some(value)) = (node.child_by_field_name("channel"), node.child_by_field_name("value"))
+                    else {
+                        continue;
+                    };
+                    if let Some(var_id) = locals.get(&self.text(channel)).cloned() {
+                        self.record_aliases(value, &var_id, 0);
                     }
                 }
                 "return_statement" => {
@@ -878,4 +942,30 @@ pub fn classify_import(
         }
     }
     "unknown"
+}
+
+/// Standard-library functions and methods that call a function they are given,
+/// by the callee as written (`sort.Slice`, `once.Do`). The list is closed on
+/// purpose: a function handed to anything else is a reference, since whether the
+/// callee calls it cannot be known from the program. It applies only where the
+/// callee is not a function of the project.
+fn calls_its_arguments(callee: &str) -> bool {
+    const FUNCTIONS: [&str; 33] = [
+        "sort.Slice", "sort.SliceStable", "sort.SliceIsSorted", "sort.Search", "slices.SortFunc",
+        "slices.SortStableFunc", "slices.IndexFunc", "slices.ContainsFunc", "slices.DeleteFunc",
+        "slices.BinarySearchFunc", "slices.MaxFunc", "slices.MinFunc", "slices.EqualFunc",
+        "slices.IsSortedFunc", "maps.DeleteFunc", "strings.Map", "strings.FieldsFunc",
+        "strings.IndexFunc", "strings.LastIndexFunc", "strings.TrimFunc", "strings.TrimLeftFunc",
+        "strings.TrimRightFunc", "bytes.Map", "bytes.FieldsFunc", "bytes.IndexFunc",
+        "http.HandleFunc", "time.AfterFunc", "filepath.Walk", "filepath.WalkDir", "sync.OnceFunc",
+        "sync.OnceValue", "context.AfterFunc", "runtime.SetFinalizer",
+    ];
+    if FUNCTIONS.contains(&callee) {
+        return true;
+    }
+    // Methods, by name, whatever the receiver: `once.Do(f)`, `g.Go(f)`, `t.Run(name, f)`,
+    // `mux.HandleFunc(path, f)`.
+    callee
+        .rsplit_once('.')
+        .is_some_and(|(_, name)| matches!(name, "Do" | "Go" | "Run" | "AfterFunc" | "HandleFunc"))
 }

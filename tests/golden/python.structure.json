@@ -387,6 +387,16 @@
       "id": "6e3ff566f2180332",
       "kind": "attribute",
       "metadata": {
+        "declared_at": [
+          {
+            "__span__": [
+              22,
+              9,
+              22,
+              10
+            ]
+          }
+        ],
         "is_constant": false,
         "name_span": {
           "__span__": [

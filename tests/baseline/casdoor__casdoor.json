@@ -116,9 +116,9 @@
       "relations": 111
     },
     "controllers/base.go": {
-      "hash": "643dc2bfc991950a",
-      "nodes": 48,
-      "relations": 64
+      "hash": "29e58d17f113a579",
+      "nodes": 49,
+      "relations": 65
     },
     "controllers/cas.go": {
       "hash": "6bff59ed0bc5ec83",
@@ -176,9 +176,9 @@
       "relations": 21
     },
     "controllers/entry_util.go": {
-      "hash": "e10b7d10878ff995",
-      "nodes": 20,
-      "relations": 33
+      "hash": "63c494dc1aa89fd3",
+      "nodes": 21,
+      "relations": 34
     },
     "controllers/face.go": {
       "hash": "5991d17de048b4ff",
@@ -426,9 +426,9 @@
       "relations": 25
     },
     "controllers/util.go": {
-      "hash": "16a55ba657619f5c",
-      "nodes": 35,
-      "relations": 48
+      "hash": "f4b21eddf42b5814",
+      "nodes": 38,
+      "relations": 51
     },
     "controllers/verification.go": {
       "hash": "4c6e02638b5a6373",
@@ -811,9 +811,9 @@
       "relations": 73
     },
     "ldap/util_test.go": {
-      "hash": "41189bfe469e8078",
-      "nodes": 13,
-      "relations": 24
+      "hash": "fddc1bcab78dc7b0",
+      "nodes": 14,
+      "relations": 25
     },
     "log/agent_openclaw.go": {
       "hash": "532440d8d6c64297",
@@ -1056,9 +1056,9 @@
       "relations": 19
     },
     "object/check.go": {
-      "hash": "57242eaffb47702a",
-      "nodes": 80,
-      "relations": 101
+      "hash": "5f4854235c2473b7",
+      "nodes": 83,
+      "relations": 104
     },
     "object/check_ip.go": {
       "hash": "2d9fc735b7d67067",
@@ -1066,9 +1066,9 @@
       "relations": 28
     },
     "object/check_password_complexity.go": {
-      "hash": "8f7c51928036f059",
-      "nodes": 33,
-      "relations": 38
+      "hash": "7c147e57fb8a2528",
+      "nodes": 34,
+      "relations": 39
     },
     "object/check_password_expired.go": {
       "hash": "c1e7d047a82ebcc0",
@@ -1076,9 +1076,9 @@
       "relations": 15
     },
     "object/check_util.go": {
-      "hash": "a645a1b807ddaa46",
-      "nodes": 17,
-      "relations": 26
+      "hash": "a4295bf5b9dc40b9",
+      "nodes": 18,
+      "relations": 27
     },
     "object/coupon.go": {
       "hash": "14f765f3530a531f",
@@ -1096,9 +1096,9 @@
       "relations": 13
     },
     "object/enforcer.go": {
-      "hash": "9402ee14156847c0",
-      "nodes": 75,
-      "relations": 98
+      "hash": "94ea33a1348f6c72",
+      "nodes": 76,
+      "relations": 99
     },
     "object/entry.go": {
       "hash": "cbdd9c5fd7b66949",
@@ -1166,9 +1166,9 @@
       "relations": 90
     },
     "object/ldap.go": {
-      "hash": "fdaea4b313b6dccd",
-      "nodes": 39,
-      "relations": 60
+      "hash": "1c77f461c78dfeb1",
+      "nodes": 41,
+      "relations": 62
     },
     "object/ldap_autosync.go": {
       "hash": "e255da094b610370",
@@ -1256,9 +1256,9 @@
       "relations": 108
     },
     "object/openclaw_transcript_sync.go": {
-      "hash": "16186e05807c0848",
-      "nodes": 157,
-      "relations": 226
+      "hash": "925c55a804b7fcc9",
+      "nodes": 158,
+      "relations": 227
     },
     "object/order.go": {
       "hash": "2b5dc42eab374d4e",
@@ -1271,9 +1271,9 @@
       "relations": 31
     },
     "object/organization.go": {
-      "hash": "a9689ce515900573",
-      "nodes": 139,
-      "relations": 218
+      "hash": "8ec4387af2fabcb7",
+      "nodes": 143,
+      "relations": 222
     },
     "object/ormer.go": {
       "hash": "616642a3590083ef",
@@ -1296,9 +1296,9 @@
       "relations": 121
     },
     "object/permission_enforcer.go": {
-      "hash": "f4f66c54786b0df0",
-      "nodes": 78,
-      "relations": 99
+      "hash": "e6b0b4585d7fb502",
+      "nodes": 83,
+      "relations": 104
     },
     "object/permission_enforcer_test.go": {
       "hash": "82f270eca40afbed",
@@ -1366,9 +1366,9 @@
       "relations": 15
     },
     "object/role.go": {
-      "hash": "2ef779a4d79c4053",
-      "nodes": 68,
-      "relations": 91
+      "hash": "0ac5616c5bab5a48",
+      "nodes": 70,
+      "relations": 93
     },
     "object/role_upload.go": {
       "hash": "ccafc720420d0bac",
@@ -1451,19 +1451,19 @@
       "relations": 3
     },
     "object/sms.go": {
-      "hash": "4713747618c512ef",
-      "nodes": 10,
-      "relations": 17
+      "hash": "c191112ec7e7d46d",
+      "nodes": 11,
+      "relations": 18
     },
     "object/sms_custom_http.go": {
-      "hash": "82e2562e59395627",
-      "nodes": 28,
-      "relations": 49
+      "hash": "1e8559695917e5b2",
+      "nodes": 29,
+      "relations": 50
     },
     "object/sms_pnvs.go": {
-      "hash": "00138bc396e62df8",
-      "nodes": 17,
-      "relations": 27
+      "hash": "6e91171090d93af8",
+      "nodes": 18,
+      "relations": 28
     },
     "object/storage.go": {
       "hash": "f1ad35ed2d3eb5e7",
@@ -1476,9 +1476,9 @@
       "relations": 90
     },
     "object/syncer.go": {
-      "hash": "4747aa6446ff3eac",
-      "nodes": 97,
-      "relations": 142
+      "hash": "d52579a533c5411a",
+      "nodes": 99,
+      "relations": 144
     },
     "object/syncer_activedirectory.go": {
       "hash": "892451c5c50fd38d",
@@ -1671,9 +1671,9 @@
       "relations": 26
     },
     "object/user.go": {
-      "hash": "bc92aad92c78e312",
-      "nodes": 406,
-      "relations": 654
+      "hash": "2fd8f43d38b18cdc",
+      "nodes": 408,
+      "relations": 656
     },
     "object/user_avatar.go": {
       "hash": "64a31df033209610",
@@ -1726,9 +1726,9 @@
       "relations": 37
     },
     "object/user_util.go": {
-      "hash": "3c2188a44b942d43",
-      "nodes": 118,
-      "relations": 145
+      "hash": "f6e47ed1a285bbef",
+      "nodes": 119,
+      "relations": 146
     },
     "object/user_webauthn.go": {
       "hash": "05bf61b6f43dd753",
@@ -1891,9 +1891,9 @@
       "relations": 23
     },
     "routers/base.go": {
-      "hash": "416ec3897026217d",
-      "nodes": 54,
-      "relations": 85
+      "hash": "11ec9200515f5c57",
+      "nodes": 55,
+      "relations": 86
     },
     "routers/content_type_filter.go": {
       "hash": "fdbd7aecef825b95",
@@ -1991,9 +1991,9 @@
       "relations": 30
     },
     "scan/intranet_server.go": {
-      "hash": "363efa51db665b74",
-      "nodes": 43,
-      "relations": 68
+      "hash": "eabf8399f313c017",
+      "nodes": 44,
+      "relations": 69
     },
     "scan/provider.go": {
       "hash": "323e6e582eab3eec",
@@ -2026,9 +2026,9 @@
       "relations": 46
     },
     "scim/util.go": {
-      "hash": "713f6aa221ef442e",
-      "nodes": 43,
-      "relations": 56
+      "hash": "248ec8eb49dffc7d",
+      "nodes": 46,
+      "relations": 59
     },
     "service/oauth.go": {
       "hash": "453325a82b78a8bb",
@@ -2041,9 +2041,9 @@
       "relations": 64
     },
     "service/util.go": {
-      "hash": "edeb925395369c89",
-      "nodes": 33,
-      "relations": 48
+      "hash": "4e56b177f4b6cf61",
+      "nodes": 36,
+      "relations": 51
     },
     "storage/aliyun_oss.go": {
       "hash": "2e3052dff9b4fea9",
@@ -2136,9 +2136,9 @@
       "relations": 19
     },
     "sync_v2/db.go": {
-      "hash": "b2c2b5d3a343a918",
-      "nodes": 19,
-      "relations": 32
+      "hash": "c92ad8835a7acc76",
+      "nodes": 20,
+      "relations": 33
     },
     "sync_v2/master.go": {
       "hash": "f349d3374ee56e56",
@@ -2181,9 +2181,9 @@
       "relations": 17
     },
     "util/log.go": {
-      "hash": "7ef7efc77e805a3e",
-      "nodes": 17,
-      "relations": 28
+      "hash": "76584a4adf4ea62d",
+      "nodes": 19,
+      "relations": 30
     },
     "util/network.go": {
       "hash": "fb82bec3cec2cd33",
@@ -2231,9 +2231,9 @@
       "relations": 5
     },
     "util/slice.go": {
-      "hash": "cb8ccf3356c097d9",
-      "nodes": 20,
-      "relations": 23
+      "hash": "d5c52c1549c200fb",
+      "nodes": 21,
+      "relations": 24
     },
     "util/stacks.go": {
       "hash": "cbbb42563b03c311",
@@ -2241,9 +2241,9 @@
       "relations": 10
     },
     "util/string.go": {
-      "hash": "ecdabded58d0e8ea",
-      "nodes": 90,
-      "relations": 115
+      "hash": "38bc705955b7d3fc",
+      "nodes": 91,
+      "relations": 116
     },
     "util/string_test.go": {
       "hash": "0d98a2eaf93a65f6",
@@ -2303,15 +2303,15 @@
       "import": 2394,
       "method": 1098,
       "module": 34,
-      "parameter": 4216,
+      "parameter": 4262,
       "project": 1,
       "type_alias": 12,
-      "variable": 290
+      "variable": 291
     },
     "relations": {
       "consumes": 2,
       "contains": 492,
-      "declares": 16105,
+      "declares": 16152,
       "depends_on": 309,
       "exposes": 2,
       "imports": 2394,
@@ -2322,30 +2322,30 @@
   "ref": "v3.98.0",
   "resolution": {
     "metrics": {
-      "external": 17993,
-      "internal": 21548,
-      "queries": 53586,
-      "resolved": 53483,
+      "external": 17994,
+      "internal": 21576,
+      "queries": 53675,
+      "resolved": 53572,
       "unresolved": 103
     },
     "relations": {
-      "calls": 19350,
+      "calls": 19354,
       "consumes": 2,
       "contains": 492,
-      "declares": 16105,
+      "declares": 16152,
       "depends_on": 309,
       "exposes": 2,
-      "has_type": 3133,
+      "has_type": 3134,
       "imports": 2394,
       "inherits_from": 28,
-      "references": 17030,
+      "references": 17058,
       "resolves_to": 2394
     },
     "status": "ok"
   },
   "totals": {
     "files": 458,
-    "nodes": 14271,
-    "relations": 21698
+    "nodes": 14318,
+    "relations": 21745
   }
 }

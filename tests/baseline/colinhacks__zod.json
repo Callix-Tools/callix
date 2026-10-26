@@ -1,9 +1,9 @@
 {
   "files": {
     "packages/bench/array.ts": {
-      "hash": "90cac37e2f45bc32",
-      "nodes": 7,
-      "relations": 14
+      "hash": "fb8808afd08f2c35",
+      "nodes": 9,
+      "relations": 16
     },
     "packages/bench/benchUtil.ts": {
       "hash": "38cd3fe06aa2c86f",
@@ -11,9 +11,9 @@
       "relations": 25
     },
     "packages/bench/boolean.ts": {
-      "hash": "2d93c40e597033e6",
-      "nodes": 6,
-      "relations": 10
+      "hash": "8e6e440d663f3b84",
+      "nodes": 8,
+      "relations": 12
     },
     "packages/bench/datetime-regex.ts": {
       "hash": "3360e30d2e004a4a",
@@ -21,9 +21,9 @@
       "relations": 14
     },
     "packages/bench/datetime.ts": {
-      "hash": "18703942970997e3",
-      "nodes": 6,
-      "relations": 10
+      "hash": "db15dabdb6d1b021",
+      "nodes": 8,
+      "relations": 12
     },
     "packages/bench/discriminated-union.ts": {
       "hash": "cd8267af53d6d209",
@@ -81,9 +81,9 @@
       "relations": 65
     },
     "packages/bench/number.ts": {
-      "hash": "e2c7f47d332a76f7",
-      "nodes": 6,
-      "relations": 10
+      "hash": "0713069eab5c83c9",
+      "nodes": 8,
+      "relations": 12
     },
     "packages/bench/object-async.ts": {
       "hash": "9419a0e8ac302558",
@@ -121,9 +121,9 @@
       "relations": 13
     },
     "packages/bench/object-setup.ts": {
-      "hash": "644be426eec8b191",
-      "nodes": 3,
-      "relations": 5
+      "hash": "c165af2ea186c0a1",
+      "nodes": 5,
+      "relations": 7
     },
     "packages/bench/object.ts": {
       "hash": "40379ea746055d5a",
@@ -156,14 +156,14 @@
       "relations": 14
     },
     "packages/bench/string.ts": {
-      "hash": "08c4e408bc260108",
-      "nodes": 6,
-      "relations": 10
+      "hash": "4463711a2e1d25a0",
+      "nodes": 8,
+      "relations": 12
     },
     "packages/bench/union.ts": {
-      "hash": "19d86b7b0df7d839",
-      "nodes": 5,
-      "relations": 8
+      "hash": "45e1e2d467141024",
+      "nodes": 10,
+      "relations": 13
     },
     "packages/docs/app/(doc)/[[...slug]]/page.tsx": {
       "hash": "1c30416bc742d3d8",
@@ -171,14 +171,14 @@
       "relations": 57
     },
     "packages/docs/app/(doc)/layout.tsx": {
-      "hash": "de1c27e880e8864b",
-      "nodes": 12,
-      "relations": 27
+      "hash": "f0b123d9b4ea7059",
+      "nodes": 14,
+      "relations": 29
     },
     "packages/docs/app/api/search/route.ts": {
-      "hash": "9c30c57a2a326bd3",
-      "nodes": 3,
-      "relations": 6
+      "hash": "2367d7b7f189d42d",
+      "nodes": 4,
+      "relations": 7
     },
     "packages/docs/app/blog/[slug]/page.tsx": {
       "hash": "e5da60a65b804524",
@@ -186,9 +186,9 @@
       "relations": 29
     },
     "packages/docs/app/blog/layout.tsx": {
-      "hash": "2cbb54071bea5896",
-      "nodes": 5,
-      "relations": 10
+      "hash": "1c7eb08959e53490",
+      "nodes": 7,
+      "relations": 12
     },
     "packages/docs/app/blog/page.tsx": {
       "hash": "2a3165365a1f2621",
@@ -201,9 +201,9 @@
       "relations": 14
     },
     "packages/docs/app/layout.tsx": {
-      "hash": "5c8259e8c3bd209e",
-      "nodes": 13,
-      "relations": 32
+      "hash": "f9f878b3ec9013f5",
+      "nodes": 15,
+      "relations": 34
     },
     "packages/docs/app/llms-full.txt/route.ts": {
       "hash": "1f79307951b685a3",
@@ -221,9 +221,9 @@
       "relations": 11
     },
     "packages/docs/app/og.png/route.tsx": {
-      "hash": "d6c45fc2619920e5",
-      "nodes": 8,
-      "relations": 9
+      "hash": "de1954b005bbc327",
+      "nodes": 9,
+      "relations": 10
     },
     "packages/docs/components/accordion.tsx": {
       "hash": "c1f91e4c9c0948f5",
@@ -236,22 +236,22 @@
       "relations": 2
     },
     "packages/docs/components/codec-image.tsx": {
-      "hash": "93396d76d3cdcc77",
-      "nodes": 8,
-      "relations": 9
-    },
-    "packages/docs/components/copy-markdown-button.tsx": {
-      "hash": "82b51c9b40b70e6d",
-      "nodes": 9,
+      "hash": "e3473a7845039431",
+      "nodes": 13,
       "relations": 14
     },
+    "packages/docs/components/copy-markdown-button.tsx": {
+      "hash": "13032a7da61e76d5",
+      "nodes": 14,
+      "relations": 19
+    },
     "packages/docs/components/ecosystem.tsx": {
-      "hash": "608a13e48f494652",
-      "nodes": 27,
-      "relations": 30
+      "hash": "14d71e07b3b5f271",
+      "nodes": 29,
+      "relations": 32
     },
     "packages/docs/components/featured.tsx": {
-      "hash": "4ece3caa42c53306",
+      "hash": "a830f18b1c7ed1f0",
       "nodes": 5,
       "relations": 4
     },
@@ -261,14 +261,14 @@
       "relations": 3
     },
     "packages/docs/components/heading.tsx": {
-      "hash": "78b34ebad5430b2a",
-      "nodes": 8,
-      "relations": 13
+      "hash": "c3ac5985be3bc79f",
+      "nodes": 11,
+      "relations": 16
     },
     "packages/docs/components/hero-logo.tsx": {
-      "hash": "c9eac7036eac932c",
-      "nodes": 6,
-      "relations": 9
+      "hash": "851a5cd8a57030b8",
+      "nodes": 10,
+      "relations": 13
     },
     "packages/docs/components/if.tsx": {
       "hash": "1cc91f5c6c76b241",
@@ -276,14 +276,14 @@
       "relations": 3
     },
     "packages/docs/components/inkeep-bubble.tsx": {
-      "hash": "2dc87878eabea23f",
-      "nodes": 7,
-      "relations": 14
+      "hash": "97d599f87c8d5700",
+      "nodes": 9,
+      "relations": 16
     },
     "packages/docs/components/inkeep-search.tsx": {
-      "hash": "2d5501c805f492b6",
-      "nodes": 10,
-      "relations": 19
+      "hash": "40b71a0e720b0442",
+      "nodes": 13,
+      "relations": 22
     },
     "packages/docs/components/platinum.tsx": {
       "hash": "2ba42d2089602826",
@@ -296,14 +296,14 @@
       "relations": 15
     },
     "packages/docs/components/sidebar-item.tsx": {
-      "hash": "18eab362d8b45805",
-      "nodes": 9,
-      "relations": 14
+      "hash": "56566ecbe49750ab",
+      "nodes": 13,
+      "relations": 18
     },
     "packages/docs/components/sidebar-logo.tsx": {
-      "hash": "c329f5820fac0c85",
-      "nodes": 5,
-      "relations": 10
+      "hash": "0c1c45b51a1fa8c7",
+      "nodes": 13,
+      "relations": 18
     },
     "packages/docs/components/silver.tsx": {
       "hash": "71d9f6cceb6bad58",
@@ -311,14 +311,14 @@
       "relations": 2
     },
     "packages/docs/components/tabs.tsx": {
-      "hash": "96589024fe00e525",
-      "nodes": 11,
-      "relations": 18
+      "hash": "cbc82815dde2be58",
+      "nodes": 15,
+      "relations": 22
     },
     "packages/docs/components/themed-image.tsx": {
-      "hash": "5bfe7bb5a3f78768",
-      "nodes": 8,
-      "relations": 9
+      "hash": "c176b05df8b08f69",
+      "nodes": 13,
+      "relations": 14
     },
     "packages/docs/content/api.test.ts": {
       "hash": "10f0cd118a2cd43d",
@@ -326,9 +326,9 @@
       "relations": 95
     },
     "packages/docs/loaders/get-llm-text.ts": {
-      "hash": "5951663e9e549ec5",
-      "nodes": 19,
-      "relations": 38
+      "hash": "7215c46276899cb9",
+      "nodes": 20,
+      "relations": 39
     },
     "packages/docs/loaders/source.ts": {
       "hash": "d1d07ac1840a6646",
@@ -336,9 +336,9 @@
       "relations": 20
     },
     "packages/docs/loaders/stars.ts": {
-      "hash": "a436237e8e1424ff",
-      "nodes": 12,
-      "relations": 11
+      "hash": "dd3ef3953ccc94b3",
+      "nodes": 14,
+      "relations": 13
     },
     "packages/docs/pages/api/_og.tsx": {
       "hash": "ba9b809fda9585cb",
@@ -551,9 +551,9 @@
       "relations": 0
     },
     "packages/tsc/generate.ts": {
-      "hash": "b965a82640a34322",
-      "nodes": 75,
-      "relations": 80
+      "hash": "8b635a5a44898a19",
+      "nodes": 84,
+      "relations": 89
     },
     "packages/zod/src/index.ts": {
       "hash": "ccbbfc81ec315a99",
@@ -641,9 +641,9 @@
       "relations": 0
     },
     "packages/zod/src/v3/helpers/parseUtil.ts": {
-      "hash": "ecf1501a2bb4cb32",
-      "nodes": 73,
-      "relations": 82
+      "hash": "194b8301c66d3f77",
+      "nodes": 77,
+      "relations": 86
     },
     "packages/zod/src/v3/helpers/partialUtil.ts": {
       "hash": "ba9834657e15db1b",
@@ -951,9 +951,9 @@
       "relations": 23
     },
     "packages/zod/src/v3/tests/string.test.ts": {
-      "hash": "f9552c10c9cecbcc",
-      "nodes": 76,
-      "relations": 83
+      "hash": "e0144f8a009c1628",
+      "nodes": 77,
+      "relations": 84
     },
     "packages/zod/src/v3/tests/transformer.test.ts": {
       "hash": "c8f54d9b0b172855",
@@ -981,9 +981,9 @@
       "relations": 13
     },
     "packages/zod/src/v3/types.ts": {
-      "hash": "0b8b109379cc363a",
-      "nodes": 1147,
-      "relations": 1190
+      "hash": "33f31772fa64f5c5",
+      "nodes": 1178,
+      "relations": 1221
     },
     "packages/zod/src/v4-mini/index.ts": {
       "hash": "2392ad0b77b83f19",
@@ -1101,9 +1101,9 @@
       "relations": 54
     },
     "packages/zod/src/v4/classic/tests/codec.test.ts": {
-      "hash": "a938c1835b611ae3",
-      "nodes": 61,
-      "relations": 70
+      "hash": "bd3c7f70552d3d6d",
+      "nodes": 63,
+      "relations": 72
     },
     "packages/zod/src/v4/classic/tests/coerce.test.ts": {
       "hash": "501af63cfb01c5dc",
@@ -1146,9 +1146,9 @@
       "relations": 11
     },
     "packages/zod/src/v4/classic/tests/detached-methods.test.ts": {
-      "hash": "7fbb6d3dcd1d02fc",
-      "nodes": 33,
-      "relations": 38
+      "hash": "07ff417ffd7a3ee7",
+      "nodes": 34,
+      "relations": 39
     },
     "packages/zod/src/v4/classic/tests/discriminated-unions.test.ts": {
       "hash": "5b67b28bfadd278d",
@@ -1206,9 +1206,9 @@
       "relations": 16
     },
     "packages/zod/src/v4/classic/tests/hash.test.ts": {
-      "hash": "deb958a9fae3f394",
-      "nodes": 19,
-      "relations": 28
+      "hash": "59f72b965934a961",
+      "nodes": 23,
+      "relations": 32
     },
     "packages/zod/src/v4/classic/tests/index.test.ts": {
       "hash": "fe4989461e009646",
@@ -1226,9 +1226,9 @@
       "relations": 34
     },
     "packages/zod/src/v4/classic/tests/jitless-allows-eval.test.ts": {
-      "hash": "a97ddf4a62028394",
-      "nodes": 7,
-      "relations": 14
+      "hash": "ee4272c6239b930c",
+      "nodes": 8,
+      "relations": 15
     },
     "packages/zod/src/v4/classic/tests/json.test.ts": {
       "hash": "5188c1000027ef50",
@@ -1471,14 +1471,14 @@
       "relations": 5
     },
     "packages/zod/src/v4/core/json-schema-generator.ts": {
-      "hash": "bf046789818aecd5",
-      "nodes": 35,
-      "relations": 47
+      "hash": "4b00993d5631f3a7",
+      "nodes": 36,
+      "relations": 48
     },
     "packages/zod/src/v4/core/json-schema-processors.ts": {
-      "hash": "16230e43445e529e",
-      "nodes": 291,
-      "relations": 305
+      "hash": "7701ad9ccb1efdc6",
+      "nodes": 311,
+      "relations": 325
     },
     "packages/zod/src/v4/core/json-schema.ts": {
       "hash": "5db6bf6dc5303ed1",
@@ -1501,9 +1501,9 @@
       "relations": 42
     },
     "packages/zod/src/v4/core/schemas.ts": {
-      "hash": "f05120a4e6ca1c75",
-      "nodes": 925,
-      "relations": 950
+      "hash": "49a0200713efe063",
+      "nodes": 926,
+      "relations": 951
     },
     "packages/zod/src/v4/core/standard-schema.ts": {
       "hash": "801596cc4e8911af",
@@ -1556,9 +1556,9 @@
       "relations": 36
     },
     "packages/zod/src/v4/core/tests/locales/nl.test.ts": {
-      "hash": "8db7f03a51a7f1dd",
-      "nodes": 4,
-      "relations": 9
+      "hash": "c1822d2f03d7db1e",
+      "nodes": 5,
+      "relations": 10
     },
     "packages/zod/src/v4/core/tests/locales/ru.test.ts": {
       "hash": "056c40c7edc282e9",
@@ -1586,14 +1586,14 @@
       "relations": 13
     },
     "packages/zod/src/v4/core/to-json-schema.ts": {
-      "hash": "21bb749eeb083a98",
-      "nodes": 124,
-      "relations": 135
+      "hash": "b8bf955761faff2b",
+      "nodes": 128,
+      "relations": 139
     },
     "packages/zod/src/v4/core/util.ts": {
-      "hash": "8346242daa7a5f79",
-      "nodes": 278,
-      "relations": 286
+      "hash": "6811e23d97835cb3",
+      "nodes": 283,
+      "relations": 291
     },
     "packages/zod/src/v4/core/versions.ts": {
       "hash": "079aba1ab4b742c3",
@@ -1931,9 +1931,9 @@
       "relations": 13
     },
     "packages/zod/src/v4/mini/tests/codec.test.ts": {
-      "hash": "50c861dac0ea139b",
-      "nodes": 48,
-      "relations": 57
+      "hash": "0fd863899de37464",
+      "nodes": 50,
+      "relations": 59
     },
     "packages/zod/src/v4/mini/tests/computed.test.ts": {
       "hash": "bafb74166b49b6b6",
@@ -2032,14 +2032,14 @@
       "import": 1386,
       "method": 503,
       "module": 607,
-      "parameter": 1677,
+      "parameter": 1690,
       "project": 8,
       "type_alias": 446,
-      "variable": 3948
+      "variable": 4095
     },
     "relations": {
       "contains": 1011,
-      "declares": 10606,
+      "declares": 10766,
       "depends_on": 96,
       "imports": 1206,
       "resolves_to": 1387
@@ -2049,28 +2049,28 @@
   "ref": "v4.4.3",
   "resolution": {
     "metrics": {
-      "external": 35872,
-      "internal": 31856,
-      "queries": 80344,
-      "resolved": 71903,
-      "unresolved": 8441
+      "external": 35560,
+      "internal": 32399,
+      "queries": 81624,
+      "resolved": 73032,
+      "unresolved": 8567
     },
     "relations": {
-      "calls": 27481,
+      "calls": 27533,
       "contains": 1011,
-      "declares": 10606,
+      "declares": 10766,
       "depends_on": 96,
       "has_type": 2586,
       "imports": 1206,
       "inherits_from": 584,
-      "references": 38481,
+      "references": 38668,
       "resolves_to": 1387
     },
     "status": "ok"
   },
   "totals": {
     "files": 404,
-    "nodes": 11894,
-    "relations": 14306
+    "nodes": 12054,
+    "relations": 14466
   }
 }

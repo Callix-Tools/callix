@@ -138,7 +138,7 @@
     "axum-extra/src/extract/json_deserializer.rs": {
       "hash": "57aeba4dd2a278e8",
       "nodes": 54,
-      "relations": 111
+      "relations": 114
     },
     "axum-extra/src/extract/mod.rs": {
       "hash": "4528c70cb80d3546",
@@ -993,7 +993,7 @@
     "axum/src/json.rs": {
       "hash": "b75dde78b36ea9f9",
       "nodes": 42,
-      "relations": 84
+      "relations": 87
     },
     "axum/src/lib.rs": {
       "hash": "a0a628ccb4c8743d",
@@ -1098,7 +1098,7 @@
     "axum/src/routing/tests/fallback.rs": {
       "hash": "bfd5a4444de67634",
       "nodes": 34,
-      "relations": 78
+      "relations": 82
     },
     "axum/src/routing/tests/get_to_head.rs": {
       "hash": "f0c4b4a27822a55f",
@@ -1113,17 +1113,17 @@
     "axum/src/routing/tests/merge.rs": {
       "hash": "8fb77a3bf2cf153f",
       "nodes": 27,
-      "relations": 99
+      "relations": 107
     },
     "axum/src/routing/tests/mod.rs": {
       "hash": "70e9824c75c11815",
       "nodes": 104,
-      "relations": 251
+      "relations": 253
     },
     "axum/src/routing/tests/nest.rs": {
       "hash": "0e60b95e8fc60a7e",
       "nodes": 29,
-      "relations": 78
+      "relations": 88
     },
     "axum/src/routing/url_params.rs": {
       "hash": "72cfdaaec7701b09",
@@ -1484,7 +1484,7 @@
   "kinds": {
     "nodes": {
       "attribute": 390,
-      "boundary": 176,
+      "boundary": 182,
       "class": 434,
       "dependency": 458,
       "external_symbol": 835,
@@ -1499,7 +1499,7 @@
       "variable": 71
     },
     "relations": {
-      "consumes": 320,
+      "consumes": 350,
       "contains": 592,
       "declares": 6153,
       "depends_on": 458,
@@ -1512,15 +1512,15 @@
   "ref": "axum-v0.8.9",
   "resolution": {
     "metrics": {
-      "external": 7165,
-      "internal": 4848,
-      "queries": 15807,
-      "resolved": 13701,
-      "unresolved": 2106
+      "external": 7837,
+      "internal": 5234,
+      "queries": 17258,
+      "resolved": 14920,
+      "unresolved": 2291
     },
     "relations": {
-      "calls": 8642,
-      "consumes": 320,
+      "calls": 9668,
+      "consumes": 350,
       "contains": 592,
       "declares": 6153,
       "depends_on": 458,
@@ -1528,14 +1528,14 @@
       "has_type": 1363,
       "imports": 1361,
       "inherits_from": 286,
-      "references": 1726,
+      "references": 1825,
       "resolves_to": 1375
     },
     "status": "ok"
   },
   "totals": {
     "files": 296,
-    "nodes": 7832,
-    "relations": 10624
+    "nodes": 7838,
+    "relations": 10654
   }
 }

@@ -630,13 +630,13 @@
   "resolution": {
     "metrics": {
       "external": 6318,
-      "internal": 9325,
-      "queries": 15643,
-      "resolved": 15643,
+      "internal": 9517,
+      "queries": 15835,
+      "resolved": 15835,
       "unresolved": 0
     },
     "relations": {
-      "calls": 9838,
+      "calls": 10031,
       "contains": 128,
       "declares": 6897,
       "depends_on": 10,

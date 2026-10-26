@@ -55,6 +55,9 @@ struct Site {
 #[derive(Clone, Copy)]
 enum Slot {
     Method,
+    /// A method named through its class, `A::m()`: undeclared, it goes to
+    /// `__callStatic` before `__call`.
+    StaticMethod,
     Property,
     Constant,
 }
@@ -71,7 +74,7 @@ enum NameKind {
 }
 
 /// A class the workspace declares, or one it only mentions.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 enum ClassRef {
     /// The key into the class tables.
     Declared(String),
@@ -116,6 +119,9 @@ struct Pending {
     name: String,
     doc: u32,
     namespace: String,
+    /// Whether this is a base class or a trait, which contribute members; an
+    /// interface contributes none.
+    inherits: bool,
 }
 
 /// The fully-qualified names a written name may mean, most specific first.
@@ -154,7 +160,15 @@ pub(super) const CALLBACK_FUNCTIONS: [&str; 22] = [
 pub(super) struct CallableLiteral<'tree> {
     pub position: TsNode<'tree>,
     pub text: String,
-    pub class: Option<TsNode<'tree>>,
+    pub class: Option<CallableClass<'tree>>,
+}
+
+/// How a callable names the class its method belongs to.
+pub(super) enum CallableClass<'tree> {
+    /// `[$object, 'm']`, `[Foo::class, 'm']`: an expression.
+    Expression(TsNode<'tree>),
+    /// `'Foo::m'`: a class name written in the string.
+    Named(String),
 }
 
 /// The string literals and `[class, 'method']` pairs among a call's arguments.
@@ -162,46 +176,161 @@ pub(super) fn callable_literals<'tree>(
     call: TsNode<'tree>,
     source: &[u8],
 ) -> Vec<CallableLiteral<'tree>> {
-    let mut out = Vec::new();
     let Some(function) = call.child_by_field_name("function") else {
-        return out;
+        return Vec::new();
     };
     if !matches!(function.kind(), "name" | "qualified_name" | "relative_name") {
-        return out;
+        return Vec::new();
     }
     let callee = ts::text(function, source).to_lowercase();
     let callee = callee.rsplit('\\').next().unwrap_or(&callee);
     if !CALLBACK_FUNCTIONS.contains(&callee) {
-        return out;
+        return Vec::new();
     }
     let Some(arguments) = call.child_by_field_name("arguments") else {
-        return out;
+        return Vec::new();
     };
-    for argument in ts::children(arguments) {
-        let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named()) else {
-            continue;
+    callable_arguments(arguments, source)
+        .into_iter()
+        .filter_map(|(_, value)| match value {
+            CallableValue::Literal(literal) => Some(literal),
+            CallableValue::Named(_) => None,
+        })
+        .collect()
+}
+
+/// Whether `call` is a call of a built-in that calls its callable arguments.
+pub(super) fn is_callback_call(call: TsNode<'_>, source: &[u8]) -> bool {
+    let Some(function) = call.child_by_field_name("function") else {
+        return false;
+    };
+    if !matches!(function.kind(), "name" | "qualified_name" | "relative_name") {
+        return false;
+    }
+    let callee = ts::text(function, source).to_lowercase();
+    CALLBACK_FUNCTIONS.contains(&callee.rsplit('\\').next().unwrap_or(&callee))
+}
+
+/// A callable written out in an expression.
+pub(super) enum CallableValue<'tree> {
+    /// A string or a `[class, 'method']` pair, which only the resolver can place.
+    Literal(CallableLiteral<'tree>),
+    /// `g(...)`, `$o->m(...)`: the name the resolver already answers.
+    Named(TsNode<'tree>),
+}
+
+impl<'tree> CallableValue<'tree> {
+    /// The place the visitor records the occurrence at.
+    pub(super) fn position(&self) -> TsNode<'tree> {
+        match self {
+            CallableValue::Literal(literal) => literal.position,
+            CallableValue::Named(node) => *node,
+        }
+    }
+}
+
+/// The callable `value` writes out, if it does: a string naming a function or
+/// `'Class::method'`, a `[class, 'method']` pair, a first-class callable
+/// (`g(...)`), or `Closure::fromCallable` of one of those.
+pub(super) fn callable_value<'tree>(value: TsNode<'tree>, source: &[u8]) -> Option<CallableValue<'tree>> {
+    match value.kind() {
+        "string" | "encapsed_string" => {
+            let text = string_literal(value, source)?;
+            if !text.chars().all(|c| c.is_alphanumeric() || matches!(c, '_' | '\\' | ':')) {
+                return None;
+            }
+            match text.split_once("::") {
+                Some((class, method)) if !class.is_empty() && !method.is_empty() && !method.contains(':') => {
+                    Some(CallableValue::Literal(CallableLiteral {
+                        position: value,
+                        text: method.to_string(),
+                        class: Some(CallableClass::Named(class.to_string())),
+                    }))
+                }
+                Some(_) => None,
+                None => Some(CallableValue::Literal(CallableLiteral { position: value, text, class: None })),
+            }
+        }
+        "array_creation_expression" => {
+            let elements: Vec<TsNode<'tree>> = ts::children(value)
+                .into_iter()
+                .filter(|c| c.kind() == "array_element_initializer")
+                .collect();
+            let [first, second] = elements.as_slice() else {
+                return None;
+            };
+            let class = ts::children(*first).into_iter().find(|c| c.is_named())?;
+            let method = ts::children(*second).into_iter().find(|c| c.is_named())?;
+            if !matches!(method.kind(), "string" | "encapsed_string") {
+                return None;
+            }
+            let text = string_literal(method, source)?;
+            Some(CallableValue::Literal(CallableLiteral {
+                position: method,
+                text,
+                class: Some(CallableClass::Expression(class)),
+            }))
+        }
+        "parenthesized_expression" => {
+            callable_value(ts::named_children(value).into_iter().next()?, source)
+        }
+        "function_call_expression" | "member_call_expression" | "nullsafe_member_call_expression"
+        | "scoped_call_expression" => {
+            if is_first_class_callable(value) {
+                let name = if value.kind() == "function_call_expression" {
+                    last_name(value.child_by_field_name("function")?)?
+                } else {
+                    value.child_by_field_name("name").filter(|n| n.kind() == "name")?
+                };
+                return Some(CallableValue::Named(name));
+            }
+            // `Closure::fromCallable(x)` is `x`.
+            if value.kind() == "scoped_call_expression"
+                && let Some(scope) = value.child_by_field_name("scope")
+                && ts::text(scope, source).trim_start_matches('\\').eq_ignore_ascii_case("closure")
+                && value
+                    .child_by_field_name("name")
+                    .is_some_and(|n| ts::text(n, source).eq_ignore_ascii_case("fromCallable"))
+                && let Some(arguments) = value.child_by_field_name("arguments")
+                && let Some(argument) = ts::children(arguments).into_iter().find(|c| c.kind() == "argument")
+                && let Some(inner) = ts::children(argument).into_iter().rev().find(|c| c.is_named())
+            {
+                return callable_value(inner, source);
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+/// `g(...)`, `$o->m(...)`, `A::m(...)`: a callable made from a function, which
+/// is not a call of it.
+pub(super) fn is_first_class_callable(call: TsNode<'_>) -> bool {
+    call.child_by_field_name("arguments")
+        .is_some_and(|arguments| ts::children(arguments).iter().any(|c| c.kind() == "variadic_placeholder"))
+}
+
+/// The arguments of a call that are a callable written out, each with its slot -
+/// the position, or `=name` for a named argument - the way a call's arguments are
+/// bound to the parameters of what it calls.
+pub(super) fn callable_arguments<'tree>(
+    arguments: TsNode<'tree>,
+    source: &[u8],
+) -> Vec<(String, CallableValue<'tree>)> {
+    let mut out = Vec::new();
+    for (index, argument) in ts::children(arguments)
+        .into_iter()
+        .filter(|c| c.kind() == "argument")
+        .enumerate()
+    {
+        let slot = match argument.child_by_field_name("name") {
+            Some(label) => format!("={}", ts::text(label, source)),
+            None => index.to_string(),
         };
-        match value.kind() {
-            "string" | "encapsed_string" => {
-                if let Some(text) = string_literal(value, source) {
-                    out.push(CallableLiteral { position: value, text, class: None });
-                }
-            }
-            "array_creation_expression" => {
-                let elements: Vec<TsNode<'tree>> = ts::children(value)
-                    .into_iter()
-                    .filter(|c| c.kind() == "array_element_initializer")
-                    .collect();
-                if let [first, second] = elements.as_slice()
-                    && let Some(class) = ts::children(*first).into_iter().find(|c| c.is_named())
-                    && let Some(method) = ts::children(*second).into_iter().find(|c| c.is_named())
-                    && matches!(method.kind(), "string" | "encapsed_string")
-                    && let Some(text) = string_literal(method, source)
-                {
-                    out.push(CallableLiteral { position: method, text, class: Some(class) });
-                }
-            }
-            _ => {}
+        if let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named())
+            && let Some(callable) = callable_value(value, source)
+        {
+            out.push((slot, callable));
         }
     }
     out
@@ -301,6 +430,12 @@ struct UseScope {
     parent: Option<ClassRef>,
     /// Local variable name → the class it holds.
     vars: HashMap<String, ClassRef>,
+    /// Local variable name → the one string it is assigned, `None` once it is
+    /// assigned anything else: the method name of `$this->$m()`.
+    strings: HashMap<String, Option<String>>,
+    /// Local variable name → the one class name it is assigned (`Foo::class`),
+    /// `None` once it is assigned anything else: `new $class()`, `$class::m()`.
+    class_strings: HashMap<String, Option<ClassRef>>,
 }
 
 type MemberKey = (String, String);
@@ -333,6 +468,9 @@ pub struct PhpResolver {
     /// contribute members, so all three are walked when a member is not
     /// declared on the class itself.
     parents: HashMap<String, Vec<String>>,
+    /// Classes with a base class or a trait outside the workspace: what they
+    /// inherit is not known, so a method they do not declare may be there.
+    foreign_parents: HashSet<String>,
     /// (class, property) → the class its type declaration names. A method's
     /// declared return class is kept here too, under the property name
     /// `()method`, which no property can have.
@@ -373,6 +511,7 @@ impl Default for PhpResolver {
             properties: HashMap::new(),
             class_constants: HashMap::new(),
             parents: HashMap::new(),
+            foreign_parents: HashSet::new(),
             property_types: HashMap::new(),
             self_returning: HashSet::new(),
             enums: HashSet::new(),
@@ -541,7 +680,7 @@ impl PhpResolver {
 
     fn member_table(&self, slot: Slot) -> &MemberTable {
         match slot {
-            Slot::Method => &self.methods,
+            Slot::Method | Slot::StaticMethod => &self.methods,
             Slot::Property => &self.properties,
             Slot::Constant => &self.class_constants,
         }
@@ -551,7 +690,7 @@ impl PhpResolver {
     /// names it compares exactly.
     fn member_key(slot: Slot, member: &str) -> String {
         match slot {
-            Slot::Method => member.to_lowercase(),
+            Slot::Method | Slot::StaticMethod => member.to_lowercase(),
             Slot::Property | Slot::Constant => member.to_string(),
         }
     }
@@ -599,6 +738,23 @@ impl PhpResolver {
             && let Some(site) = self.find_member(key, member, slot)
         {
             return Answer::Internal(site);
+        }
+        // A method no class of the hierarchy declares is a call of `__call` (or,
+        // written as `A::m()`, of `__callStatic`) when one of them has it.
+        if let ClassRef::Declared(key) = class
+            && matches!(slot, Slot::Method | Slot::StaticMethod)
+            && self.in_hierarchy(key, |c| self.foreign_parents.contains(c).then_some(())).is_none()
+        {
+            let magic: &[&str] = if matches!(slot, Slot::StaticMethod) {
+                &["__callstatic", "__call"]
+            } else {
+                &["__call"]
+            };
+            for name in magic {
+                if let Some(site) = self.find_member(key, name, Slot::Method) {
+                    return Answer::Internal(site);
+                }
+            }
         }
         // The class is known and the member is not: it comes from a dependency's
         // base class, or from `__call`. Naming it keeps the edge, pointed at an
@@ -796,7 +952,7 @@ impl PhpResolver {
                     let namespace = scope.namespace.clone();
                     for child in ts::children(node) {
                         if matches!(child.kind(), "name" | "qualified_name" | "relative_name") {
-                            self.push_pending(doc, source, &class, None, child, &namespace);
+                            self.push_pending(doc, source, &class, None, child, &namespace, true);
                         }
                     }
                 }
@@ -805,6 +961,7 @@ impl PhpResolver {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn push_pending(
         &mut self,
         doc: u32,
@@ -813,8 +970,10 @@ impl PhpResolver {
         property: Option<&str>,
         reference: TsNode<'_>,
         namespace: &str,
+        inherits: bool,
     ) {
         self.pending.push(Pending {
+            inherits,
             class: class.to_lowercase(),
             property: property.map(str::to_string),
             name: ts::text(reference, source).into_owned(),
@@ -851,7 +1010,15 @@ impl PhpResolver {
                 continue;
             }
             for reference in class_refs(clause) {
-                self.push_pending(doc, source, &fqn, None, reference, &scope.namespace);
+                self.push_pending(
+                    doc,
+                    source,
+                    &fqn,
+                    None,
+                    reference,
+                    &scope.namespace,
+                    clause.kind() == "base_clause",
+                );
             }
         }
 
@@ -888,7 +1055,7 @@ impl PhpResolver {
             if text == "self" || text == "static" {
                 self.self_returning.insert((class.to_lowercase(), name.clone()));
             } else if let [only] = class_refs(return_type)[..] {
-                self.push_pending(doc, source, class, Some(&format!("(){name}")), only, namespace);
+                self.push_pending(doc, source, class, Some(&format!("(){name}")), only, namespace, false);
             }
         }
 
@@ -956,7 +1123,7 @@ impl PhpResolver {
         if let Some(type_node) = type_node {
             let references = class_refs(type_node);
             if let [only] = references[..] {
-                self.push_pending(doc, source, class, Some(&name), only, namespace);
+                self.push_pending(doc, source, class, Some(&name), only, namespace, false);
             }
         }
     }
@@ -1008,6 +1175,8 @@ impl PhpResolver {
                 None => {
                     if let ClassRef::Declared(parent) = class {
                         self.parents.entry(item.class).or_default().push(parent);
+                    } else if item.inherits {
+                        self.foreign_parents.insert(item.class);
                     }
                 }
             }
@@ -1073,7 +1242,11 @@ impl PhpResolver {
                 if name == "this" {
                     return scope.class.clone();
                 }
-                scope.vars.get(&name).cloned()
+                scope
+                    .vars
+                    .get(&name)
+                    .cloned()
+                    .or_else(|| scope.class_strings.get(&name).cloned().flatten())
             }
             // `self`, `static`, `parent`.
             "relative_scope" => match ts::text(node, source).to_lowercase().as_str() {
@@ -1172,6 +1345,8 @@ impl PhpResolver {
             class: if inherits { scope.class.clone() } else { None },
             parent: if inherits { scope.parent.clone() } else { None },
             vars: if inherits { scope.vars.clone() } else { HashMap::new() },
+            strings: if inherits { scope.strings.clone() } else { HashMap::new() },
+            class_strings: if inherits { scope.class_strings.clone() } else { HashMap::new() },
         }
     }
 
@@ -1190,6 +1365,12 @@ impl PhpResolver {
                 "simple_parameter" | "variadic_parameter" | "property_promotion_parameter"
             ) {
                 continue;
+            }
+            // What a parameter holds is whatever the caller passes.
+            if let Some(ident) = parameter.child_by_field_name("name").and_then(variable_identifier) {
+                let name = ts::text(ident, source).into_owned();
+                scope.strings.insert(name.clone(), None);
+                scope.class_strings.insert(name, None);
             }
             if let Some(type_node) = parameter.child_by_field_name("type") {
                 self.record_type(doc, source, type_node, &namespace);
@@ -1252,7 +1433,61 @@ impl PhpResolver {
         }
     }
 
+    /// `Foo::class`: the class the expression names.
+    fn class_constant_name(&self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &UseScope) -> Option<ClassRef> {
+        if node.kind() != "class_constant_access_expression" {
+            return None;
+        }
+        let children: Vec<TsNode<'_>> = ts::children(node)
+            .into_iter()
+            .filter(|c| !matches!(c.kind(), "comment" | "text_interpolation"))
+            .collect();
+        let (&qualifier, &member) = (children.first()?, children.last()?);
+        if children.len() < 2 || !ts::text(member, source).eq_ignore_ascii_case("class") {
+            return None;
+        }
+        self.infer(doc, source, qualifier, scope)
+    }
+
+    /// What a callable written out names: the function of `'f'`, or the method of
+    /// `[$object, 'm']` and `'Class::m'`.
+    fn callable_answer(
+        &self,
+        doc: u32,
+        source: &[u8],
+        literal: &CallableLiteral<'_>,
+        scope: &UseScope,
+    ) -> Option<Answer> {
+        Some(match &literal.class {
+            None => self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function),
+            Some(class) => {
+                let receiver = match class {
+                    CallableClass::Named(name) => Some(self.class_ref(name, doc, &scope.namespace)),
+                    CallableClass::Expression(class) if class.kind() == "class_constant_access_expression" => {
+                        ts::children(*class)
+                            .into_iter()
+                            .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
+                            .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
+                    }
+                    CallableClass::Expression(class) => self.infer(doc, source, *class, scope),
+                };
+                self.member_answer(&receiver?, &literal.text, Slot::Method)
+            }
+        })
+    }
+
     fn walk_uses(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &mut UseScope) {
+        // A callable written out - `'f'`, `'A::m'`, `[$o, 'm']` - is answered where
+        // it stands, when it names something the project declares: any other string
+        // is just a string, and whether the value is ever called is for the flow
+        // pass to say.
+        if matches!(node.kind(), "string" | "encapsed_string" | "array_creation_expression")
+            && let Some(CallableValue::Literal(literal)) = callable_value(node, source)
+            && let Some(answer) = self.callable_answer(doc, source, &literal, scope)
+            && matches!(answer, Answer::Internal(_))
+        {
+            self.record(doc, literal.position, answer);
+        }
         match node.kind() {
             // The two `extras` the parser may put between any two children, and
             // the HTML a template interleaves with its PHP.
@@ -1325,25 +1560,8 @@ impl PhpResolver {
                 }
                 // `array_map('f', …)`, `usort($x, [$this, 'cmp'])`: the callable is called.
                 for literal in callable_literals(node, source) {
-                    match literal.class {
-                        None => {
-                            let answer =
-                                self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function);
-                            self.record(doc, literal.position, answer);
-                        }
-                        Some(class) => {
-                            let receiver = if class.kind() == "class_constant_access_expression" {
-                                ts::children(class)
-                                    .into_iter()
-                                    .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
-                                    .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
-                            } else {
-                                self.infer(doc, source, class, scope)
-                            };
-                            if let Some(receiver) = receiver {
-                                self.record_member(doc, literal.position, &receiver, &literal.text, Slot::Method);
-                            }
-                        }
+                    if let Some(answer) = self.callable_answer(doc, source, &literal, scope) {
+                        self.record(doc, literal.position, answer);
                     }
                 }
             }
@@ -1378,6 +1596,24 @@ impl PhpResolver {
                                 );
                             }
                         }
+                        // `new $class()`: the class the variable is known to name.
+                        "variable_name" => {
+                            if let Some(ident) = variable_identifier(child)
+                                && let Some(Some(ClassRef::Declared(key))) =
+                                    scope.class_strings.get(ts::text(ident, source).as_ref())
+                            {
+                                let class = ClassRef::Declared(key.clone());
+                                let answer = self.member_answer(&class, "__construct", Slot::Method);
+                                let answer = match answer {
+                                    Answer::Internal(_) => answer,
+                                    _ => match self.declared_class(&key.clone()) {
+                                        Some(site) => Answer::Internal(site),
+                                        None => answer,
+                                    },
+                                };
+                                self.record(doc, ident, answer);
+                            }
+                        }
                         _ => self.walk_uses(doc, source, child, scope),
                     }
                 }
@@ -1392,7 +1628,7 @@ impl PhpResolver {
                 self.walk_member(doc, source, node, scope, Slot::Property)
             }
             "scoped_call_expression" => {
-                self.walk_scoped(doc, source, node, scope, Slot::Method);
+                self.walk_scoped(doc, source, node, scope, Slot::StaticMethod);
                 if let Some(arguments) = node.child_by_field_name("arguments") {
                     self.walk_uses(doc, source, arguments, scope);
                 }
@@ -1451,6 +1687,32 @@ impl PhpResolver {
                     scope
                         .vars
                         .insert(ts::text(ident, source).into_owned(), class);
+                }
+                // `$m = 'go'`, `$c = Foo::class`: a name held in a local, for as long as
+                // nothing else is assigned to it.
+                if let Some(left) = node.child_by_field_name("left")
+                    && left.kind() == "variable_name"
+                    && let Some(ident) = variable_identifier(left)
+                {
+                    let name = ts::text(ident, source).into_owned();
+                    let right = node.child_by_field_name("right");
+                    let string = right
+                        .filter(|r| matches!(r.kind(), "string" | "encapsed_string"))
+                        .and_then(|r| string_literal(r, source));
+                    let class = right.and_then(|r| self.class_constant_name(doc, source, r, scope));
+                    let merged = |old: Option<&Option<String>>, new: Option<String>| match (old, new) {
+                        (Some(Some(old)), Some(new)) if *old == new => Some(new),
+                        (None, new) => new,
+                        _ => None,
+                    };
+                    let value = merged(scope.strings.get(&name), string);
+                    scope.strings.insert(name.clone(), value);
+                    let known = match (scope.class_strings.get(&name), class) {
+                        (Some(Some(old)), Some(new)) if *old == new => Some(new),
+                        (None, new) => new,
+                        _ => None,
+                    };
+                    scope.class_strings.insert(name, known);
                 }
                 self.walk_use_children(doc, source, node, scope);
             }
@@ -1553,7 +1815,7 @@ impl PhpResolver {
             }
         }
 
-        let mut inner = UseScope { namespace, class, parent, vars: HashMap::new() };
+        let mut inner = UseScope { namespace, class, parent, ..UseScope::default() };
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, &mut inner);
         }
@@ -1572,6 +1834,17 @@ impl PhpResolver {
         slot: Slot,
     ) {
         if let Some(name_node) = node.child_by_field_name("name") {
+            // `$this->$m()`: the method the variable is known to name.
+            if name_node.kind() == "variable_name"
+                && matches!(slot, Slot::Method)
+                && let Some(ident) = variable_identifier(name_node)
+                && let Some(Some(method)) = scope.strings.get(ts::text(ident, source).as_ref()).cloned()
+                && let Some(receiver) = node
+                    .child_by_field_name("object")
+                    .and_then(|object| self.infer(doc, source, object, scope))
+            {
+                self.record_member(doc, ident, &receiver, &method, slot);
+            }
             if name_node.kind() == "name" {
                 let receiver = node
                     .child_by_field_name("object")

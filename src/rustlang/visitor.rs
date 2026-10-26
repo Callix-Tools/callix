@@ -110,6 +110,8 @@ pub struct RustExtractor<'a> {
     /// imports: the adapter substitutes the real MODULE node once every module
     /// exists, and emits IMPORTS from the file at the same time.
     internal_imports: Vec<(String, String, String, String)>,
+    /// The `macro_rules!` of this file, by name.
+    macros: HashMap<String, super::macros::MacroRules>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -137,6 +139,7 @@ impl<'a> RustExtractor<'a> {
             deps,
             occurrences: Vec::new(),
             internal_imports: Vec::new(),
+            macros: HashMap::new(),
         }
     }
 
@@ -154,6 +157,13 @@ impl<'a> RustExtractor<'a> {
     }
 
     pub fn extract(&mut self, root: TsNode<'_>) -> PyResult<()> {
+        for node in owned_descendants(root) {
+            if node.kind() == "macro_definition"
+                && let Some((name, rules)) = super::macros::parse_definition(node, self.source)
+            {
+                self.macros.insert(name, rules);
+            }
+        }
         self.dispatch(root)
     }
 
@@ -281,6 +291,27 @@ impl<'a> RustExtractor<'a> {
     /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in owned_descendants(scope) {
+            // `call_all!(a, b)` where the project defines the macro: what it expands to
+            // is what is called.
+            if node.kind() == "macro_invocation"
+                && let Some(name) = node.child_by_field_name("macro")
+                && let Some(arguments) = ts::child_of_type(node, "token_tree")
+            {
+                let text = self.text(name);
+                let name = text.rsplit("::").next().unwrap_or(&text).to_string();
+                if self.macros.contains_key(&name) {
+                    let mut tokens = Vec::new();
+                    super::macros::flatten(arguments, self.source, true, &mut tokens);
+                    // The outer delimiters are not arguments.
+                    if tokens.len() >= 2 {
+                        tokens.remove(0);
+                        tokens.pop();
+                    }
+                    let mut seen = HashSet::new();
+                    self.expand_invocation(&name, &tokens, enclosing_id, 0, &mut seen);
+                }
+                continue;
+            }
             if node.kind() != "call_expression" {
                 continue;
             }
@@ -288,9 +319,11 @@ impl<'a> RustExtractor<'a> {
                 continue;
             };
             let mut site = None;
+            let mut callee: Option<String> = None;
             if let Some(name_node) = plain_name(function) {
                 self.add_occurrence("call", name_node, enclosing_id);
                 site = Some(ts::span(name_node));
+                callee = Some(self.text(name_node));
             } else if function.kind() == "call_expression" {
                 // `f()()`: a call of whatever `f` returns.
                 if let Some(inner) = callee_name(function) {
@@ -308,9 +341,65 @@ impl<'a> RustExtractor<'a> {
                     if let Some(name) = plain_name(argument) {
                         let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
                         self.add_occurrence_with("read", name, enclosing_id, Some(detail));
+                        // `iter.map(f)`, `thread::spawn(f)`: the library calls what it is given.
+                        if callee.as_deref().is_some_and(calls_its_arguments) {
+                            let detail = format!("c:{}:{}", site.start_line, site.start_col);
+                            self.add_occurrence_with("callarg", name, enclosing_id, Some(detail));
+                        }
                     }
                 }
             }
+        }
+    }
+
+    /// The calls a project macro makes where it is invoked. A callee an argument
+    /// supplied is placed where the invocation wrote it, where the resolver can
+    /// answer for it; one the macro's body wrote is found by its name.
+    fn expand_invocation(
+        &mut self,
+        name: &str,
+        arguments: &[super::macros::Tok],
+        enclosing_id: &str,
+        depth: usize,
+        seen: &mut HashSet<(u32, u32, String)>,
+    ) {
+        if depth > 4 {
+            return;
+        }
+        let Some(rules) = self.macros.get(name) else {
+            return;
+        };
+        let Some(tokens) = super::macros::expand(rules, arguments) else {
+            return;
+        };
+        let mut calls: Vec<(super::macros::Tok, bool)> = Vec::new();
+        let mut nested: Vec<(String, Vec<super::macros::Tok>)> = Vec::new();
+        for found in super::macros::scan(&tokens) {
+            match found {
+                super::macros::Found::Call(token) => calls.push((token.clone(), token.from_args)),
+                super::macros::Found::Macro(token, inner) => {
+                    if self.macros.contains_key(&token.text) {
+                        nested.push((token.text.clone(), inner.to_vec()));
+                    }
+                }
+            }
+        }
+        for (token, from_args) in calls {
+            if !seen.insert((token.span.start_line, token.span.start_col, token.text.clone())) {
+                continue;
+            }
+            let detail = (!from_args).then(|| format!("name:{}", token.text));
+            self.occurrences.push(OccurrenceRef {
+                role: "call".to_string(),
+                line: token.span.start_line,
+                col: token.span.start_col,
+                enclosing_id: enclosing_id.to_string(),
+                span: token.span,
+                detail,
+            });
+        }
+        for (inner_name, inner) in nested {
+            self.expand_invocation(&inner_name, &inner, enclosing_id, depth + 1, seen);
         }
     }
 
@@ -540,9 +629,40 @@ impl<'a> RustExtractor<'a> {
             }
         }
 
+        // A local that is only a container the called one is read from - looped
+        // over, indexed - holds the functions too.
+        let mut relevant = called.clone();
+        for _ in 0..3 {
+            for node in &nodes {
+                let (left, right) = match node.kind() {
+                    "let_declaration" => (node.child_by_field_name("pattern"), node.child_by_field_name("value")),
+                    "assignment_expression" => (node.child_by_field_name("left"), node.child_by_field_name("right")),
+                    "for_expression" => (node.child_by_field_name("pattern"), node.child_by_field_name("value")),
+                    _ => continue,
+                };
+                let (Some(left), Some(right)) = (left, right) else {
+                    continue;
+                };
+                if !relevant.contains(&self.text(left)) {
+                    continue;
+                }
+                let source = match right.kind() {
+                    "identifier" => Some(right),
+                    "index_expression" | "reference_expression" | "unary_expression" => {
+                        ts::named_children(right).first().copied().filter(|o| o.kind() == "identifier")
+                    }
+                    _ => None,
+                };
+                if let Some(source) = source {
+                    relevant.insert(self.text(source));
+                }
+            }
+        }
+        let called = relevant;
+
         let mut locals: HashMap<String, String> = HashMap::new();
         for node in &nodes {
-            if node.kind() != "let_declaration" {
+            if !matches!(node.kind(), "let_declaration" | "for_expression") {
                 continue;
             }
             let Some(pattern) = node.child_by_field_name("pattern") else {
@@ -577,8 +697,8 @@ impl<'a> RustExtractor<'a> {
 
         for node in &nodes {
             match node.kind() {
-                "let_declaration" | "assignment_expression" => {
-                    let (left, right) = if node.kind() == "let_declaration" {
+                "let_declaration" | "assignment_expression" | "for_expression" => {
+                    let (left, right) = if matches!(node.kind(), "let_declaration" | "for_expression") {
                         (node.child_by_field_name("pattern"), node.child_by_field_name("value"))
                     } else {
                         (node.child_by_field_name("left"), node.child_by_field_name("right"))
@@ -816,4 +936,29 @@ impl<'a> RustExtractor<'a> {
         self.graph.push_relation(Py::new(self.py, relation)?);
         Ok(())
     }
+}
+
+/// Methods and functions of the standard library that call a function they are
+/// given, by name. The list is closed on purpose: a function handed to anything
+/// else is a reference, since whether the callee calls it cannot be known from the
+/// program. It applies only where the callee is not a function of the project.
+fn calls_its_arguments(name: &str) -> bool {
+    matches!(
+        name,
+        // iterators
+        "map" | "for_each" | "filter" | "filter_map" | "flat_map" | "fold" | "try_fold" | "reduce"
+            | "any" | "all" | "find" | "find_map" | "position" | "rposition" | "take_while"
+            | "skip_while" | "map_while" | "inspect" | "scan" | "max_by" | "min_by" | "max_by_key"
+            | "min_by_key" | "partition" | "from_fn" | "repeat_with" | "successors"
+            // slices and vectors
+            | "sort_by" | "sort_by_key" | "sort_unstable_by" | "sort_unstable_by_key"
+            | "sort_by_cached_key" | "retain" | "dedup_by_key" | "binary_search_by"
+            | "binary_search_by_key"
+            // options, results and maps
+            | "and_then" | "or_else" | "map_err" | "unwrap_or_else" | "map_or" | "map_or_else"
+            | "ok_or_else" | "then" | "is_some_and" | "is_ok_and" | "get_or_insert_with"
+            | "or_insert_with" | "and_modify" | "then_with"
+            // threads and unwinding
+            | "spawn" | "catch_unwind" | "scope" | "call_once"
+    )
 }

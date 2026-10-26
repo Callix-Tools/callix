@@ -1,0 +1,6 @@
+{
+  "decorators/nested_decorators": {
+    "remove": [["main", "main.func"]],
+    "reason": "`func` is rebound to `dec1(dec2(func))`, so `func()` in main calls `dec1.inner`, which calls `dec2.inner`, which calls the original `func`; main never calls main.func itself, and the vendored expectation lists it next to main.dec1.inner"
+  }
+}

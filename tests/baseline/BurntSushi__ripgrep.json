@@ -76,9 +76,9 @@
       "relations": 19
     },
     "crates/core/flags/defs.rs": {
-      "hash": "4107a2259faf5fa2",
-      "nodes": 1205,
-      "relations": 1220
+      "hash": "12b02187ee13c27d",
+      "nodes": 1210,
+      "relations": 1225
     },
     "crates/core/flags/doc/help.rs": {
       "hash": "9341b8f281c442cd",
@@ -231,9 +231,9 @@
       "relations": 382
     },
     "crates/ignore/tests/gitignore_matched_path_or_any_parents_tests.rs": {
-      "hash": "abfcdfafad6a39e3",
-      "nodes": 10,
-      "relations": 13
+      "hash": "350545096624af34",
+      "nodes": 14,
+      "relations": 17
     },
     "crates/matcher/src/interpolate.rs": {
       "hash": "1f7ab4fa4603cc8d",
@@ -286,9 +286,9 @@
       "relations": 31
     },
     "crates/printer/src/hyperlink.rs": {
-      "hash": "09636948e53ee9a7",
-      "nodes": 97,
-      "relations": 120
+      "hash": "4135938ccd3fabd2",
+      "nodes": 98,
+      "relations": 121
     },
     "crates/printer/src/hyperlink_aliases.rs": {
       "hash": "db0fe8da5d905824",
@@ -301,9 +301,9 @@
       "relations": 119
     },
     "crates/printer/src/jsont.rs": {
-      "hash": "40b41afe11402deb",
-      "nodes": 48,
-      "relations": 68
+      "hash": "be1bdb2fb6131a26",
+      "nodes": 49,
+      "relations": 69
     },
     "crates/printer/src/lib.rs": {
       "hash": "814e0824e3e29e9f",
@@ -336,9 +336,9 @@
       "relations": 161
     },
     "crates/printer/src/util.rs": {
-      "hash": "1cd59ae7275f4d6a",
-      "nodes": 100,
-      "relations": 122
+      "hash": "47f81f4f5aaa531b",
+      "nodes": 102,
+      "relations": 124
     },
     "crates/regex/src/ast.rs": {
       "hash": "d172de85e53ffb5b",
@@ -505,11 +505,11 @@
       "parameter": 1488,
       "project": 10,
       "type_alias": 7,
-      "variable": 78
+      "variable": 91
     },
     "relations": {
       "contains": 196,
-      "declares": 6324,
+      "declares": 6337,
       "depends_on": 68,
       "imports": 255,
       "resolves_to": 259
@@ -519,28 +519,28 @@
   "ref": "14.1.1",
   "resolution": {
     "metrics": {
-      "external": 7404,
-      "internal": 9642,
-      "queries": 19366,
-      "resolved": 19158,
-      "unresolved": 208
+      "external": 8214,
+      "internal": 11925,
+      "queries": 22891,
+      "resolved": 22620,
+      "unresolved": 230
     },
     "relations": {
-      "calls": 11428,
+      "calls": 13743,
       "contains": 196,
-      "declares": 6324,
+      "declares": 6337,
       "depends_on": 68,
       "has_type": 1963,
       "imports": 255,
       "inherits_from": 231,
-      "references": 3430,
+      "references": 4235,
       "resolves_to": 259
     },
     "status": "ok"
   },
   "totals": {
     "files": 98,
-    "nodes": 6039,
-    "relations": 7102
+    "nodes": 6052,
+    "relations": 7115
   }
 }

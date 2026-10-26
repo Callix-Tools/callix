@@ -441,9 +441,9 @@
       "relations": 37
     },
     "deps/jemalloc/include/jemalloc/internal/edata.h": {
-      "hash": "945977b09db3f2d1",
-      "nodes": 226,
-      "relations": 278
+      "hash": "d48e37d31ef235e0",
+      "nodes": 280,
+      "relations": 332
     },
     "deps/jemalloc/include/jemalloc/internal/edata_cache.h": {
       "hash": "b056563e8ca52121",
@@ -526,9 +526,9 @@
       "relations": 17
     },
     "deps/jemalloc/include/jemalloc/internal/hpdata.h": {
-      "hash": "ca4cca0299f59729",
-      "nodes": 122,
-      "relations": 162
+      "hash": "b5bfef669e01dfa5",
+      "nodes": 199,
+      "relations": 239
     },
     "deps/jemalloc/include/jemalloc/internal/inspect.h": {
       "hash": "ab1b8bd5888402ff",
@@ -1016,9 +1016,9 @@
       "relations": 20
     },
     "deps/jemalloc/src/hook.c": {
-      "hash": "7f83d65dbd80eda7",
-      "nodes": 44,
-      "relations": 56
+      "hash": "efca0617f90b71e2",
+      "nodes": 45,
+      "relations": 57
     },
     "deps/jemalloc/src/hpa.c": {
       "hash": "a55f90ca168ca5ba",
@@ -1311,9 +1311,9 @@
       "relations": 1
     },
     "deps/jemalloc/test/include/test/btalloc.h": {
-      "hash": "7d17fe16c6ad44e4",
-      "nodes": 1,
-      "relations": 1
+      "hash": "b812ed406a9c9682",
+      "nodes": 7,
+      "relations": 7
     },
     "deps/jemalloc/test/include/test/extent_hooks.h": {
       "hash": "5fc563395fa25017",
@@ -1546,9 +1546,9 @@
       "relations": 6
     },
     "deps/jemalloc/test/unit/atomic.c": {
-      "hash": "469b6541ed2aa6ff",
-      "nodes": 9,
-      "relations": 11
+      "hash": "eb54edd25db1d886",
+      "nodes": 10,
+      "relations": 12
     },
     "deps/jemalloc/test/unit/background_thread.c": {
       "hash": "129f3180825686aa",
@@ -1736,9 +1736,9 @@
       "relations": 26
     },
     "deps/jemalloc/test/unit/mpsc_queue.c": {
-      "hash": "e364cb75f7c8c2db",
-      "nodes": 36,
-      "relations": 53
+      "hash": "c6e716e331d0c516",
+      "nodes": 38,
+      "relations": 55
     },
     "deps/jemalloc/test/unit/mq.c": {
       "hash": "33a7c4b6aa0ae364",
@@ -1781,9 +1781,9 @@
       "relations": 8
     },
     "deps/jemalloc/test/unit/ph.c": {
-      "hash": "5c3897319a090743",
-      "nodes": 39,
-      "relations": 54
+      "hash": "2cf6d959380ca513",
+      "nodes": 41,
+      "relations": 56
     },
     "deps/jemalloc/test/unit/prng.c": {
       "hash": "cf483cbb1af1dcb3",
@@ -1911,9 +1911,9 @@
       "relations": 90
     },
     "deps/jemalloc/test/unit/seq.c": {
-      "hash": "fd6b8536111520b7",
-      "nodes": 18,
-      "relations": 26
+      "hash": "0a9711f8ac24faac",
+      "nodes": 19,
+      "relations": 27
     },
     "deps/jemalloc/test/unit/size_check.c": {
       "hash": "e87a76f3b1e7192d",
@@ -3903,17 +3903,17 @@
       "dependency": 21,
       "external_symbol": 518,
       "file": 779,
-      "function": 10702,
+      "function": 10750,
       "import": 3128,
       "module": 30,
-      "parameter": 22575,
+      "parameter": 22655,
       "project": 15,
-      "type_alias": 1039,
+      "type_alias": 1055,
       "variable": 1172
     },
     "relations": {
       "contains": 809,
-      "declares": 52936,
+      "declares": 53080,
       "depends_on": 21,
       "imports": 3127,
       "resolves_to": 3128
@@ -3923,27 +3923,27 @@
   "ref": "8.10.0",
   "resolution": {
     "metrics": {
-      "external": 62400,
-      "internal": 134130,
-      "queries": 196530,
-      "resolved": 196530,
+      "external": 54211,
+      "internal": 134594,
+      "queries": 188805,
+      "resolved": 188805,
       "unresolved": 0
     },
     "relations": {
-      "calls": 81618,
+      "calls": 77650,
       "contains": 809,
-      "declares": 52936,
+      "declares": 53080,
       "depends_on": 21,
-      "has_type": 22099,
+      "has_type": 22185,
       "imports": 3127,
-      "references": 60766,
+      "references": 60529,
       "resolves_to": 3128
     },
     "status": "degraded"
   },
   "totals": {
     "files": 779,
-    "nodes": 45638,
-    "relations": 60021
+    "nodes": 45782,
+    "relations": 60165
   }
 }

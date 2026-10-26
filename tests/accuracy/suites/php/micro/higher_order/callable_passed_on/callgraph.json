@@ -1,0 +1,1 @@
+{"main.php": ["App\\outer"], "App\\outer": ["App\\inner"], "App\\inner": ["App\\leaf"], "App\\leaf": []}

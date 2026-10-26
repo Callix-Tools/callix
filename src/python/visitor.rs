@@ -62,6 +62,43 @@ fn descendants_of<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
+/// Where the value of an expression goes: the variable that holds it, or an
+/// element store (`d[k] = v`, `l.append(v)`) whose holder the resolver finds.
+pub(crate) struct Sink {
+    pub holder: String,
+    pub store: Option<usize>,
+}
+
+impl Sink {
+    fn holder(id: &str) -> Self {
+        Sink { holder: id.to_owned(), store: None }
+    }
+}
+
+/// The detail of an `alias` occurrence: the keys it sits under, the store it
+/// belongs to, and what kind of value it is.
+fn alias_detail(sink: &Sink, path: &[String], kind: Option<&str>) -> Option<String> {
+    let mut parts: Vec<String> = Vec::new();
+    if !path.is_empty() {
+        parts.push(format!("at:{}", path.join(";")));
+    }
+    if let Some(store) = sink.store {
+        parts.push(format!("store:{store}"));
+    }
+    if let Some(kind) = kind {
+        parts.push(kind.to_owned());
+    }
+    if parts.is_empty() { None } else { Some(parts.join("|")) }
+}
+
+/// What a key of a subscript is, as far as the source shows.
+enum KeySpec<'t> {
+    Literal(String),
+    Wild,
+    Slice(i64, i64),
+    Name(TsNode<'t>),
+}
+
 pub struct PythonVisitor<'a> {
     py: Python<'a>,
     graph: &'a mut Graph,
@@ -84,6 +121,11 @@ pub struct PythonVisitor<'a> {
     /// The qualified name given to the lambda that starts at a byte offset: a
     /// lambda reached by two paths of the walk is still one node.
     lambda_names: HashMap<usize, String>,
+    /// Numbers the element stores of this file (`d[k] = v`, `l.append(v)`).
+    next_store: usize,
+    /// The parameters of the functions being visited, innermost last: a call of
+    /// one of them is a call of whatever it holds.
+    param_scopes: Vec<(String, std::collections::HashSet<String>)>,
 }
 
 impl<'a> PythonVisitor<'a> {
@@ -120,6 +162,8 @@ impl<'a> PythonVisitor<'a> {
             occurrences: Vec::new(),
             lambda_counts: HashMap::new(),
             lambda_names: HashMap::new(),
+            next_store: 0,
+            param_scopes: Vec::new(),
         }
     }
 
@@ -530,6 +574,7 @@ impl<'a> PythonVisitor<'a> {
         }
 
         self.push(qname.clone(), func_id.clone(), kind);
+        self.param_scopes.push((qname.clone(), std::collections::HashSet::new()));
 
         if let Some(params) = ts::child_of_type(node, "parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
@@ -540,6 +585,7 @@ impl<'a> PythonVisitor<'a> {
             self.walk_body(body, &func_id)?;
         }
 
+        self.param_scopes.pop();
         self.pop();
         Ok(())
     }
@@ -574,12 +620,14 @@ impl<'a> PythonVisitor<'a> {
         self.add_node_with_relation(func_node, RelationKind::Declares)?;
 
         self.push(qname.clone(), func_id.clone(), NodeKind::Function);
+        self.param_scopes.push((qname.clone(), std::collections::HashSet::new()));
         if let Some(params) = ts::child_of_type(node, "lambda_parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
         }
         if let Some(body) = node.child_by_field_name("body") {
             self.scan_value(body, &func_id)?;
         }
+        self.param_scopes.pop();
         self.pop();
         Ok(qname)
     }
@@ -637,6 +685,9 @@ impl<'a> PythonVisitor<'a> {
             }
             let annotation = ann_type_node.map(|n| self.text(n));
             let param_qname = format!("{function_qname}.{param_name}");
+            if let Some((_, names)) = self.param_scopes.last_mut() {
+                names.insert(param_name.clone());
+            }
 
             let metadata = PyDict::new(self.py);
             metadata.set_item("is_self", param_name == "self")?;
@@ -666,6 +717,8 @@ impl<'a> PythonVisitor<'a> {
             // `get_db` a dependency of the handler.
             if has_default && let Some(default) = ts::children(child).last() {
                 self.scan_value(*default, function_id)?;
+                // A default is what the parameter holds when the call passes nothing.
+                self.record_aliases(*default, &Sink::holder(&param_id), &[], 0)?;
             }
 
             if let Some(ann_type_node) = ann_type_node {
@@ -705,6 +758,11 @@ impl<'a> PythonVisitor<'a> {
                 } else if let Some(lambda) = Self::unwrap_lambda(child) {
                     let qname = self.visit_lambda(lambda)?;
                     self.record_occurrence_with("alias", lambda, &container, Some(format!("return|lambda:{qname}")));
+                } else if child.kind() == "call"
+                    && let Some(name) = Self::callee_name(child)
+                {
+                    // `return f()`: calling this function yields what `f` returns.
+                    self.record_occurrence_with("alias", name, &container, Some("return|result".into()));
                 }
             }
         }
@@ -739,20 +797,70 @@ impl<'a> PythonVisitor<'a> {
             };
             self.record_occurrence("call", name_node, caller_id);
             call_site = Some(ts::span(name_node));
+            // `cb()` where `cb` is a parameter: whatever the type checker says of
+            // it, the call is of what the parameter holds.
+            if callee.kind() == "identifier" {
+                let name = self.text(callee);
+                let scope = self.param_scopes.iter().rev().find(|(_, names)| names.contains(&name)).map(|(q, _)| q.clone());
+                if let Some(scope) = scope {
+                    self.record_occurrence_with("paramcall", name_node, caller_id, Some(format!("p:{scope}.{name}")));
+                }
+            }
+            // `map(xs, f)`, `sorted(xs, key=f)`: the library calls what it is given.
+            let at = ts::span(name_node);
+            for (argument, _) in self.callback_arguments(callee, node) {
+                let detail = format!("c:{}:{}", at.start_line, at.start_col);
+                self.record_occurrence_with("callarg", argument, caller_id, Some(detail));
+            }
+            // `recv.m()`: what `recv` holds decides which class's `m` it is, when
+            // the type checker cannot say. The receiver is recorded with the name
+            // and the place of the call.
+            if callee.kind() == "attribute"
+                && let Some(receiver) = ts::children(callee).first().copied()
+                && let Some(receiver_name) = Self::plain_name(receiver)
+            {
+                let at = ts::span(name_node);
+                let detail = format!("m:{}@{}:{}", self.text(name_node), at.start_line, at.start_col);
+                self.record_occurrence_with("recv", receiver_name, caller_id, Some(detail));
+            }
+            // `l.append(f)`, `d.update({...})`: what is stored in the container.
+            if callee.kind() == "attribute" {
+                self.record_method_store(node, callee, caller_id)?;
+            }
         } else if let Some(callee) = ts::children(node).first().copied() {
             match callee.kind() {
                 // `f()()`: a call of whatever `f` returns.
                 "call" => {
                     self.scan_call(callee, enclosing_id, caller_id)?;
-                    if let Some(inner) = Self::callee_name(callee) {
-                        self.record_occurrence_with("call", inner, caller_id, Some("result".into()));
+                    // How many calls are stacked below this one: `f()()()` is a call of
+                    // what `f()()` returns, which is what `f()` returns.
+                    let mut base = callee;
+                    let mut depth = 1usize;
+                    while let Some(function) = base.child_by_field_name("function")
+                        && function.kind() == "call"
+                    {
+                        base = function;
+                        depth += 1;
+                    }
+                    if let Some(inner) = Self::callee_name(base) {
+                        // The arguments of this call are bound to what it calls, which is
+                        // found only after resolution: they are keyed by the place of
+                        // the argument list.
+                        let site = ts::child_of_type(node, "argument_list").map(ts::span);
+                        let detail = match site {
+                            Some(at) => format!("result:{depth}:{}:{}", at.start_line, at.start_col),
+                            None => format!("result:{depth}"),
+                        };
+                        self.record_occurrence_with("call", inner, caller_id, Some(detail));
+                        call_site = site;
                     }
                 }
-                // `table["key"]()`: a call of whatever the container holds.
+                // `table["key"]()`: a call of whatever the container holds under it.
                 "subscript" => {
                     self.scan_value(callee, enclosing_id)?;
-                    if let Some(base) = ts::children(callee).first().copied().and_then(Self::plain_name) {
-                        self.record_occurrence("call", base, caller_id);
+                    if let Some((root, keys)) = Self::subscript_chain(callee) {
+                        let parts = self.emit_keys(&keys, ts::span(root), caller_id);
+                        self.record_occurrence_with("call", root, caller_id, Some(format!("keys:{}", parts.join(";"))));
                     }
                 }
                 _ => self.scan_value(callee, enclosing_id)?,
@@ -784,48 +892,322 @@ impl<'a> PythonVisitor<'a> {
     }
 
     /// The identifier a call's callee ends in.
+    /// The arguments of a library function that calls them, among the plain
+    /// names it is given, and whether what it yields are those calls' results.
+    ///
+    /// A closed list on purpose: `map` and `sorted` are known to call their
+    /// function argument, and nothing else is guessed. A name the project defines
+    /// itself is not told from the builtin here, which is the one place it can be
+    /// wrong.
+    fn callback_arguments<'t>(&self, callee: TsNode<'t>, call: TsNode<'t>) -> Vec<(TsNode<'t>, bool)> {
+        // (every positional argument or only `key=`, results are yielded)
+        let (positional, yields) = if callee.kind() == "identifier" {
+            match self.text(callee).as_str() {
+                "map" => (true, true),
+                "filter" => (true, false),
+                "sorted" | "min" | "max" => (false, false),
+                _ => return Vec::new(),
+            }
+        } else {
+            let parts = ts::children(callee);
+            let object = parts.first().map(|p| self.text(*p));
+            let name = parts.last().map(|p| self.text(*p)).unwrap_or_default();
+            match (object.as_deref(), name.as_str()) {
+                (Some("itertools"), "starmap") => (true, true),
+                (Some("itertools"), "filterfalse" | "takewhile" | "dropwhile" | "accumulate") => (true, false),
+                (Some("functools"), "reduce") => (true, false),
+                (Some("itertools"), "groupby") => (false, false),
+                (_, "sort") => (false, false),
+                _ => return Vec::new(),
+            }
+        };
+        let Some(arguments) = call.child_by_field_name("arguments") else {
+            return Vec::new();
+        };
+        let mut found = Vec::new();
+        for argument in ts::children(arguments) {
+            if argument.kind() == "keyword_argument" {
+                if let (Some(name), Some(value)) = (argument.child_by_field_name("name"), argument.child_by_field_name("value"))
+                    && self.text(name) == "key"
+                    && let Some(plain) = Self::plain_name(value)
+                {
+                    found.push((plain, yields));
+                }
+            } else if positional && let Some(plain) = Self::plain_name(argument) {
+                found.push((plain, yields));
+            }
+        }
+        found
+    }
+
     fn callee_name<'t>(call: TsNode<'t>) -> Option<TsNode<'t>> {
         ts::child_of_types(call, &["identifier", "attribute"]).and_then(Self::plain_name)
     }
 
-    /// What `value` hands to the variable it is assigned to: a name holds what it
-    /// resolves to, a call holds what the callee returns, and a container holds
-    /// whatever its elements are (so `table["k"]` can be followed to them).
-    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) -> PyResult<()> {
+    /// What `value` hands to the holder it is assigned to: a name holds what it
+    /// resolves to, a call holds what the callee returns, a subscript holds what
+    /// the container holds under that key, and a container literal holds its
+    /// elements under their keys (`table["k"]`, `handlers[0]`).
+    fn record_aliases(&mut self, value: TsNode<'_>, sink: &Sink, path: &[String], depth: usize) -> PyResult<()> {
         if let Some(name) = Self::plain_name(value) {
-            self.record_occurrence_with("alias", name, variable_id, None);
+            self.record_occurrence_with("alias", name, &sink.holder, alias_detail(sink, path, None));
             return Ok(());
         }
         if let Some(lambda) = Self::unwrap_lambda(value) {
             let qname = self.visit_lambda(lambda)?;
-            self.record_occurrence_with("alias", lambda, variable_id, Some(format!("|lambda:{qname}")));
+            self.record_occurrence_with(
+                "alias",
+                lambda,
+                &sink.holder,
+                alias_detail(sink, path, Some(&format!("lambda:{qname}"))),
+            );
             return Ok(());
         }
         match value.kind() {
             "call" => {
                 if let Some(name) = Self::callee_name(value) {
-                    self.record_occurrence_with("alias", name, variable_id, Some("result".into()));
+                    self.record_occurrence_with("alias", name, &sink.holder, alias_detail(sink, path, Some("result")));
+                }
+                // `res = map(xs, f)`: what is iterated over are the results of `f`.
+                if let Some(callee) = ts::child_of_types(value, &["identifier", "attribute"]) {
+                    let mut deeper = path.to_vec();
+                    deeper.push("*".to_owned());
+                    for (argument, yields) in self.callback_arguments(callee, value) {
+                        if yields {
+                            self.record_occurrence_with("alias", argument, &sink.holder, alias_detail(sink, &deeper, Some("result")));
+                        }
+                    }
                 }
             }
             "subscript" => {
-                if let Some(base) = ts::children(value).first().copied().and_then(Self::plain_name) {
-                    self.record_occurrence_with("alias", base, variable_id, None);
+                if let Some((root, keys)) = Self::subscript_chain(value) {
+                    let parts = self.emit_keys(&keys, ts::span(root), &sink.holder);
+                    let kind = format!("get:{}", parts.join(";"));
+                    self.record_occurrence_with("alias", root, &sink.holder, alias_detail(sink, path, Some(&kind)));
                 }
             }
-            "dictionary" | "list" | "tuple" | "set" if depth < 3 => {
-                for element in ts::children(value) {
-                    let element = if element.kind() == "pair" {
-                        match ts::children(element).last().copied() {
-                            Some(v) => v,
-                            None => continue,
-                        }
-                    } else {
-                        element
+            "parenthesized_expression" => {
+                if let Some(inner) = ts::children(value).into_iter().find(|c| c.is_named()) {
+                    self.record_aliases(inner, sink, path, depth)?;
+                }
+            }
+            "dictionary" if depth < 4 => {
+                for pair in ts::children(value) {
+                    if pair.kind() != "pair" {
+                        continue;
+                    }
+                    let (Some(key), Some(element)) = (pair.child_by_field_name("key"), pair.child_by_field_name("value"))
+                    else {
+                        continue;
                     };
-                    self.record_aliases(element, variable_id, depth + 1)?;
+                    let key = self.literal_key(key).unwrap_or_else(|| "*".to_owned());
+                    let mut deeper = path.to_vec();
+                    deeper.push(key);
+                    self.record_aliases(element, sink, &deeper, depth + 1)?;
+                }
+            }
+            "list" | "tuple" | "set" if depth < 4 => {
+                let mut index = 0usize;
+                for element in ts::children(value) {
+                    if !element.is_named() || element.kind() == "comment" {
+                        continue;
+                    }
+                    let mut deeper = path.to_vec();
+                    deeper.push(if value.kind() == "set" { "*".to_owned() } else { format!("i{index}") });
+                    index += 1;
+                    if element.kind() == "list_splat" {
+                        continue;
+                    }
+                    self.record_aliases(element, sink, &deeper, depth + 1)?;
+                }
+            }
+            // `key = 1`: a literal is what an index can be read from.
+            "integer" | "string" if depth == 0 && path.is_empty() => {
+                if let Some(key) = self.literal_key(value) {
+                    self.record_occurrence_with("alias", value, &sink.holder, alias_detail(sink, path, Some(&format!("lit:{key}"))));
                 }
             }
             _ => {}
+        }
+        Ok(())
+    }
+
+    /// The key a literal is, written the way the flow pass reads it: `i1`, `s'a'`.
+    fn literal_key(&self, node: TsNode<'_>) -> Option<String> {
+        match node.kind() {
+            "integer" => {
+                let text = self.text(node).replace('_', "");
+                let value: i64 = text.parse().ok()?;
+                Some(format!("i{value}"))
+            }
+            "string" => {
+                let mut content = String::new();
+                for child in ts::children(node) {
+                    match child.kind() {
+                        "string_start" => {
+                            let start = self.text(child);
+                            if !matches!(start.as_str(), "'" | "\"" | "'''" | "\"\"\"") {
+                                return None;
+                            }
+                        }
+                        "string_content" => content.push_str(&self.text(child)),
+                        "string_end" => {}
+                        _ => return None,
+                    }
+                }
+                Some(format!("s{}", crate::flow::escape_key(&content)))
+            }
+            _ => None,
+        }
+    }
+
+    /// `d["a"][k]`: the name at the root and the keys, innermost first.
+    fn subscript_chain<'t>(node: TsNode<'t>) -> Option<(TsNode<'t>, Vec<TsNode<'t>>)> {
+        let mut keys: Vec<TsNode<'t>> = Vec::new();
+        let mut current = node;
+        while current.kind() == "subscript" {
+            keys.push(current.child_by_field_name("subscript")?);
+            current = current.child_by_field_name("value")?;
+        }
+        if keys.is_empty() {
+            return None;
+        }
+        let root = Self::plain_name(current)?;
+        keys.reverse();
+        Some((root, keys))
+    }
+
+    fn key_spec<'t>(&self, key: TsNode<'t>) -> KeySpec<'t> {
+        if let Some(literal) = self.literal_key(key) {
+            return KeySpec::Literal(literal);
+        }
+        match key.kind() {
+            "slice" => {
+                let mut segments: Vec<Option<TsNode<'t>>> = vec![None];
+                for child in ts::children(key) {
+                    if child.kind() == ":" {
+                        segments.push(None);
+                    } else if let Some(last) = segments.last_mut() {
+                        *last = Some(child);
+                    }
+                }
+                if segments.len() > 2 {
+                    return KeySpec::Wild;
+                }
+                let bound = |segment: Option<TsNode<'t>>, default: i64| -> Option<i64> {
+                    match segment {
+                        None => Some(default),
+                        Some(node) => self.literal_key(node)?.strip_prefix('i')?.parse().ok(),
+                    }
+                };
+                match (bound(segments[0], 0), bound(segments.get(1).copied().flatten(), 1_000_000_000)) {
+                    (Some(low), Some(high)) => KeySpec::Slice(low, high),
+                    _ => KeySpec::Wild,
+                }
+            }
+            "identifier" | "attribute" => Self::plain_name(key).map(KeySpec::Name).unwrap_or(KeySpec::Wild),
+            _ => KeySpec::Wild,
+        }
+    }
+
+    /// The keys of a subscript chain as the flow pass reads them. A key that is a
+    /// name is recorded as an occurrence of its own - the resolver says what it
+    /// is - and stands in the path as `#position`.
+    fn emit_keys(&mut self, keys: &[TsNode<'_>], site: Span, enclosing: &str) -> Vec<String> {
+        let mut parts: Vec<String> = Vec::new();
+        for (position, key) in keys.iter().enumerate() {
+            match self.key_spec(*key) {
+                KeySpec::Literal(literal) => parts.push(literal),
+                KeySpec::Wild => parts.push("*".to_owned()),
+                KeySpec::Slice(low, high) => parts.push(format!("r{low}:{high}")),
+                KeySpec::Name(name) => {
+                    parts.push(format!("#{position}"));
+                    self.record_occurrence_with(
+                        "key",
+                        name,
+                        enclosing,
+                        Some(format!("k:{}:{}:{position}", site.start_line, site.start_col)),
+                    );
+                }
+            }
+        }
+        parts
+    }
+
+    /// `d[k] = v`: `v` is stored in `d` under `k`.
+    fn store_into_container(&mut self, lhs: TsNode<'_>, rhs: Option<TsNode<'_>>) -> PyResult<()> {
+        let container = self.container();
+        if let Some((root, keys)) = Self::subscript_chain(lhs) {
+            let store = self.next_store;
+            self.next_store += 1;
+            let parts = self.emit_keys(&keys, ts::span(root), &container);
+            self.record_occurrence_with("store", root, &container, Some(format!("store:{store}|keys:{}", parts.join(";"))));
+            if let Some(rhs) = rhs {
+                let sink = Sink { holder: container.clone(), store: Some(store) };
+                self.record_aliases(rhs, &sink, &[], 0)?;
+            }
+        }
+        self.scan_value(lhs, &container)?;
+        if let Some(rhs) = rhs {
+            self.scan_value(rhs, &container)?;
+        }
+        Ok(())
+    }
+
+    /// `l.append(f)`, `d.update({...})`, `d.setdefault(k, f)`: elements stored
+    /// through a method.
+    fn record_method_store(&mut self, call: TsNode<'_>, callee: TsNode<'_>, caller_id: &str) -> PyResult<()> {
+        let Some(method) = ts::children(callee).last().copied() else {
+            return Ok(());
+        };
+        let name = self.text(method);
+        if !matches!(name.as_str(), "append" | "add" | "insert" | "setdefault" | "update" | "extend") {
+            return Ok(());
+        }
+        let Some(receiver) = ts::children(callee).first().copied() else {
+            return Ok(());
+        };
+        let (root, mut key_nodes) = match Self::subscript_chain(receiver) {
+            Some((root, keys)) => (root, keys),
+            None => match Self::plain_name(receiver) {
+                Some(root) => (root, Vec::new()),
+                None => return Ok(()),
+            },
+        };
+        let Some(arg_list) = ts::child_of_type(call, "argument_list") else {
+            return Ok(());
+        };
+        let arguments: Vec<TsNode<'_>> = ts::children(arg_list)
+            .into_iter()
+            .filter(|a| a.is_named() && !matches!(a.kind(), "comment" | "keyword_argument"))
+            .collect();
+        let store = self.next_store;
+        // What is stored, and under which extra keys.
+        let (extra, elements): (Vec<String>, Vec<(TsNode<'_>, Vec<String>)>) = match (name.as_str(), arguments.as_slice()) {
+            ("append" | "add", [value]) => (vec!["*".to_owned()], vec![(*value, Vec::new())]),
+            ("insert", [_, value]) => (vec!["*".to_owned()], vec![(*value, Vec::new())]),
+            ("update", [value]) if value.kind() == "dictionary" => (Vec::new(), vec![(*value, Vec::new())]),
+            ("extend", [value]) if matches!(value.kind(), "list" | "tuple") => (
+                Vec::new(),
+                ts::children(*value)
+                    .into_iter()
+                    .filter(|e| e.is_named() && e.kind() != "comment")
+                    .map(|e| (e, vec!["*".to_owned()]))
+                    .collect(),
+            ),
+            ("setdefault", [key, value]) => {
+                key_nodes.push(*key);
+                (Vec::new(), vec![(*value, Vec::new())])
+            }
+            _ => return Ok(()),
+        };
+        self.next_store += 1;
+        let mut parts = self.emit_keys(&key_nodes, ts::span(root), caller_id);
+        parts.extend(extra);
+        self.record_occurrence_with("store", root, caller_id, Some(format!("store:{store}|keys:{}", parts.join(";"))));
+        let sink = Sink { holder: caller_id.to_owned(), store: Some(store) };
+        for (element, path) in elements {
+            self.record_aliases(element, &sink, &path, 0)?;
         }
         Ok(())
     }
@@ -856,6 +1238,19 @@ impl<'a> PythonVisitor<'a> {
             };
             let detail = format!("arg:{}:{}:{slot}", site.start_line, site.start_col);
             self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+            return Ok(());
+        }
+        // `f(1)`, `f("a")`: the parameter holds the literal, which is what an index
+        // read through it can be.
+        if let (Some(site), Some(slot)) = (call_site, slot.as_ref())
+            && let Some(key) = self.literal_key(value)
+        {
+            let slot = match slot {
+                Slot::Index(i) => i.to_string(),
+                Slot::Keyword(k) => format!("={k}"),
+            };
+            let detail = format!("arg:{}:{}:{slot}|lit:{key}", site.start_line, site.start_col);
+            self.record_occurrence_with("read", value, enclosing_id, Some(detail));
             return Ok(());
         }
         // `g(lambda: 1)`: the parameter holds the lambda.
@@ -1050,7 +1445,7 @@ impl<'a> PythonVisitor<'a> {
         // it. So the call edge comes from the container, and the reads (of the
         // router, of the arguments) stay with the definition.
         let container = self.container();
-        for dec in decorator_nodes {
+        for (index, dec) in decorator_nodes.iter().enumerate() {
             for child in ts::children(*dec) {
                 match child.kind() {
                     "@" => {}
@@ -1059,12 +1454,15 @@ impl<'a> PythonVisitor<'a> {
                         // The definition depends on what decorates it.
                         if let Some(name) = Self::callee_name(child) {
                             self.record_occurrence("read", name, enclosing_id);
+                            // `@make(x)`: the decorator is what `make(x)` returns.
+                            self.record_occurrence_with("decorate", name, enclosing_id, Some(format!("d:{index}:call")));
                         }
                     }
                     "identifier" | "attribute" => {
                         self.scan_value(child, enclosing_id)?;
                         if let Some(name) = Self::plain_name(child) {
                             self.record_occurrence("call", name, &container);
+                            self.record_occurrence_with("decorate", name, enclosing_id, Some(format!("d:{index}:name")));
                         }
                     }
                     _ => self.scan_value(child, enclosing_id)?,
@@ -1101,6 +1499,11 @@ impl<'a> PythonVisitor<'a> {
                 } else if let Some(lambda) = Self::unwrap_lambda(child) {
                     let qname = self.visit_lambda(lambda)?;
                     self.record_occurrence_with("alias", lambda, &container, Some(format!("return|lambda:{qname}")));
+                } else if child.kind() == "call"
+                    && let Some(name) = Self::callee_name(child)
+                {
+                    // `return f()`: calling this function yields what `f` returns.
+                    self.record_occurrence_with("alias", name, &container, Some("return|result".into()));
                 }
                 self.scan_value(child, &container)?;
             }
@@ -1133,6 +1536,13 @@ impl<'a> PythonVisitor<'a> {
         let last = children.last().copied();
         let rhs = last.filter(|n| n.id() != lhs.id());
 
+        match lhs.kind() {
+            // `d[k] = v` stores into `d`; it declares nothing.
+            "subscript" => return self.store_into_container(lhs, rhs),
+            "pattern_list" | "tuple_pattern" | "list_pattern" => return self.handle_unpacking(node, lhs, rhs),
+            _ => {}
+        }
+
         // For `self.attr = v` the name is the LAST identifier, not the first
         // (the first would be `self`).
         let name_node = if lhs.kind() == "attribute" {
@@ -1146,6 +1556,36 @@ impl<'a> PythonVisitor<'a> {
         let Some(name_node) = name_node else {
             return Ok(());
         };
+        let (var_id, is_alias) = self.declare_target(node, lhs, name_node, annotation)?;
+        let container = self.container();
+
+        // `x = y`: the variable holds what `y` resolves to. The enclosing node of
+        // an `alias` is the variable, so the flow pass knows who holds it.
+        if !is_alias && let Some(value) = rhs {
+            self.record_aliases(value, &Sink::holder(&var_id), &[], 0)?;
+        }
+
+        match rhs {
+            Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,
+            Some(rhs) => {
+                if let Some(ident) = ts::first_identifier(rhs) {
+                    self.record_occurrence("annotation", ident, &container);
+                }
+            }
+            None => {}
+        }
+        Ok(())
+    }
+
+    /// Declares the variable, attribute or type alias an assignment creates, and
+    /// records the write. Returns its id and whether it is a type alias.
+    fn declare_target(
+        &mut self,
+        node: TsNode<'_>,
+        lhs: TsNode<'_>,
+        name_node: TsNode<'_>,
+        annotation: Option<TsNode<'_>>,
+    ) -> PyResult<(String, bool)> {
         let name = self.text(name_node);
 
         let is_alias = annotation.is_some_and(|a| self.text(a) == "TypeAlias");
@@ -1166,6 +1606,18 @@ impl<'a> PythonVisitor<'a> {
         let qname = format!("{}.{name}", self.scope());
         let metadata = PyDict::new(self.py);
         metadata.set_item("is_constant", is_upper(&name))?;
+        // For `self.x = v` the type checker answers with the start of `self.x`, not
+        // with the name `x`: declare the attribute there as well.
+        if lhs.kind() == "attribute" && kind == NodeKind::Attribute {
+            let start = ts::span(lhs);
+            let at_start = crate::span::Span {
+                start_line: start.start_line,
+                start_col: start.start_col,
+                end_line: start.start_line,
+                end_col: start.start_col + 1,
+            };
+            metadata.set_item("declared_at", PyList::new(self.py, vec![at_start])?)?;
+        }
 
         let var_node = self.make_node(
             kind,
@@ -1180,21 +1632,64 @@ impl<'a> PythonVisitor<'a> {
 
         let container = self.container();
         self.record_occurrence("write", name_node, &container);
+        Ok((var_id, is_alias))
+    }
 
-        // `x = y`: the variable holds what `y` resolves to. The enclosing node of
-        // an `alias` is the variable, so the flow pass knows who holds it.
-        if !is_alias && let Some(value) = rhs {
-            self.record_aliases(value, &var_id, 0)?;
+    /// `a, *b, c = x, y, z, w`: each name is a variable holding what stands in its
+    /// place, and the starred name holds the elements in between.
+    fn handle_unpacking(&mut self, node: TsNode<'_>, lhs: TsNode<'_>, rhs: Option<TsNode<'_>>) -> PyResult<()> {
+        let container = self.container();
+        let mut targets: Vec<(Option<String>, bool)> = Vec::new();
+        for target in ts::children(lhs).into_iter().filter(|c| c.is_named() && c.kind() != "comment") {
+            let (name, starred) = match target.kind() {
+                "identifier" => (Some(target), false),
+                "list_splat_pattern" => (ts::child_of_type(target, "identifier"), true),
+                _ => (None, false),
+            };
+            let id = match name {
+                Some(name) => Some(self.declare_target(node, name, name, None)?.0),
+                None => None,
+            };
+            targets.push((id, starred));
         }
-
-        match rhs {
-            Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,
-            Some(rhs) => {
-                if let Some(ident) = ts::first_identifier(rhs) {
-                    self.record_occurrence("annotation", ident, &container);
+        if let Some(rhs) = rhs {
+            let elements: Option<Vec<TsNode<'_>>> = match rhs.kind() {
+                "expression_list" | "tuple" | "list" | "pattern_list" => Some(
+                    ts::children(rhs).into_iter().filter(|c| c.is_named() && c.kind() != "comment").collect(),
+                ),
+                _ => None,
+            };
+            let star = targets.iter().position(|(_, starred)| *starred);
+            if let Some(elements) = elements {
+                let (count, total) = (targets.len(), elements.len());
+                for (index, (id, starred)) in targets.iter().enumerate() {
+                    let Some(id) = id else {
+                        continue;
+                    };
+                    if *starred {
+                        let end = total.saturating_sub(count - index - 1);
+                        for (position, element) in (index..end).enumerate() {
+                            self.record_aliases(elements[element], &Sink::holder(id), &[format!("i{position}")], 0)?;
+                        }
+                    } else {
+                        let element = match star {
+                            Some(star) if index > star => total.checked_sub(count - index),
+                            _ => Some(index),
+                        };
+                        if let Some(element) = element.filter(|e| *e < total) {
+                            self.record_aliases(elements[element], &Sink::holder(id), &[], 0)?;
+                        }
+                    }
+                }
+            } else if star.is_none() && let Some(name) = Self::plain_name(rhs) {
+                // `a, b = pair`: each holds the element of `pair` at its position.
+                for (index, (id, _)) in targets.iter().enumerate() {
+                    if let Some(id) = id {
+                        self.record_occurrence_with("alias", name, id, Some(format!("get:i{index}")));
+                    }
                 }
             }
-            None => {}
+            self.scan_value(rhs, &container)?;
         }
         Ok(())
     }

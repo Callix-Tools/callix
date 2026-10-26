@@ -28,7 +28,7 @@
 //! attribute chains only - not containers, return values or calls - and it
 //! follows nothing it cannot resolve to a node of the project.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::graph::Graph;
 use crate::node::NodeKind;
@@ -76,11 +76,257 @@ pub(crate) struct Flow {
     returns: HashMap<String, Vec<String>>,
     /// Calls of a call's result: (caller, function whose result is called, span, file).
     result_calls: Vec<(String, String, Option<crate::span::Span>, String)>,
+    /// How many calls are stacked below a call of a call's result, by the place of
+    /// its argument list: `f()(x)` has `f` with depth 1 at the `(x)`.
+    result_sites: HashMap<(String, u32, u32), (String, usize)>,
+    /// The same calls with their depth, for the edges (`result_calls` holds depth 1).
+    deep_calls: Vec<(String, String, crate::span::Span, usize)>,
+    /// `cb()` on a parameter: (the scope that calls, the parameter, where).
+    param_calls: Vec<(String, String, crate::span::Span)>,
+    /// A function handed to a library function that calls it: (the scope that
+    /// calls, the file and the place of the callee's name, what was handed, where).
+    /// Written only when the callee turns out not to be a function of the project.
+    library_callbacks: Vec<(String, String, u32, u32, String, crate::span::Span)>,
     /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
     iterations: Vec<(String, String, crate::span::Span, Option<String>)>,
+    /// `recv.m()`: (the scope that calls, what `recv` resolved to, `m`, line, column
+    /// of `m`).
+    receivers: Vec<(String, String, String, u32, u32)>,
+    /// The decorators of a definition, outermost first: the decorator's node (None
+    /// when nothing in the project is known of it) and whether it is a call.
+    decorators: HashMap<String, BTreeMap<usize, Option<(String, bool)>>>,
+    /// Definitions whose name stands for something else after decoration.
+    decorated: HashSet<String>,
+    /// The keys a call through a container was made with: `table["a"]()` is a call
+    /// at `table` with the path `["a"]`.
+    call_paths: HashMap<(String, u32, u32), Vec<Key>>,
+}
+
+/// Where the evaluation of what a holder holds starts: a holder, or one token.
+enum Item {
+    Holder(String),
+    Token(String),
+}
+
+/// A key a container is read or written with.
+///
+/// Written in a token as `i1` (the integer 1), `s'a'` (a string), `*` (anything),
+/// `r1:3` (positions 1 up to 3) or `@ID` (whatever the variable `ID` holds).
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Key {
+    Lit(String),
+    Wild,
+    Range(i64, i64),
+    Var(String),
+}
+
+/// Keys separated by `;`, with the separators of the token grammar escaped.
+pub(crate) fn escape_key(text: &str) -> String {
+    text.replace('%', "%25").replace(';', "%3B").replace('|', "%7C")
+}
+
+fn unescape_key(text: &str) -> String {
+    text.replace("%7C", "|").replace("%3B", ";").replace("%25", "%")
+}
+
+impl Key {
+    fn parse(text: &str) -> Key {
+        if text == "*" {
+            return Key::Wild;
+        }
+        if let Some(range) = text.strip_prefix('r')
+            && let Some((low, high)) = range.split_once(':')
+            && let (Ok(low), Ok(high)) = (low.parse(), high.parse())
+        {
+            return Key::Range(low, high);
+        }
+        if let Some(holder) = text.strip_prefix('@') {
+            return Key::Var(holder.to_owned());
+        }
+        Key::Lit(unescape_key(text))
+    }
+
+    fn integer(&self) -> Option<i64> {
+        match self {
+            Key::Lit(text) => text.strip_prefix('i')?.parse().ok(),
+            _ => None,
+        }
+    }
+}
+
+/// The keys of an encoded path (`i0;s'a'`).
+pub(crate) fn parse_path(text: &str) -> Vec<Key> {
+    if text.is_empty() {
+        return Vec::new();
+    }
+    text.split(';').map(Key::parse).collect()
+}
+
+/// A slice taken of a slice, or an index taken of a slice, is one key.
+fn normalize(path: Vec<Key>) -> Option<Vec<Key>> {
+    let mut out: Vec<Key> = Vec::new();
+    for key in path {
+        match (out.last(), &key) {
+            (Some(Key::Range(low, high)), Key::Lit(_)) => {
+                let index = key.integer().map(|n| low + n);
+                match index {
+                    Some(index) if index < *high => {
+                        out.pop();
+                        out.push(Key::Lit(format!("i{index}")));
+                    }
+                    _ => return None,
+                }
+            }
+            (Some(Key::Range(..)), Key::Wild | Key::Var(_)) => {}
+            (Some(Key::Range(low, high)), Key::Range(low2, high2)) => {
+                let merged = Key::Range(low + low2, (*high).min(low + high2));
+                out.pop();
+                out.push(merged);
+            }
+            _ => out.push(key),
+        }
+    }
+    Some(out)
 }
 
 impl Flow {
+    /// What a call through `key` of a container is: `table["a"]()` has the path
+    /// `a`. Recorded by the adapter where the call is bound.
+    pub(crate) fn call_path(&mut self, caller_id: &str, line: u32, col: u32, path: Vec<Key>) {
+        self.call_paths.insert((caller_id.to_owned(), line, col), path);
+    }
+
+    /// The holder `holder_id` holds `token`, whatever kind of token it is.
+    pub(crate) fn hold(&mut self, holder_id: &str, token: String) {
+        if holder_id != token {
+            self.holds.entry(holder_id.to_owned()).or_default().push(token);
+        }
+    }
+
+    /// The literal values `holder` can be shown to hold.
+    fn literals_of(&self, graph: &Graph, holder: &str) -> Vec<Key> {
+        let mut found: Vec<Key> = Vec::new();
+        let mut seen: HashSet<&str> = HashSet::new();
+        let mut stack: Vec<&str> = vec![holder];
+        while let Some(current) = stack.pop() {
+            for held in self.holds.get(current).into_iter().flatten() {
+                if !seen.insert(held.as_str()) {
+                    continue;
+                }
+                if let Some(literal) = held.strip_prefix("lit:") {
+                    found.push(Key::Lit(unescape_key(literal)));
+                } else if matches!(
+                    graph.node_kind(held),
+                    Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                ) {
+                    stack.push(held.as_str());
+                }
+            }
+        }
+        found
+    }
+
+    /// Whether the key an element was stored under can be the key it is read with.
+    fn compatible(&self, graph: &Graph, stored: &Key, read: &Key) -> bool {
+        match (stored, read) {
+            (Key::Wild, _) | (_, Key::Wild) => true,
+            (Key::Var(holder), other) | (other, Key::Var(holder)) => {
+                let values = self.literals_of(graph, holder);
+                values.is_empty() || values.iter().any(|value| self.compatible(graph, value, other))
+            }
+            (Key::Lit(a), Key::Lit(b)) => a == b,
+            (Key::Range(low, high), other) | (other, Key::Range(low, high)) => match other {
+                Key::Range(low2, high2) => low < high2 && low2 < high,
+                _ => other.integer().is_some_and(|n| *low <= n && n < *high),
+            },
+        }
+    }
+
+    /// Every callable `start` can be shown to hold when it is read with `path`.
+    ///
+    /// A held name is followed; `at:KEYS|TOKEN` is an element stored under KEYS and
+    /// counts only when the read can mean those keys; `get:KEYS|ID` is a value read
+    /// out of `ID`; `elem:ID` is any element of `ID`; `result:F` is what `F`
+    /// returns.
+    fn resolve(&self, graph: &Graph, start: &str, path: &[Key]) -> Vec<String> {
+        self.resolve_item(graph, Item::Holder(start.to_owned()), path)
+    }
+
+    /// What calling `function` returns, as callables.
+    fn results_of(&self, graph: &Graph, function: &str) -> Vec<String> {
+        self.resolve_item(graph, Item::Token(format!("{RESULT}{function}")), &[])
+    }
+
+    fn resolve_item(&self, graph: &Graph, start: Item, path: &[Key]) -> Vec<String> {
+        let mut found: Vec<String> = Vec::new();
+        let mut seen: HashSet<(String, String)> = HashSet::new();
+        let mut stack: Vec<(Item, Vec<Key>, usize)> = vec![(start, path.to_vec(), 0)];
+        while let Some((item, path, depth)) = stack.pop() {
+            if depth > 3 * MAX_DEPTH {
+                continue;
+            }
+            match item {
+                Item::Holder(holder) => {
+                    if !seen.insert((holder.clone(), format!("{path:?}"))) {
+                        continue;
+                    }
+                    for token in self.holds.get(&holder).into_iter().flatten() {
+                        stack.push((Item::Token(token.clone()), path.clone(), depth + 1));
+                    }
+                }
+                Item::Token(token) => {
+                    if let Some(rest) = token.strip_prefix("at:") {
+                        let Some((keys, payload)) = rest.split_once('|') else {
+                            continue;
+                        };
+                        let keys = parse_path(keys);
+                        if path.is_empty() || keys.len() > path.len() {
+                            continue;
+                        }
+                        if !keys.iter().zip(path.iter()).all(|(stored, read)| self.compatible(graph, stored, read)) {
+                            continue;
+                        }
+                        stack.push((Item::Token(payload.to_owned()), path[keys.len()..].to_vec(), depth + 1));
+                    } else if let Some(rest) = token.strip_prefix("get:") {
+                        let Some((keys, holder)) = rest.split_once('|') else {
+                            continue;
+                        };
+                        let mut joined = parse_path(keys);
+                        joined.extend(path.iter().cloned());
+                        if let Some(joined) = normalize(joined) {
+                            stack.push((Item::Holder(holder.to_owned()), joined, depth + 1));
+                        }
+                    } else if let Some(holder) = token.strip_prefix("elem:") {
+                        let mut joined = vec![Key::Wild];
+                        joined.extend(path.iter().cloned());
+                        if let Some(joined) = normalize(joined) {
+                            stack.push((Item::Holder(holder.to_owned()), joined, depth + 1));
+                        }
+                    } else if token.starts_with("lit:") {
+                        continue;
+                    } else if let Some(function) = token.strip_prefix(RESULT) {
+                        for returned in self.returns.get(function).into_iter().flatten() {
+                            stack.push((Item::Token(returned.clone()), path.clone(), depth + 1));
+                        }
+                    } else {
+                        match graph.node_kind(&token) {
+                            Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => {
+                                if !found.contains(&token) {
+                                    found.push(token);
+                                }
+                            }
+                            Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
+                                stack.push((Item::Holder(token), path.clone(), depth + 1));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
+        found
+    }
+
     /// Notes where a call site points, so an argument can find its callee.
     pub(crate) fn call(&mut self, file: &str, occurrence: &OccurrenceRef, target: Option<&str>) {
         self.call_at(file, occurrence.line, occurrence.col, target);
@@ -124,6 +370,29 @@ impl Flow {
             .push(format!("{RESULT}{function_id}"));
     }
 
+    /// `xs.map(f)`, `sort.Slice(x, f)`: `f` is handed to a library function that
+    /// calls it. The call is at `line:col` of the callee's name in `file`; if that
+    /// turns out to be a function of the project the edge is not written, because
+    /// what a function of the project does with its argument is its own business.
+    pub(crate) fn library_callback(
+        &mut self,
+        caller_id: &str,
+        file: &str,
+        line: u32,
+        col: u32,
+        target: &str,
+        span: crate::span::Span,
+    ) {
+        self.library_callbacks.push((
+            caller_id.to_owned(),
+            file.to_owned(),
+            line,
+            col,
+            target.to_owned(),
+            span,
+        ));
+    }
+
     /// `f()()`: the outer call is a call of whatever `f` returns.
     pub(crate) fn result_call(
         &mut self,
@@ -133,6 +402,49 @@ impl Flow {
         file: &str,
     ) {
         self.result_calls.push((caller_id.to_owned(), function_id.to_owned(), Some(span), file.to_owned()));
+    }
+
+    /// `cb()` made by `caller_id`, `cb` being the parameter `parameter_id`.
+    pub(crate) fn param_call(&mut self, caller_id: &str, parameter_id: &str, span: crate::span::Span) {
+        self.param_calls.push((caller_id.to_owned(), parameter_id.to_owned(), span));
+    }
+
+    /// `f()()()` made by `caller_id`: a call of what `f()()` returns. `site` is the
+    /// place of this call's own argument list, where its arguments are keyed.
+    pub(crate) fn result_call_deep(
+        &mut self,
+        caller_id: &str,
+        function_id: &str,
+        span: crate::span::Span,
+        file: &str,
+        depth: usize,
+        site: Option<(u32, u32)>,
+    ) {
+        if let Some((line, col)) = site {
+            self.result_sites.insert((file.to_owned(), line, col), (function_id.to_owned(), depth));
+        }
+        self.deep_calls.push((caller_id.to_owned(), function_id.to_owned(), span, depth));
+    }
+
+    /// The callables a call `depth` calls deep reaches: what `function` returns,
+    /// then what those return, `depth` times.
+    fn level_targets(&self, graph: &Graph, function: &str, depth: usize) -> Vec<String> {
+        let mut current: Vec<String> = vec![function.to_owned()];
+        for _ in 0..depth {
+            let mut next: Vec<String> = Vec::new();
+            for callee in &current {
+                for found in self.results_of(graph, callee) {
+                    if !next.contains(&found) {
+                        next.push(found);
+                    }
+                }
+            }
+            current = next
+                .into_iter()
+                .filter(|c| matches!(graph.node_kind(c), Some(NodeKind::Function | NodeKind::Method | NodeKind::Class)))
+                .collect();
+        }
+        current
     }
 
     /// `for x in it:`: the scope calls `__iter__` and `__next__` of the class
@@ -148,6 +460,93 @@ impl Flow {
         variable: Option<String>,
     ) {
         self.iterations.push((caller_id.to_owned(), held.to_owned(), span, variable));
+    }
+
+    /// The `index`th decorator (0 is the outermost) of the definition `function_id`.
+    pub(crate) fn decorator(&mut self, function_id: &str, index: usize, target: Option<&str>, is_call: bool) {
+        self.decorators
+            .entry(function_id.to_owned())
+            .or_default()
+            .insert(index, target.map(|t| (t.to_owned(), is_call)));
+    }
+
+    /// `recv.m()` made by `caller_id`, with `m` at `line:col`.
+    pub(crate) fn receiver(&mut self, caller_id: &str, held: &str, name: &str, line: u32, col: u32) {
+        self.receivers.push((caller_id.to_owned(), held.to_owned(), name.to_owned(), line, col));
+    }
+
+    /// `@dec def f` makes `f` whatever `dec(f)` returns, and the decorator's own
+    /// parameter holds `f`. Stacked decorators apply from the bottom up. Anything
+    /// the project knows nothing of - a library decorator, a class - leaves the
+    /// definition as it is.
+    fn bind_decorators(&mut self, graph: &Graph) {
+        if self.decorators.is_empty() {
+            return;
+        }
+        let mut parameters: HashMap<String, Vec<String>> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            if relation.kind == RelationKind::Declares
+                && graph.node_kind(&relation.target_id) == Some(NodeKind::Parameter)
+            {
+                parameters.entry(relation.source_id.clone()).or_default().push(relation.target_id.clone());
+            }
+        }
+        let first_parameter = |function: &str| -> Option<String> {
+            let list = parameters.get(function)?;
+            let skips = graph.node_kind(function) == Some(NodeKind::Method)
+                && list
+                    .first()
+                    .and_then(|id| graph.node_map().get(id))
+                    .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
+            list.get(usize::from(skips)).cloned()
+        };
+        let is_function = |id: &str| matches!(graph.node_kind(id), Some(NodeKind::Function | NodeKind::Method));
+        let decorators = std::mem::take(&mut self.decorators);
+        for (definition, chain) in &decorators {
+            if !is_function(definition) {
+                continue;
+            }
+            let mut value: Option<Vec<String>> = Some(vec![definition.clone()]);
+            for (index, entry) in chain.iter().rev() {
+                let Some(tokens) = value.clone() else {
+                    break;
+                };
+                let Some((target, is_call)) = entry else {
+                    value = None;
+                    break;
+                };
+                let callees: Vec<String> = if *is_call {
+                    let key = format!("decorator:{definition}:{index}");
+                    self.holds.insert(key.clone(), vec![format!("{RESULT}{target}")]);
+                    self.callables(graph, &key).into_iter().filter(|c| is_function(c)).collect()
+                } else if is_function(target) {
+                    vec![target.clone()]
+                } else {
+                    Vec::new()
+                };
+                if callees.is_empty() {
+                    value = None;
+                    break;
+                }
+                for callee in &callees {
+                    if let Some(parameter) = first_parameter(callee) {
+                        let held = self.holds.entry(parameter).or_default();
+                        for token in &tokens {
+                            if !held.contains(token) {
+                                held.push(token.clone());
+                            }
+                        }
+                    }
+                }
+                value = Some(callees.iter().map(|c| format!("{RESULT}{c}")).collect());
+            }
+            if let Some(value) = value {
+                self.holds.insert(format!("decorated:{definition}"), value);
+                self.decorated.insert(definition.clone());
+            }
+        }
+        self.decorators = decorators;
     }
 
     /// What a loop variable holds: the elements of a container, what a generator
@@ -170,7 +569,7 @@ impl Flow {
             match graph.node_kind(held) {
                 // `for f in handlers`: the elements `handlers` holds.
                 Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
-                    learned.push((variable.clone(), held.clone()));
+                    learned.push((variable.clone(), format!("elem:{held}")));
                     for class in self.instances(graph, held) {
                         learned.extend(self.next_results(graph, &by_name, &class, variable));
                     }
@@ -259,15 +658,22 @@ impl Flow {
             && self.args.is_empty()
             && self.result_calls.is_empty()
             && self.iterations.is_empty()
+            && self.receivers.is_empty()
+            && self.decorators.is_empty()
+            && self.call_paths.is_empty()
+            && self.deep_calls.is_empty()
+            && self.param_calls.is_empty()
+            && self.library_callbacks.is_empty()
         {
             return Ok(0);
         }
-        self.bind_arguments(graph);
+        self.bind_decorators(graph);
+        self.bind_arguments(py, graph);
         self.bind_iterations(graph);
         self.follow(py, graph)
     }
 
-    fn bind_arguments(&mut self, graph: &Graph) {
+    fn bind_arguments(&mut self, py: Python<'_>, graph: &Graph) {
         if self.args.is_empty() {
             return;
         }
@@ -295,15 +701,18 @@ impl Flow {
         for _ in 0..4 {
             let mut learned: Vec<(String, String)> = Vec::new();
             for arg in &args {
-                let Some(site_callee) = self.calls.get(&(arg.file.clone(), arg.call_line, arg.call_col)).cloned()
-                else {
-                    continue;
-                };
-                let callees: Vec<String> = match graph.node_kind(&site_callee) {
-                    Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
-                        self.callables(graph, &site_callee)
+                let key = (arg.file.clone(), arg.call_line, arg.call_col);
+                let callees: Vec<String> = if let Some(site_callee) = self.calls.get(&key).cloned() {
+                    match graph.node_kind(&site_callee) {
+                        Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
+                            self.callables(graph, &site_callee)
+                        }
+                        _ => vec![site_callee],
                     }
-                    _ => vec![site_callee],
+                } else if let Some((function, depth)) = self.result_sites.get(&key) {
+                    self.level_targets(graph, function, *depth)
+                } else {
+                    continue;
                 };
                 for mut callee in callees {
                     // `A(x)` is a call of A's constructor.
@@ -331,7 +740,21 @@ impl Flow {
                             .and_then(|id| graph.node_map().get(*id))
                             .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
                     let parameter = match &arg.slot {
-                        Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied(),
+                        // An argument past the last parameter belongs to it when it is variadic.
+                        Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied().or_else(|| {
+                            list.last().copied().filter(|id| {
+                                graph.node_map().get(*id).is_some_and(|n| {
+                                    n.get()
+                                        .metadata
+                                        .bind(py)
+                                        .get_item("is_variadic")
+                                        .ok()
+                                        .flatten()
+                                        .and_then(|v| v.extract::<bool>().ok())
+                                        .unwrap_or(false)
+                                })
+                            })
+                        }),
                         Slot::Keyword(name) => list
                             .iter()
                             .copied()
@@ -358,48 +781,7 @@ impl Flow {
 
     /// Every callable a holder can be followed to.
     fn callables(&self, graph: &Graph, start: &str) -> Vec<String> {
-        let mut found = Vec::new();
-        let mut seen: HashSet<&str> = HashSet::new();
-        let mut frontier = vec![start];
-        for _ in 0..MAX_DEPTH {
-            let mut next = Vec::new();
-            for holder in frontier {
-                for held in self.holds.get(holder).into_iter().flatten() {
-                    if !seen.insert(held.as_str()) {
-                        continue;
-                    }
-                    if let Some(function) = held.strip_prefix(RESULT) {
-                        // Whatever the function returns is held in turn.
-                        for returned in self.returns.get(function).into_iter().flatten() {
-                            match graph.node_kind(returned) {
-                                Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => {
-                                    found.push(returned.clone());
-                                }
-                                Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
-                                    next.push(returned.as_str());
-                                }
-                                _ => {}
-                            }
-                        }
-                        continue;
-                    }
-                    match graph.node_kind(held) {
-                        Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => {
-                            found.push(held.clone());
-                        }
-                        Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
-                            next.push(held.as_str());
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            if next.is_empty() {
-                break;
-            }
-            frontier = next;
-        }
-        found
+        self.resolve(graph, start, &[])
     }
 
     /// The classes a holder can be shown to hold an instance of: `c = Cls()`,
@@ -437,8 +819,235 @@ impl Flow {
         found
     }
 
+    /// The method or attribute `name` of the classes a receiver can be shown to
+    /// be an instance of, for the calls the type checker did not answer.
+    fn receiver_calls(&self, py: Python<'_>, graph: &Graph, added: &mut Vec<Relation>) -> PyResult<()> {
+        if self.receivers.is_empty() {
+            return Ok(());
+        }
+        let by_name: HashMap<String, String> = graph
+            .node_map()
+            .values()
+            .map(|n| n.get())
+            .map(|n| (n.qualified_name.clone(), n.id.clone()))
+            .collect();
+        // A call the type checker already placed on a definition is left alone.
+        let mut placed: HashSet<(String, u32, u32)> = HashSet::new();
+        let mut declarer: HashMap<String, String> = HashMap::new();
+        let mut bases: HashMap<String, Vec<String>> = HashMap::new();
+        let mut subclasses: HashMap<String, Vec<String>> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            match relation.kind {
+                RelationKind::Declares => {
+                    declarer.insert(relation.target_id.clone(), relation.source_id.clone());
+                }
+                RelationKind::InheritsFrom => {
+                    bases.entry(relation.source_id.clone()).or_default().push(relation.target_id.clone());
+                    subclasses.entry(relation.target_id.clone()).or_default().push(relation.source_id.clone());
+                }
+                RelationKind::Calls
+                    if matches!(
+                        graph.node_kind(&relation.target_id),
+                        Some(NodeKind::Function | NodeKind::Method | NodeKind::Class)
+                    ) =>
+                {
+                    let metadata = relation.metadata.bind(py);
+                    if let Some(span) = metadata
+                        .get_item("span")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<crate::span::Span>().ok())
+                    {
+                        placed.insert((relation.source_id.clone(), span.start_line, span.start_col));
+                    }
+                }
+                _ => {}
+            }
+        }
+        let mut attributes: HashMap<String, Vec<(String, String)>> = HashMap::new();
+        for node in graph.node_map().values().map(|n| n.get()) {
+            if node.kind == NodeKind::Attribute {
+                attributes.entry(node.name.clone()).or_default().push((node.qualified_name.clone(), node.id.clone()));
+            }
+        }
+        let closure = |start: &str, edges: &HashMap<String, Vec<String>>| -> Vec<String> {
+            let mut seen: Vec<String> = vec![start.to_owned()];
+            let mut index = 0;
+            while index < seen.len() {
+                for next in edges.get(&seen[index]).into_iter().flatten() {
+                    if !seen.contains(next) {
+                        seen.push(next.clone());
+                    }
+                }
+                index += 1;
+            }
+            seen
+        };
+
+        let mut done: HashSet<(String, String, u32, u32)> = HashSet::new();
+        for (caller, held, name, line, col) in &self.receivers {
+            if placed.contains(&(caller.clone(), *line, *col)) {
+                continue;
+            }
+            // `self` is an instance of the class of its method, or of a subclass.
+            let is_self = graph.node_kind(held) == Some(NodeKind::Parameter)
+                && graph
+                    .node_map()
+                    .get(held)
+                    .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
+            let mut classes: Vec<String> = Vec::new();
+            if is_self {
+                if let Some(class) = declarer.get(held).and_then(|f| declarer.get(f))
+                    && graph.node_kind(class) == Some(NodeKind::Class)
+                {
+                    classes = closure(class, &subclasses);
+                }
+            } else {
+                classes = self.instances(graph, held);
+            }
+            for class in classes {
+                // The class, then what it inherits from.
+                for owner in closure(&class, &bases) {
+                    let Some(owner_name) = graph.node_map().get(&owner).map(|n| n.get().qualified_name.clone()) else {
+                        continue;
+                    };
+                    let mut targets: Vec<(String, String)> = Vec::new();
+                    if let Some(method) = by_name.get(&format!("{owner_name}.{name}"))
+                        && graph.node_kind(method) == Some(NodeKind::Method)
+                    {
+                        targets.push((method.clone(), owner_name.clone()));
+                    }
+                    for (qname, id) in attributes.get(name.as_str()).into_iter().flatten() {
+                        if qname.starts_with(&format!("{owner_name}.")) {
+                            for callable in self.callables(graph, id) {
+                                targets.push((callable, qname.clone()));
+                            }
+                        }
+                    }
+                    for (target, via) in targets {
+                        if !done.insert((caller.clone(), target.clone(), *line, *col)) {
+                            continue;
+                        }
+                        let carried = PyDict::new(py);
+                        carried.set_item(
+                            "span",
+                            crate::span::Span { start_line: *line, start_col: *col, end_line: *line, end_col: *col + name.len() as u32 },
+                        )?;
+                        carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                        carried.set_item("via", via)?;
+                        added.push(Relation {
+                            source_id: caller.clone(),
+                            target_id: target,
+                            kind: RelationKind::Calls,
+                            metadata: carried.unbind(),
+                        });
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// A call of a decorated definition is a call of what the decorator made of it:
+    /// the edge to the definition is replaced when the definition is not among
+    /// those, and a decorator that is itself a call (`@make(x)`) is called by the
+    /// scope the definition sits in. Returns the positions of the edges replaced.
+    fn decorated_calls(
+        &self,
+        py: Python<'_>,
+        graph: &Graph,
+        added: &mut Vec<Relation>,
+    ) -> PyResult<HashSet<usize>> {
+        let mut dropped: HashSet<usize> = HashSet::new();
+        if self.decorated.is_empty() {
+            return Ok(dropped);
+        }
+        let mut results: HashMap<&str, Vec<String>> = HashMap::new();
+        for definition in &self.decorated {
+            results.insert(definition.as_str(), self.callables(graph, &format!("decorated:{definition}")));
+        }
+        for (position, relation) in graph.relation_slice().iter().enumerate() {
+            let relation = relation.get();
+            if relation.kind != RelationKind::Calls {
+                continue;
+            }
+            let Some(made) = results.get(relation.target_id.as_str()) else {
+                continue;
+            };
+            if made.is_empty() {
+                continue;
+            }
+            let metadata = relation.metadata.bind(py);
+            let name = graph
+                .node_map()
+                .get(&relation.target_id)
+                .map(|n| n.get().qualified_name.clone())
+                .unwrap_or_default();
+            for callable in made {
+                if *callable == relation.target_id {
+                    continue;
+                }
+                let carried = PyDict::new(py);
+                if let Some(span) = metadata
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    carried.set_item("span", span)?;
+                }
+                carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                carried.set_item("via", format!("@{name}"))?;
+                added.push(Relation {
+                    source_id: relation.source_id.clone(),
+                    target_id: callable.clone(),
+                    kind: RelationKind::Calls,
+                    metadata: carried.unbind(),
+                });
+            }
+            if !made.contains(&relation.target_id) {
+                dropped.insert(position);
+            }
+        }
+        // `@make(x)`: the scope calls what `make(x)` returned, on the definition.
+        let mut scope_of: HashMap<&str, &str> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            if relation.kind == RelationKind::Declares && self.decorators.contains_key(&relation.target_id) {
+                scope_of.insert(relation.target_id.as_str(), relation.source_id.as_str());
+            }
+        }
+        for (definition, chain) in &self.decorators {
+            let Some(scope) = scope_of.get(definition.as_str()) else {
+                continue;
+            };
+            for (index, entry) in chain {
+                let Some((target, true)) = entry else {
+                    continue;
+                };
+                let key = format!("decorator:{definition}:{index}");
+                for callable in self.callables(graph, &key) {
+                    let carried = PyDict::new(py);
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    let via = graph.node_map().get(target).map(|n| n.get().qualified_name.clone()).unwrap_or_default();
+                    carried.set_item("via", format!("{via}()"))?;
+                    added.push(Relation {
+                        source_id: (*scope).to_owned(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
+            }
+        }
+        Ok(dropped)
+    }
+
     fn follow(&self, py: Python<'_>, graph: &mut Graph) -> PyResult<usize> {
         let mut added: Vec<Relation> = Vec::new();
+        self.receiver_calls(py, graph, &mut added)?;
+        let dropped = self.decorated_calls(py, graph, &mut added)?;
         if !self.iterations.is_empty() {
             let by_name: HashMap<String, String> = graph
                 .node_map()
@@ -491,7 +1100,16 @@ impl Flow {
             if !is_value {
                 continue;
             }
-            for callable in self.callables(graph, &relation.target_id) {
+            let path: Vec<Key> = metadata
+                .get_item("span")
+                .ok()
+                .flatten()
+                .and_then(|v| v.extract::<crate::span::Span>().ok())
+                .and_then(|span| {
+                    self.call_paths.get(&(relation.source_id.clone(), span.start_line, span.start_col)).cloned()
+                })
+                .unwrap_or_default();
+            for callable in self.resolve(graph, &relation.target_id, &path) {
                 let carried = PyDict::new(py);
                 if let Some(span) = metadata
                     .get_item("span")
@@ -524,31 +1142,22 @@ impl Flow {
                 });
             }
         }
-        for (caller, function, span, file) in &self.result_calls {
-            let mut seen: HashSet<&str> = HashSet::new();
-            let mut stack: Vec<&str> = self.returns.get(function).into_iter().flatten().map(String::as_str).collect();
-            let mut targets: Vec<String> = Vec::new();
-            while let Some(returned) = stack.pop() {
-                if !seen.insert(returned) {
-                    continue;
-                }
-                match graph.node_kind(returned) {
-                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => targets.push(returned.to_owned()),
-                    Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute) => {
-                        targets.extend(self.callables(graph, returned));
-                    }
-                    _ => {}
-                }
-            }
-            for callable in targets {
+        let mut result_edges: Vec<(&String, &String, Option<crate::span::Span>, usize)> = Vec::new();
+        for (caller, function, span, _) in &self.result_calls {
+            result_edges.push((caller, function, *span, 1));
+        }
+        for (caller, function, span, depth) in &self.deep_calls {
+            result_edges.push((caller, function, Some(*span), *depth));
+        }
+        for (caller, function, span, depth) in result_edges {
+            for callable in self.level_targets(graph, function, depth) {
                 let carried = PyDict::new(py);
                 if let Some(span) = span {
-                    carried.set_item("span", *span)?;
+                    carried.set_item("span", span)?;
                 }
                 carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
                 let name = graph.node_map().get(function).map(|n| n.get().qualified_name.clone()).unwrap_or_default();
-                carried.set_item("via", format!("{name}()"))?;
-                let _ = file;
+                carried.set_item("via", format!("{name}{}", "()".repeat(depth)))?;
                 added.push(Relation {
                     source_id: caller.clone(),
                     target_id: callable,
@@ -557,7 +1166,106 @@ impl Flow {
                 });
             }
         }
+        // A call of a parameter is a call of what it holds, even where the type
+        // checker named one function for it.
+        if !self.param_calls.is_empty() || !self.library_callbacks.is_empty() {
+            let mut have: HashSet<(String, String, u32, u32)> = HashSet::new();
+            for relation in graph.relation_slice() {
+                let relation = relation.get();
+                if relation.kind != RelationKind::Calls {
+                    continue;
+                }
+                if let Some(span) = relation
+                    .metadata
+                    .bind(py)
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    have.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for relation in added.iter() {
+                if let Some(span) = relation
+                    .metadata
+                    .bind(py)
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    have.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for (caller, parameter, span) in &self.param_calls {
+                for callable in self.callables(graph, parameter) {
+                    if !have.insert((caller.clone(), callable.clone(), span.start_line, span.start_col)) {
+                        continue;
+                    }
+                    let carried = PyDict::new(py);
+                    carried.set_item("span", *span)?;
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    let via = graph.node_map().get(parameter).map(|n| n.get().qualified_name.clone()).unwrap_or_default();
+                    carried.set_item("via", via)?;
+                    added.push(Relation {
+                        source_id: caller.clone(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
+            }
+        }
+        // A function handed to a library function that calls it.
+        let mut library: Vec<Relation> = Vec::new();
+        {
+            let mut seen: HashSet<(String, String, u32, u32)> = HashSet::new();
+            for relation in graph.relation_slice().iter().map(|r| r.get()).filter(|r| r.kind == RelationKind::Calls) {
+                if let Some(span) = relation.metadata.bind(py).get_item("span").ok().flatten().and_then(|v| v.extract::<crate::span::Span>().ok()) {
+                    seen.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for relation in added.iter() {
+                if let Some(span) = relation.metadata.bind(py).get_item("span").ok().flatten().and_then(|v| v.extract::<crate::span::Span>().ok()) {
+                    seen.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for (caller, file, line, col, target, span) in &self.library_callbacks {
+                if self.calls.contains_key(&(file.clone(), *line, *col)) {
+                    continue;
+                }
+                let callables = match graph.node_kind(target) {
+                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => vec![target.clone()],
+                    _ => self.callables(graph, target),
+                };
+                for callable in callables {
+                    if !seen.insert((caller.clone(), callable.clone(), span.start_line, span.start_col)) {
+                        continue;
+                    }
+                    let carried = PyDict::new(py);
+                    carried.set_item("span", *span)?;
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    carried.set_item("via", "library callback")?;
+                    library.push(Relation {
+                        source_id: caller.clone(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
+            }
+        }
+        added.extend(library);
         let count = added.len();
+        if !dropped.is_empty() {
+            let mut index = 0usize;
+            graph.retain_relations(|_| {
+                let keep = !dropped.contains(&index);
+                index += 1;
+                keep
+            });
+        }
         for relation in added {
             graph.push_relation(Py::new(py, relation)?);
         }

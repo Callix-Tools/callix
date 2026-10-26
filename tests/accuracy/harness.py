@@ -53,6 +53,7 @@ class Case:
     name: str
     root: Path
     expected: dict[str, list[str]]
+    correction: str | None = None  # why the vendored expectation was changed, see corrections.json
 
 
 @dataclass
@@ -86,6 +87,7 @@ class Score:
     external_expected: int = 0
     external_found: int = 0
     errors: int = 0
+    corrected: list[str] = field(default_factory=list)  # cases scored against a corrected expectation
     by_category: dict[str, list[int]] = field(default_factory=dict)  # [cases, sound, complete]
 
     @property
@@ -106,14 +108,29 @@ class Score:
 
 
 def discover(suite_dir: Path) -> list[Case]:
-    """Cases are `<suite>/<category>/<case>/callgraph.json`."""
+    """Cases are `<suite>/<category>/<case>/callgraph.json`.
+
+    A suite may carry `corrections.json` beside its categories: for a vendored
+    case whose ground truth is itself wrong, the edges to drop and why. The
+    vendored file stays untouched, and every correction is counted and printed.
+    """
     name = f"{suite_dir.parent.name}/{suite_dir.name}"
+    corrections_file = suite_dir / "corrections.json"
+    corrections = json.loads(corrections_file.read_text()) if corrections_file.is_file() else {}
     cases = []
     for category in sorted(p for p in suite_dir.iterdir() if p.is_dir()):
         for case in sorted(p for p in category.iterdir() if p.is_dir()):
             truth = case / "callgraph.json"
-            if truth.is_file():
-                cases.append(Case(name, category.name, case.name, case, json.loads(truth.read_text())))
+            if not truth.is_file():
+                continue
+            expected = json.loads(truth.read_text())
+            correction = corrections.get(f"{category.name}/{case.name}")
+            if correction:
+                for caller, callee in correction["remove"]:
+                    if callee not in expected.get(caller, ()):
+                        raise ValueError(f"{name}: correction for {category.name}/{case.name} removes an edge the case does not have")
+                    expected[caller] = [c for c in expected[caller] if c != callee]
+            cases.append(Case(name, category.name, case.name, case, expected, correction["reason"] if correction else None))
     return cases
 
 
@@ -293,6 +310,8 @@ def score(suite_dir: Path, analyze) -> tuple[Score, list[Outcome]]:
         total.external_expected += outcome.external_expected
         total.external_found += outcome.external_found
         total.errors += outcome.error is not None
+        if case.correction:
+            total.corrected.append(f"{case.category}/{case.name}: {case.correction}")
         row = total.by_category.setdefault(case.category, [0, 0, 0])
         row[0] += 1
         row[1] += outcome.sound

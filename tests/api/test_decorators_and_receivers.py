@@ -187,3 +187,24 @@ def test_a_nest_route_belongs_to_its_method_under_the_controllers_prefix(
     assert [(s.qualified_name, b.name) for s, b in exposed] == [
         ("a.UsersController.one", "GET /users/{}"),
     ]
+
+
+def test_a_rust_route_attribute_belongs_to_its_function(tmp_path: Path) -> None:
+    (tmp_path / "Cargo.toml").write_text(
+        '[package]\nname = "m"\nversion = "0.1.0"\nedition = "2021"\n'
+    )
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "lib.rs").write_text(
+        'pub fn guard() {}\n\n#[get("/users/{id}")]\npub async fn show() {}\n'
+    )
+    graph = callix.RustAdapter(resolve=False).analyze(str(tmp_path))
+    exposed = [
+        (graph.nodes[r.source_id], graph.nodes[r.target_id])
+        for r in graph.relations
+        if r.kind is RelationKind.EXPOSES
+    ]
+    # The attribute is written before the function, outside its span; the
+    # route still belongs to the function, not to the file.
+    assert [(s.kind, s.qualified_name, b.name) for s, b in exposed] == [
+        (NodeKind.FUNCTION, "m::show", "GET /users/{}"),
+    ]

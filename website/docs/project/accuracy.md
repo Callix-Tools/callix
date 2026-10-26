@@ -17,7 +17,7 @@ found. This page is what those two things amount to.
 | TypeScript | typescript-go, linked in | by types | Destructured function values, calls through `any`, dynamic `import()` and string-keyed lookups. A callback handed to a library function is not assumed to be called. |
 | Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
 | Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
-| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces | A method called on a variable with no declared type has no edge. A callable named by a string is not followed. |
+| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces | A method called on a variable with no declared type has no edge. A callable named by a string or an array is followed only when it is handed to a built-in that calls it (`array_map`, `usort`, `call_user_func`, …). |
 | C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Function pointers, `std::function`, template-dependent names, macros, the preprocessor. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
 
 "Resolved" never means "correct". `resolver_status: ok` means the backend came
@@ -81,7 +81,7 @@ writing:
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
-| PHP | 42 | 38 | 42 | 0.94 | 1.00 |
+| PHP | 42 | 41 | 42 | 0.98 | 1.00 |
 | C++ | 40 | 38 | 40 | 0.97 | 1.00 |
 | C | 27 | 25 | 27 | 0.95 | 1.00 |
 
@@ -118,9 +118,9 @@ expected edge, so that the number does not flatter:
   (tree-sitter-cpp reads `void (*f)() = g;` as an expression), macros, and a
   `delete` through a base pointer, which lands on the base's destructor because
   only the declared type is known.
-- **PHP**: a callable named by a string or an array (`'f'`, `[$o, 'm']`), whether it
-  is handed to a built-in such as `array_map` or to a function that calls its
-  parameter.
+- **PHP**: a callable named by a string or an array is a call only when it is handed to one of
+  a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
+  Handed to a function of the project that calls its own parameter, it is not followed.
 - **Python**: a function fetched from a container by an index the pass cannot
   tell apart from another, a polymorphic receiver (it lands on the declared
   class, not each subclass), `super(Cls, self)`.

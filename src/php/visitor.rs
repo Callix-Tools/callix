@@ -1105,6 +1105,11 @@ impl<'a> PhpVisitor<'a> {
         if let Some(arguments) = node.child_by_field_name("arguments") {
             self.scan_arguments(arguments)?;
         }
+        // A callable named by a string or an array, handed to a built-in that calls it.
+        let container = self.container();
+        for literal in super::resolver::callable_literals(node, self.source) {
+            self.record_occurrence("call", literal.position, &container);
+        }
         Ok(())
     }
 

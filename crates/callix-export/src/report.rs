@@ -226,7 +226,7 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "symbol table, by names",
             "approximate: no type inference, so a method is found by the declared type of its \
              receiver (or a `new` assigned to it) when there is one and otherwise by name; a \
-             callable named by a string is not followed",
+             callable named by a string or an array is followed only inside a built-in that calls it",
         ),
         "c" | "cpp" => (
             "symbol table, by names",

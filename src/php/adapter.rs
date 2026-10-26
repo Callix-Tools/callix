@@ -568,7 +568,14 @@ fn resolve_pass(
             }
         }
 
-        let resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        let mut resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        // The table found no declaration in the analysed sources for a name whose
+        // origin it cannot classify - a built-in function, a global from a library.
+        // That is outside the project, which is what `external` says; `unlocated`
+        // is for a class the project does declare and a member it does not.
+        if resolution == Resolution::Unlocated && bound_kind.is_none() && reference.origin == "unknown" {
+            resolution = Resolution::External;
+        }
         match resolution {
             Resolution::Value => metrics.to_value += 1,
             Resolution::Unlocated => metrics.unlocated += 1,

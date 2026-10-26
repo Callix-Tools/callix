@@ -136,6 +136,88 @@ fn last_name<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
     ts::children(node).into_iter().rev().find(|c| c.kind() == "name")
 }
 
+/// Built-in functions that call the callable they are given. A callable named by
+/// a string or an array is only a call when the function receiving it makes one,
+/// which is why the list is closed: guessing for every function that takes a
+/// string would bind half the strings of a program.
+pub(super) const CALLBACK_FUNCTIONS: [&str; 22] = [
+    "array_map", "array_filter", "array_reduce", "array_walk", "array_walk_recursive",
+    "usort", "uasort", "uksort", "array_udiff", "array_uintersect", "call_user_func",
+    "call_user_func_array", "is_callable", "iterator_apply", "register_shutdown_function",
+    "set_error_handler", "set_exception_handler", "spl_autoload_register", "preg_replace_callback",
+    "array_diff_ukey", "forward_static_call", "forward_static_call_array",
+];
+
+/// The callable a call to a callback-taking built-in names, if any: the string
+/// node of `'name'`, or of the method in `[$object, 'method']`, with the
+/// expression that names the class in the second case.
+pub(super) struct CallableLiteral<'tree> {
+    pub position: TsNode<'tree>,
+    pub text: String,
+    pub class: Option<TsNode<'tree>>,
+}
+
+/// The string literals and `[class, 'method']` pairs among a call's arguments.
+pub(super) fn callable_literals<'tree>(
+    call: TsNode<'tree>,
+    source: &[u8],
+) -> Vec<CallableLiteral<'tree>> {
+    let mut out = Vec::new();
+    let Some(function) = call.child_by_field_name("function") else {
+        return out;
+    };
+    if !matches!(function.kind(), "name" | "qualified_name" | "relative_name") {
+        return out;
+    }
+    let callee = ts::text(function, source).to_lowercase();
+    let callee = callee.rsplit('\\').next().unwrap_or(&callee);
+    if !CALLBACK_FUNCTIONS.contains(&callee) {
+        return out;
+    }
+    let Some(arguments) = call.child_by_field_name("arguments") else {
+        return out;
+    };
+    for argument in ts::children(arguments) {
+        let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named()) else {
+            continue;
+        };
+        match value.kind() {
+            "string" | "encapsed_string" => {
+                if let Some(text) = string_literal(value, source) {
+                    out.push(CallableLiteral { position: value, text, class: None });
+                }
+            }
+            "array_creation_expression" => {
+                let elements: Vec<TsNode<'tree>> = ts::children(value)
+                    .into_iter()
+                    .filter(|c| c.kind() == "array_element_initializer")
+                    .collect();
+                if let [first, second] = elements.as_slice()
+                    && let Some(class) = ts::children(*first).into_iter().find(|c| c.is_named())
+                    && let Some(method) = ts::children(*second).into_iter().find(|c| c.is_named())
+                    && matches!(method.kind(), "string" | "encapsed_string")
+                    && let Some(text) = string_literal(method, source)
+                {
+                    out.push(CallableLiteral { position: method, text, class: Some(class) });
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+/// The text of a string literal with no interpolation, unescaped as far as a
+/// name needs: `'App\\f'` is `App\f`.
+fn string_literal(node: TsNode<'_>, source: &[u8]) -> Option<String> {
+    let raw = ts::text(node, source);
+    let inner = raw.get(1..raw.len().checked_sub(1)?)?;
+    if inner.is_empty() || inner.contains('$') || inner.contains('{') {
+        return None;
+    }
+    Some(inner.replace("\\\\", "\\").trim_start_matches('\\').to_string())
+}
+
 /// The bare identifier behind a variable: `$user` → `user`.
 ///
 /// `by_ref` wraps the variable in `&$user`, which a parameter accepts.
@@ -1240,6 +1322,29 @@ impl PhpResolver {
                 }
                 if let Some(arguments) = node.child_by_field_name("arguments") {
                     self.walk_uses(doc, source, arguments, scope);
+                }
+                // `array_map('f', …)`, `usort($x, [$this, 'cmp'])`: the callable is called.
+                for literal in callable_literals(node, source) {
+                    match literal.class {
+                        None => {
+                            let answer =
+                                self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function);
+                            self.record(doc, literal.position, answer);
+                        }
+                        Some(class) => {
+                            let receiver = if class.kind() == "class_constant_access_expression" {
+                                ts::children(class)
+                                    .into_iter()
+                                    .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
+                                    .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
+                            } else {
+                                self.infer(doc, source, class, scope)
+                            };
+                            if let Some(receiver) = receiver {
+                                self.record_member(doc, literal.position, &receiver, &literal.text, Slot::Method);
+                            }
+                        }
+                    }
                 }
             }
             "object_creation_expression" => {

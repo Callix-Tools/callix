@@ -202,32 +202,39 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
         "python" => (
             "ty (embedded), by types",
             "calls through a name or an attribute whose type is known; a function carried in a \
-             container, an argument or a return value is not followed",
+             container, an argument or a return value is followed by a flow pass and marked `flow`; \
+             `getattr`, `**kwargs` forwarding and a polymorphic receiver are not followed",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
-            "calls through a name or a member whose type is known; `new` expressions, object \
-             literal members and function values are not followed",
+            "calls through a name or a member whose type is known; function values are followed by \
+             a flow pass and marked `flow`; `any`, dynamic `import()` and string-keyed lookups are \
+             not followed",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
-            "static calls and concrete methods; a call through an interface, a function value or a \
-             method value is not followed",
+            "static calls and concrete methods; a function value is followed by a flow pass and \
+             marked `flow`; a call through an interface lands on the interface's method, never on \
+             an implementation",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
-            "static calls and concrete methods; a call through a trait or a function pointer is not followed",
+            "static calls and concrete methods; a function value is followed by a flow pass and \
+             marked `flow`; a call through a trait lands on the trait's method, not on an impl",
         ),
         "php" => (
             "symbol table, by names",
             "approximate: no type inference, so a method is found by the declared type of its \
-             receiver when there is one and otherwise by name",
+             receiver (or a `new` assigned to it) when there is one and otherwise by name; a \
+             callable named by a string is not followed",
         ),
         "c" | "cpp" => (
             "symbol table, by names",
-            "approximate: `#include` reachability and names, no types - overloads, virtual calls \
-             and methods of the same name in different classes can bind to the wrong one \
-             (such edges say `ambiguous`)",
+            "approximate: a member call is bound by the receiver's declared type and the class's \
+             bases, overloads by arity and the look of the arguments, `#include` reachability for \
+             the rest; no type checking, so a receiver whose type is not declared falls back to \
+             the name (such edges say `ambiguous`); operators, `std::function` and macros are not \
+             followed",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

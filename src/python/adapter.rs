@@ -477,6 +477,13 @@ fn positional_key(project_root: &Path, file_path: &str, occurrence: &OccurrenceR
     )
 }
 
+/// `d:INDEX:call` or `d:INDEX:name`.
+fn parse_decorate(detail: &str) -> Option<(usize, bool)> {
+    let rest = detail.strip_prefix("d:")?;
+    let (index, kind) = rest.split_once(':')?;
+    Some((index.parse().ok()?, kind == "call"))
+}
+
 #[allow(clippy::too_many_arguments)]
 fn apply_resolutions_inner(
     py: Python<'_>,
@@ -518,6 +525,16 @@ fn apply_resolutions_inner(
             metrics.queries -= 1;
             continue;
         }
+        // A decorator the type checker cannot place is unknown, and so is what it
+        // makes of the function.
+        if occurrence.role == "decorate"
+            && let Some((index, is_call)) = occurrence.detail.as_deref().and_then(parse_decorate)
+            && reference.is_none()
+        {
+            flow.decorator(&occurrence.enclosing_id, index, None, is_call);
+            metrics.queries -= 1;
+            continue;
+        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
@@ -526,7 +543,11 @@ fn apply_resolutions_inner(
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
-            None if is_alias || occurrence.role == "iterate" || occurrence.role == "recv" => {
+            None if is_alias
+                || occurrence.role == "iterate"
+                || occurrence.role == "recv"
+                || occurrence.role == "decorate" =>
+            {
                 RelationKind::References
             }
             None => continue,
@@ -553,6 +574,14 @@ fn apply_resolutions_inner(
                     _ => flow.alias(&occurrence.enclosing_id, held),
                 }
             }
+            continue;
+        }
+        // `@dec` on a definition: what the name stands for afterwards.
+        if occurrence.role == "decorate" {
+            if let Some((index, is_call)) = occurrence.detail.as_deref().and_then(parse_decorate) {
+                flow.decorator(&occurrence.enclosing_id, index, target_id.as_deref(), is_call);
+            }
+            metrics.queries -= 1;
             continue;
         }
         // `recv.m()`: the method is looked for on the classes `recv` holds.

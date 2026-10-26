@@ -28,7 +28,7 @@
 //! attribute chains only - not containers, return values or calls - and it
 //! follows nothing it cannot resolve to a node of the project.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::graph::Graph;
 use crate::node::NodeKind;
@@ -81,6 +81,11 @@ pub(crate) struct Flow {
     /// `recv.m()`: (the scope that calls, what `recv` resolved to, `m`, line, column
     /// of `m`).
     receivers: Vec<(String, String, String, u32, u32)>,
+    /// The decorators of a definition, outermost first: the decorator's node (None
+    /// when nothing in the project is known of it) and whether it is a call.
+    decorators: HashMap<String, BTreeMap<usize, Option<(String, bool)>>>,
+    /// Definitions whose name stands for something else after decoration.
+    decorated: HashSet<String>,
 }
 
 impl Flow {
@@ -153,9 +158,91 @@ impl Flow {
         self.iterations.push((caller_id.to_owned(), held.to_owned(), span, variable));
     }
 
+    /// The `index`th decorator (0 is the outermost) of the definition `function_id`.
+    pub(crate) fn decorator(&mut self, function_id: &str, index: usize, target: Option<&str>, is_call: bool) {
+        self.decorators
+            .entry(function_id.to_owned())
+            .or_default()
+            .insert(index, target.map(|t| (t.to_owned(), is_call)));
+    }
+
     /// `recv.m()` made by `caller_id`, with `m` at `line:col`.
     pub(crate) fn receiver(&mut self, caller_id: &str, held: &str, name: &str, line: u32, col: u32) {
         self.receivers.push((caller_id.to_owned(), held.to_owned(), name.to_owned(), line, col));
+    }
+
+    /// `@dec def f` makes `f` whatever `dec(f)` returns, and the decorator's own
+    /// parameter holds `f`. Stacked decorators apply from the bottom up. Anything
+    /// the project knows nothing of - a library decorator, a class - leaves the
+    /// definition as it is.
+    fn bind_decorators(&mut self, graph: &Graph) {
+        if self.decorators.is_empty() {
+            return;
+        }
+        let mut parameters: HashMap<String, Vec<String>> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            if relation.kind == RelationKind::Declares
+                && graph.node_kind(&relation.target_id) == Some(NodeKind::Parameter)
+            {
+                parameters.entry(relation.source_id.clone()).or_default().push(relation.target_id.clone());
+            }
+        }
+        let first_parameter = |function: &str| -> Option<String> {
+            let list = parameters.get(function)?;
+            let skips = graph.node_kind(function) == Some(NodeKind::Method)
+                && list
+                    .first()
+                    .and_then(|id| graph.node_map().get(id))
+                    .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
+            list.get(usize::from(skips)).cloned()
+        };
+        let is_function = |id: &str| matches!(graph.node_kind(id), Some(NodeKind::Function | NodeKind::Method));
+        let decorators = std::mem::take(&mut self.decorators);
+        for (definition, chain) in &decorators {
+            if !is_function(definition) {
+                continue;
+            }
+            let mut value: Option<Vec<String>> = Some(vec![definition.clone()]);
+            for (index, entry) in chain.iter().rev() {
+                let Some(tokens) = value.clone() else {
+                    break;
+                };
+                let Some((target, is_call)) = entry else {
+                    value = None;
+                    break;
+                };
+                let callees: Vec<String> = if *is_call {
+                    let key = format!("decorator:{definition}:{index}");
+                    self.holds.insert(key.clone(), vec![format!("{RESULT}{target}")]);
+                    self.callables(graph, &key).into_iter().filter(|c| is_function(c)).collect()
+                } else if is_function(target) {
+                    vec![target.clone()]
+                } else {
+                    Vec::new()
+                };
+                if callees.is_empty() {
+                    value = None;
+                    break;
+                }
+                for callee in &callees {
+                    if let Some(parameter) = first_parameter(callee) {
+                        let held = self.holds.entry(parameter).or_default();
+                        for token in &tokens {
+                            if !held.contains(token) {
+                                held.push(token.clone());
+                            }
+                        }
+                    }
+                }
+                value = Some(callees.iter().map(|c| format!("{RESULT}{c}")).collect());
+            }
+            if let Some(value) = value {
+                self.holds.insert(format!("decorated:{definition}"), value);
+                self.decorated.insert(definition.clone());
+            }
+        }
+        self.decorators = decorators;
     }
 
     /// What a loop variable holds: the elements of a container, what a generator
@@ -268,9 +355,11 @@ impl Flow {
             && self.result_calls.is_empty()
             && self.iterations.is_empty()
             && self.receivers.is_empty()
+            && self.decorators.is_empty()
         {
             return Ok(0);
         }
+        self.bind_decorators(graph);
         self.bind_arguments(graph);
         self.bind_iterations(graph);
         self.follow(py, graph)
@@ -576,9 +665,105 @@ impl Flow {
         Ok(())
     }
 
+    /// A call of a decorated definition is a call of what the decorator made of it:
+    /// the edge to the definition is replaced when the definition is not among
+    /// those, and a decorator that is itself a call (`@make(x)`) is called by the
+    /// scope the definition sits in. Returns the positions of the edges replaced.
+    fn decorated_calls(
+        &self,
+        py: Python<'_>,
+        graph: &Graph,
+        added: &mut Vec<Relation>,
+    ) -> PyResult<HashSet<usize>> {
+        let mut dropped: HashSet<usize> = HashSet::new();
+        if self.decorated.is_empty() {
+            return Ok(dropped);
+        }
+        let mut results: HashMap<&str, Vec<String>> = HashMap::new();
+        for definition in &self.decorated {
+            results.insert(definition.as_str(), self.callables(graph, &format!("decorated:{definition}")));
+        }
+        for (position, relation) in graph.relation_slice().iter().enumerate() {
+            let relation = relation.get();
+            if relation.kind != RelationKind::Calls {
+                continue;
+            }
+            let Some(made) = results.get(relation.target_id.as_str()) else {
+                continue;
+            };
+            if made.is_empty() {
+                continue;
+            }
+            let metadata = relation.metadata.bind(py);
+            let name = graph
+                .node_map()
+                .get(&relation.target_id)
+                .map(|n| n.get().qualified_name.clone())
+                .unwrap_or_default();
+            for callable in made {
+                if *callable == relation.target_id {
+                    continue;
+                }
+                let carried = PyDict::new(py);
+                if let Some(span) = metadata
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    carried.set_item("span", span)?;
+                }
+                carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                carried.set_item("via", format!("@{name}"))?;
+                added.push(Relation {
+                    source_id: relation.source_id.clone(),
+                    target_id: callable.clone(),
+                    kind: RelationKind::Calls,
+                    metadata: carried.unbind(),
+                });
+            }
+            if !made.contains(&relation.target_id) {
+                dropped.insert(position);
+            }
+        }
+        // `@make(x)`: the scope calls what `make(x)` returned, on the definition.
+        let mut scope_of: HashMap<&str, &str> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            if relation.kind == RelationKind::Declares && self.decorators.contains_key(&relation.target_id) {
+                scope_of.insert(relation.target_id.as_str(), relation.source_id.as_str());
+            }
+        }
+        for (definition, chain) in &self.decorators {
+            let Some(scope) = scope_of.get(definition.as_str()) else {
+                continue;
+            };
+            for (index, entry) in chain {
+                let Some((target, true)) = entry else {
+                    continue;
+                };
+                let key = format!("decorator:{definition}:{index}");
+                for callable in self.callables(graph, &key) {
+                    let carried = PyDict::new(py);
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    let via = graph.node_map().get(target).map(|n| n.get().qualified_name.clone()).unwrap_or_default();
+                    carried.set_item("via", format!("{via}()"))?;
+                    added.push(Relation {
+                        source_id: (*scope).to_owned(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
+            }
+        }
+        Ok(dropped)
+    }
+
     fn follow(&self, py: Python<'_>, graph: &mut Graph) -> PyResult<usize> {
         let mut added: Vec<Relation> = Vec::new();
         self.receiver_calls(py, graph, &mut added)?;
+        let dropped = self.decorated_calls(py, graph, &mut added)?;
         if !self.iterations.is_empty() {
             let by_name: HashMap<String, String> = graph
                 .node_map()
@@ -698,6 +883,14 @@ impl Flow {
             }
         }
         let count = added.len();
+        if !dropped.is_empty() {
+            let mut index = 0usize;
+            graph.retain_relations(|_| {
+                let keep = !dropped.contains(&index);
+                index += 1;
+                keep
+            });
+        }
         for relation in added {
             graph.push_relation(Py::new(py, relation)?);
         }

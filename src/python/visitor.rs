@@ -1061,7 +1061,7 @@ impl<'a> PythonVisitor<'a> {
         // it. So the call edge comes from the container, and the reads (of the
         // router, of the arguments) stay with the definition.
         let container = self.container();
-        for dec in decorator_nodes {
+        for (index, dec) in decorator_nodes.iter().enumerate() {
             for child in ts::children(*dec) {
                 match child.kind() {
                     "@" => {}
@@ -1070,12 +1070,15 @@ impl<'a> PythonVisitor<'a> {
                         // The definition depends on what decorates it.
                         if let Some(name) = Self::callee_name(child) {
                             self.record_occurrence("read", name, enclosing_id);
+                            // `@make(x)`: the decorator is what `make(x)` returns.
+                            self.record_occurrence_with("decorate", name, enclosing_id, Some(format!("d:{index}:call")));
                         }
                     }
                     "identifier" | "attribute" => {
                         self.scan_value(child, enclosing_id)?;
                         if let Some(name) = Self::plain_name(child) {
                             self.record_occurrence("call", name, &container);
+                            self.record_occurrence_with("decorate", name, enclosing_id, Some(format!("d:{index}:name")));
                         }
                     }
                     _ => self.scan_value(child, enclosing_id)?,

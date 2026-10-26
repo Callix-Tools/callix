@@ -3,9 +3,13 @@
     python tests/accuracy/run.py                      # every suite
     python tests/accuracy/run.py python/pycg -v       # one suite, with every miss
     python tests/accuracy/run.py --update             # raise the floor, never lower it
+    python tests/accuracy/run.py --reset python/pycg  # set the floor to what is measured
 
 The floor is a ratchet: a change that makes a suite worse fails the test, a change
 that makes it better is recorded by `--update` and cannot be undone silently.
+A change that trades one number for another - more edges found, a few of them
+wrong - has to say so: `--reset` writes the measured values over the floor, and
+the diff of thresholds.json is where a reviewer sees what was given up.
 """
 
 from __future__ import annotations
@@ -71,7 +75,8 @@ def report(score: harness.Score, outcomes: list[harness.Outcome], verbose: bool)
 
 
 def main(argv: list[str]) -> int:
-    update = "--update" in argv
+    reset = "--reset" in argv
+    update = "--update" in argv or reset
     verbose = "-v" in argv
     wanted = [a for a in argv if not a.startswith("-")]
     paths = [p for p in harness.suites() if not wanted or suite_name(p) in wanted]
@@ -87,7 +92,9 @@ def main(argv: list[str]) -> int:
         floor = thresholds.setdefault(score.suite, {})
         measured = score.metrics()
         for key in HIGHER_IS_BETTER:
-            if update:
+            if reset:
+                floor[key] = measured[key]
+            elif update:
                 floor[key] = max(floor.get(key, 0), measured[key])
             elif key in floor and measured[key] < floor[key]:
                 print(f"  REGRESSION {key}: {measured[key]} < {floor[key]}")

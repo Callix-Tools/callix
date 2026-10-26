@@ -240,14 +240,14 @@
       "has_type": 4,
       "imports": 3,
       "inherits_from": 1,
-      "references": 10,
+      "references": 13,
       "resolves_to": 3
     },
     "resolver": {
       "external": 3,
-      "internal": 16,
-      "queries": 29,
-      "resolved": 19,
+      "internal": 19,
+      "queries": 32,
+      "resolved": 22,
       "unresolved": 10
     },
     "resolver_status": "ok"

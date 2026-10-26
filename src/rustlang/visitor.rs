@@ -243,6 +243,7 @@ impl<'a> RustExtractor<'a> {
         if let Some(doc) = crate::doc::leading_comment(full_node, self.source) {
             metadata.set_item("doc", doc)?;
         }
+        crate::doc::add_comments(self.py, &metadata, full_node, self.source)?;
         let node = Node {
             id: id.clone(),
             kind,

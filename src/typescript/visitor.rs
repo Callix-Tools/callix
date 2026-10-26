@@ -2031,6 +2031,9 @@ impl<'a> TsVisitor<'a> {
         {
             metadata.set_item("doc", doc)?;
         }
+        if let Some(definition) = ts_node {
+            crate::doc::add_comments(self.py, &metadata, definition, self.source)?;
+        }
         let node = Node {
             id: node_id(self.project_name, qualified_name, kind.as_str()),
             kind,

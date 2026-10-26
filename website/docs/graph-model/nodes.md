@@ -103,8 +103,24 @@ definition's own comment wins when both exist.
 node.metadata["doc"]    # 'Create a member.\n\nRaises ValueError if the name is empty.'
 ```
 
-Comments inside bodies, license headers and `TODO` notes are not definitions'
-documentation and are not recorded.
+A Python **module's docstring** is the `doc` of its MODULE and of its FILE.
+
+Everything else the author wrote is kept in separate keys, and none of them
+replaces `doc`:
+
+| Key | What it holds | Where |
+|---|---|---|
+| `leading_comment` | the comment block directly above, when a docstring took `doc` | Python definitions |
+| `comments` | the comments written inside the body, as `[{"line": 12, "text": "…"}]`: one entry per block of adjacent comment lines, or per comment that follows code; the comments of a definition nested in it are its own; at most 200 | classes, functions, methods, variables, attributes (Python, TypeScript, PHP, Go, Rust) |
+| `trailing_comment` | the comment after a definition on its line: `x = 1  # why` | variables and attributes |
+
+```python
+node.metadata["comments"]          # [{'line': 7, 'text': 'a second explanation, inside the body'}]
+node.metadata["trailing_comment"]  # 'the commit happens in the caller'
+```
+
+License headers, `TODO` notes outside any definition and the comments of C and
+C++ bodies are not recorded.
 
 ## Paths are relative, always
 

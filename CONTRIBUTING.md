@@ -284,3 +284,11 @@ else builds from the sdist and needs Go plus network access.
 
 Publishing needs one secret, `PYPI_TOKEN`, and write permission for the
 workflow so it can push the release commit and tag.
+
+If a run publishes to PyPI but fails to produce the GitHub Release page, do not
+dispatch `Release` again — that would bump the version and publish a new one.
+Dispatch `Release (resume)` with the existing tag and the id of the failed run
+instead: it rebuilds the page from that run's wheels, sdist and CLI tarballs and
+touches neither PyPI nor the registry. The `publish` job downloads only the
+`wheel-*` and `sdist` artifacts for the same reason a bare download once did
+not work: the image digests are empty files, and GitHub rejects an empty asset.

@@ -183,11 +183,22 @@ jobs:
       - uses: astral-sh/setup-uv@v9.0.0
       - uses: kenji-miyake/setup-git-cliff@v2
 
-      - name: Collect artifacts
+      # Only what PyPI and the release page take. A bare download fetches every
+      # artifact of the run: the image digests (empty files named by hash,
+      # which `gh release create` rejects with "Bad Content-Length") and the
+      # CLI tarballs, which `cli-release` attaches itself.
+      - name: Collect wheels
         uses: actions/download-artifact@v8
         with:
           path: dist
+          pattern: wheel-*
           merge-multiple: true
+
+      - name: Collect sdist
+        uses: actions/download-artifact@v8
+        with:
+          path: dist
+          name: sdist
 
       - name: Publish to PyPI
         env:

@@ -141,7 +141,8 @@ def test_python_client_meets_an_openapi_server(cross_language_graph: Graph):
 
     assert graph.link_boundaries(min_confidence=0.5) == 1
     (edge,) = communicates(graph)
-    assert graph.nodes[edge.source_id].qualified_name == "pkg/service.py"
+    # The consumer is the function that makes the call, not its file.
+    assert graph.nodes[edge.source_id].qualified_name == "pkg.service.fetch_one"
     assert graph.nodes[edge.target_id].qualified_name == "openapi.yaml"
     # The client side is inferred from a call, so it is below certainty.
     assert 0.0 < edge.metadata["confidence"] < 1.0

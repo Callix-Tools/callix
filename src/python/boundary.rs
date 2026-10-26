@@ -18,7 +18,7 @@ use crate::py::types::PyBytes;
 use crate::py::derive::gen_stub_pyfunction;
 use tree_sitter::{Node as TsNode, Query};
 
-use crate::boundaries::{BoundaryRef, normalize_http_path};
+use crate::boundaries::{BoundaryRef, join_http_path as join_paths, normalize_http_path};
 use crate::ts;
 
 const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", "options"];
@@ -173,8 +173,84 @@ impl<'a> Extractor<'a> {
 
     // -- http -------------------------------------------------------------
 
+    /// The URL prefix of every router in the file, by the name it is bound to.
+    ///
+    /// `router = APIRouter(prefix="/users")` and `Blueprint(..., url_prefix=)`
+    /// fix a prefix at construction, and `app.include_router(router,
+    /// prefix="/api")` / `app.register_blueprint(bp, url_prefix=)` put another
+    /// one in front. Only what the same file says is known: a router built in
+    /// one module and mounted in another is not followed.
+    fn router_prefixes(&self, root: TsNode<'_>) -> HashMap<String, String> {
+        const PREFIX_KWARGS: [&str; 2] = ["prefix", "url_prefix"];
+        let mut own: HashMap<String, String> = HashMap::new();
+        let mut mounted: HashMap<String, String> = HashMap::new();
+
+        let mut stack = vec![root];
+        while let Some(node) = stack.pop() {
+            stack.extend(ts::children(node));
+            match node.kind() {
+                "assignment" => {
+                    let (Some(left), Some(right)) =
+                        (node.child_by_field_name("left"), node.child_by_field_name("right"))
+                    else {
+                        continue;
+                    };
+                    if left.kind() != "identifier" || right.kind() != "call" {
+                        continue;
+                    }
+                    let Some(args) = right.child_by_field_name("arguments") else { continue };
+                    for kwarg in PREFIX_KWARGS {
+                        if let Some(value) = self.kwarg(args, kwarg).filter(|v| v.kind() == "string") {
+                            own.insert(self.text(left), self.string_template(value));
+                        }
+                    }
+                }
+                "call" => {
+                    let Some(function) = node.child_by_field_name("function") else { continue };
+                    if function.kind() != "attribute" {
+                        continue;
+                    }
+                    let method = function
+                        .child_by_field_name("attribute")
+                        .map(|n| self.text(n))
+                        .unwrap_or_default();
+                    if method != "include_router" && method != "register_blueprint" {
+                        continue;
+                    }
+                    let Some(args) = node.child_by_field_name("arguments") else { continue };
+                    let Some(target) = Self::first_positional(args).filter(|n| n.kind() == "identifier")
+                    else {
+                        continue;
+                    };
+                    for kwarg in PREFIX_KWARGS {
+                        if let Some(value) = self.kwarg(args, kwarg).filter(|v| v.kind() == "string") {
+                            mounted.insert(self.text(target), self.string_template(value));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let mut names: Vec<&String> = own.keys().chain(mounted.keys()).collect();
+        names.sort();
+        names.dedup();
+        names
+            .into_iter()
+            .map(|name| {
+                let outer = mounted.get(name).map_or("", String::as_str);
+                let inner = own.get(name).map_or("", String::as_str);
+                (name.clone(), join_paths(outer, inner))
+            })
+            .collect()
+    }
+
     /// FastAPI / Flask / Starlette routes (the server side).
-    fn http_server(&self, decorator_calls: &[Caps<'_, '_>]) -> Vec<BoundaryRef> {
+    fn http_server(
+        &self,
+        decorator_calls: &[Caps<'_, '_>],
+        prefixes: &HashMap<String, String>,
+    ) -> Vec<BoundaryRef> {
         let mut refs = Vec::new();
         for caps in decorator_calls {
             let (Some(args), Some(deco), Some(func)) =
@@ -187,7 +263,13 @@ impl<'a> Extractor<'a> {
             let Some(path_node) = Self::first_string(args) else {
                 continue;
             };
-            let path = self.string_template(path_node);
+            // `router.get("/x")`: the object the route is registered on may
+            // carry a prefix.
+            let receiver = deco_text.rsplit_once('.').map_or("", |(object, _)| object);
+            let path = join_paths(
+                prefixes.get(receiver).map_or("", String::as_str),
+                &self.string_template(path_node),
+            );
             let (line, col) = Self::pos(func);
 
             if HTTP_VERBS.contains(&method.as_str()) {
@@ -511,7 +593,8 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
     let bare_decorators = ts::run_query(cached_query!(Q_DECORATOR_BARE), root, source);
     let attr_calls = ts::run_query(cached_query!(Q_ATTR_CALL), root, source);
 
-    let mut refs = extractor.http_server(&decorator_calls);
+    let prefixes = extractor.router_prefixes(root);
+    let mut refs = extractor.http_server(&decorator_calls, &prefixes);
     refs.extend(extractor.http_client(&attr_calls));
     refs.extend(extractor.temporal(&bare_decorators, &decorator_calls, &attr_calls));
     refs.extend(extractor.queue(&attr_calls));

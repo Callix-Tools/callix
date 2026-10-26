@@ -210,19 +210,24 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
             "calls through a name or a member whose type is known; function values are followed by \
-             a flow pass and marked `flow`; `any`, dynamic `import()` and string-keyed lookups are \
+             a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
+             closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
              not followed",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
             "static calls and concrete methods; a function value is followed by a flow pass and \
-             marked `flow`; a call through an interface lands on the interface's method, never on \
-             an implementation",
+             marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
+             standard-library callbacks); a call through an interface lands on the interface's \
+             method, never on an implementation",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
             "static calls and concrete methods; a function value is followed by a flow pass and \
-             marked `flow`; a call through a trait lands on the trait's method, not on an impl",
+             marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
+             the calls in macro arguments are found and a `macro_rules!` of the same file is \
+             expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
+             calls (`Drop`, operators, `for` over an iterator) are not edges",
         ),
         "php" => (
             "symbol table, by names",

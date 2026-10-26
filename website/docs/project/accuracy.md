@@ -14,9 +14,9 @@ found. This page is what those two things amount to.
 | Language | Backend | How a call is found | What it does not follow |
 |---|---|---|---|
 | Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr` and monkey-patching are not followed at all. A receiver whose class ty knows resolves to the declared class, not to each subclass. |
-| TypeScript | typescript-go, linked in | by types | Destructured function values, calls through `any`, dynamic `import()` and string-keyed lookups. A callback handed to a library function is not assumed to be called. |
-| Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
-| Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
+| TypeScript | typescript-go, linked in | by types | Calls through `any`, dynamic `import()` and computed keys. Destructuring, literal keys and indexes, `bind`/`call`/`apply`, a property a constructor assigns, an object handed to a destructured parameter and a closed list of library callbacks (`map`, `forEach`, `then`, `setTimeout`, `addEventListener`, …) are followed by the flow pass; nested patterns are not read. |
+| Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a slice, a range loop, a channel or a variadic parameter is followed by the flow pass, and a closed list of standard-library callbacks (`sort.Slice`, `strings.Map`, `sync.Once.Do`, …) is a call. |
+| Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Implicit calls (`Drop::drop`, an operator's trait method, `Iterator::next` in a `for`) are not edges. The calls in a macro's arguments are found; a `macro_rules!` of the same file is expanded; a macro from another file, a procedural macro and macro-generated items are not. |
 | PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces; an undeclared method of a class that declares `__call` (or `__callStatic`) is a call of that | A method called on a variable with no declared type has no edge. A callable written out (a string, `'A::m'`, `[$o, 'm']`, `g(...)`) is followed to the parameter it is handed to and to the locals and properties that hold it, and is a call where that parameter, local or property is called, by the flow pass; `$m` and `$class` are followed only while nothing else is assigned to them. |
 | C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, the preprocessor's conditionals. A macro of the project is expanded (its body with the arguments in place, `##` joined), at the invocation. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
 
@@ -88,9 +88,9 @@ writing:
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
 | Python (PyCG) | 112 | 112 | 112 | 1.00 | 1.00 |
-| TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
-| Go | 48 | 47 | 48 | 0.99 | 1.00 |
-| Rust | 43 | 42 | 43 | 0.98 | 1.00 |
+| TypeScript | 65 | 65 | 65 | 1.00 | 1.00 |
+| Go | 58 | 58 | 58 | 1.00 | 1.00 |
+| Rust | 57 | 57 | 57 | 1.00 | 1.00 |
 | PHP | 62 | 62 | 61 | 1.00 | 0.99 |
 | C++ | 50 | 50 | 50 | 1.00 | 1.00 |
 | C | 40 | 40 | 40 | 1.00 | 1.00 |
@@ -150,8 +150,9 @@ expected edge, so that the number does not flatter:
   it isolates are handled and nothing about code that does not look like them. Known
   limits: the pass is flow- and context-insensitive, so a name reassigned between
   two calls holds both values; a library function that calls an argument is followed
-  only for the closed list above, and a project function named `map` is not told
-  from the builtin; `getattr` and `eval` are not followed.
+  only for the closed list above, and only where the callee is not a function of the
+  project (a project function named `map` is left alone); `getattr` and `eval` are
+  not followed.
 - **C and C++**: a callback handed to a library function is a call only for a closed
   list of them (`qsort`, `bsearch`, `signal`, `pthread_create`, `std::sort`,
   `std::transform`, `std::thread`, …); handed to any other function it is a reference,

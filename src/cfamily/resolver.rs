@@ -99,6 +99,8 @@ pub struct CFamilyIndex {
     /// (qualified class, field name) → the field's qualified name: what a call
     /// through a function-pointer member lands on.
     field_names: HashMap<(String, String), String>,
+    /// `namespace short = a::b;`: alias → the namespace it stands for.
+    namespace_aliases: HashMap<String, String>,
 }
 
 /// A member function of a class.
@@ -254,6 +256,13 @@ impl CFamilyIndex {
         }
     }
 
+    /// Records `namespace alias = target;`. Aliases are global to the table, not
+    /// scoped to the block that declared them: two blocks naming different
+    /// namespaces the same way is rare enough that the first one wins.
+    pub fn declare_namespace_alias(&mut self, alias: &str, target: &str) {
+        self.namespace_aliases.entry(alias.to_string()).or_insert_with(|| target.to_string());
+    }
+
     /// Records the type a field of `class` was declared with.
     pub fn declare_field(&mut self, class: &str, field: &str, qualified_name: &str, type_text: &str) {
         self.field_names.insert((class.to_string(), field.to_string()), qualified_name.to_string());
@@ -316,6 +325,17 @@ impl CFamilyIndex {
     /// known falls back to the bare name - and then the edge says `ambiguous` when
     /// the name is not unique.
     pub fn resolve(&self, name: &str, role: &str, site: &CallSite, from_file: &str) -> Outcome {
+        // A namespace alias in the written scope stands for what it names.
+        let expanded;
+        let site = match site.qualifier.first().and_then(|first| self.namespace_aliases.get(first)) {
+            Some(target) => {
+                let mut qualifier: Vec<String> = target.split("::").filter(|c| !c.is_empty()).map(str::to_string).collect();
+                qualifier.extend(site.qualifier.iter().skip(1).cloned());
+                expanded = CallSite { qualifier, ..site.clone() };
+                &expanded
+            }
+            None => site,
+        };
         let written = if site.qualifier.is_empty() {
             name.to_string()
         } else {
@@ -365,7 +385,7 @@ impl CFamilyIndex {
                     return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
                 }
             }
-            return Outcome::Outside;
+            return if site.speculative { Outcome::NotACall } else { Outcome::Outside };
         }
         if site.receiver_name.is_some() {
             // `obj.f()` with an `obj` nothing in reach declares: any `f` fits, and

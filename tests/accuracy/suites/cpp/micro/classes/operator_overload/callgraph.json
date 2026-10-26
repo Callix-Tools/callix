@@ -1,1 +1,1 @@
-{"main()": ["A::operator+(const A&)"], "A::operator+(const A&)": []}
+{"main()": ["A::operator+(const A&) const"], "A::operator+(const A&) const": []}

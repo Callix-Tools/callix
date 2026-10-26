@@ -8,8 +8,8 @@
   "cpp/micro": {
     "complete": 40,
     "precision": 1.0,
-    "recall": 0.9138,
-    "sound": 35
+    "recall": 0.9655,
+    "sound": 38
   },
   "go/micro": {
     "complete": 48,

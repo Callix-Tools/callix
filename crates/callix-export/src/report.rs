@@ -233,8 +233,8 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); operators, `std::function` and macros are not \
-             followed",
+             the name (such edges say `ambiguous`); `std::function`, function pointers and macros \
+             are not followed",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

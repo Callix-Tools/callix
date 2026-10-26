@@ -167,9 +167,10 @@ What it will not do:
   are spelled and says `ambiguous` when that does not decide.
 - **Follow function values.** A function pointer, a `std::function` or a table of
   callbacks is a call that stops at a variable.
-- **Resolve templates and operators.** A name that depends on a template
-  parameter is unknown until instantiation, and `a + b` is not a call the table
-  sees.
+- **Resolve templates.** A name that depends on a template parameter is unknown
+  until instantiation. An overloaded operator, a functor and `delete` are bound
+  by the declared type of the variable they are applied to (an object, not a
+  pointer, for an operator), so only when that type is visible.
 
 Because the status is never `ok`, `strict=True` always raises for this family.
 That is deliberate: `strict` means "refuse to hand back a graph you cannot

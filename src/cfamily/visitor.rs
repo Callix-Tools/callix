@@ -453,6 +453,10 @@ pub struct CallSite {
     /// The name is assigned to the variable of this name, in the function the
     /// site is in: `fp = g;`.
     pub assigned_to: Option<String>,
+    /// The site is a guess that an operator or a call operator is overloaded: it
+    /// binds when the class declares one and says nothing otherwise, instead of
+    /// becoming an external symbol for every `a + b` on a built-in type.
+    pub speculative: bool,
 }
 
 /// What a function's declarations say about the names its body uses.
@@ -462,6 +466,9 @@ struct BodyContext {
     /// A type that is a template parameter names no class and is left out: what a
     /// call on it means depends on the instantiation.
     locals: HashMap<String, String>,
+    /// The locals of `locals` that hold an object itself, not a pointer to one:
+    /// `a + b` calls an overloaded operator only for these.
+    objects: HashSet<String>,
     /// The qualified class of the method, for an unqualified call or `this`.
     class_scope: Option<String>,
 }
@@ -497,6 +504,8 @@ pub struct FileFacts {
     pub declarations: Vec<FoundDecl>,
     pub occurrences: Vec<FoundOccurrence>,
     pub includes: Vec<FoundInclude>,
+    /// `namespace short = a::b;`: (alias, the namespace as written).
+    pub namespace_aliases: Vec<(String, String)>,
 }
 
 impl FileFacts {
@@ -685,6 +694,7 @@ pub fn read_file(
             declarations: Vec::new(),
             occurrences: Vec::new(),
             includes: Vec::new(),
+            namespace_aliases: Vec::new(),
         },
     };
     reader.walk(root);
@@ -826,6 +836,14 @@ impl<'a> Reader<'a> {
         match node.kind() {
             "preproc_include" => self.on_include(node),
             "namespace_definition" => self.on_namespace(node),
+            "namespace_alias_definition" => {
+                if let Some(name) = node.child_by_field_name("name")
+                    && let Some(target) = ts::named_children(node).into_iter().find(|c| c.id() != name.id())
+                {
+                    let written: String = self.text(target).chars().filter(|c| !c.is_whitespace()).collect();
+                    self.facts.namespace_aliases.push((self.text(name), written));
+                }
+            }
             "function_definition" => self.on_function_definition(node),
             // `field_declaration` is a class member and `declaration` a file- or
             // namespace-scope one, but their shape is identical: an optional
@@ -1443,6 +1461,9 @@ impl<'a> Reader<'a> {
                 if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator))
                     && !template_parameters.contains(&key)
                 {
+                    if matches!(declarator.kind(), "identifier" | "reference_declarator") {
+                        context.objects.insert(self.text(name.name));
+                    }
                     context.locals.insert(self.text(name.name), key);
                 }
             }
@@ -1475,6 +1496,11 @@ impl<'a> Reader<'a> {
                     if let Some(key) = key
                         && !template_parameters.contains(&key)
                     {
+                        let object = matches!(inner.map(|i| i.kind()), Some("identifier" | "reference_declarator"))
+                            && !value.is_some_and(|v| v.kind() == "new_expression");
+                        if object {
+                            context.objects.insert(self.text(name.name));
+                        }
                         context.locals.insert(self.text(name.name), key);
                     }
                 }
@@ -2067,6 +2093,26 @@ impl<'a> Reader<'a> {
         for node in descendants(scope) {
             match node.kind() {
                 "call_expression" => {
+                    // `f(1)` on an object calls its `operator()`.
+                    if let Some(function) = node.child_by_field_name("function")
+                        && function.kind() == "identifier"
+                        && self.dialect == Dialect::Cpp
+                        && context.objects.contains(&self.text(function))
+                        && let Some(class) = context.locals.get(&self.text(function))
+                    {
+                        let mut site = self.call_site(node, function, context);
+                        site.receiver_type = Some(class.clone());
+                        site.receiver_name = Some(self.text(function));
+                        site.speculative = true;
+                        self.facts.occurrences.push(FoundOccurrence {
+                            role: "call",
+                            span: ts::span(function),
+                            owner: owner.clone(),
+                            site,
+                            name: "operator()".to_string(),
+                        });
+                        continue;
+                    }
                     if let Some(function) = node.child_by_field_name("function")
                         && let Some(named) = self.called_name(function)
                     {
@@ -2114,6 +2160,61 @@ impl<'a> Reader<'a> {
                             site.arity = Some(0);
                         }
                         self.push_site("call", named, owner, site);
+                    }
+                }
+                // `a + b` and `a == b` on an object call the class's operator.
+                "binary_expression" if self.dialect == Dialect::Cpp => {
+                    if let (Some(left), Some(operator)) =
+                        (node.child_by_field_name("left"), node.child_by_field_name("operator"))
+                        && left.kind() == "identifier"
+                    {
+                        let variable = self.text(left);
+                        if context.objects.contains(&variable)
+                            && let Some(class) = context.locals.get(&variable)
+                        {
+                            let site = CallSite {
+                                class_scope: context.class_scope.clone(),
+                                receiver_type: Some(class.clone()),
+                                receiver_name: Some(variable),
+                                arity: Some(1),
+                                speculative: true,
+                                ..CallSite::default()
+                            };
+                            self.facts.occurrences.push(FoundOccurrence {
+                                role: "call",
+                                span: ts::span(operator),
+                                owner: owner.clone(),
+                                site,
+                                name: format!("operator{}", self.text(operator)),
+                            });
+                        }
+                    }
+                }
+                // `delete p` runs the destructor of the class `p` was declared
+                // with. Only the declared type is known, so a `delete` through a
+                // base pointer lands on the base's destructor.
+                "delete_expression" if self.dialect == Dialect::Cpp => {
+                    if let Some(operand) = ts::named_children(node).into_iter().last()
+                        && operand.kind() == "identifier"
+                        && let Some(class) = context.locals.get(&self.text(operand))
+                    {
+                        let bare = class.rsplit("::").next().unwrap_or(class);
+                        let site = CallSite {
+                            class_scope: context.class_scope.clone(),
+                            receiver_type: Some(class.clone()),
+                            receiver_name: Some(self.text(operand)),
+                            arity: Some(0),
+                            // A class with no destructor of its own has nothing to land on.
+                            speculative: true,
+                            ..CallSite::default()
+                        };
+                        self.facts.occurrences.push(FoundOccurrence {
+                            role: "call",
+                            span: ts::span(operand),
+                            owner: owner.clone(),
+                            site,
+                            name: format!("~{bare}"),
+                        });
                     }
                 }
                 // `Engine e;`, `Engine e(1);`, `Engine e{1};` construct an object.

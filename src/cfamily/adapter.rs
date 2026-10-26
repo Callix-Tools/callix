@@ -410,7 +410,11 @@ fn resolve_with_table(
                 decl.linkage == Linkage::Internal,
             );
             // Classes, their members and fields: what a receiver's type is asked.
-            let without_signature = decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name);
+            // `F::operator()()`: the call operator's own parentheses are not the signature's.
+            let without_signature = match decl.qualified_name.find("operator()") {
+                Some(at) => &decl.qualified_name[..at + "operator()".len()],
+                None => decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name),
+            };
             match decl.kind {
                 NodeKind::Class => index.declare_class(&decl.qualified_name),
                 NodeKind::Method => {
@@ -432,6 +436,9 @@ fn resolve_with_table(
             {
                 index.add_base(qualified_name, &occurrence.name);
             }
+        }
+        for (alias, target) in &file.facts.namespace_aliases {
+            index.declare_namespace_alias(alias, target);
         }
         for included in &file.included {
             index.include(&file.file_rel, included);
@@ -582,6 +589,11 @@ fn resolve_with_table(
                         continue;
                     }
                     Outcome::Outside => Some(None),
+                    // A guess at an overloaded operator that nothing declares.
+                    Outcome::NotACall if occurrence.site.speculative => {
+                        metrics.queries -= 1;
+                        continue;
+                    }
                     Outcome::NotACall => None,
                 }
             } else {

@@ -118,13 +118,6 @@ fn collapse_params(path: &str) -> String {
         .join("/")
 }
 
-/// Reduces a route or URL to a key independent of host and parameters.
-///
-/// Strips scheme and host, query and fragment; collapses path parameters of
-/// every style along with concrete numeric ids (`/users/1` has to meet
-/// `/users/{}`); drops the trailing slash except at the root.
-#[gen_stub_pyfunction]
-#[pyfunction]
 /// `"/users"` + `"/{id}"` → `"/users/{id}"`: exactly one slash between the two,
 /// and nothing added when a side is empty. Both sides are as written in the
 /// source; normalising is a separate step.
@@ -139,6 +132,13 @@ pub fn join_http_path(prefix: &str, path: &str) -> String {
     }
 }
 
+/// Reduces a route or URL to a key independent of host and parameters.
+///
+/// Strips scheme and host, query and fragment; collapses path parameters of
+/// every style along with concrete numeric ids (`/users/1` has to meet
+/// `/users/{}`); drops the trailing slash except at the root.
+#[gen_stub_pyfunction]
+#[pyfunction]
 pub fn normalize_http_path(raw: &str) -> String {
     let mut path = raw.trim().to_string();
 

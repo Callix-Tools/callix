@@ -15,7 +15,10 @@ on:
       - build.rs
       - Cargo.toml
       - Cargo.lock
+      - LICENSE
+      - tests/fixtures/**
       - .github/workflows/docker.yml
+      - .github/workflows/release.yml
   workflow_dispatch:
 
 permissions:
@@ -23,17 +26,20 @@ permissions:
 
 jobs:
   image:
-    runs-on: ubuntu-latest
+    # Both architectures the release publishes, each on a native runner.
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     # A cold build compiles ty and typescript-go; a warm one reuses layers.
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
         target: [slim, full]
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v7
 
       - name: Free disk space
+        if: matrix.arch == 'amd64'
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
 
       - uses: docker/setup-buildx-action@v4
@@ -45,8 +51,51 @@ jobs:
           target: ${{ matrix.target }}
           load: true
           tags: callix:ci
-          cache-from: type=gha,scope=${{ matrix.target }}-amd64
-          cache-to: type=gha,mode=max,scope=${{ matrix.target }}-amd64
+          platforms: linux/${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.target }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}-${{ matrix.arch }}
 
       - name: Smoke test
         run: sh docker/smoke.sh callix:ci ${{ matrix.target }}
+
+  # The release's binary tarballs, built and smoke-tested the same way on every
+  # platform it ships, so the release job is not the first place they run.
+  binary:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,     target: x86_64-unknown-linux-gnu,  name: linux-x86_64 }
+          - { os: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, name: linux-aarch64 }
+          - { os: macos-latest,     target: aarch64-apple-darwin,      name: macos-aarch64 }
+          - { os: macos-latest,     target: x86_64-apple-darwin,       name: macos-x86_64 }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          cache-dependency-path: go/go.sum
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --locked --release -p callix-cli --target ${{ matrix.target }}
+
+      - name: Package
+        run: |
+          dir="callix-0.0.0-${{ matrix.name }}"
+          mkdir "$dir"
+          cp "target/${{ matrix.target }}/release/callix" LICENSE "$dir/"
+          tar czf "$dir.tar.gz" "$dir"
+
+      - name: Smoke test
+        run: |
+          dir="callix-0.0.0-${{ matrix.name }}"
+          "$dir/callix" --version
+          "$dir/callix" analyze tests/fixtures/yaml -q > /dev/null
+          "$dir/callix" export tests/fixtures/python -f lsif -q | head -c 200

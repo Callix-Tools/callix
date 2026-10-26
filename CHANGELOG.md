@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-10-26
+### Bug Fixes
+
+- **ci**: fix(ci): keep image digests out of the release assets, add a resume workflow by @claude in [#2](https://github.com/Callix-Tools/callix/pull/2)
+- **export**: file a reference under the file it was written in by @claude
+- **boundaries**: keep the pyfunction attributes on normalize_http_path by @claude
+- **rust**: file an attribute route under the function it is written on by @claude
+
+### CI/CD
+
+- **release**: ci(release): pull the published image tags back from ghcr and smoke-test them by @claude in [#3](https://github.com/Callix-Tools/callix/pull/3)
+- **docker**: run the images and every binary on real projects by @claude
+- **docker**: compare dump paths against the physical work directory by @claude
+
+### Documentation
+
+- describe the file key on edge metadata by @claude
+- fix: file references and routes under the right node; walk decorators, defaults and call receivers by @claude in [#4](https://github.com/Callix-Tools/callix/pull/4)
+
+### Features
+
+- **python,typescript**: walk decorators, defaults and call receivers; file routes under their handler by @claude
+
+### Styling
+
+- **cfamily**: pass the occurrence to push_reference instead of its parts by @claude
+
+### Testing
+
+- **golden**: the TypeScript fixture gains the references it used to lose by @claude
+
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.1.0...v1.2.0
 ## [1.1.0] - 2026-10-26
 ### Bug Fixes
 

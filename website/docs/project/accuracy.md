@@ -78,12 +78,12 @@ writing:
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
 | Python (PyCG) | 112 | 80 | 107 | 0.79 | 0.97 |
-| TypeScript | 41 | 39 | 41 | 0.97 | 1.00 |
-| Go | 38 | 37 | 38 | 0.98 | 1.00 |
-| Rust | 35 | 34 | 35 | 0.98 | 1.00 |
-| PHP | 35 | 30 | 35 | 0.91 | 1.00 |
-| C++ | 33 | 29 | 33 | 0.92 | 1.00 |
-| C | 21 | 13 | 21 | 0.72 | 1.00 |
+| TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
+| Go | 48 | 47 | 48 | 0.99 | 1.00 |
+| Rust | 43 | 42 | 43 | 0.98 | 1.00 |
+| PHP | 42 | 37 | 42 | 0.92 | 1.00 |
+| C++ | 40 | 35 | 40 | 0.91 | 1.00 |
+| C | 27 | 24 | 27 | 0.93 | 1.00 |
 
 How to read them:
 
@@ -95,7 +95,7 @@ How to read them:
   on whether a call that stopped at a variable counts as wrong. PyCG's own paper
   reports 70 % recall and 99 % precision over *all* edges, library calls included,
   so the two are not the same measure and are not a comparison.
-- The suites for Go, Rust, TypeScript, PHP and C++ were written *after* looking
+- The suites for Go, Rust, TypeScript, PHP, C and C++ were written *after* looking
   at what the resolvers did badly, so they cover the features that had been
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
@@ -107,6 +107,23 @@ How to read them:
 What the C and C++ suites do not show is how often a call lands on the wrong
 class in real code. That is what `ambiguous` is for: leveldb has 417 such edges
 in 4 375 matched by name.
+
+### What the suites still miss
+
+The `idioms/` directory of each language holds the ways code is commonly written
+that a first pass did not cover. The cases that still fail are kept, with their
+expected edge, so that the number does not flatter:
+
+- **C++**: an overloaded operator (`a + b`), the destructor run by `delete`, a
+  functor called as `f()`, a namespace alias, and a local function pointer
+  declared as `void (*f)() = g;` (tree-sitter-cpp reads it as an expression).
+- **PHP**: a callable named by a string or an array (`'f'`, `[$o, 'm']`).
+- **Python**: a function fetched from a container by an index the pass cannot
+  tell apart from another, a polymorphic receiver (it lands on the declared
+  class, not each subclass), `super(Cls, self)`.
+- **C and C++**: a callback handed to a library function (`qsort`, `.map(f)`) is a
+  reference to the function, not a call: whether the library calls it is
+  unknowable from the program.
 
 ### The floor
 

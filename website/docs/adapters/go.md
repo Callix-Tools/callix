@@ -62,7 +62,7 @@ Two things it does that are easy to miss:
 
 - **Test files are type-checked.** `packages.Load` runs with `Tests: true`;
   without it every use-site in `*_test.go` stays unresolved. On gin that alone
-  is the difference between 16.5% and 95% resolved.
+  is the difference between 16.5% and 95% of use-sites answered.
 - **Builtins have a position.** `len`, `make`, `append`, `panic`, the
   conversions, and `error.Error` live in universe scope and carry no source
   position. gopls points at `$GOROOT/src/builtin/builtin.go`, so the bridge

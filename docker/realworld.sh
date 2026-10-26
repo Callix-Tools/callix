@@ -15,7 +15,9 @@ TARGET="${2:?usage: realworld.sh binary BIN | image IMAGE [full|slim]}"
 FLAVOUR="${3:-full}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
-work="$(mktemp -d)"
+# The physical path: callix writes canonical paths into the dump, and on macOS
+# the temporary directory is reached through a symlink (/var -> /private/var).
+work="$(cd "$(mktemp -d)" && pwd -P)"
 chmod 777 "$work"
 
 # Cargo writes `target/` into the mounted workspace as root: clean up through

@@ -27,6 +27,7 @@ mod dependencies;
 #[cfg(feature = "python")]
 mod diffing;
 mod error;
+mod flow;
 mod golang;
 mod graph;
 mod ids;

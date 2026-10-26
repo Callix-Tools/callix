@@ -12,6 +12,7 @@ use std::time::Instant;
 use indexmap::IndexMap;
 use std::path::{Path, PathBuf};
 
+use crate::flow::Flow;
 use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
@@ -499,14 +500,18 @@ fn apply_resolutions_inner(
         ));
     }
 
+    let mut flow = Flow::default();
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
         };
         metrics.resolved += 1;
-        let Some(rel_kind) = role_to_kind(&occurrence.role) else {
-            continue;
+        let is_alias = occurrence.role == "alias";
+        let rel_kind = match role_to_kind(&occurrence.role) {
+            Some(kind) => kind,
+            None if is_alias => RelationKind::References,
+            None => continue,
         };
 
         let mut target_id = None;
@@ -518,6 +523,32 @@ fn apply_resolutions_inner(
             // Go and Rust adapters do the same.
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+        }
+
+        // What a call points at, and what a variable or a parameter holds, is
+        // what the flow pass follows. An `alias` is not an edge of its own.
+        if is_alias {
+            if let Some(held) = target_id.as_deref() {
+                match occurrence.detail.as_deref() {
+                    Some("return") => flow.returned(&occurrence.enclosing_id, held),
+                    Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
+                    _ => flow.alias(&occurrence.enclosing_id, held),
+                }
+            }
+            continue;
+        }
+        if occurrence.role == "call" && occurrence.detail.as_deref() == Some("result") {
+            // The inner call has its own occurrence; this one is the outer call,
+            // of whatever the inner one returns.
+            if let Some(function) = target_id.as_deref() {
+                flow.result_call(&occurrence.enclosing_id, function, occurrence.span, path);
+            }
+            continue;
+        }
+        if occurrence.role == "call" {
+            flow.call(path, occurrence, target_id.as_deref());
+        } else if let Some(held) = target_id.as_deref() {
+            flow.arg(path, occurrence, held);
         }
 
         // An import is only worth an edge when it reaches a definition of the
@@ -580,6 +611,7 @@ fn apply_resolutions_inner(
             Some(metadata),
         )?;
     }
+    flow.finish(py, graph)?;
     Ok(metrics)
 }
 

@@ -1774,6 +1774,7 @@ impl<'a> CFamilyEmitter<'a> {
                     col: occurrence.span.start_col,
                     enclosing_id,
                     span: occurrence.span,
+                    detail: None,
                 }
             })
             .collect())

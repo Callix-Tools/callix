@@ -487,6 +487,7 @@ fn resolve_with_custom(
                     col: occurrence.span.start_col,
                     enclosing_id: enclosing,
                     span: occurrence.span,
+                    detail: None,
                 },
             ));
         }

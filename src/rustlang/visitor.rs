@@ -238,6 +238,7 @@ impl<'a> RustExtractor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
+            detail: None,
         });
     }
 

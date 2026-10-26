@@ -14,7 +14,11 @@ use crate::span::Span;
 /// `call` — a function/method call site; `read` — an identifier read;
 /// `write` — an assignment target; `annotation` — a type annotation or the
 /// right-hand side of a TypeAlias; `base` — a base class in an inheritance
-/// list.
+/// list; `alias` - the right-hand side of `x = y`, enclosed by the variable `x`
+/// (the flow pass reads it).
+///
+/// `detail` carries what a role cannot: `arg:LINE:COL:INDEX` (or `...:=NAME` for a
+/// keyword) on a `read` that is an argument of the call at `LINE:COL`.
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all, from_py_object)]
 #[derive(Clone)]
@@ -24,14 +28,23 @@ pub struct OccurrenceRef {
     pub col: u32,
     pub enclosing_id: String,
     pub span: Span,
+    pub detail: Option<String>,
 }
 
 #[gen_stub_pymethods]
 #[pymethods]
 impl OccurrenceRef {
     #[new]
-    fn new(role: String, line: u32, col: u32, enclosing_id: String, span: Span) -> Self {
-        Self { role, line, col, enclosing_id, span }
+    #[pyo3(signature = (role, line, col, enclosing_id, span, detail = None))]
+    fn new(
+        role: String,
+        line: u32,
+        col: u32,
+        enclosing_id: String,
+        span: Span,
+        detail: Option<String>,
+    ) -> Self {
+        Self { role, line, col, enclosing_id, span, detail }
     }
 
     fn __repr__(&self) -> String {

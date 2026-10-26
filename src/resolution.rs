@@ -11,6 +11,10 @@
 //!   backend found what the callee was *read from*, not what it is. The edge says
 //!   "this calls `a`", and `a = f; a()` is still a call of `f` that nobody has
 //!   drawn.
+//! * `flow` - a call that landed on a variable, a parameter or a field, followed
+//!   through assignments and call arguments to a callable it can be shown to hold
+//!   (`via` names the holder). Flow-insensitive: a holder assigned two callables
+//!   gets an edge to each. Written by the `flow` pass, never by a backend.
 //! * `external` - the backend located the definition outside the project: the
 //!   standard library, a dependency.
 //! * `unlocated` - the backend answered, but the answer is not a place callix could
@@ -32,6 +36,7 @@ pub const AMBIGUOUS_KEY: &str = "ambiguous";
 pub enum Resolution {
     Definition,
     Value,
+    Flow,
     External,
     Unlocated,
     Name,
@@ -42,6 +47,7 @@ impl Resolution {
         match self {
             Self::Definition => "definition",
             Self::Value => "value",
+            Self::Flow => "flow",
             Self::External => "external",
             Self::Unlocated => "unlocated",
             Self::Name => "name",

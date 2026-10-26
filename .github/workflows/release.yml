@@ -349,6 +349,10 @@ jobs:
           target: ${{ matrix.target }}
           platforms: linux/${{ matrix.arch }}
           cache-from: type=gha,scope=${{ matrix.target }}-${{ matrix.arch }}
+          # No attestation manifests: they would sit in the stitched index as
+          # extra `unknown/unknown` platforms next to amd64 and arm64.
+          provenance: false
+          sbom: false
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest

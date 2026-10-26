@@ -1,0 +1,98 @@
+name: Release (resume)
+
+# Rebuilds the GitHub Release of a tag from the artifacts of a `Release` run
+# that got as far as the wheels and the CLI binaries but failed to produce the
+# release page. It touches neither PyPI nor the container registry, and it does
+# not bump a version, so finishing a release this way never publishes a new one.
+#
+# A draft left behind by the failed attempt is replaced; a release that is
+# already published is only topped up with the missing assets.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build the release page for (v1.2.3)
+        required: true
+      run_id:
+        description: Id of the Release run that built the wheels and binaries
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  resume:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      TAG: ${{ inputs.tag }}
+      RUN_ID: ${{ inputs.run_id }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: kenji-miyake/setup-git-cliff@v2
+
+      - name: Collect wheels and sdist
+        uses: actions/download-artifact@v8
+        with:
+          path: assets
+          pattern: wheel-*
+          merge-multiple: true
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Collect sdist
+        uses: actions/download-artifact@v8
+        with:
+          path: assets
+          name: sdist
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Collect CLI binaries
+        uses: actions/download-artifact@v8
+        with:
+          path: assets
+          pattern: cli-*
+          merge-multiple: true
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create or top up the release
+        run: |
+          set -euo pipefail
+          ls -l assets
+          # Nothing empty may go up: that is what broke the first attempt.
+          if [ -n "$(find assets -type f -empty)" ]; then
+            echo "::error::an asset is empty"
+            exit 1
+          fi
+
+          row=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq ".[] | select(.tag_name == \"$TAG\") | [.id, .draft] | @tsv" | head -n 1)
+          id=${row%%$'\t'*}
+          draft=${row##*$'\t'}
+
+          if [ -n "$row" ] && [ "$draft" = "false" ]; then
+            gh release upload "$TAG" assets/* --clobber
+          else
+            if [ -n "$row" ]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            fi
+            git cliff --latest --strip all > "$RUNNER_TEMP/release-notes.md"
+            gh release create "$TAG" \
+              --verify-tag \
+              --title "$TAG" \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
+              assets/*
+          fi
+          gh release view "$TAG" --json tagName,isDraft,assets \
+            --jq '{tag: .tagName, draft: .isDraft, assets: [.assets[].name]}'

@@ -281,7 +281,13 @@ tasks:
     cmds:
       - |
         git cliff --latest --strip all > /tmp/release-notes.md
-        gh release create {{.TAG}} \
-          --title {{.TAG}} \
-          --notes-file /tmp/release-notes.md \
-          dist/*
+        # A re-run after a partial failure must not die on the release that
+        # the first attempt already created.
+        if gh release view {{.TAG}} >/dev/null 2>&1; then
+          gh release upload {{.TAG}} dist/* --clobber
+        else
+          gh release create {{.TAG}} \
+            --title {{.TAG}} \
+            --notes-file /tmp/release-notes.md \
+            dist/*
+        fi

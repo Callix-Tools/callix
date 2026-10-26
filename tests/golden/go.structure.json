@@ -80,6 +80,7 @@
       "id": "5cf5ad13144ac1f2",
       "kind": "variable",
       "metadata": {
+        "doc": "DefaultRegion is a package-level variable.",
         "name_span": {
           "__span__": [
             10,
@@ -103,6 +104,7 @@
       "id": "0448d00da20e0664",
       "kind": "function",
       "metadata": {
+        "doc": "Build returns an engine for the region.",
         "name_span": {
           "__span__": [
             13,
@@ -150,6 +152,7 @@
       "id": "39cca0c1a02f9caf",
       "kind": "function",
       "metadata": {
+        "doc": "Inspect takes an interface value and calls through it.",
         "name_span": {
           "__span__": [
             20,
@@ -255,6 +258,7 @@
       "id": "4ad22140893f405e",
       "kind": "type_alias",
       "metadata": {
+        "doc": "Identifier names a record.",
         "name_span": {
           "__span__": [
             7,
@@ -278,6 +282,7 @@
       "id": "6386cb55dd3c2cde",
       "kind": "class",
       "metadata": {
+        "doc": "Labeled is embedded by Engine.",
         "name_span": {
           "__span__": [
             10,
@@ -301,6 +306,7 @@
       "id": "31d5b81cc735966e",
       "kind": "class",
       "metadata": {
+        "doc": "Base carries a field and a method.",
         "name_span": {
           "__span__": [
             15,
@@ -370,6 +376,7 @@
       "id": "09e9175fa750828c",
       "kind": "class",
       "metadata": {
+        "doc": "Engine embeds Base and satisfies Labeled.",
         "name_span": {
           "__span__": [
             24,

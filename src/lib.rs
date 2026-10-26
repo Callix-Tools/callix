@@ -10,6 +10,7 @@
 // the `Copy` types that use it (Span and the kind enums). Not ours to change.
 #![cfg_attr(feature = "python", allow(clippy::clone_on_copy))]
 
+pub mod doc;
 pub mod py;
 
 #[cfg(not(feature = "python"))]

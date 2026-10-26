@@ -166,6 +166,7 @@
       "metadata": {
         "bases": [],
         "decorators": [],
+        "doc": "Base with an attribute and a method.",
         "is_abstract": false,
         "is_enum": false,
         "name_span": {

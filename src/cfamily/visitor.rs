@@ -395,6 +395,8 @@ pub struct FoundDecl {
     pub name: String,
     pub span: Span,
     pub name_span: Span,
+    /// The comment block above this site, without its markers.
+    pub doc: Option<String>,
     /// Whether this site is the definition: a function with a body, a record
     /// with a member list, a variable that is not merely `extern`.
     pub defines: bool,
@@ -457,6 +459,7 @@ impl FileFacts {
             ledger.record(
                 (decl.kind, decl.qualified_name.clone()),
                 DeclSite {
+                    doc: decl.doc.clone(),
                     file_rel: self.file_rel.clone(),
                     span: decl.span,
                     name_span: decl.name_span,
@@ -720,6 +723,11 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// What the author wrote above a declaration.
+    fn doc_for(&self, node: TsNode<'_>) -> Option<String> {
+        crate::doc::leading_comment(node, self.source)
+    }
+
     fn push_decl(&mut self, decl: FoundDecl) {
         self.facts.declarations.push(decl);
     }
@@ -896,6 +904,7 @@ impl<'a> Reader<'a> {
             qualified_name: qname.clone(),
             name: simple.clone(),
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: ts::span(name_node),
             defines: body.is_some(),
             linkage,
@@ -976,6 +985,7 @@ impl<'a> Reader<'a> {
                     qualified_name: qname.clone(),
                     name: simple.clone(),
                     span: ts::span(node),
+                    doc: self.doc_for(node),
                     name_span: ts::span(name_node),
                     defines: body.is_some(),
                     linkage,
@@ -1026,6 +1036,7 @@ impl<'a> Reader<'a> {
             qualified_name: qname,
             name,
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: ts::span(name_node),
             defines: true,
             linkage,
@@ -1076,6 +1087,7 @@ impl<'a> Reader<'a> {
                 qualified_name: qname,
                 name,
                 span: ts::span(node),
+                doc: self.doc_for(node),
                 name_span: ts::span(leaf),
                 defines: true,
                 linkage,
@@ -1110,6 +1122,7 @@ impl<'a> Reader<'a> {
             qualified_name: qname.clone(),
             name,
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: ts::span(name_node),
             defines: true,
             linkage,
@@ -1150,6 +1163,7 @@ impl<'a> Reader<'a> {
             qualified_name: qname,
             name,
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: ts::span(name_node),
             defines: true,
             linkage,
@@ -1354,6 +1368,7 @@ impl<'a> Reader<'a> {
             qualified_name: identity.qualified_name.clone(),
             name: identity.name,
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: identity.name_span,
             defines,
             linkage: identity.linkage,
@@ -1434,6 +1449,7 @@ impl<'a> Reader<'a> {
                 qualified_name: qname.clone(),
                 name,
                 span: ts::span(param),
+                doc: None,
                 name_span: ts::span(name_node),
                 defines,
                 // A parameter is never visible outside the declaration that
@@ -1520,6 +1536,7 @@ impl<'a> Reader<'a> {
             qualified_name: qname.clone(),
             name,
             span: ts::span(node),
+            doc: self.doc_for(node),
             name_span: ts::span(name_node),
             defines: initialized || !modifiers.is_extern,
             linkage,
@@ -1781,6 +1798,7 @@ impl<'a> CFamilyEmitter<'a> {
     ) -> PyResult<()> {
         let key: DeclKey = (decl.kind, decl.qualified_name.clone());
         let site = DeclSite {
+            doc: decl.doc.clone(),
             file_rel: facts.file_rel.clone(),
             span: decl.span,
             name_span: decl.name_span,
@@ -1793,6 +1811,11 @@ impl<'a> CFamilyEmitter<'a> {
         if self.ledger.owns(&key, &site) && !graph.has_node(&id) {
             let declared_in = self.ledger.declared_elsewhere(&key);
             let metadata = self.metadata_for(decl, &declared_in)?;
+            // The definition's comment wins; failing that, the first one a
+            // declaration carries (C keeps its documentation in the header).
+            if let Some(doc) = self.ledger.doc(&key) {
+                metadata.set_item("doc", doc)?;
+            }
             let node = Node {
                 id: id.clone(),
                 kind: decl.kind,

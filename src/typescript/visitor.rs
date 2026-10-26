@@ -1324,6 +1324,21 @@ impl<'a> TsVisitor<'a> {
         if let Some(name_node) = name_node {
             metadata.set_item("name_span", ts::span(name_node))?;
         }
+        // What the author wrote about it: the comment block above.
+        if let Some(definition) = ts_node
+            && matches!(
+                kind,
+                NodeKind::Class
+                    | NodeKind::Function
+                    | NodeKind::Method
+                    | NodeKind::Variable
+                    | NodeKind::Attribute
+                    | NodeKind::TypeAlias
+            )
+            && let Some(doc) = crate::doc::leading_comment(definition, self.source)
+        {
+            metadata.set_item("doc", doc)?;
+        }
         let node = Node {
             id: node_id(self.project_name, qualified_name, kind.as_str()),
             kind,

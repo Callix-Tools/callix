@@ -38,7 +38,7 @@ GitLab reads it as a code-navigation report.
 | a reference edge's `metadata["span"]` | `range` at the use-site |
 | a definition, or an external symbol | `resultSet` |
 | where it is defined, where it is referenced | `definitionResult`, `referenceResult` with `item` edges per document |
-| kind and qualified name | `hoverResult` |
+| kind and qualified name, then the definition's `metadata["doc"]` | `hoverResult` |
 | an external symbol | `hoverResult` named after the text at the site, `(external, stdlib)` |
 | a named external symbol | `moniker`, kind `import` |
 
@@ -56,8 +56,10 @@ warning:
 - **No references without resolution.** A reference is a resolver's answer. A
   graph built with `--no-resolve`, or whose toolchain was missing, exports its
   definitions only.
-- **Hover is thin.** The graph keeps no docstrings or signatures, so a hover is
-  the symbol's kind and qualified name.
+- **Hover is as good as the comments.** A hover shows the symbol's kind and
+  qualified name and, when the definition has one, the docstring or the comment
+  block above it. Signatures are not kept, and a definition nobody documented
+  has only its kind and name.
 - **One project per language.** A polyglot tree is written as several LSIF
   `project` vertices, which is valid, but not every consumer accepts it. Index
   per language with `-l` if yours does not.

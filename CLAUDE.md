@@ -315,6 +315,21 @@ Things that are easy to get wrong:
   attribute sits *before* the function, outside its span, so the extractors hand
   over the function's name instead; Python and TypeScript once keyed the file by
   its absolute path, which matched nothing and filed every route under its file.
+- **Documentation is `metadata["doc"]`, read in one place per language.** The
+  comment block directly above a definition (`src/doc.rs::leading_comment`; no
+  blank line, attributes and decorators allowed between) and, for a Python
+  function or class, its docstring first. The Python/TypeScript/PHP `make_node`,
+  the Go/Rust `declare` and, for C and C++, the `DeclLedger` (the definition's
+  comment, else the first declaration's, since headers hold it) call it. The
+  baseline fingerprint hashes kind, name and span, not metadata, so documenting
+  a node moves no pin; the goldens do change.
+- **An import is bound to a MODULE by name, not by what the walk has met.** The
+  Python visitor is given every module of the root up front
+  (`with_project_modules`): a module's id is a function of its name, so an import
+  of a module whose file comes later in the walk still lands on it. It once fell
+  back to an external symbol, or to the enclosing package, depending on file
+  order. A `from m import name` also records an `import` occurrence, so the
+  resolver adds a `RESOLVES_TO` from the import to the definition.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

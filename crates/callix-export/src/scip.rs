@@ -142,11 +142,14 @@ impl Exporter for Scip {
                 ),
             ));
         }
-        warnings.push(Warning::new(
-            "no-hover-documentation",
-            "the graph keeps no docstrings or signatures; each symbol's documentation is its \
-             kind and qualified name",
-        ));
+        if !index.symbols.iter().any(|s| s.node.meta_str("doc").is_some()) {
+            warnings.push(Warning::new(
+                "no-documentation",
+                "no definition in the graph carries documentation (a graph from before callix \
+                 recorded it, or code without docstrings or comments); each symbol's \
+                 documentation is its kind and qualified name",
+            ));
+        }
         Ok(warnings)
     }
 }
@@ -263,6 +266,10 @@ fn symbol_information(symbol: &Symbol<'_>, text: &str) -> Vec<u8> {
     let mut out = Vec::new();
     put_str(&mut out, 1, text);
     put_str(&mut out, 3, &format!("{} {}", node.kind.as_str(), node.qualified_name));
+    // `documentation` is repeated: the signature-like line, then the author's.
+    if let Some(doc) = node.meta_str("doc").filter(|doc| !doc.is_empty()) {
+        put_str(&mut out, 3, doc);
+    }
     let kind = symbol_kind(node.kind);
     if kind != 0 {
         put_varint_field(&mut out, 5, kind);

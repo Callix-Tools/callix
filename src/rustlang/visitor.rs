@@ -203,6 +203,10 @@ impl<'a> RustExtractor<'a> {
         }
         let metadata = PyDict::new(self.py);
         metadata.set_item("name_span", ts::span(name_node))?;
+        // What the author wrote above it.
+        if let Some(doc) = crate::doc::leading_comment(full_node, self.source) {
+            metadata.set_item("doc", doc)?;
+        }
         let node = Node {
             id: id.clone(),
             kind,

@@ -873,6 +873,33 @@ impl<'a> PythonVisitor<'a> {
         if let Some(name_node) = name_node {
             metadata.set_item("name_span", ts::span(name_node))?;
         }
+        // What the author wrote about it: the comment block above, and for a
+        // Python function or class its docstring first.
+        if let Some(definition) = ts_node
+            && matches!(
+                kind,
+                NodeKind::Class
+                    | NodeKind::Function
+                    | NodeKind::Method
+                    | NodeKind::Variable
+                    | NodeKind::Attribute
+                    | NodeKind::TypeAlias
+            )
+        {
+            let docstring: Option<String> = if matches!(
+                kind,
+                NodeKind::Class | NodeKind::Function | NodeKind::Method
+            ) {
+                crate::doc::python_docstring(definition, self.source)
+            } else {
+                None
+            };
+            if let Some(doc) =
+                docstring.or_else(|| crate::doc::leading_comment(definition, self.source))
+            {
+                metadata.set_item("doc", doc)?;
+            }
+        }
         let node = Node {
             id: node_id(self.project_name, qualified_name, kind.as_str()),
             kind,

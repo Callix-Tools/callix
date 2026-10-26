@@ -62,6 +62,7 @@
       "id": "4d10bbb0a224746f",
       "kind": "class",
       "metadata": {
+        "doc": "Types the service layer annotates against.",
         "is_abstract": false,
         "is_anonymous": false,
         "is_enum": false,

@@ -105,6 +105,8 @@ pub struct DeclSite {
     /// Whether this site is the definition: a function with a body, a record
     /// with a member list, a variable that is not merely `extern`.
     pub defines: bool,
+    /// The comment block above the site, without its markers.
+    pub doc: Option<String>,
 }
 
 /// A node's identity while the ledger fills.
@@ -119,6 +121,10 @@ struct DeclEntry {
     owner: DeclSite,
     /// Every file that declared the name, in the order the files were walked.
     declared_in: Vec<String>,
+    /// The documentation: the definition's if it has one, else the first
+    /// declaration's.
+    doc: Option<String>,
+    doc_is_the_definitions: bool,
 }
 
 /// Which of a name's declaring sites the node is built from.
@@ -148,14 +154,27 @@ impl DeclLedger {
             if !entry.declared_in.iter().any(|file| file == &site.file_rel) {
                 entry.declared_in.push(site.file_rel.clone());
             }
+            if site.doc.is_some()
+                && (entry.doc.is_none() || (site.defines && !entry.doc_is_the_definitions))
+            {
+                entry.doc = site.doc.clone();
+                entry.doc_is_the_definitions = site.defines;
+            }
             if site.defines && !entry.owner.defines {
                 entry.owner = site;
             }
             return;
         }
+        let doc = site.doc.clone();
+        let doc_is_the_definitions = doc.is_some() && site.defines;
         self.entries.insert(
             key,
-            DeclEntry { declared_in: vec![site.file_rel.clone()], owner: site },
+            DeclEntry {
+                declared_in: vec![site.file_rel.clone()],
+                owner: site,
+                doc,
+                doc_is_the_definitions,
+            },
         );
     }
 
@@ -168,6 +187,11 @@ impl DeclLedger {
         self.entries.get(key).is_some_and(|entry| {
             entry.owner.file_rel == site.file_rel && entry.owner.span == site.span
         })
+    }
+
+    /// The documentation of a name, from wherever it was written.
+    pub fn doc(&self, key: &DeclKey) -> Option<&str> {
+        self.entries.get(key).and_then(|entry| entry.doc.as_deref())
     }
 
     /// Every declaring file other than the one the node was built from — the

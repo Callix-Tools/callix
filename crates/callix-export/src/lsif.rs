@@ -352,12 +352,15 @@ fn emit_symbol(emitter: &mut Emitter<'_>, symbol: &Symbol<'_>, language: &str) -
     let result_set = emitter.vertex("resultSet", json!({}))?;
 
     if !symbol.is_site_key() {
-        let hover = emitter.vertex(
-            "hoverResult",
-            json!({"result": {"contents": [
-                {"language": language, "value": format!("{} {}", node.kind.as_str(), node.qualified_name)}
-            ]}}),
-        )?;
+        // The kind and name as code, then what the author wrote about it: a
+        // plain string in a hover is Markdown.
+        let mut contents = vec![
+            json!({"language": language, "value": format!("{} {}", node.kind.as_str(), node.qualified_name)}),
+        ];
+        if let Some(doc) = node.meta_str("doc").filter(|doc| !doc.is_empty()) {
+            contents.push(json!(doc));
+        }
+        let hover = emitter.vertex("hoverResult", json!({"result": {"contents": contents}}))?;
         emitter.edge("textDocument/hover", result_set, &[hover], None, None)?;
     }
 

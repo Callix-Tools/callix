@@ -38,6 +38,13 @@ A loop variable is a `VARIABLE` node only when the body of the loop calls it
 call is followed to what the iterable hands out: the elements of a container, what
 a generator `yield`s (read like a `return`), what an iterator's `__next__` returns.
 
+Beyond ty, a flow pass follows a function carried in a value (see
+[Accuracy](../project/accuracy.md#what-flow-is)): decorators, receivers,
+containers read by key, unpacking, parameter defaults, call results and a closed
+list of library functions that call an argument (`map`, `filter`, `sorted(key=)`,
+…). Every such edge is marked `resolution: "flow"`, with the holder it went
+through in `via`.
+
 Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.

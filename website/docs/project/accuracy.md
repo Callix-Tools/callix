@@ -13,7 +13,7 @@ found. This page is what those two things amount to.
 
 | Language | Backend | How a call is found | What it does not follow |
 |---|---|---|---|
-| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr`, `**kwargs` forwarding and monkey-patching are not followed at all. Polymorphic receivers resolve to the declared class, not to each subclass. |
+| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr` and monkey-patching are not followed at all. A receiver whose class ty knows resolves to the declared class, not to each subclass. |
 | TypeScript | typescript-go, linked in | by types | Destructured function values, calls through `any`, dynamic `import()` and string-keyed lookups. A callback handed to a library function is not assumed to be called. |
 | Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
 | Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
@@ -61,7 +61,14 @@ container literals and `table[key]`, the names a function returns, the result
 of a call that is called, a call's result handed on as an argument, a call made
 through a parameter that holds a function (its own arguments reach that
 function's parameters), and the iteration protocol: `for x in it` calls
-`__iter__` and `__next__` of the class `it` is shown to hold an instance of. It over-approximates where a call graph usually does,
+`__iter__` and `__next__` of the class `it` is shown to hold an instance of.
+Beyond that it follows a decorator (a decorated name stands for what the decorator
+returns, applied from the bottom up), a method called on a receiver (found on the
+classes the receiver holds an instance of, and on what they inherit), keyed
+containers (`d["a"]` and `l[1]` give back what was stored under that key,
+including through `append`, `update` and item assignment), unpacking, parameter
+defaults, and a closed list of library functions that call an argument (`map`,
+`filter`, `sorted(key=)`, `functools.reduce`, `itertools.starmap`, …). It over-approximates where a call graph usually does,
 and the label says so. It follows nothing it cannot resolve to a node of the
 project.
 
@@ -80,7 +87,7 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 93 | 107 | 0.88 | 0.97 |
+| Python (PyCG) | 112 | 112 | 112 | 1.00 | 1.00 |
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
@@ -98,12 +105,23 @@ How to read them:
   on whether a call that stopped at a variable counts as wrong. PyCG's own paper
   reports 70 % recall and 99 % precision over *all* edges, library calls included,
   so the two are not the same measure and are not a comparison.
+- **The Python row is scored against a corrected expectation in one case.** In
+  PyCG's `decorators/nested_decorators`, `func` is decorated twice and then called
+  from the module, and the vendored ground truth lists the module as calling the
+  undecorated `main.func` as well. Python rebinds the name, so the call reaches
+  `dec1.inner`, which reaches `dec2.inner`, which reaches `func`; the module never
+  calls `func` itself. The vendored file is untouched, the correction is in
+  `suites/python/pycg/corrections.json` with that reason, and the run prints it.
+  Against the unmodified ground truth the row is 111 of 112 sound. A suite this
+  small is also one a resolver can be fitted to: that is why the numbers are
+  kept next to the rule that no case's expectation is bent to match the tool.
 - The suites for Go, Rust, TypeScript, PHP, C and C++ were written *after* looking
   at what the resolvers did badly, so they cover the features that had been
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
-  nothing. The honest cost of that is recall: for Python, the 49 calls that stop
-  at a variable, and the function values no pass follows, are the 12 % missing.
+  nothing. The honest cost of that is recall, which on Python's micro-benchmark
+  is now complete; on real code the calls that stop at a variable are what is
+  missing.
 - A callee outside the program has no name in the graph, so it is scored apart
   and leniently, and is not in these numbers.
 
@@ -122,10 +140,12 @@ expected edge, so that the number does not flatter:
 - **PHP**: a callable named by a string or an array is a call only when it is handed to one of
   a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
   Handed to a function of the project that calls its own parameter, it is not followed.
-- **Python**: a function
-  fetched from a container by an index the pass cannot tell apart from another,
-  a polymorphic receiver (it lands on the declared class, not each subclass),
-  `super(Cls, self)`.
+- **Python**: the micro-benchmark has no failing case left, which says the features
+  it isolates are handled and nothing about code that does not look like them. Known
+  limits: the pass is flow- and context-insensitive, so a name reassigned between
+  two calls holds both values; a library function that calls an argument is followed
+  only for the closed list above, and a project function named `map` is not told
+  from the builtin; `getattr` and `eval` are not followed.
 - **C and C++**: a callback handed to a library function is a call only for a closed
   list of them (`qsort`, `bsearch`, `signal`, `pthread_create`, `std::sort`,
   `std::for_each`, …); handed to any other function it is a reference, because whether

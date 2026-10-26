@@ -58,6 +58,10 @@ def report(score: harness.Score, outcomes: list[harness.Outcome], verbose: bool)
             f"callees outside the program: {score.external_found}/{score.external_expected} "
             f"matched by last name segment (lenient; the graph does not name them)"
         )
+    if score.corrected:
+        print(f"cases scored against a corrected expectation (corrections.json): {len(score.corrected)}")
+        for line in score.corrected:
+            print(f"  {line}")
     if score.errors:
         print(f"cases that crashed: {score.errors}")
     if verbose:

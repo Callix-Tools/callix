@@ -203,7 +203,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "ty (embedded), by types",
             "calls through a name or an attribute whose type is known; a function carried in a \
              container, an argument or a return value is followed by a flow pass and marked `flow`; \
-             `getattr`, `**kwargs` forwarding and a polymorphic receiver are not followed",
+             decorators, receivers, keyed containers and the library's own callbacks (`map`, \
+             `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
+             `getattr` and `eval` are not followed",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",

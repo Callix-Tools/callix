@@ -81,6 +81,8 @@ pub(crate) struct Flow {
     result_sites: HashMap<(String, u32, u32), (String, usize)>,
     /// The same calls with their depth, for the edges (`result_calls` holds depth 1).
     deep_calls: Vec<(String, String, crate::span::Span, usize)>,
+    /// `cb()` on a parameter: (the scope that calls, the parameter, where).
+    param_calls: Vec<(String, String, crate::span::Span)>,
     /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
     iterations: Vec<(String, String, crate::span::Span, Option<String>)>,
     /// `recv.m()`: (the scope that calls, what `recv` resolved to, `m`, line, column
@@ -375,6 +377,11 @@ impl Flow {
         self.result_calls.push((caller_id.to_owned(), function_id.to_owned(), Some(span), file.to_owned()));
     }
 
+    /// `cb()` made by `caller_id`, `cb` being the parameter `parameter_id`.
+    pub(crate) fn param_call(&mut self, caller_id: &str, parameter_id: &str, span: crate::span::Span) {
+        self.param_calls.push((caller_id.to_owned(), parameter_id.to_owned(), span));
+    }
+
     /// `f()()()` made by `caller_id`: a call of what `f()()` returns. `site` is the
     /// place of this call's own argument list, where its arguments are keyed.
     pub(crate) fn result_call_deep(
@@ -628,6 +635,7 @@ impl Flow {
             && self.decorators.is_empty()
             && self.call_paths.is_empty()
             && self.deep_calls.is_empty()
+            && self.param_calls.is_empty()
         {
             return Ok(0);
         }
@@ -848,10 +856,10 @@ impl Flow {
                     .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
             let mut classes: Vec<String> = Vec::new();
             if is_self {
-                if let Some(class) = declarer.get(held).and_then(|f| declarer.get(f)) {
-                    if graph.node_kind(class) == Some(NodeKind::Class) {
-                        classes = closure(class, &subclasses);
-                    }
+                if let Some(class) = declarer.get(held).and_then(|f| declarer.get(f))
+                    && graph.node_kind(class) == Some(NodeKind::Class)
+                {
+                    classes = closure(class, &subclasses);
                 }
             } else {
                 classes = self.instances(graph, held);
@@ -863,10 +871,10 @@ impl Flow {
                         continue;
                     };
                     let mut targets: Vec<(String, String)> = Vec::new();
-                    if let Some(method) = by_name.get(&format!("{owner_name}.{name}")) {
-                        if graph.node_kind(method) == Some(NodeKind::Method) {
-                            targets.push((method.clone(), owner_name.clone()));
-                        }
+                    if let Some(method) = by_name.get(&format!("{owner_name}.{name}"))
+                        && graph.node_kind(method) == Some(NodeKind::Method)
+                    {
+                        targets.push((method.clone(), owner_name.clone()));
                     }
                     for (qname, id) in attributes.get(name.as_str()).into_iter().flatten() {
                         if qname.starts_with(&format!("{owner_name}.")) {
@@ -1114,6 +1122,57 @@ impl Flow {
                     kind: RelationKind::Calls,
                     metadata: carried.unbind(),
                 });
+            }
+        }
+        // A call of a parameter is a call of what it holds, even where the type
+        // checker named one function for it.
+        if !self.param_calls.is_empty() {
+            let mut have: HashSet<(String, String, u32, u32)> = HashSet::new();
+            for relation in graph.relation_slice() {
+                let relation = relation.get();
+                if relation.kind != RelationKind::Calls {
+                    continue;
+                }
+                if let Some(span) = relation
+                    .metadata
+                    .bind(py)
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    have.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for relation in added.iter() {
+                if let Some(span) = relation
+                    .metadata
+                    .bind(py)
+                    .get_item("span")
+                    .ok()
+                    .flatten()
+                    .and_then(|v| v.extract::<crate::span::Span>().ok())
+                {
+                    have.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for (caller, parameter, span) in &self.param_calls {
+                for callable in self.callables(graph, parameter) {
+                    if !have.insert((caller.clone(), callable.clone(), span.start_line, span.start_col)) {
+                        continue;
+                    }
+                    let carried = PyDict::new(py);
+                    carried.set_item("span", *span)?;
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    let via = graph.node_map().get(parameter).map(|n| n.get().qualified_name.clone()).unwrap_or_default();
+                    carried.set_item("via", via)?;
+                    added.push(Relation {
+                        source_id: caller.clone(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
             }
         }
         let count = added.len();

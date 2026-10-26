@@ -123,6 +123,9 @@ pub struct PythonVisitor<'a> {
     lambda_names: HashMap<usize, String>,
     /// Numbers the element stores of this file (`d[k] = v`, `l.append(v)`).
     next_store: usize,
+    /// The parameters of the functions being visited, innermost last: a call of
+    /// one of them is a call of whatever it holds.
+    param_scopes: Vec<(String, std::collections::HashSet<String>)>,
 }
 
 impl<'a> PythonVisitor<'a> {
@@ -160,6 +163,7 @@ impl<'a> PythonVisitor<'a> {
             lambda_counts: HashMap::new(),
             lambda_names: HashMap::new(),
             next_store: 0,
+            param_scopes: Vec::new(),
         }
     }
 
@@ -570,6 +574,7 @@ impl<'a> PythonVisitor<'a> {
         }
 
         self.push(qname.clone(), func_id.clone(), kind);
+        self.param_scopes.push((qname.clone(), std::collections::HashSet::new()));
 
         if let Some(params) = ts::child_of_type(node, "parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
@@ -580,6 +585,7 @@ impl<'a> PythonVisitor<'a> {
             self.walk_body(body, &func_id)?;
         }
 
+        self.param_scopes.pop();
         self.pop();
         Ok(())
     }
@@ -614,12 +620,14 @@ impl<'a> PythonVisitor<'a> {
         self.add_node_with_relation(func_node, RelationKind::Declares)?;
 
         self.push(qname.clone(), func_id.clone(), NodeKind::Function);
+        self.param_scopes.push((qname.clone(), std::collections::HashSet::new()));
         if let Some(params) = ts::child_of_type(node, "lambda_parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
         }
         if let Some(body) = node.child_by_field_name("body") {
             self.scan_value(body, &func_id)?;
         }
+        self.param_scopes.pop();
         self.pop();
         Ok(qname)
     }
@@ -677,6 +685,9 @@ impl<'a> PythonVisitor<'a> {
             }
             let annotation = ann_type_node.map(|n| self.text(n));
             let param_qname = format!("{function_qname}.{param_name}");
+            if let Some((_, names)) = self.param_scopes.last_mut() {
+                names.insert(param_name.clone());
+            }
 
             let metadata = PyDict::new(self.py);
             metadata.set_item("is_self", param_name == "self")?;
@@ -786,6 +797,19 @@ impl<'a> PythonVisitor<'a> {
             };
             self.record_occurrence("call", name_node, caller_id);
             call_site = Some(ts::span(name_node));
+            // `cb()` where `cb` is a parameter: whatever the type checker says of
+            // it, the call is of what the parameter holds.
+            if callee.kind() == "identifier" {
+                let name = self.text(callee);
+                let scope = self.param_scopes.iter().rev().find(|(_, names)| names.contains(&name)).map(|(q, _)| q.clone());
+                if let Some(scope) = scope {
+                    self.record_occurrence_with("paramcall", name_node, caller_id, Some(format!("p:{scope}.{name}")));
+                }
+            }
+            // `map(xs, f)`, `sorted(xs, key=f)`: the library calls what it is given.
+            for (argument, _) in self.callback_arguments(callee, node) {
+                self.record_occurrence("callarg", argument, caller_id);
+            }
             // `recv.m()`: what `recv` holds decides which class's `m` it is, when
             // the type checker cannot say. The receiver is recorded with the name
             // and the place of the call.
@@ -866,6 +890,54 @@ impl<'a> PythonVisitor<'a> {
     }
 
     /// The identifier a call's callee ends in.
+    /// The arguments of a library function that calls them, among the plain
+    /// names it is given, and whether what it yields are those calls' results.
+    ///
+    /// A closed list on purpose: `map` and `sorted` are known to call their
+    /// function argument, and nothing else is guessed. A name the project defines
+    /// itself is not told from the builtin here, which is the one place it can be
+    /// wrong.
+    fn callback_arguments<'t>(&self, callee: TsNode<'t>, call: TsNode<'t>) -> Vec<(TsNode<'t>, bool)> {
+        // (every positional argument or only `key=`, results are yielded)
+        let (positional, yields) = if callee.kind() == "identifier" {
+            match self.text(callee).as_str() {
+                "map" => (true, true),
+                "filter" => (true, false),
+                "sorted" | "min" | "max" => (false, false),
+                _ => return Vec::new(),
+            }
+        } else {
+            let parts = ts::children(callee);
+            let object = parts.first().map(|p| self.text(*p));
+            let name = parts.last().map(|p| self.text(*p)).unwrap_or_default();
+            match (object.as_deref(), name.as_str()) {
+                (Some("itertools"), "starmap") => (true, true),
+                (Some("itertools"), "filterfalse" | "takewhile" | "dropwhile" | "accumulate") => (true, false),
+                (Some("functools"), "reduce") => (true, false),
+                (Some("itertools"), "groupby") => (false, false),
+                (_, "sort") => (false, false),
+                _ => return Vec::new(),
+            }
+        };
+        let Some(arguments) = call.child_by_field_name("arguments") else {
+            return Vec::new();
+        };
+        let mut found = Vec::new();
+        for argument in ts::children(arguments) {
+            if argument.kind() == "keyword_argument" {
+                if let (Some(name), Some(value)) = (argument.child_by_field_name("name"), argument.child_by_field_name("value"))
+                    && self.text(name) == "key"
+                    && let Some(plain) = Self::plain_name(value)
+                {
+                    found.push((plain, yields));
+                }
+            } else if positional && let Some(plain) = Self::plain_name(argument) {
+                found.push((plain, yields));
+            }
+        }
+        found
+    }
+
     fn callee_name<'t>(call: TsNode<'t>) -> Option<TsNode<'t>> {
         ts::child_of_types(call, &["identifier", "attribute"]).and_then(Self::plain_name)
     }
@@ -893,6 +965,16 @@ impl<'a> PythonVisitor<'a> {
             "call" => {
                 if let Some(name) = Self::callee_name(value) {
                     self.record_occurrence_with("alias", name, &sink.holder, alias_detail(sink, path, Some("result")));
+                }
+                // `res = map(xs, f)`: what is iterated over are the results of `f`.
+                if let Some(callee) = ts::child_of_types(value, &["identifier", "attribute"]) {
+                    let mut deeper = path.to_vec();
+                    deeper.push("*".to_owned());
+                    for (argument, yields) in self.callback_arguments(callee, value) {
+                        if yields {
+                            self.record_occurrence_with("alias", argument, &sink.holder, alias_detail(sink, &deeper, Some("result")));
+                        }
+                    }
                 }
             }
             "subscript" => {
@@ -1415,6 +1497,11 @@ impl<'a> PythonVisitor<'a> {
                 } else if let Some(lambda) = Self::unwrap_lambda(child) {
                     let qname = self.visit_lambda(lambda)?;
                     self.record_occurrence_with("alias", lambda, &container, Some(format!("return|lambda:{qname}")));
+                } else if child.kind() == "call"
+                    && let Some(name) = Self::callee_name(child)
+                {
+                    // `return f()`: calling this function yields what `f` returns.
+                    self.record_occurrence_with("alias", name, &container, Some("return|result".into()));
                 }
                 self.scan_value(child, &container)?;
             }

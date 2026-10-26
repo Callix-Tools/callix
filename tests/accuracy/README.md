@@ -43,6 +43,13 @@ reported on their own line instead, so neither inflates a number:
 
 A suite is `<suite>/<category>/<case>/`; `README.md` in a case says what it tests.
 
+A vendored suite whose own ground truth is wrong in a case is not edited: it may
+carry `corrections.json` (`{"<category>/<case>": {"remove": [[caller, callee]],
+"reason": "..."}}`). A correction can only remove an edge the case lists, the run
+prints every one with its reason, and the docs give the score both ways. It is for
+an expectation that contradicts the language's rules, never for one the resolver
+fails.
+
 ### Conventions
 
 Names are the ones callix gives nodes, because a name is a name; what is *chosen*

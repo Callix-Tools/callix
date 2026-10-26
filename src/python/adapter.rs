@@ -93,7 +93,7 @@ impl ResolvedRef {
 /// Use-site role → edge kind.
 fn role_to_kind(role: &str) -> Option<RelationKind> {
     Some(match role {
-        "call" => RelationKind::Calls,
+        "call" | "callarg" => RelationKind::Calls,
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
         "read" | "write" => RelationKind::References,
@@ -618,7 +618,6 @@ fn apply_resolutions_inner(
             if let Some(token) = token {
                 apply_value(&mut flow, &mut stores, path, &occurrence.enclosing_id, &detail, token);
             }
-            metrics.queries -= 1;
             continue;
         }
         // A decorator the type checker cannot place is unknown, and so is what it
@@ -628,7 +627,16 @@ fn apply_resolutions_inner(
             && reference.is_none()
         {
             flow.decorator(&occurrence.enclosing_id, index, None, is_call);
-            metrics.queries -= 1;
+            continue;
+        }
+        // `cb()` on a parameter: the parameter is named by its own qualified name.
+        if occurrence.role == "paramcall" {
+            if let Some(qname) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("p:")) {
+                let holder = node_id(project_name, qname, NodeKind::Parameter.as_str());
+                if graph.has_node(&holder) {
+                    flow.param_call(&occurrence.enclosing_id, &holder, occurrence.span);
+                }
+            }
             continue;
         }
         let Some(reference) = reference else {
@@ -644,6 +652,8 @@ fn apply_resolutions_inner(
                 || occurrence.role == "recv"
                 || occurrence.role == "key"
                 || occurrence.role == "store"
+                || occurrence.role == "paramcall"
+                || occurrence.role == "callarg"
                 || occurrence.role == "decorate" =>
             {
                 RelationKind::References
@@ -681,6 +691,20 @@ fn apply_resolutions_inner(
             }
             continue;
         }
+        // `map(xs, f)`: the library calls what it is given. A function is called
+        // outright, a variable or a parameter by whatever it holds.
+        if occurrence.role == "callarg" {
+            match target_id.as_deref().map(|held| (held, graph.node_kind(held))) {
+                Some((_, Some(NodeKind::Function | NodeKind::Method))) => {}
+                Some((held, Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute))) => {
+                    flow.param_call(&occurrence.enclosing_id, held, occurrence.span);
+                    continue;
+                }
+                _ => {
+                    continue;
+                }
+            }
+        }
         // The name a subscript is read with, which the keys of the call refer to.
         if occurrence.role == "key" {
             if let Some(holder) = target_id.as_deref()
@@ -692,7 +716,6 @@ fn apply_resolutions_inner(
             {
                 names.insert((path.clone(), line, col, position), holder.to_owned());
             }
-            metrics.queries -= 1;
             continue;
         }
         // `d[k] = v`, `l.append(v)`: what is stored, and in what.
@@ -705,7 +728,6 @@ fn apply_resolutions_inner(
                 state.holder = Some(holder.to_owned());
                 state.keys = substitute_keys(keys, path, (occurrence.line, occurrence.col), &names);
             }
-            metrics.queries -= 1;
             continue;
         }
         // `@dec` on a definition: what the name stands for afterwards.
@@ -713,7 +735,6 @@ fn apply_resolutions_inner(
             if let Some((index, is_call)) = occurrence.detail.as_deref().and_then(parse_decorate) {
                 flow.decorator(&occurrence.enclosing_id, index, target_id.as_deref(), is_call);
             }
-            metrics.queries -= 1;
             continue;
         }
         // `recv.m()`: the method is looked for on the classes `recv` holds.
@@ -764,7 +785,9 @@ fn apply_resolutions_inner(
         }
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
-        } else if let Some(held) = target_id.as_deref() {
+        } else if occurrence.role != "callarg"
+            && let Some(held) = target_id.as_deref()
+        {
             flow.arg(path, occurrence, held);
             // The call that produced the argument has an occurrence of its own.
             if occurrence.detail.as_deref().is_some_and(|d| d.ends_with(":result")) {

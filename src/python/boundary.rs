@@ -264,20 +264,29 @@ impl<'a> Extractor<'a> {
                 continue;
             };
             // `router.get("/x")`: the object the route is registered on may
-            // carry a prefix.
+            // carry a prefix. The prefixes this file knows are applied here,
+            // so a single source is right on its own; the router and the path
+            // as written are left in the detail for `routers::apply`, which
+            // follows the router across modules when a whole project is walked.
             let receiver = deco_text.rsplit_once('.').map_or("", |(object, _)| object);
-            let path = join_paths(
-                prefixes.get(receiver).map_or("", String::as_str),
-                &self.string_template(path_node),
-            );
+            let route = self.string_template(path_node);
+            let path = join_paths(prefixes.get(receiver).map_or("", String::as_str), &route);
             let (line, col) = Self::pos(func);
 
+            let mut found = Vec::new();
             if HTTP_VERBS.contains(&method.as_str()) {
-                refs.push(Self::http_ref(&method.to_uppercase(), &path, line, col));
+                found.push(Self::http_ref(&method.to_uppercase(), &path, line, col));
             } else if method == "route" {
                 for verb in self.methods_kwarg(args) {
-                    refs.push(Self::http_ref(&verb, &path, line, col));
+                    found.push(Self::http_ref(&verb, &path, line, col));
                 }
+            }
+            for mut reference in found {
+                if !receiver.is_empty() {
+                    reference.detail.insert("router".to_string(), receiver.to_string());
+                    reference.detail.insert("route".to_string(), route.clone());
+                }
+                refs.push(reference);
             }
         }
         refs
@@ -609,5 +618,12 @@ pub fn extract_boundaries(root: TsNode<'_>, source: &[u8]) -> Vec<BoundaryRef> {
 pub fn extract_python_boundaries(source: &Bound<'_, PyBytes>) -> PyResult<Vec<BoundaryRef>> {
     let source = source.as_bytes();
     let tree = super::parse_tree(source)?;
-    Ok(extract_boundaries(tree.root_node(), source))
+    let mut refs = extract_boundaries(tree.root_node(), source);
+    // `router` and `route` are for the adapter, which follows a router across
+    // modules; a single source has nothing to follow them with.
+    for reference in &mut refs {
+        reference.detail.shift_remove("router");
+        reference.detail.shift_remove("route");
+    }
+    Ok(refs)
 }

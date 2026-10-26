@@ -5,6 +5,7 @@ mod boundary;
 mod deps;
 mod detector;
 mod module_resolver;
+mod routers;
 #[cfg(not(feature = "python"))]
 mod stdlib;
 mod ty_embedded;

@@ -526,7 +526,9 @@ fn apply_resolutions_inner(
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
-            None if is_alias || occurrence.role == "iterate" => RelationKind::References,
+            None if is_alias || occurrence.role == "iterate" || occurrence.role == "recv" => {
+                RelationKind::References
+            }
             None => continue,
         };
 
@@ -550,6 +552,20 @@ fn apply_resolutions_inner(
                     Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
                     _ => flow.alias(&occurrence.enclosing_id, held),
                 }
+            }
+            continue;
+        }
+        // `recv.m()`: the method is looked for on the classes `recv` holds.
+        if occurrence.role == "recv" {
+            if let Some(holder) = target_id.as_deref()
+                && let Some((name, line, col)) = occurrence.detail.as_deref().and_then(|d| {
+                    let rest = d.strip_prefix("m:")?;
+                    let (name, at) = rest.rsplit_once('@')?;
+                    let (line, col) = at.split_once(':')?;
+                    Some((name.to_owned(), line.parse::<u32>().ok()?, col.parse::<u32>().ok()?))
+                })
+            {
+                flow.receiver(&occurrence.enclosing_id, holder, &name, line, col);
             }
             continue;
         }

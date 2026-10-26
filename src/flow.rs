@@ -78,6 +78,9 @@ pub(crate) struct Flow {
     result_calls: Vec<(String, String, Option<crate::span::Span>, String)>,
     /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
     iterations: Vec<(String, String, crate::span::Span, Option<String>)>,
+    /// `recv.m()`: (the scope that calls, what `recv` resolved to, `m`, line, column
+    /// of `m`).
+    receivers: Vec<(String, String, String, u32, u32)>,
 }
 
 impl Flow {
@@ -148,6 +151,11 @@ impl Flow {
         variable: Option<String>,
     ) {
         self.iterations.push((caller_id.to_owned(), held.to_owned(), span, variable));
+    }
+
+    /// `recv.m()` made by `caller_id`, with `m` at `line:col`.
+    pub(crate) fn receiver(&mut self, caller_id: &str, held: &str, name: &str, line: u32, col: u32) {
+        self.receivers.push((caller_id.to_owned(), held.to_owned(), name.to_owned(), line, col));
     }
 
     /// What a loop variable holds: the elements of a container, what a generator
@@ -259,6 +267,7 @@ impl Flow {
             && self.args.is_empty()
             && self.result_calls.is_empty()
             && self.iterations.is_empty()
+            && self.receivers.is_empty()
         {
             return Ok(0);
         }
@@ -437,8 +446,139 @@ impl Flow {
         found
     }
 
+    /// The method or attribute `name` of the classes a receiver can be shown to
+    /// be an instance of, for the calls the type checker did not answer.
+    fn receiver_calls(&self, py: Python<'_>, graph: &Graph, added: &mut Vec<Relation>) -> PyResult<()> {
+        if self.receivers.is_empty() {
+            return Ok(());
+        }
+        let by_name: HashMap<String, String> = graph
+            .node_map()
+            .values()
+            .map(|n| n.get())
+            .map(|n| (n.qualified_name.clone(), n.id.clone()))
+            .collect();
+        // A call the type checker already placed on a definition is left alone.
+        let mut placed: HashSet<(String, u32, u32)> = HashSet::new();
+        let mut declarer: HashMap<String, String> = HashMap::new();
+        let mut bases: HashMap<String, Vec<String>> = HashMap::new();
+        let mut subclasses: HashMap<String, Vec<String>> = HashMap::new();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            match relation.kind {
+                RelationKind::Declares => {
+                    declarer.insert(relation.target_id.clone(), relation.source_id.clone());
+                }
+                RelationKind::InheritsFrom => {
+                    bases.entry(relation.source_id.clone()).or_default().push(relation.target_id.clone());
+                    subclasses.entry(relation.target_id.clone()).or_default().push(relation.source_id.clone());
+                }
+                RelationKind::Calls
+                    if matches!(
+                        graph.node_kind(&relation.target_id),
+                        Some(NodeKind::Function | NodeKind::Method | NodeKind::Class)
+                    ) =>
+                {
+                    let metadata = relation.metadata.bind(py);
+                    if let Some(span) = metadata
+                        .get_item("span")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<crate::span::Span>().ok())
+                    {
+                        placed.insert((relation.source_id.clone(), span.start_line, span.start_col));
+                    }
+                }
+                _ => {}
+            }
+        }
+        let mut attributes: HashMap<String, Vec<(String, String)>> = HashMap::new();
+        for node in graph.node_map().values().map(|n| n.get()) {
+            if node.kind == NodeKind::Attribute {
+                attributes.entry(node.name.clone()).or_default().push((node.qualified_name.clone(), node.id.clone()));
+            }
+        }
+        let closure = |start: &str, edges: &HashMap<String, Vec<String>>| -> Vec<String> {
+            let mut seen: Vec<String> = vec![start.to_owned()];
+            let mut index = 0;
+            while index < seen.len() {
+                for next in edges.get(&seen[index]).into_iter().flatten() {
+                    if !seen.contains(next) {
+                        seen.push(next.clone());
+                    }
+                }
+                index += 1;
+            }
+            seen
+        };
+
+        let mut done: HashSet<(String, String, u32, u32)> = HashSet::new();
+        for (caller, held, name, line, col) in &self.receivers {
+            if placed.contains(&(caller.clone(), *line, *col)) {
+                continue;
+            }
+            // `self` is an instance of the class of its method, or of a subclass.
+            let is_self = graph.node_kind(held) == Some(NodeKind::Parameter)
+                && graph
+                    .node_map()
+                    .get(held)
+                    .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
+            let mut classes: Vec<String> = Vec::new();
+            if is_self {
+                if let Some(class) = declarer.get(held).and_then(|f| declarer.get(f)) {
+                    if graph.node_kind(class) == Some(NodeKind::Class) {
+                        classes = closure(class, &subclasses);
+                    }
+                }
+            } else {
+                classes = self.instances(graph, held);
+            }
+            for class in classes {
+                // The class, then what it inherits from.
+                for owner in closure(&class, &bases) {
+                    let Some(owner_name) = graph.node_map().get(&owner).map(|n| n.get().qualified_name.clone()) else {
+                        continue;
+                    };
+                    let mut targets: Vec<(String, String)> = Vec::new();
+                    if let Some(method) = by_name.get(&format!("{owner_name}.{name}")) {
+                        if graph.node_kind(method) == Some(NodeKind::Method) {
+                            targets.push((method.clone(), owner_name.clone()));
+                        }
+                    }
+                    for (qname, id) in attributes.get(name.as_str()).into_iter().flatten() {
+                        if qname.starts_with(&format!("{owner_name}.")) {
+                            for callable in self.callables(graph, id) {
+                                targets.push((callable, qname.clone()));
+                            }
+                        }
+                    }
+                    for (target, via) in targets {
+                        if !done.insert((caller.clone(), target.clone(), *line, *col)) {
+                            continue;
+                        }
+                        let carried = PyDict::new(py);
+                        carried.set_item(
+                            "span",
+                            crate::span::Span { start_line: *line, start_col: *col, end_line: *line, end_col: *col + name.len() as u32 },
+                        )?;
+                        carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                        carried.set_item("via", via)?;
+                        added.push(Relation {
+                            source_id: caller.clone(),
+                            target_id: target,
+                            kind: RelationKind::Calls,
+                            metadata: carried.unbind(),
+                        });
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn follow(&self, py: Python<'_>, graph: &mut Graph) -> PyResult<usize> {
         let mut added: Vec<Relation> = Vec::new();
+        self.receiver_calls(py, graph, &mut added)?;
         if !self.iterations.is_empty() {
             let by_name: HashMap<String, String> = graph
                 .node_map()

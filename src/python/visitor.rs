@@ -739,6 +739,17 @@ impl<'a> PythonVisitor<'a> {
             };
             self.record_occurrence("call", name_node, caller_id);
             call_site = Some(ts::span(name_node));
+            // `recv.m()`: what `recv` holds decides which class's `m` it is, when
+            // the type checker cannot say. The receiver is recorded with the name
+            // and the place of the call.
+            if callee.kind() == "attribute"
+                && let Some(receiver) = ts::children(callee).first().copied()
+                && let Some(receiver_name) = Self::plain_name(receiver)
+            {
+                let at = ts::span(name_node);
+                let detail = format!("m:{}@{}:{}", self.text(name_node), at.start_line, at.start_col);
+                self.record_occurrence_with("recv", receiver_name, caller_id, Some(detail));
+            }
         } else if let Some(callee) = ts::children(node).first().copied() {
             match callee.kind() {
                 // `f()()`: a call of whatever `f` returns.
@@ -1166,6 +1177,18 @@ impl<'a> PythonVisitor<'a> {
         let qname = format!("{}.{name}", self.scope());
         let metadata = PyDict::new(self.py);
         metadata.set_item("is_constant", is_upper(&name))?;
+        // For `self.x = v` the type checker answers with the start of `self.x`, not
+        // with the name `x`: declare the attribute there as well.
+        if lhs.kind() == "attribute" && kind == NodeKind::Attribute {
+            let start = ts::span(lhs);
+            let at_start = crate::span::Span {
+                start_line: start.start_line,
+                start_col: start.start_col,
+                end_line: start.start_line,
+                end_col: start.start_col + 1,
+            };
+            metadata.set_item("declared_at", PyList::new(self.py, vec![at_start])?)?;
+        }
 
         let var_node = self.make_node(
             kind,

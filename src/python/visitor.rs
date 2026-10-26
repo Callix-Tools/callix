@@ -68,6 +68,11 @@ pub struct PythonVisitor<'a> {
     container_stack: Vec<String>,
     kind_stack: Vec<NodeKind>,
     occurrences: Vec<OccurrenceRef>,
+    /// How many lambdas each scope has had, for their names (`<lambda1>`).
+    lambda_counts: HashMap<String, usize>,
+    /// The qualified name given to the lambda that starts at a byte offset: a
+    /// lambda reached by two paths of the walk is still one node.
+    lambda_names: HashMap<usize, String>,
 }
 
 impl<'a> PythonVisitor<'a> {
@@ -102,6 +107,8 @@ impl<'a> PythonVisitor<'a> {
             container_stack: vec![file_node_id.to_string()],
             kind_stack: vec![NodeKind::File],
             occurrences: Vec::new(),
+            lambda_counts: HashMap::new(),
+            lambda_names: HashMap::new(),
         }
     }
 
@@ -526,6 +533,59 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
+    /// A lambda is a function nobody named: a FUNCTION node called `<lambdaN>` in
+    /// the scope it is written in, numbered in the order the scope meets them
+    /// (`main.<lambda1>`, `main.func.<lambda2>`). Its parameters are PARAMETER
+    /// nodes and its body belongs to it, so what it calls is its own.
+    fn visit_lambda(&mut self, node: TsNode<'_>) -> PyResult<String> {
+        if let Some(qname) = self.lambda_names.get(&node.start_byte()) {
+            return Ok(qname.clone());
+        }
+        let scope = self.scope().to_string();
+        let count = self.lambda_counts.entry(scope.clone()).or_insert(0);
+        *count += 1;
+        let name = format!("<lambda{count}>");
+        let qname = format!("{scope}.{name}");
+        self.lambda_names.insert(node.start_byte(), qname.clone());
+
+        let metadata = PyDict::new(self.py);
+        metadata.set_item("decorators", PyList::new(self.py, Vec::<String>::new())?)?;
+        metadata.set_item("is_async", false)?;
+        metadata.set_item("is_classmethod", false)?;
+        metadata.set_item("is_staticmethod", false)?;
+        metadata.set_item("is_property", false)?;
+        metadata.set_item("return_annotation", Option::<String>::None)?;
+        metadata.set_item("lambda", true)?;
+        let keyword = ts::children(node).into_iter().find(|c| c.kind() == "lambda");
+        let func_node =
+            self.make_node(NodeKind::Function, &qname, &name, Some(node), metadata, keyword)?;
+        let func_id = func_node.get().id.clone();
+        self.add_node_with_relation(func_node, RelationKind::Declares)?;
+
+        self.push(qname.clone(), func_id.clone(), NodeKind::Function);
+        if let Some(params) = ts::child_of_type(node, "lambda_parameters") {
+            self.extract_parameters(params, &func_id, &qname)?;
+        }
+        if let Some(body) = node.child_by_field_name("body") {
+            self.scan_value(body, &func_id)?;
+        }
+        self.pop();
+        Ok(qname)
+    }
+
+    /// `(lambda: 1)` and `lambda: 1` are the same value.
+    fn unwrap_lambda<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
+        let mut current = node;
+        while current.kind() == "parenthesized_expression" {
+            let inner: Vec<TsNode<'t>> = ts::children(current).into_iter().filter(|c| c.is_named()).collect();
+            let [only] = inner.as_slice() else {
+                return None;
+            };
+            current = *only;
+        }
+        (current.kind() == "lambda").then_some(current)
+    }
+
     fn extract_parameters(
         &mut self,
         params_node: TsNode<'_>,
@@ -620,6 +680,10 @@ impl<'a> PythonVisitor<'a> {
     /// a method on. Value expressions contain no nested definitions, so no guard
     /// against them is needed here.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        if node.kind() == "lambda" {
+            self.visit_lambda(node)?;
+            return Ok(());
+        }
         if node.kind() == "call" {
             return self.scan_call(node, enclosing_id, enclosing_id);
         }
@@ -703,10 +767,15 @@ impl<'a> PythonVisitor<'a> {
     /// What `value` hands to the variable it is assigned to: a name holds what it
     /// resolves to, a call holds what the callee returns, and a container holds
     /// whatever its elements are (so `table["k"]` can be followed to them).
-    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) -> PyResult<()> {
         if let Some(name) = Self::plain_name(value) {
             self.record_occurrence_with("alias", name, variable_id, None);
-            return;
+            return Ok(());
+        }
+        if let Some(lambda) = Self::unwrap_lambda(value) {
+            let qname = self.visit_lambda(lambda)?;
+            self.record_occurrence_with("alias", lambda, variable_id, Some(format!("|lambda:{qname}")));
+            return Ok(());
         }
         match value.kind() {
             "call" => {
@@ -729,11 +798,12 @@ impl<'a> PythonVisitor<'a> {
                     } else {
                         element
                     };
-                    self.record_aliases(element, variable_id, depth + 1);
+                    self.record_aliases(element, variable_id, depth + 1)?;
                 }
             }
             _ => {}
         }
+        Ok(())
     }
 
     /// One argument of a call. A plain name or attribute chain is a `read` that
@@ -762,6 +832,19 @@ impl<'a> PythonVisitor<'a> {
             };
             let detail = format!("arg:{}:{}:{slot}", site.start_line, site.start_col);
             self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+            return Ok(());
+        }
+        // `g(lambda: 1)`: the parameter holds the lambda.
+        if let (Some(site), Some(slot)) = (call_site, slot.as_ref())
+            && let Some(lambda) = Self::unwrap_lambda(value)
+        {
+            let qname = self.visit_lambda(lambda)?;
+            let slot = match slot {
+                Slot::Index(i) => i.to_string(),
+                Slot::Keyword(k) => format!("={k}"),
+            };
+            let detail = format!("arg:{}:{}:{slot}|lambda:{qname}", site.start_line, site.start_col);
+            self.record_occurrence_with("read", lambda, enclosing_id, Some(detail));
             return Ok(());
         }
         // `g(f())`: the parameter holds whatever `f` returns.
@@ -958,6 +1041,9 @@ impl<'a> PythonVisitor<'a> {
                 // Calling the function yields what is returned.
                 if let Some(name) = Self::plain_name(child) {
                     self.record_occurrence_with("alias", name, &container, Some("return".into()));
+                } else if let Some(lambda) = Self::unwrap_lambda(child) {
+                    let qname = self.visit_lambda(lambda)?;
+                    self.record_occurrence_with("alias", lambda, &container, Some(format!("return|lambda:{qname}")));
                 }
                 self.scan_value(child, &container)?;
             }
@@ -1041,7 +1127,7 @@ impl<'a> PythonVisitor<'a> {
         // `x = y`: the variable holds what `y` resolves to. The enclosing node of
         // an `alias` is the variable, so the flow pass knows who holds it.
         if !is_alias && let Some(value) = rhs {
-            self.record_aliases(value, &var_id, 0);
+            self.record_aliases(value, &var_id, 0)?;
         }
 
         match rhs {

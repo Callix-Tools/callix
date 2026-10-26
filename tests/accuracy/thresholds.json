@@ -25,9 +25,9 @@
   },
   "python/pycg": {
     "complete": 107,
-    "precision": 0.9713,
-    "recall": 0.8354,
-    "sound": 86
+    "precision": 0.9725,
+    "recall": 0.8724,
+    "sound": 91
   },
   "rust/micro": {
     "complete": 43,

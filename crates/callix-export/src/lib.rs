@@ -10,10 +10,12 @@ pub mod csv;
 pub mod cyclonedx;
 pub mod dot;
 pub mod error;
+pub(crate) mod index;
 pub mod lsif;
 pub mod model;
 pub mod ops;
 pub mod report;
+pub mod scip;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -55,6 +57,10 @@ pub trait Exporter {
     fn description(&self) -> &'static str;
     /// The conventional file extension, without the dot.
     fn extension(&self) -> &'static str;
+    /// Whether the output is binary rather than text.
+    fn binary(&self) -> bool {
+        false
+    }
     fn export(
         &self,
         graph: &Graph,
@@ -67,6 +73,7 @@ pub trait Exporter {
 pub fn exporters() -> Vec<Box<dyn Exporter>> {
     vec![
         Box::new(lsif::Lsif),
+        Box::new(scip::Scip),
         Box::new(cyclonedx::CycloneDx),
         Box::new(csv::Csv::nodes()),
         Box::new(csv::Csv::edges()),

@@ -12,7 +12,8 @@ reason to doubt the result. `callix formats` lists them.
 
 | `-f` | Output | For |
 |---|---|---|
-| `lsif` | LSIF 0.4.3, JSON Lines | code navigation: GitLab, Sourcegraph-style tools |
+| `lsif` | LSIF 0.4.3, JSON Lines | code navigation: GitLab and other LSIF consumers |
+| `scip` | SCIP, protobuf | Sourcegraph and other SCIP consumers |
 | `cyclonedx` | CycloneDX 1.5 JSON | an SBOM of the declared dependencies |
 | `csv-nodes` | CSV, a row per node | spreadsheets, `COPY` into a database |
 | `csv-edges` | CSV, a row per relation, endpoints spelled out | the same |
@@ -66,6 +67,30 @@ warning:
 The structural rules a consumer relies on — ascending ids, edges that only point
 backwards, `item` edges inside their document — are checked by the test suite
 with `callix_export::lsif::check`.
+
+## SCIP
+
+The same index in SCIP's shape — the protobuf successor of LSIF. One document per
+file; each definition is an occurrence with its name range and its enclosing
+extent, each reference an occurrence with a read or write role, and every symbol
+defined in a file has a `SymbolInformation` there.
+
+Positions are 0-based lines and **UTF-8 byte offsets** from the start of the line,
+which are callix's own columns, so no source files are needed and every column
+is exact.
+
+A symbol reads `callix . <project> . . <descriptor>`: the qualified name as one
+backtick-escaped descriptor, suffixed by what it is — `#` for a type, `().` for a
+callable, `.` for a term, `(…)` for a parameter. rust-analyzer's own symbols,
+which the graph keeps verbatim for Rust's external references, are used as they
+are, and the definitions callix indexes for the Rust fixture sit at exactly the
+ranges rust-analyzer's index puts them (a test checks it against a real index).
+
+Left out, with a warning: a reference whose target the resolver could not name
+(an external symbol keyed by the call site it was met at) — it has no identity to
+index. Documentation is the symbol's kind and qualified name, since the graph
+keeps no docstrings. The output is binary; `callix` refuses to write it to a
+terminal.
 
 ## CycloneDX
 

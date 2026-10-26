@@ -12,6 +12,7 @@ the graph, a file in another format, or a report.
 ```bash
 callix analyze .                        # the graph, as JSON, on stdout
 callix export . -f lsif -o dump.lsif    # an LSIF index
+callix export . -f scip -o index.scip   # a SCIP index
 callix export . -f cyclonedx            # an SBOM of the declared dependencies
 callix report . -t status               # how complete symbol resolution was
 ```

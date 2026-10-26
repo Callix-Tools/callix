@@ -24,24 +24,16 @@ use std::path::Path;
 use serde_json::{Map, Value, json};
 
 use crate::error::Result;
-use crate::model::{Graph, Node, NodeKind, Span};
+use crate::index::{Index, Pos, Symbol};
+use crate::model::Graph;
 use crate::{Exporter, Options, Warning};
 
 /// The LSIF version claimed by default. 0.4.3 is what the widely deployed
 /// indexers (lsif-go, lsif-node) write and what consumers such as GitLab
 /// read; `positionEncoding` is a later addition they ignore.
-pub const DEFAULT_VERSION: &str = "0.4.3";
+pub use crate::index::language_id;
 
-/// Node kinds that are definitions with a position of their own.
-const DEFINITION_KINDS: [NodeKind; 7] = [
-    NodeKind::Class,
-    NodeKind::Function,
-    NodeKind::Method,
-    NodeKind::Parameter,
-    NodeKind::Variable,
-    NodeKind::Attribute,
-    NodeKind::TypeAlias,
-];
+pub const DEFAULT_VERSION: &str = "0.4.3";
 
 pub struct Lsif;
 
@@ -65,26 +57,8 @@ impl Exporter for Lsif {
         options: &Options,
     ) -> Result<Vec<Warning>> {
         let mut builder = Builder::new(graph, options);
-        builder.collect();
         builder.emit(out)?;
         Ok(builder.warnings())
-    }
-}
-
-/// The LSIF language id for a path, by extension.
-pub fn language_id(path: &str) -> &'static str {
-    let ext = path.rsplit_once('.').map_or("", |(_, ext)| ext);
-    match ext.to_ascii_lowercase().as_str() {
-        "py" | "pyi" => "python",
-        "ts" | "tsx" | "mts" | "cts" => "typescript",
-        "js" | "jsx" | "mjs" | "cjs" => "javascript",
-        "go" => "go",
-        "rs" => "rust",
-        "php" => "php",
-        "c" | "h" => "c",
-        "cc" | "cpp" | "cxx" | "hpp" | "hh" | "hxx" | "c++" | "h++" => "cpp",
-        "yaml" | "yml" => "yaml",
-        _ => "plaintext",
     }
 }
 
@@ -138,238 +112,32 @@ impl Source {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
-struct Pos {
-    line: u32,
-    col: u32,
-}
-
-struct Range {
-    start: Pos,
-    end: Pos,
-    symbol: usize,
-}
-
-#[derive(Default)]
-struct Doc {
-    path: String,
-    language: &'static str,
-    definitions: Vec<Range>,
-    references: Vec<Range>,
-}
-
-struct Symbol<'g> {
-    node: &'g Node,
-    external: bool,
-}
-
-impl Symbol<'_> {
-    /// A resolver that could not name its target leaves a node keyed by the
-    /// site — `call@pkg/models.py:8:29` — which says where, not what. Such a
-    /// node is one use-site, so it is named after the text found there.
-    fn is_site_key(&self) -> bool {
-        self.external && is_site_key(&self.node.qualified_name)
-    }
-}
-
-fn is_site_key(qualified_name: &str) -> bool {
-    let Some((_, site)) = qualified_name.rsplit_once('@') else { return false };
-    let mut parts = site.rsplitn(3, ':');
-    let (col, line) = (parts.next(), parts.next());
-    parts.next().is_some()
-        && col.is_some_and(|c| c.parse::<u32>().is_ok())
-        && line.is_some_and(|l| l.parse::<u32>().is_ok())
-}
-
 struct Builder<'g> {
-    graph: &'g Graph,
+    index: Index<'g>,
     options: &'g Options,
-    docs: Vec<Doc>,
-    doc_index: HashMap<String, usize>,
-    symbols: Vec<Symbol<'g>>,
-    symbol_index: HashMap<&'g str, usize>,
-    skipped_definitions: usize,
-    skipped_references: usize,
-    unplaced_references: usize,
     unreadable: Vec<String>,
-    ref_edges: usize,
+}
+
+impl<'g> std::ops::Deref for Builder<'g> {
+    type Target = Index<'g>;
+
+    fn deref(&self) -> &Index<'g> {
+        &self.index
+    }
 }
 
 impl<'g> Builder<'g> {
     fn new(graph: &'g Graph, options: &'g Options) -> Self {
-        Self {
-            graph,
-            options,
-            docs: Vec::new(),
-            doc_index: HashMap::new(),
-            symbols: Vec::new(),
-            symbol_index: HashMap::new(),
-            skipped_definitions: 0,
-            skipped_references: 0,
-            unplaced_references: 0,
-            unreadable: Vec::new(),
-            ref_edges: 0,
-        }
-    }
-
-    fn doc(&mut self, path: &str) -> usize {
-        if let Some(&i) = self.doc_index.get(path) {
-            return i;
-        }
-        let i = self.docs.len();
-        self.docs.push(Doc { path: path.to_owned(), language: language_id(path), ..Doc::default() });
-        self.doc_index.insert(path.to_owned(), i);
-        i
-    }
-
-    fn symbol(&mut self, node: &'g Node, external: bool) -> usize {
-        if let Some(&i) = self.symbol_index.get(node.id.as_str()) {
-            return i;
-        }
-        let i = self.symbols.len();
-        self.symbols.push(Symbol { node, external });
-        self.symbol_index.insert(node.id.as_str(), i);
-        i
-    }
-
-    /// Reads the graph into per-document definitions and references.
-    fn collect(&mut self) {
-        let graph = self.graph;
-
-        // Documents first, in the order the graph lists its files, so the
-        // output order is a function of the graph and nothing else.
-        for node in graph.nodes_of(NodeKind::File) {
-            if let Some(path) = &node.file_path {
-                self.doc(path);
-            }
-        }
-
-        for node in &graph.nodes {
-            if !DEFINITION_KINDS.contains(&node.kind) {
-                continue;
-            }
-            let (Some(path), Some(name_span)) = (&node.file_path, node.name_span()) else {
-                if node.file_path.is_some() {
-                    self.skipped_definitions += 1;
-                }
-                continue;
-            };
-            let symbol = self.symbol(node, false);
-            let doc = self.doc(path);
-            self.docs[doc].definitions.push(range_of(name_span, symbol));
-        }
-
-        let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
-        for relation in &graph.relations {
-            if !relation.kind.is_reference() {
-                continue;
-            }
-            self.ref_edges += 1;
-            let Some(span) = relation.span() else {
-                self.unplaced_references += 1;
-                continue;
-            };
-            let (Some(source), Some(target)) =
-                (graph.node(&relation.source_id), graph.node(&relation.target_id))
-            else {
-                self.skipped_references += 1;
-                continue;
-            };
-            let Some(path) = &source.file_path else {
-                self.skipped_references += 1;
-                continue;
-            };
-            let symbol = match target.kind {
-                NodeKind::ExternalSymbol => self.symbol(target, true),
-                kind if DEFINITION_KINDS.contains(&kind) => {
-                    match self.symbol_index.get(target.id.as_str()) {
-                        Some(&i) => i,
-                        None => {
-                            // A definition without a name span: nothing to
-                            // navigate to, so the reference cannot be placed
-                            // on a symbol either.
-                            self.skipped_references += 1;
-                            continue;
-                        }
-                    }
-                }
-                _ => {
-                    self.skipped_references += 1;
-                    continue;
-                }
-            };
-            let doc = self.doc(path);
-            if !seen.insert((doc, span, symbol)) {
-                continue;
-            }
-            // A write to a name at its own definition resolves to itself.
-            if self.docs[doc]
-                .definitions
-                .iter()
-                .any(|d| d.symbol == symbol && range_of(span, symbol).start == d.start)
-            {
-                continue;
-            }
-            self.docs[doc].references.push(range_of(span, symbol));
-        }
+        Self { index: Index::build(graph), options, unreadable: Vec::new() }
     }
 
     fn warnings(&self) -> Vec<Warning> {
-        let mut out = Vec::new();
-        match self.graph.resolver_status() {
-            Some("ok") => {}
-            Some(status) => out.push(Warning::new(
-                "resolver-status",
-                format!(
-                    "the graph's resolver status is '{status}': references and definitions \
-                     reached through symbol resolution may be missing from the index"
-                ),
-            )),
-            None => out.push(Warning::new(
-                "resolver-status",
-                "the graph records no resolver status; completeness of references is unknown",
-            )),
-        }
-        if self.ref_edges == 0 {
-            out.push(Warning::new(
-                "no-references",
-                "the graph has no resolved references (was it built with resolve=False?); \
-                 the index holds definitions only, so 'find references' will be empty",
-            ));
-        }
+        let mut out = self.index.warnings("LSIF");
         if self.options.source_root.is_none() {
             out.push(Warning::new(
                 "no-source-root",
                 "no source root given: columns are emitted as byte offsets, which are wrong \
                  on lines holding non-ASCII text, and projectRoot is a placeholder",
-            ));
-        }
-        if self.skipped_definitions > 0 {
-            out.push(Warning::new(
-                "no-name-span",
-                format!(
-                    "{} definition(s) carry no name span and were left out",
-                    self.skipped_definitions
-                ),
-            ));
-        }
-        if self.unplaced_references > 0 {
-            out.push(Warning::new(
-                "no-reference-span",
-                format!(
-                    "{} reference edge(s) record no position and were left out",
-                    self.unplaced_references
-                ),
-            ));
-        }
-        if self.skipped_references > 0 {
-            out.push(Warning::new(
-                "unsupported-reference",
-                format!(
-                    "{} reference(s) point at a node LSIF has no definition for \
-                     (a module, a dependency, or a definition without a name span)",
-                    self.skipped_references
-                ),
             ));
         }
         if !self.unreadable.is_empty() {
@@ -617,14 +385,6 @@ fn emit_symbol(emitter: &mut Emitter<'_>, symbol: &Symbol<'_>, language: &str) -
         emitter.edge("moniker", result_set, &[moniker], None, None)?;
     }
     Ok(SymbolIds { result_set, definition_result, reference_result })
-}
-
-fn range_of(span: Span, symbol: usize) -> Range {
-    Range {
-        start: Pos { line: span.start_line, col: span.start_col },
-        end: Pos { line: span.end_line, col: span.end_col },
-        symbol,
-    }
 }
 
 /// An LSP position from a 1-based line and 1-based byte column.

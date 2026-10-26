@@ -1,6 +1,6 @@
 //! The subcommands.
 
-use std::io::Write;
+use std::io::{IsTerminal, Write};
 use std::process::{Command as Process, Stdio};
 
 use callix::native::Language;
@@ -61,6 +61,12 @@ fn export(args: &ExportArgs, quiet: bool) -> Result<()> {
             exporters().iter().map(|e| e.name()).collect::<Vec<_>>().join(", ")
         ))
     })?;
+    if exporter.binary() && args.output.is_none() && std::io::stdout().is_terminal() {
+        return Err(Failure::new(format!(
+            "{} is a binary format; refusing to write it to a terminal (use -o FILE or a pipe)",
+            exporter.name()
+        )));
+    }
     let loaded = input::load(&args.source, quiet)?;
     let options = Options {
         source_root: loaded.source_root.clone(),

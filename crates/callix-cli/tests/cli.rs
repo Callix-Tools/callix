@@ -283,3 +283,16 @@ fn c_and_cpp_dumps_have_references() {
         assert!(text.contains("\"property\":\"references\""), "{lang}: no references in the dump");
     }
 }
+
+#[test]
+fn scip_export_is_binary_and_non_empty() {
+    let dir = scratch("scip");
+    let out = dir.join("index.scip");
+    ok(&["export", p(&fixture("python")), "-f", "scip", "-q", "-o", p(&out)]);
+    let bytes = fs::read(&out).unwrap();
+    // field 1 (metadata, length-delimited) comes first, and the tool is named
+    assert_eq!(bytes[0], 0x0a);
+    assert!(bytes.windows(6).any(|w| w == b"callix"));
+    assert!(bytes.len() > 500);
+    fs::remove_dir_all(dir).ok();
+}

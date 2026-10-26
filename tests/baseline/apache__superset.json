@@ -9462,14 +9462,14 @@
   "ref": "6.1.0",
   "resolution": {
     "metrics": {
-      "external": 78575,
-      "internal": 160222,
-      "queries": 281667,
-      "resolved": 238797,
-      "unresolved": 42870
+      "external": 99646,
+      "internal": 196635,
+      "queries": 352125,
+      "resolved": 296281,
+      "unresolved": 55844
     },
     "relations": {
-      "calls": 54840,
+      "calls": 56392,
       "consumes": 188,
       "contains": 3791,
       "declares": 97542,
@@ -9477,8 +9477,8 @@
       "exposes": 230,
       "has_type": 13906,
       "imports": 12720,
-      "inherits_from": 2036,
-      "references": 168015,
+      "inherits_from": 2088,
+      "references": 223895,
       "resolves_to": 17321
     },
     "status": "ok"

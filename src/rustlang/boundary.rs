@@ -151,9 +151,32 @@ impl<'a> Extractor<'a> {
             let Some(path) = self.string_in_tree(args) else {
                 continue;
             };
-            refs.push(Self::http_ref("server", &verb.to_uppercase(), &path, attr));
+            // The attribute sits before the function, outside its span, so the
+            // position handed on is the function's name: that is what ties the
+            // route to its handler instead of to the file.
+            let anchor = attr
+                .parent()
+                .and_then(|attribute| attribute.parent())
+                .and_then(Self::decorated_function)
+                .and_then(|function| function.child_by_field_name("name"))
+                .unwrap_or(attr);
+            refs.push(Self::http_ref("server", &verb.to_uppercase(), &path, anchor));
         }
         refs
+    }
+
+    /// The function an attribute item is written on: the next sibling that is
+    /// not another attribute or a comment.
+    fn decorated_function<'tree>(attribute_item: TsNode<'tree>) -> Option<TsNode<'tree>> {
+        let mut next = attribute_item.next_sibling();
+        while let Some(sibling) = next {
+            match sibling.kind() {
+                "attribute_item" | "line_comment" | "block_comment" => next = sibling.next_sibling(),
+                "function_item" => return Some(sibling),
+                _ => return None,
+            }
+        }
+        None
     }
 
     /// reqwest client calls (`client.get("/x")`).

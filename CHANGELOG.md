@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-10-26
+### CI/CD
+
+- verify the published CLI tarballs on every platform by @claude
+
+### Features
+
+- **python**: follow routers across modules, bind imports whatever the file order, resolve imports to their definition by @claude
+- feat: cross-module routers, order-independent imports, documentation in the graph; baselines; verify-release by @claude in [#5](https://github.com/Callix-Tools/callix/pull/5)
+
+### Testing
+
+- **baseline**: recapture zod and superset after the walk reaches decorators, defaults and receivers by @claude
+- **baseline**: recapture redis, leveldb and rocksdb by @claude
+
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.2.0...v1.3.0
 ## [1.2.0] - 2026-10-26
 ### Bug Fixes
 

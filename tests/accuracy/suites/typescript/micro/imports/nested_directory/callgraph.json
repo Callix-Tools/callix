@@ -1,0 +1,1 @@
+{"main.ts": ["lib.inner.f"], "lib.inner.f": ["lib.inner.g"], "lib.inner.g": []}

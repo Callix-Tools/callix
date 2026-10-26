@@ -38,6 +38,8 @@ import callix
 ROOT = Path(__file__).resolve().parent
 SUITES = ROOT / "suites"
 
+_CONSTRUCTOR = {"python": "__init__", "typescript": "constructor"}
+
 _IDENT = re.compile(r"[A-Za-z_][A-Za-z_0-9]*(?:\s*(?:\.|::|->)\s*[A-Za-z_][A-Za-z_0-9]*)*")
 
 
@@ -159,7 +161,7 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
         if class_id in seen:
             return None
         seen.add(class_id)
-        found = by_name.get(nodes[class_id].qualified_name + ".__init__")
+        found = by_name.get(nodes[class_id].qualified_name + "." + _CONSTRUCTOR[language])
         if found is not None:
             return found.qualified_name
         for base in bases.get(class_id, []):
@@ -184,8 +186,9 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
             result.external[caller].add(_callee_text(root, file, span) or "")
         elif target_kind.endswith(("VARIABLE", "PARAMETER")):
             result.to_value[caller].add(target.qualified_name)
-        elif target_kind.endswith("CLASS") and language == "python":
-            # PyCG draws no edge for `A()` unless `A` defines `__init__`.
+        elif target_kind.endswith("CLASS") and language in _CONSTRUCTOR:
+            # No edge for `A()` unless `A` defines a constructor: that is what a
+            # reader draws, and what PyCG's ground truth does.
             init = initializer(target.id)
             if init:
                 result.internal[caller].add(init)
@@ -194,13 +197,27 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
     return result
 
 
-def _program_modules(root: Path) -> set[str]:
-    return {
-        _module_of(os.path.relpath(os.path.join(directory, name), root))
-        for directory, _, names in os.walk(root)
-        for name in names
-        if name.endswith(".py")
-    }
+_SOURCE_SUFFIXES = {
+    "python": (".py",),
+    "typescript": (".ts", ".tsx", ".mts", ".cts"),
+}
+
+
+def _program_modules(root: Path, language: str) -> set[str]:
+    """Names of the modules the program is made of, as the ground truth spells them."""
+    suffixes = _SOURCE_SUFFIXES[language]
+    modules = set()
+    for directory, dirs, names in os.walk(root):
+        dirs[:] = [d for d in dirs if d != "node_modules"]
+        for name in names:
+            if not name.endswith(suffixes) or name.endswith(".d.ts"):
+                continue
+            relative = os.path.relpath(os.path.join(directory, name), root)
+            stem = os.path.splitext(relative)[0].replace(os.sep, ".")
+            if language == "python":
+                stem = stem[: -len(".__init__")] if stem.endswith(".__init__") else stem
+            modules.add(stem)
+    return modules
 
 
 def evaluate(case: Case, analyze) -> Outcome:
@@ -211,7 +228,7 @@ def evaluate(case: Case, analyze) -> Outcome:
         outcome.error = repr(error)
         return outcome
 
-    modules = _program_modules(case.root)
+    modules = _program_modules(case.root, case.suite.split("/")[0])
 
     def internal(name: str) -> bool:
         return not name.startswith("<") and any(name == m or name.startswith(m + ".") for m in modules)
@@ -272,6 +289,7 @@ def adapter_for(suite_name: str):
     language = suite_name.split("/")[0]
     adapters = {
         "python": callix.PythonAdapter,
+        "typescript": callix.TypeScriptAdapter,
     }
     factory = adapters.get(language)
     if factory is None:

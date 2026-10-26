@@ -556,7 +556,12 @@ fn apply_resolutions_inner(
         // `for x in it:` is a call of the iteration protocol of whatever `it` holds.
         if occurrence.role == "iterate" {
             if let Some(held) = target_id.as_deref() {
-                flow.iterate(&occurrence.enclosing_id, held, occurrence.span);
+                let variable = occurrence
+                    .detail
+                    .as_deref()
+                    .and_then(|d| d.strip_prefix("var:"))
+                    .map(|qname| node_id(project_name, qname, NodeKind::Variable.as_str()));
+                flow.iterate(&occurrence.enclosing_id, held, occurrence.span, variable);
             }
             continue;
         }

@@ -51,6 +51,17 @@ fn is_upper(name: &str) -> bool {
     has_cased
 }
 
+/// A node and everything under it, depth-first.
+fn descendants_of<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = vec![node];
+    while let Some(current) = stack.pop() {
+        out.push(current);
+        stack.extend(ts::children(current));
+    }
+    out
+}
+
 pub struct PythonVisitor<'a> {
     py: Python<'a>,
     graph: &'a mut Graph,
@@ -684,6 +695,19 @@ impl<'a> PythonVisitor<'a> {
             self.visit_lambda(node)?;
             return Ok(());
         }
+        // A generator hands out what it yields: calling it, and iterating the
+        // result, reaches the same values as a `return` would.
+        if node.kind() == "yield" {
+            let container = self.container();
+            for child in ts::children(node) {
+                if let Some(name) = Self::plain_name(child) {
+                    self.record_occurrence_with("alias", name, &container, Some("return".into()));
+                } else if let Some(lambda) = Self::unwrap_lambda(child) {
+                    let qname = self.visit_lambda(lambda)?;
+                    self.record_occurrence_with("alias", lambda, &container, Some(format!("return|lambda:{qname}")));
+                }
+            }
+        }
         if node.kind() == "call" {
             return self.scan_call(node, enclosing_id, enclosing_id);
         }
@@ -909,7 +933,8 @@ impl<'a> PythonVisitor<'a> {
         if node.kind() == "for_statement"
             && let Some(iterable) = node.child_by_field_name("right")
         {
-            self.record_iteration(iterable, enclosing_id);
+            let variable = self.declare_called_loop_variable(node)?;
+            self.record_iteration(iterable, enclosing_id, variable);
         }
         for child in ts::children(node) {
             if child.kind() == "block" {
@@ -930,14 +955,46 @@ impl<'a> PythonVisitor<'a> {
     /// `for x in it:` runs `it.__iter__()` and `it.__next__()`. Nothing in the
     /// source names them, so the iterable is recorded and the flow pass finds the
     /// class it holds: the name itself, or the callee of `Cls()`.
-    fn record_iteration(&mut self, iterable: TsNode<'_>, enclosing_id: &str) {
+    fn record_iteration(&mut self, iterable: TsNode<'_>, enclosing_id: &str, variable: Option<String>) {
         let named = match iterable.kind() {
             "call" => iterable.child_by_field_name("function").and_then(Self::plain_name),
             _ => Self::plain_name(iterable),
         };
         if let Some(name) = named {
-            self.record_occurrence("iterate", name, enclosing_id);
+            let detail = variable.map(|qname| format!("var:{qname}"));
+            self.record_occurrence_with("iterate", name, enclosing_id, detail);
         }
+    }
+
+    /// `for f in handlers: f()`. The loop variable is a node only when the body
+    /// calls it - a node per loop counter would bury the graph - so that the call
+    /// has something to land on and the flow pass something to follow. Returns its
+    /// qualified name.
+    fn declare_called_loop_variable(&mut self, node: TsNode<'_>) -> PyResult<Option<String>> {
+        let (Some(target), Some(body)) = (node.child_by_field_name("left"), node.child_by_field_name("body")) else {
+            return Ok(None);
+        };
+        if target.kind() != "identifier" {
+            return Ok(None);
+        }
+        let name = self.text(target);
+        let called = descendants_of(body).into_iter().any(|n| {
+            n.kind() == "call"
+                && n.child_by_field_name("function")
+                    .is_some_and(|f| f.kind() == "identifier" && self.text(f) == name)
+        });
+        if !called {
+            return Ok(None);
+        }
+        let qname = format!("{}.{name}", self.scope());
+        let id = node_id(self.project_name, &qname, NodeKind::Variable.as_str());
+        if !self.graph.has_node(&id) {
+            let metadata = PyDict::new(self.py);
+            metadata.set_item("is_constant", is_upper(&name))?;
+            let variable = self.make_node(NodeKind::Variable, &qname, &name, Some(target), metadata, Some(target))?;
+            self.add_node_with_relation(variable, RelationKind::Declares)?;
+        }
+        Ok(Some(qname))
     }
 
     fn record_occurrence_with(

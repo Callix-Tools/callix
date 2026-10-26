@@ -33,6 +33,11 @@ parameters are `PARAMETER` nodes and its body belongs to it, so what a lambda
 calls is its own edge. A lambda that is assigned, passed as an argument or
 returned is followed to where it is called (`resolution: "flow"`).
 
+A loop variable is a `VARIABLE` node only when the body of the loop calls it
+(`for f in handlers: f()`): a node per loop counter would bury the graph. That
+call is followed to what the iterable hands out: the elements of a container, what
+a generator `yield`s (read like a `return`), what an iterator's `__next__` returns.
+
 Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.

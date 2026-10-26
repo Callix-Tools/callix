@@ -80,7 +80,7 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 91 | 107 | 0.87 | 0.97 |
+| Python (PyCG) | 112 | 93 | 107 | 0.88 | 0.97 |
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
@@ -103,7 +103,7 @@ How to read them:
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
   nothing. The honest cost of that is recall: for Python, the 49 calls that stop
-  at a variable, and the function values no pass follows, are the 13 % missing.
+  at a variable, and the function values no pass follows, are the 12 % missing.
 - A callee outside the program has no name in the graph, so it is scored apart
   and leniently, and is not in these numbers.
 
@@ -122,7 +122,7 @@ expected edge, so that the number does not flatter:
 - **PHP**: a callable named by a string or an array is a call only when it is handed to one of
   a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
   Handed to a function of the project that calls its own parameter, it is not followed.
-- **Python**: the value a generator yields or an iterator's `__next__` returns, a function
+- **Python**: a function
   fetched from a container by an index the pass cannot tell apart from another,
   a polymorphic receiver (it lands on the declared class, not each subclass),
   `super(Cls, self)`.

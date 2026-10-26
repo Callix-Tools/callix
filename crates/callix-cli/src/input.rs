@@ -126,6 +126,28 @@ fn report_analysis(
                 count(entry.relations),
                 entry.seconds
             );
+            let calls = &entry.calls;
+            if calls.total > 0 {
+                // What "ok" does not say: where the calls actually landed.
+                let mut parts = vec![format!("{} to a definition", count(calls.definition + calls.flow))];
+                if calls.flow > 0 {
+                    parts.push(format!("of which {} followed through a value", count(calls.flow)));
+                }
+                if calls.name > 0 {
+                    parts.push(format!("{} matched by name", count(calls.name)));
+                    if calls.ambiguous > 0 {
+                        parts.push(format!("{} of them ambiguous", count(calls.ambiguous)));
+                    }
+                }
+                if calls.value > 0 {
+                    parts.push(format!("{} stopped at a value", count(calls.value)));
+                }
+                parts.push(format!("{} outside the project", count(calls.external)));
+                if calls.unlocated > 0 {
+                    parts.push(format!("{} not bound", count(calls.unlocated)));
+                }
+                eprintln!("  {:<11} {} calls: {}", "", count(calls.total), parts.join(", "));
+            }
         }
     }
 

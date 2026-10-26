@@ -16,13 +16,17 @@ pub const RESOLVER_METRICS_KEY: &str = "resolver_metrics";
 pub struct ResolverMetrics {
     /// Positions handed to the resolver — one per use-site.
     pub queries: u64,
-    /// Queries that returned a definition.
+    /// Queries the backend answered with a place. That is all it says: the place
+    /// may be the callee, a variable the callee was read from, something outside
+    /// the project, or a location callix could not bind (see `to_value` and
+    /// `unlocated`). It measures that the backend answered, not that it was right.
     pub resolved: u64,
-    /// Definitions bound to a node in the graph.
+    /// Answers bound to a node in the graph.
     pub internal: u64,
-    /// Definitions that fell through to an EXTERNAL_SYMBOL.
+    /// Answers that fell through to an EXTERNAL_SYMBOL: outside the project, or
+    /// inside it but not bound to a node (`unlocated`).
     pub external: u64,
-    /// Queries that returned nothing.
+    /// Queries the backend did not answer at all.
     pub unresolved: u64,
     /// Seconds spent inside `resolve_all`.
     pub seconds: f64,
@@ -54,7 +58,8 @@ impl ResolverMetrics {
         Self { queries, resolved, internal, external, unresolved, seconds, to_value, unlocated }
     }
 
-    /// Share of queries that returned a definition, in percent.
+    /// Share of queries the backend answered, in percent. Not a measure of
+    /// correctness: see `resolved`.
     #[getter]
     fn resolved_pct(&self) -> f64 {
         if self.queries == 0 {

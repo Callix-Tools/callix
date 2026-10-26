@@ -24,6 +24,7 @@
 //!   the adapters whose backend is a table (PHP's own, the C family's) write it,
 //!   and `ambiguous` accompanies it when several declarations carried the name.
 
+use crate::py::prelude::*;
 use crate::node::NodeKind;
 use crate::relation::RelationKind;
 
@@ -74,6 +75,66 @@ impl Resolution {
                 _ => Self::Unlocated,
             },
         }
+    }
+}
+
+/// How the `CALLS` edges of a graph were resolved, counted from the edges.
+///
+/// Read by the command line only; the extension module has no caller for it.
+#[cfg_attr(feature = "python", allow(dead_code))]
+#[derive(Debug, Clone, Copy, Default)]
+pub struct CallCounts {
+    pub total: usize,
+    pub definition: usize,
+    pub value: usize,
+    pub flow: usize,
+    pub external: usize,
+    pub unlocated: usize,
+    pub name: usize,
+    /// Of `name`: edges where several declarations carried the name.
+    pub ambiguous: usize,
+}
+
+#[cfg_attr(feature = "python", allow(dead_code))]
+impl CallCounts {
+    /// Counts the edges that record how they were resolved.
+    pub(crate) fn of(py: Python<'_>, graph: &crate::graph::Graph) -> Self {
+        let mut counts = Self::default();
+        for relation in graph.relation_slice() {
+            let relation = relation.get();
+            if relation.kind != RelationKind::Calls {
+                continue;
+            }
+            counts.total += 1;
+            let metadata = relation.metadata.bind(py);
+            let how = metadata
+                .get_item(KEY)
+                .ok()
+                .flatten()
+                .and_then(|v| v.extract::<String>().ok())
+                .unwrap_or_default();
+            match how.as_str() {
+                "definition" => counts.definition += 1,
+                "value" => counts.value += 1,
+                "flow" => counts.flow += 1,
+                "external" => counts.external += 1,
+                "unlocated" => counts.unlocated += 1,
+                "name" => {
+                    counts.name += 1;
+                    if metadata
+                        .get_item(AMBIGUOUS_KEY)
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<bool>().ok())
+                        .unwrap_or(false)
+                    {
+                        counts.ambiguous += 1;
+                    }
+                }
+                _ => {}
+            }
+        }
+        counts
     }
 }
 

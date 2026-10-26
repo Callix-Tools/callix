@@ -529,7 +529,11 @@ class OccurrenceRef:
     `call` — a function/method call site; `read` — an identifier read;
     `write` — an assignment target; `annotation` — a type annotation or the
     right-hand side of a TypeAlias; `base` — a base class in an inheritance
-    list.
+    list; `alias` - the right-hand side of `x = y`, enclosed by the variable `x`
+    (the flow pass reads it).
+    
+    `detail` carries what a role cannot: `arg:LINE:COL:INDEX` (or `...:=NAME` for a
+    keyword) on a `read` that is an argument of the call at `LINE:COL`.
     """
     @property
     def role(self) -> builtins.str: ...
@@ -541,7 +545,9 @@ class OccurrenceRef:
     def enclosing_id(self) -> builtins.str: ...
     @property
     def span(self) -> Span: ...
-    def __new__(cls, role: builtins.str, line: builtins.int, col: builtins.int, enclosing_id: builtins.str, span: Span) -> OccurrenceRef: ...
+    @property
+    def detail(self) -> typing.Optional[builtins.str]: ...
+    def __new__(cls, role: builtins.str, line: builtins.int, col: builtins.int, enclosing_id: builtins.str, span: Span, detail: typing.Optional[builtins.str] = None) -> OccurrenceRef: ...
     def __repr__(self) -> builtins.str: ...
 
 class ParseError(CallixError):
@@ -692,42 +698,50 @@ class ResolverMetrics:
     @property
     def resolved(self) -> builtins.int:
         r"""
-        Queries that returned a definition.
+        Queries the backend answered with a place. That is all it says: the place
+        may be the callee, a variable the callee was read from, something outside
+        the project, or a location callix could not bind (see `to_value` and
+        `unlocated`). It measures that the backend answered, not that it was right.
         """
     @resolved.setter
     def resolved(self, value: builtins.int) -> None:
         r"""
-        Queries that returned a definition.
+        Queries the backend answered with a place. That is all it says: the place
+        may be the callee, a variable the callee was read from, something outside
+        the project, or a location callix could not bind (see `to_value` and
+        `unlocated`). It measures that the backend answered, not that it was right.
         """
     @property
     def internal(self) -> builtins.int:
         r"""
-        Definitions bound to a node in the graph.
+        Answers bound to a node in the graph.
         """
     @internal.setter
     def internal(self, value: builtins.int) -> None:
         r"""
-        Definitions bound to a node in the graph.
+        Answers bound to a node in the graph.
         """
     @property
     def external(self) -> builtins.int:
         r"""
-        Definitions that fell through to an EXTERNAL_SYMBOL.
+        Answers that fell through to an EXTERNAL_SYMBOL: outside the project, or
+        inside it but not bound to a node (`unlocated`).
         """
     @external.setter
     def external(self, value: builtins.int) -> None:
         r"""
-        Definitions that fell through to an EXTERNAL_SYMBOL.
+        Answers that fell through to an EXTERNAL_SYMBOL: outside the project, or
+        inside it but not bound to a node (`unlocated`).
         """
     @property
     def unresolved(self) -> builtins.int:
         r"""
-        Queries that returned nothing.
+        Queries the backend did not answer at all.
         """
     @unresolved.setter
     def unresolved(self, value: builtins.int) -> None:
         r"""
-        Queries that returned nothing.
+        Queries the backend did not answer at all.
         """
     @property
     def seconds(self) -> builtins.float:
@@ -740,11 +754,38 @@ class ResolverMetrics:
         Seconds spent inside `resolve_all`.
         """
     @property
+    def to_value(self) -> builtins.int:
+        r"""
+        Calls whose target is a variable, a parameter or a field: the resolver found
+        what the callee was read from, not the callee. A subset of `internal`.
+        """
+    @to_value.setter
+    def to_value(self, value: builtins.int) -> None:
+        r"""
+        Calls whose target is a variable, a parameter or a field: the resolver found
+        what the callee was read from, not the callee. A subset of `internal`.
+        """
+    @property
+    def unlocated(self) -> builtins.int:
+        r"""
+        Answers that could not be bound to a node of the project although the
+        resolver called them internal, or that pointed inside an import. A subset of
+        `external`.
+        """
+    @unlocated.setter
+    def unlocated(self, value: builtins.int) -> None:
+        r"""
+        Answers that could not be bound to a node of the project although the
+        resolver called them internal, or that pointed inside an import. A subset of
+        `external`.
+        """
+    @property
     def resolved_pct(self) -> builtins.float:
         r"""
-        Share of queries that returned a definition, in percent.
+        Share of queries the backend answered, in percent. Not a measure of
+        correctness: see `resolved`.
         """
-    def __new__(cls, queries: builtins.int = ..., resolved: builtins.int = ..., internal: builtins.int = ..., external: builtins.int = ..., unresolved: builtins.int = ..., seconds: builtins.float = ...) -> ResolverMetrics: ...
+    def __new__(cls, queries: builtins.int = ..., resolved: builtins.int = ..., internal: builtins.int = ..., external: builtins.int = ..., unresolved: builtins.int = ..., seconds: builtins.float = ..., to_value: builtins.int = ..., unlocated: builtins.int = ...) -> ResolverMetrics: ...
     def merge(self, other: ResolverMetrics) -> None:
         r"""
         Folds another pass's counters into this one.

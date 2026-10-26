@@ -139,6 +139,15 @@ impl<'a> PythonVisitor<'a> {
             "import_from_statement" => self.visit_import_from_statement(node),
             "expression_statement" => self.visit_expression_statement(node),
             "return_statement" => self.visit_return_statement(node),
+            // Compound statements at file or class level read their headers - the
+            // condition, the iterable, the context manager, the raised class - as
+            // surely as the same statements in a function do.
+            "if_statement" | "for_statement" | "while_statement" | "with_statement"
+            | "try_statement" | "raise_statement" | "assert_statement" | "match_statement"
+            | "delete_statement" => {
+                let container = self.container();
+                self.walk_statement(node, &container)
+            }
             _ => self.visit_children(node),
         }
     }

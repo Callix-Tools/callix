@@ -158,6 +158,8 @@ pub struct LanguageReport {
     pub status: Option<String>,
     pub nodes: usize,
     pub relations: usize,
+    /// How the calls were resolved, from the edges themselves.
+    pub calls: crate::resolution::CallCounts,
     pub seconds: f64,
     pub error: Option<String>,
 }
@@ -197,6 +199,7 @@ pub fn analyze_tree(
                 status: None,
                 nodes: 0,
                 relations: 0,
+                calls: Default::default(),
                 seconds: 0.0,
                 error: None,
             };
@@ -208,6 +211,7 @@ pub fn analyze_tree(
                     report.status = graph.status_text(py);
                     report.nodes = graph.node_count();
                     report.relations = graph.relation_count();
+                    report.calls = crate::resolution::CallCounts::of(py, &graph);
                     counters.extend(graph.metric_counters(py));
                     match merged.as_mut() {
                         None => merged = Some(graph),

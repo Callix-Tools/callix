@@ -450,6 +450,8 @@ pub struct CallSite {
 #[derive(Default)]
 struct BodyContext {
     /// Variable (parameter or local) → the class-like type it was declared with.
+    /// A type that is a template parameter names no class and is left out: what a
+    /// call on it means depends on the instantiation.
     locals: HashMap<String, String>,
     /// The qualified class of the method, for an unqualified call or `this`.
     class_scope: Option<String>,
@@ -1303,6 +1305,7 @@ impl<'a> Reader<'a> {
     /// `run()` it means.
     fn body_context(&self, node: TsNode<'_>, found: &Declared<'_>, identity: &CallableId) -> BodyContext {
         let mut context = BodyContext::default();
+        let template_parameters = self.template_parameters(node);
         if identity.kind == NodeKind::Method {
             let (extra, _) = split_qualified(found.name, self.source);
             let mut scope = self.parts.clone();
@@ -1326,7 +1329,9 @@ impl<'a> Reader<'a> {
                 ) else {
                     continue;
                 };
-                if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator)) {
+                if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator))
+                    && !template_parameters.contains(&key)
+                {
                     context.locals.insert(self.text(name.name), key);
                 }
             }
@@ -1356,13 +1361,36 @@ impl<'a> Reader<'a> {
                     } else {
                         self.type_key(type_node)
                     };
-                    if let Some(key) = key {
+                    if let Some(key) = key
+                        && !template_parameters.contains(&key)
+                    {
                         context.locals.insert(self.text(name.name), key);
                     }
                 }
             }
         }
         context
+    }
+
+    /// The names a function's enclosing templates declare as type parameters.
+    fn template_parameters(&self, node: TsNode<'_>) -> HashSet<String> {
+        let mut names = HashSet::new();
+        let mut current = node.parent();
+        while let Some(parent) = current {
+            if parent.kind() == "template_declaration"
+                && let Some(list) = ts::child_of_type(parent, "template_parameter_list")
+            {
+                for parameter in ts::named_children(list) {
+                    if matches!(parameter.kind(), "type_parameter_declaration" | "variadic_type_parameter_declaration")
+                        && let Some(name) = ts::named_children(parameter).into_iter().find(|c| c.kind() == "type_identifier")
+                    {
+                        names.insert(self.text(name));
+                    }
+                }
+            }
+            current = parent.parent();
+        }
+        names
     }
 
     /// The class a type spells, qualified as written and without template

@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-10-26
+### Bug Fixes
+
+- **cfamily**: record the use-site span on resolved edges by @claude
+- **lint**: allow clone_on_copy for PyO3's from_py_object expansion by @claude
+- **docker**: clean up the smoke test's root-owned workspace through the image by @claude
+
+### Build System
+
+- Debian images, standalone CLI binaries and CI checks for the native binary by @claude
+
+### CI/CD
+
+- run the Rust unit tests
+- build both image architectures and the binary tarballs on every PR by @claude
+- **release**: feat: callix CLI, native engine, exporters (LSIF, SCIP, CycloneDX…) and Docker images by @claude in [#1](https://github.com/Callix-Tools/callix/pull/1)
+
+### Documentation
+
+- bring the docs up to 1.0.0, and correct what drifted
+- **bench**: refresh benchmark metrics [skip ci] by @github-actions[bot]
+
+### Features
+
+- add the callix CLI and the callix-export crate by @claude
+- add Docker images, release jobs and documentation for the CLI by @claude
+- build the engine without Python and run the CLI on it by @claude
+- add the SCIP exporter by @claude
+
+### Testing
+
+- extend benchmarks and baselines to all eight languages
+
+
+### New Contributors
+
+- @claude made their first contribution in [#1](https://github.com/Callix-Tools/callix/pull/1)
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.0.0...v1.1.0
 ## [1.0.0] - 2026-07-30
 ### Bug Fixes
 

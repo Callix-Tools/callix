@@ -1,6 +1,6 @@
 [package]
 name = "callix-cli"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 description = "The callix command line: analyse a project and export its graph as LSIF, CycloneDX and more"
 license = "MIT"

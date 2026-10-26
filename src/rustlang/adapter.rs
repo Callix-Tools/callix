@@ -583,6 +583,11 @@ fn resolve_pass(
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }
+        graph.note_site_file(
+            &occurrence.enclosing_id,
+            &relative_to(path, project_root),
+            &metadata,
+        )?;
         let relation = Relation {
             source_id: occurrence.enclosing_id.clone(),
             target_id: target_id.expect("the external symbol is created above"),

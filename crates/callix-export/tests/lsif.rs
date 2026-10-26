@@ -153,3 +153,41 @@ fn site_keyed_external_symbols_are_named_from_the_source() {
     assert!(hovers.iter().any(|h| h == "int  (external, stdlib)"), "{hovers:?}");
     std::fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn a_reference_goes_to_the_file_it_was_written_in() {
+    // Two definitions that share a qualified name are one node, which lives in
+    // the first file. An edge from it can be written in the second, and the
+    // position has to land there, not in the first file's document.
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.go","name":"a.go","file_path":"a.go","span":null,"metadata":{}},
+       {"id":"fb","kind":"file","qualified_name":"b.go","name":"b.go","file_path":"b.go","span":null,"metadata":{}},
+       {"id":"init","kind":"function","qualified_name":"p.init","name":"init","file_path":"a.go","span":[3,1,5,2],
+        "metadata":{"name_span":{"__span__":[3,6,3,10]}}},
+       {"id":"set","kind":"function","qualified_name":"p.set","name":"set","file_path":"a.go","span":[7,1,9,2],
+        "metadata":{"name_span":{"__span__":[7,6,7,9]}}}],
+      "relations":[
+       {"source_id":"init","target_id":"set","kind":"calls","metadata":{"span":{"__span__":[4,2,4,5]}}},
+       {"source_id":"init","target_id":"set","kind":"calls","metadata":{"span":{"__span__":[40,2,40,5]},"file":"b.go"}}]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+
+    let uri = |id: &serde_json::Value| {
+        labelled(&el, "document")
+            .iter()
+            .find(|d| &d["id"] == id)
+            .map(|d| d["uri"].as_str().unwrap().rsplit('/').next().unwrap().to_owned())
+    };
+    let line_of = |range: &serde_json::Value| range["start"]["line"].as_u64().unwrap();
+    for contains in edges(&el, "contains") {
+        let Some(doc) = uri(&contains["outV"]) else { continue };
+        for id in contains["inVs"].as_array().unwrap() {
+            let range = el.iter().find(|e| &e["id"] == id && e["label"] == "range").unwrap();
+            // Line 41 (zero-based 39) exists in b.go only; a.go has nine lines.
+            assert_eq!(line_of(range) == 39, doc == "b.go", "{doc}: line {}", line_of(range));
+        }
+    }
+}

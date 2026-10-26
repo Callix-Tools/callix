@@ -517,6 +517,11 @@ fn apply_resolutions_inner(
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }
+        graph.note_site_file(
+            &occurrence.enclosing_id,
+            &relative_to(path, project_root),
+            &metadata,
+        )?;
         add_relation(
             py,
             graph,

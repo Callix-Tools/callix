@@ -296,3 +296,43 @@ fn scip_export_is_binary_and_non_empty() {
     assert!(bytes.len() > 500);
     fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn references_are_filed_under_the_file_they_were_written_in() {
+    // A package may declare any number of `init` functions, and they share a
+    // qualified name, so they are one node that lives in the first file. A call
+    // written in the second file's `init` is an edge from that node, and the
+    // dump must place it in the second file's document, not beyond the end of
+    // the first.
+    let dir = scratch("inits");
+    fs::write(dir.join("go.mod"), "module example.com/inits\n\ngo 1.21\n").unwrap();
+    fs::write(dir.join("a.go"), "package inits\n\nfunc helper() {}\n\nfunc init() {\n\thelper()\n}\n").unwrap();
+    let mut b = String::from("package inits\n\n");
+    for _ in 0..30 {
+        b.push_str("// padding\n");
+    }
+    b.push_str("func init() {\n\thelper()\n}\n");
+    fs::write(dir.join("b.go"), b).unwrap();
+
+    let text = ok(&["export", p(&dir), "-f", "lsif", "-q", "-l", "go", "--source-root", p(&dir)]);
+    validate(&text).unwrap_or_else(|p| panic!("{p:#?}"));
+    let el: Vec<Value> = text.lines().map(|l| serde_json::from_str(l).unwrap()).collect();
+
+    let mut checked = 0;
+    for contains in el.iter().filter(|e| e["label"] == "contains") {
+        let Some(doc) = el.iter().find(|d| d["id"] == contains["outV"] && d["label"] == "document")
+        else {
+            continue;
+        };
+        let file = doc["uri"].as_str().unwrap().rsplit('/').next().unwrap();
+        let lines = fs::read_to_string(dir.join(file)).unwrap().lines().count() as u64;
+        for id in contains["inVs"].as_array().unwrap() {
+            let range = el.iter().find(|e| &e["id"] == id && e["label"] == "range").unwrap();
+            let line = range["start"]["line"].as_u64().unwrap();
+            assert!(line < lines, "{file} has {lines} lines but holds a range at line {}", line + 1);
+            checked += 1;
+        }
+    }
+    assert!(checked > 0);
+    fs::remove_dir_all(dir).ok();
+}

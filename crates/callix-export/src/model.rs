@@ -217,6 +217,13 @@ impl Relation {
     pub fn span(&self) -> Option<Span> {
         Span::from_value(self.metadata.get("span")?)
     }
+
+    /// The file the edge was written in (`metadata["file"]`), recorded only
+    /// when it is not the file of the edge's source node — see
+    /// `Graph.note_site_file` in the engine for when that happens.
+    pub fn site_file(&self) -> Option<&str> {
+        self.metadata.get("file")?.as_str()
+    }
 }
 
 #[derive(Deserialize)]

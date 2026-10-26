@@ -110,6 +110,31 @@ impl Graph {
         self.metadata.bind(py).set_item(RESOLVER_METRICS_KEY, &metrics.as_dict(py)?)
     }
 
+    /// Notes on an edge's metadata which file its use-site is in, when that is
+    /// not the file its source node lives in.
+    ///
+    /// Several definitions can share one qualified name — Go allows any number
+    /// of `init` functions in a package, C++ overloads share a name — and then
+    /// they are one node, which lives in the first file that declared it. An
+    /// edge from that node can have been written in another file entirely, and
+    /// without this key a reader that places the edge by its source node's file
+    /// puts the position in the wrong document. Written only when the files
+    /// differ, so an ordinary edge is unchanged.
+    pub(crate) fn note_site_file(
+        &self,
+        source_id: &str,
+        site_file: &str,
+        metadata: &Bound<'_, PyDict>,
+    ) -> PyResult<()> {
+        let Some(node) = self.nodes.get(source_id) else {
+            return Ok(());
+        };
+        match node.get().file_path.as_deref() {
+            Some(own) if own != site_file => metadata.set_item("file", site_file),
+            _ => Ok(()),
+        }
+    }
+
     pub(crate) fn has_node(&self, id: &str) -> bool {
         self.nodes.contains_key(id)
     }

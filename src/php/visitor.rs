@@ -128,6 +128,14 @@ fn collect_type_refs<'tree>(node: TsNode<'tree>, out: &mut Vec<TsNode<'tree>>) {
     }
 }
 
+/// What a value is made of that a holder can hold.
+enum ValuePart<'t> {
+    /// A callable written out, and where the resolver answers for it.
+    Callable(TsNode<'t>),
+    /// Another holder: its name and its encoding.
+    Holder(TsNode<'t>, String),
+}
+
 /// A member's read visibility, `public` when nothing says otherwise.
 ///
 /// PHP 8.4 allows two modifiers on one member — `public private(set) string
@@ -220,6 +228,9 @@ pub struct PhpVisitor<'a> {
     container_stack: Vec<String>,
     kind_stack: Vec<NodeKind>,
     occurrences: Vec<OccurrenceRef>,
+    /// The parameters of the named functions being walked, innermost last: a
+    /// call of one of them is a call of whatever the callers pass.
+    param_scopes: Vec<(String, HashSet<String>)>,
 }
 
 impl<'a> PhpVisitor<'a> {
@@ -250,6 +261,7 @@ impl<'a> PhpVisitor<'a> {
             container_stack: vec![file_node_id.to_string()],
             kind_stack: vec![NodeKind::File],
             occurrences: Vec::new(),
+            param_scopes: Vec::new(),
         }
     }
 
@@ -319,9 +331,16 @@ impl<'a> PhpVisitor<'a> {
             "function_call_expression" => self.visit_function_call(node),
             "member_call_expression" | "nullsafe_member_call_expression"
             | "scoped_call_expression" => {
-                self.record_member("call", node)?;
+                // `$o->m(...)` makes a callable of `m`; it is not a call of it.
+                let role = if super::resolver::is_first_class_callable(node) { "read_callable" } else { "call" };
+                self.record_member(role, node)?;
                 if let Some(arguments) = node.child_by_field_name("arguments") {
                     self.scan_arguments(arguments)?;
+                    if role == "call"
+                        && let Some(site) = node.child_by_field_name("name").filter(|n| n.kind() == "name")
+                    {
+                        self.record_call_arguments(site, arguments);
+                    }
                 }
                 Ok(())
             }
@@ -341,6 +360,11 @@ impl<'a> PhpVisitor<'a> {
                 }
                 if let Some(right) = node.child_by_field_name("right") {
                     self.visit(right)?;
+                    if node.kind() == "assignment_expression"
+                        && let Some(left) = node.child_by_field_name("left")
+                    {
+                        self.record_assignment_value(left, right);
+                    }
                 }
                 Ok(())
             }
@@ -595,13 +619,23 @@ impl<'a> PhpVisitor<'a> {
         if let Some(return_type) = node.child_by_field_name("return_type") {
             self.record_type(return_type, &func_id);
         }
+        let mut names = HashSet::new();
         if let Some(params) = node.child_by_field_name("parameters") {
             self.extract_parameters(params, &func_id, &qname, owner.as_ref())?;
+            for child in ts::children(params) {
+                if matches!(child.kind(), "simple_parameter" | "variadic_parameter")
+                    && let Some(name) = child.child_by_field_name("name").and_then(variable_identifier)
+                {
+                    names.insert(self.text(name));
+                }
+            }
         }
+        self.param_scopes.push((qname.clone(), names));
         // Absent on an abstract method and on an interface's members.
         if let Some(body) = node.child_by_field_name("body") {
             self.visit_children(body)?;
         }
+        self.param_scopes.pop();
         self.pop();
         Ok(())
     }
@@ -1079,8 +1113,11 @@ impl<'a> PhpVisitor<'a> {
     // -- expressions -------------------------------------------------------
 
     fn visit_function_call(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        let first_class = super::resolver::is_first_class_callable(node);
         if let Some(function) = node.child_by_field_name("function") {
             match function.kind() {
+                // `g(...)` makes a callable of `g`; it is not a call of it.
+                "name" | "qualified_name" | "relative_name" if first_class => {}
                 "name" | "qualified_name" | "relative_name" => {
                     if let Some(name_node) = last_name(function) {
                         let container = self.container();
@@ -1094,6 +1131,17 @@ impl<'a> PhpVisitor<'a> {
                     if let Some(ident) = variable_identifier(function) {
                         let container = self.container();
                         self.record_occurrence("call", ident, &container);
+                        self.record_holder_call(ident, &container);
+                    }
+                    self.visit(function)?;
+                }
+                // `($this->callback)()`: a call of what the property holds.
+                "parenthesized_expression" => {
+                    if let Some(inner) = ts::named_children(function).into_iter().next()
+                        && let Some((holder, name)) = self.property_holder(inner)
+                    {
+                        let container = self.container();
+                        self.record_holder_site(name, &container, &holder);
                     }
                     self.visit(function)?;
                 }
@@ -1110,7 +1158,207 @@ impl<'a> PhpVisitor<'a> {
         for literal in super::resolver::callable_literals(node, self.source) {
             self.record_occurrence("call", literal.position, &container);
         }
+        if super::resolver::is_callback_call(node, self.source) {
+            // `array_map($f, ...)`: the built-in calls what the variable holds.
+            if let Some(arguments) = node.child_by_field_name("arguments") {
+                for argument in ts::children(arguments) {
+                    if let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named())
+                        && value.kind() == "variable_name"
+                        && let Some(ident) = variable_identifier(value)
+                    {
+                        self.record_holder_call(ident, &container);
+                    }
+                }
+            }
+        } else if !first_class
+            && let Some(function) = node.child_by_field_name("function")
+            && let Some(site) = last_name(function)
+            && let Some(arguments) = node.child_by_field_name("arguments")
+        {
+            self.record_call_arguments(site, arguments);
+        }
         Ok(())
+    }
+
+    /// The holder `$name` stands for: a parameter of an enclosing function, else a
+    /// local of the function (or of the file, outside one). Written `p:` or `v:`
+    /// and the qualified name the adapter finds the node by.
+    fn variable_holder(&self, name: &str) -> Option<String> {
+        if name == "this" {
+            return None;
+        }
+        if let Some((scope, _)) = self.param_scopes.iter().rev().find(|(_, names)| names.contains(name)) {
+            return Some(format!("p:{scope}\\{name}"));
+        }
+        let owner = self
+            .param_scopes
+            .last()
+            .map(|(qname, _)| qname.as_str())
+            .unwrap_or(self.file_path);
+        Some(format!("v:{owner}\\{name}"))
+    }
+
+    /// The qualified name of the class being declared around this point.
+    fn enclosing_class_name(&self) -> Option<&str> {
+        self.kind_stack
+            .iter()
+            .zip(self.scope_stack.iter())
+            .rev()
+            .find(|(kind, _)| **kind == NodeKind::Class)
+            .map(|(_, qname)| qname.as_str())
+    }
+
+    /// `$this->name`: the property of the class around it, and the node of its
+    /// name. Written `a:` and the property's qualified name.
+    fn property_holder<'t>(&self, node: TsNode<'t>) -> Option<(String, TsNode<'t>)> {
+        if node.kind() != "member_access_expression" {
+            return None;
+        }
+        let object = node.child_by_field_name("object")?;
+        let name = node.child_by_field_name("name").filter(|n| n.kind() == "name")?;
+        if object.kind() != "variable_name" || self.text(object).trim_start_matches('$') != "this" {
+            return None;
+        }
+        let class = self.enclosing_class_name()?;
+        Some((format!("a:{class}\\{}", self.text(name)), name))
+    }
+
+    /// The holder an assignment's left-hand side names, with the node to place
+    /// the occurrence at.
+    fn target_holder<'t>(&self, left: TsNode<'t>) -> Option<String> {
+        match left.kind() {
+            "variable_name" => self.variable_holder(&self.text(variable_identifier(left)?)),
+            _ => self.property_holder(left).map(|(holder, _)| holder),
+        }
+    }
+
+    /// `$f()`, `array_map($f, ...)`: a call of whatever the holder holds. Whether
+    /// anything is known to be held is for the flow pass to say.
+    fn record_holder_call(&mut self, ident: TsNode<'_>, container: &str) {
+        let name = self.text(ident);
+        if let Some(holder) = self.variable_holder(&name) {
+            self.record_holder_site(ident, container, &holder);
+        }
+    }
+
+    fn record_holder_site(&mut self, at: TsNode<'_>, container: &str, holder: &str) {
+        let span = ts::span(at);
+        self.occurrences.push(OccurrenceRef {
+            role: "paramcall".to_string(),
+            line: span.start_line,
+            col: span.start_col,
+            enclosing_id: container.to_string(),
+            span,
+            detail: Some(format!("h:{holder}")),
+        });
+    }
+
+    /// The things a value is made of that a holder can hold: a callable written
+    /// out, or another holder.
+    fn value_parts<'t>(&self, value: TsNode<'t>, out: &mut Vec<ValuePart<'t>>) {
+        if let Some(callable) = super::resolver::callable_value(value, self.source) {
+            out.push(ValuePart::Callable(callable.position()));
+            return;
+        }
+        match value.kind() {
+            "variable_name" => {
+                if let Some(ident) = variable_identifier(value)
+                    && let Some(holder) = self.variable_holder(&self.text(ident))
+                {
+                    out.push(ValuePart::Holder(ident, holder));
+                }
+            }
+            "parenthesized_expression" => {
+                if let Some(inner) = ts::named_children(value).into_iter().next() {
+                    self.value_parts(inner, out);
+                }
+            }
+            "conditional_expression" => {
+                for field in ["body", "alternative"] {
+                    if let Some(branch) = value.child_by_field_name(field) {
+                        self.value_parts(branch, out);
+                    }
+                }
+            }
+            "binary_expression" => {
+                let coalesce = value
+                    .child_by_field_name("operator")
+                    .is_some_and(|op| op.kind() == "??");
+                if coalesce {
+                    for field in ["left", "right"] {
+                        if let Some(side) = value.child_by_field_name(field) {
+                            self.value_parts(side, out);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// `$f = 'g'`, `$this->cb = $cb`: the holder holds what the value is made of.
+    fn record_assignment_value(&mut self, left: TsNode<'_>, right: TsNode<'_>) {
+        let Some(holder) = self.target_holder(left) else {
+            return;
+        };
+        let mut parts = Vec::new();
+        self.value_parts(right, &mut parts);
+        let container = self.container();
+        for part in parts {
+            let (at, detail) = match part {
+                ValuePart::Callable(at) => (at, format!("to:{holder}")),
+                ValuePart::Holder(at, from) => (at, format!("to:{holder}|from:{from}")),
+            };
+            let span = ts::span(at);
+            self.occurrences.push(OccurrenceRef {
+                role: "alias".to_string(),
+                line: span.start_line,
+                col: span.start_col,
+                enclosing_id: container.clone(),
+                span,
+                detail: Some(detail),
+            });
+        }
+    }
+
+    /// `run('f')`, `$o->run([$this, 'm'])`, `run($cb)`: what is handed to a call,
+    /// tied to it by the place of the callee's name. Whether the callee calls that
+    /// parameter is for the flow pass to say.
+    fn record_call_arguments(&mut self, site: TsNode<'_>, arguments: TsNode<'_>) {
+        let container = self.container();
+        let at = ts::span(site);
+        for (index, argument) in ts::children(arguments)
+            .into_iter()
+            .filter(|c| c.kind() == "argument")
+            .enumerate()
+        {
+            let slot = match argument.child_by_field_name("name") {
+                Some(label) => format!("={}", self.text(label)),
+                None => index.to_string(),
+            };
+            let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named()) else {
+                continue;
+            };
+            let mut parts = Vec::new();
+            self.value_parts(value, &mut parts);
+            for part in parts {
+                let (position, detail) = match part {
+                    ValuePart::Callable(position) => (position, format!("arg:{}:{}:{slot}", at.start_line, at.start_col)),
+                    ValuePart::Holder(position, holder) => {
+                        (position, format!("arg:{}:{}:{slot}|h:{holder}", at.start_line, at.start_col))
+                    }
+                };
+                let span = ts::span(position);
+                self.occurrences.push(OccurrenceRef {
+                    role: "callarg".to_string(),
+                    line: span.start_line,
+                    col: span.start_col,
+                    enclosing_id: container.clone(),
+                    span,
+                    detail: Some(detail),
+                });
+            }
+        }
     }
 
     /// `new Foo(…)`, `new $class(…)`, `new class { … }`.
@@ -1123,7 +1371,16 @@ impl<'a> PhpVisitor<'a> {
             match child.kind() {
                 "new" => {}
                 "anonymous_class" => self.handle_anonymous_class(child)?,
-                "arguments" => self.scan_arguments(child)?,
+                "arguments" => {
+                    self.scan_arguments(child)?;
+                    if let Some(site) = significant(node)
+                        .into_iter()
+                        .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
+                        .and_then(last_name)
+                    {
+                        self.record_call_arguments(site, child);
+                    }
+                }
                 "name" | "qualified_name" | "relative_name" => {
                     if let Some(name_node) = last_name(child) {
                         self.record_occurrence("call", name_node, &container);
@@ -1132,6 +1389,13 @@ impl<'a> PhpVisitor<'a> {
                 // `new static()`, `new self()`, `new parent()`: the class the
                 // keyword stands for, which only the resolver knows.
                 "relative_scope" => self.record_occurrence("call", child, &container),
+                // `new $class()`: the variable's name, which the resolver answers when
+                // it is known to hold a class name.
+                "variable_name" => {
+                    if let Some(ident) = variable_identifier(child) {
+                        self.record_occurrence("call", ident, &container);
+                    }
+                }
                 _ => self.visit(child)?,
             }
         }
@@ -1248,6 +1512,13 @@ impl<'a> PhpVisitor<'a> {
             match name_node.kind() {
                 "name" => self.record_occurrence(role, name_node, &container),
                 "variable_name" if is_scoped => {
+                    if let Some(ident) = variable_identifier(name_node) {
+                        self.record_occurrence(role, ident, &container);
+                    }
+                }
+                // `$this->$m()`: the variable's name, answered when it is known to
+                // hold the one method name.
+                "variable_name" if role == "call" => {
                     if let Some(ident) = variable_identifier(name_node) {
                         self.record_occurrence(role, ident, &container);
                     }

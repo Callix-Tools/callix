@@ -227,16 +227,19 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
         "php" => (
             "symbol table, by names",
             "approximate: no type inference, so a method is found by the declared type of its \
-             receiver (or a `new` assigned to it) when there is one and otherwise by name; a \
-             callable named by a string or an array is followed only inside a built-in that calls it",
+             receiver (or a `new` assigned to it) when there is one and otherwise by name; an \
+             undeclared method goes to `__call` when the class declares it; a callable named by \
+             a string, an array or `g(...)` is followed to the parameter, local or property that \
+             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it",
         ),
         "c" | "cpp" => (
             "symbol table, by names",
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); macros are not expanded, and a callback \
-             handed to a library function is followed only for a closed list of them",
+             the name (such edges say `ambiguous`); macros of the project are expanded where they \
+             are invoked, conditionals are not evaluated, and a callback handed to a library \
+             function is followed only for a closed list of them",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

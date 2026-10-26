@@ -89,9 +89,16 @@ Stated plainly, because `degraded` is the honest status and not a formality:
 
 - **`$var->method()` where `$var`'s type comes from anywhere else** — a function
   return, an array element, a parameter with no type declaration.
-- **Dynamic class names** — `$cls::method()`, `new $cls`.
-- **`__call` and `__get`** — magic methods are invisible; nothing declares what
-  they accept.
+- **Dynamic class names** — `new $cls` and `$cls::method()` are followed only
+  while `$cls` is assigned one `Foo::class` and nothing else.
+- **`__get`** — nothing declares what it accepts. `__call` and `__callStatic` are
+  followed: a method no class of the hierarchy declares is a call of the one that
+  does, unless a base class or trait outside the project may declare it.
+- **Callables.** A string, `'A::m'`, `[$o, 'm']` or `g(...)` is a value the flow
+  pass follows to the parameter it is handed to, through locals and `$this->name`
+  properties, and it is a call where one of those is called (`$f()`,
+  `($this->f)()`, `call_user_func($f)`). The pass ignores order: a parameter
+  reassigned before the call holds both values.
 - **Anything in `vendor/`** — deliberately not collected, so a call into a
   framework becomes an `EXTERNAL_SYMBOL`. That is the right answer for a call
   graph of *your* code, but it means callix cannot tell you what

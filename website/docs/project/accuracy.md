@@ -17,8 +17,8 @@ found. This page is what those two things amount to.
 | TypeScript | typescript-go, linked in | by types | Destructured function values, calls through `any`, dynamic `import()` and string-keyed lookups. A callback handed to a library function is not assumed to be called. |
 | Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
 | Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
-| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces | A method called on a variable with no declared type has no edge. A callable named by a string or an array is followed only when it is handed to a built-in that calls it (`array_map`, `usort`, `call_user_func`, …). |
-| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, macros, the preprocessor. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
+| PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces; an undeclared method of a class that declares `__call` (or `__callStatic`) is a call of that | A method called on a variable with no declared type has no edge. A callable written out (a string, `'A::m'`, `[$o, 'm']`, `g(...)`) is followed to the parameter it is handed to and to the locals and properties that hold it, and is a call where that parameter, local or property is called, by the flow pass; `$m` and `$class` are followed only while nothing else is assigned to them. |
+| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, the preprocessor's conditionals. A macro of the project is expanded (its body with the arguments in place, `##` joined), at the invocation. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
 
 "Resolved" never means "correct". `resolver_status: ok` means the backend came
 up; `degraded` means the backend is a table of names, not a type checker.
@@ -91,9 +91,9 @@ writing:
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
-| PHP | 42 | 41 | 42 | 0.98 | 1.00 |
-| C++ | 41 | 41 | 41 | 1.00 | 1.00 |
-| C | 27 | 26 | 27 | 0.98 | 1.00 |
+| PHP | 62 | 62 | 61 | 1.00 | 0.99 |
+| C++ | 50 | 50 | 50 | 1.00 | 1.00 |
+| C | 40 | 40 | 40 | 1.00 | 1.00 |
 
 How to read them:
 
@@ -135,11 +135,17 @@ The `idioms/` directory of each language holds the ways code is commonly written
 that a first pass did not cover. The cases that still fail are kept, with their
 expected edge, so that the number does not flatter:
 
-- **C++**: macros, and a `delete` through a base pointer, which lands on the base's
-  destructor because only the declared type is known.
-- **PHP**: a callable named by a string or an array is a call only when it is handed to one of
-  a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
-  Handed to a function of the project that calls its own parameter, it is not followed.
+- **C++**: a `delete` through a base pointer lands on the base's destructor, because
+  only the declared type is known. An implicit copy or move constructor is not an
+  edge: whether a by-value argument copies depends on the callee's signature and on
+  elision, and the table does not look past the callee's name.
+- **PHP**: a flow-insensitive pass. A parameter reassigned before it is called holds
+  both what the caller passed and what was assigned, and `php/micro` keeps that case
+  (`parameter_shadowed_by_local`) failing so the limit stays visible. `$m` and
+  `$class` are followed only while a variable has one assignment, and a callable in a
+  property is followed only through `$this->name` of the declaring class. Magic
+  methods are taken as the callee only when no class in the hierarchy has a base
+  outside the project, since that base may declare the method.
 - **Python**: the micro-benchmark has no failing case left, which says the features
   it isolates are handled and nothing about code that does not look like them. Known
   limits: the pass is flow- and context-insensitive, so a name reassigned between
@@ -148,9 +154,11 @@ expected edge, so that the number does not flatter:
   from the builtin; `getattr` and `eval` are not followed.
 - **C and C++**: a callback handed to a library function is a call only for a closed
   list of them (`qsort`, `bsearch`, `signal`, `pthread_create`, `std::sort`,
-  `std::for_each`, …); handed to any other function it is a reference, because whether
-  that function calls it is unknowable from the program. A function-like macro is not
-  expanded.
+  `std::transform`, `std::thread`, …); handed to any other function it is a reference,
+  because whether that function calls it is unknowable from the program. A macro of the
+  project is expanded where it is invoked; a macro from a system header is not, and a
+  macro whose body is not valid C on its own (an unbalanced brace) is skipped. Every arm
+  of an `#if` is expanded, so two definitions of one macro are both followed.
 
 ### The floor
 

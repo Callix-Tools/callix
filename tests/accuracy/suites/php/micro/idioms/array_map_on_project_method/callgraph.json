@@ -1,0 +1,1 @@
+{"main.php": ["App\\Maths\\all"], "App\\Maths\\all": ["array_map", "App\\Maths\\double"], "App\\Maths\\double": []}

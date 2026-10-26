@@ -1,0 +1,1 @@
+{"main()": ["go(Base*)"], "go(Base*)": ["Base::run()"], "Base::run()": [], "Derived::run()": []}

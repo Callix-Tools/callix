@@ -23,6 +23,7 @@ use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::boundaries::{BoundaryRef, run_extractors};
 use crate::dependencies::{custom_declared, declare_dependencies};
 use crate::error::AdapterError;
+use crate::flow::Flow;
 use crate::graph::Graph;
 use crate::ids::node_id;
 use crate::metrics::ResolverMetrics;
@@ -507,6 +508,48 @@ impl PhpAdapter {
     }
 }
 
+/// The part of an occurrence's detail after `key:`, up to the next `|`.
+fn detail_part<'a>(detail: &'a str, key: &str) -> Option<&'a str> {
+    detail.split('|').find_map(|part| part.strip_prefix(key))
+}
+
+/// A holder written `p:`, `v:` or `a:` followed by a qualified name: the node
+/// kind it is and the id that node has.
+fn holder_node(project: &str, holder: &str) -> Option<(String, NodeKind, String)> {
+    let (kind, qname) = match holder.split_once(':')? {
+        ("p", qname) => (NodeKind::Parameter, qname),
+        ("v", qname) => (NodeKind::Variable, qname),
+        ("a", qname) => (NodeKind::Attribute, qname),
+        _ => return None,
+    };
+    Some((qname.to_string(), kind, node_id(project, qname, kind.as_str())))
+}
+
+/// What a use-site needs from the resolver.
+#[derive(PartialEq)]
+enum Need {
+    /// It names its holders itself: `$f()` on a holder, a holder handed on or
+    /// assigned to one.
+    Nothing,
+    /// A guess: a string handed to a call or assigned to a variable is a use-site
+    /// only when it names something the project declares. Only the built-in table
+    /// is asked, and only what it answers is counted.
+    Guess,
+    Answer,
+}
+
+fn need_of(occurrence: &OccurrenceRef) -> Need {
+    let detail = occurrence.detail.as_deref().unwrap_or("");
+    match occurrence.role.as_str() {
+        "paramcall" => Need::Nothing,
+        "alias" if detail.contains("|from:") => Need::Nothing,
+        "callarg" if detail.contains("|h:") => Need::Nothing,
+        "alias" | "callarg" => Need::Guess,
+        _ => Need::Answer,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn resolve_pass(
     py: Python<'_>,
     resolver: &ResolverSlot<PhpResolver>,
@@ -516,27 +559,97 @@ fn resolve_pass(
     project_root: &Path,
     occurrences: &[(String, OccurrenceRef)],
 ) -> PyResult<ResolverMetrics> {
+    let mut local: Vec<&(String, OccurrenceRef)> = Vec::new();
+    let mut guesses: Vec<&(String, OccurrenceRef)> = Vec::new();
+    let mut sent: Vec<&(String, OccurrenceRef)> = Vec::new();
+    for item in occurrences {
+        match need_of(&item.1) {
+            Need::Nothing => local.push(item),
+            Need::Guess => guesses.push(item),
+            Need::Answer => sent.push(item),
+        }
+    }
     let mut metrics = ResolverMetrics {
-        queries: occurrences.len() as u64,
+        queries: sent.len() as u64,
         ..Default::default()
     };
-    if occurrences.is_empty() {
+    if sent.is_empty() && guesses.is_empty() {
         return Ok(metrics);
     }
 
     let started = Instant::now();
-    let refs: Vec<Option<ResolvedRef>> = resolver.resolve_all(py, occurrences)?;
+    let asked: Vec<(String, OccurrenceRef)>;
+    let refs: Vec<Option<ResolvedRef>> = if sent.len() == occurrences.len() {
+        resolver.resolve_all(py, occurrences)?
+    } else {
+        asked = sent.iter().map(|(path, occurrence)| (path.clone(), occurrence.clone())).collect();
+        resolver.resolve_all(py, &asked)?
+    };
+    let guessed: Vec<Option<ResolvedRef>> = if resolver.is_native() && !guesses.is_empty() {
+        let asked: Vec<(String, OccurrenceRef)> =
+            guesses.iter().map(|(path, occurrence)| (path.clone(), occurrence.clone())).collect();
+        resolver.resolve_all(py, &asked)?
+    } else {
+        vec![None; guesses.len()]
+    };
     metrics.seconds = started.elapsed().as_secs_f64();
 
-    for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
+    // The holders that something reads - calls, passes on, copies from - are the
+    // only ones worth a node of their own.
+    let mut used: HashSet<&str> = HashSet::new();
+    for (_, occurrence) in &local {
+        let detail = occurrence.detail.as_deref().unwrap_or("");
+        for key in ["h:", "from:"] {
+            if let Some(holder) = detail_part(detail, key) {
+                used.insert(holder);
+            }
+        }
+    }
+
+    let mut flow = Flow::default();
+    // The guesses the table answered, with a project function or method.
+    for ((path, occurrence), reference) in guesses.iter().copied().zip(guessed.iter()) {
+        let Some(reference) = reference else {
+            continue;
+        };
+        let mut target_id = None;
+        if reference.origin == "internal"
+            && let Some(file_path) = reference.file_path.as_deref()
+        {
+            let relative = relative_to(file_path, project_root);
+            target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+        }
+        let Some(callable) = target_id
+            .as_deref()
+            .filter(|id| matches!(graph.node_kind(id), Some(NodeKind::Function | NodeKind::Method)))
+            .map(str::to_owned)
+        else {
+            continue;
+        };
+        metrics.queries += 1;
+        metrics.resolved += 1;
+        metrics.internal += 1;
+        let detail = occurrence.detail.as_deref().unwrap_or("");
+        if occurrence.role == "callarg" {
+            flow.arg_detail(path, detail.split('|').next().unwrap_or(detail), &callable);
+        } else if let Some(holder) = detail_part(detail, "to:")
+            && used.contains(holder)
+            && let Some(id) = ensure_holder(py, graph, project, project_root, path, occurrence, holder)?
+        {
+            flow.alias(&id, &callable);
+        }
+    }
+
+    for ((path, occurrence), reference) in sent.iter().copied().zip(refs.iter()) {
+        // `$o->m(...)` makes a callable of `m`; the occurrence only places the name.
+        if occurrence.role == "read_callable" {
+            continue;
+        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
         };
         metrics.resolved += 1;
-        let Some(rel_kind) = role_to_kind(&occurrence.role) else {
-            continue;
-        };
 
         let mut target_id = None;
         if reference.origin == "internal"
@@ -545,6 +658,13 @@ fn resolve_pass(
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
+
+        if occurrence.role == "call" {
+            flow.call(path, occurrence, target_id.as_deref());
+        }
+        let Some(rel_kind) = role_to_kind(&occurrence.role) else {
+            continue;
+        };
 
         // What the answer was bound to, before an unbound one becomes an external
         // symbol: that is what decides how the edge is described.
@@ -600,7 +720,98 @@ fn resolve_pass(
         };
         graph.push_relation(Py::new(py, relation)?);
     }
+
+    // Holders copied from holders: `$g = $f`. A copy can come before what it copies
+    // in the order the file was read, so the pass repeats until nothing is new.
+    for _ in 0..4 {
+        let mut learned = false;
+        for (path, occurrence) in &local {
+            if occurrence.role != "alias" {
+                continue;
+            }
+            let detail = occurrence.detail.as_deref().unwrap_or("");
+            let (Some(to), Some(from)) = (detail_part(detail, "to:"), detail_part(detail, "from:")) else {
+                continue;
+            };
+            let Some((_, _, from_id)) = holder_node(project, from) else {
+                continue;
+            };
+            if !graph.has_node(&from_id) || !used.contains(to) {
+                continue;
+            }
+            let existed = holder_node(project, to).is_some_and(|(_, _, id)| graph.has_node(&id));
+            if let Some(to_id) = ensure_holder(py, graph, project, project_root, path, occurrence, to)? {
+                flow.alias(&to_id, &from_id);
+                learned |= !existed;
+            }
+        }
+        if !learned {
+            break;
+        }
+    }
+    for (path, occurrence) in &local {
+        let detail = occurrence.detail.as_deref().unwrap_or("");
+        match occurrence.role.as_str() {
+            // `$f()`, `array_map($f, ...)`: a call of what the holder holds.
+            "paramcall" => {
+                if let Some(holder) = detail_part(detail, "h:")
+                    && let Some((_, _, id)) = holder_node(project, holder)
+                    && graph.has_node(&id)
+                {
+                    flow.param_call(&occurrence.enclosing_id, &id, occurrence.span);
+                }
+            }
+            // `run($f)`: the parameter of what is called holds what `$f` holds.
+            "callarg" => {
+                if let Some(holder) = detail_part(detail, "h:")
+                    && let Some((_, _, id)) = holder_node(project, holder)
+                    && graph.has_node(&id)
+                {
+                    flow.arg_detail(path, detail.split('|').next().unwrap_or(detail), &id);
+                }
+            }
+            _ => {}
+        }
+    }
+    flow.finish(py, graph)?;
     Ok(metrics)
+}
+
+/// The node of a holder, made when it is a local that no declaration made.
+fn ensure_holder(
+    py: Python<'_>,
+    graph: &mut Graph,
+    project: &str,
+    project_root: &Path,
+    path: &str,
+    occurrence: &OccurrenceRef,
+    holder: &str,
+) -> PyResult<Option<String>> {
+    let Some((qname, kind, id)) = holder_node(project, holder) else {
+        return Ok(None);
+    };
+    if graph.has_node(&id) {
+        return Ok(Some(id));
+    }
+    // A parameter or a property is declared by the visitor, or it is not there to
+    // hold anything; only a local is made here.
+    if kind != NodeKind::Variable {
+        return Ok(None);
+    }
+    let metadata = PyDict::new(py);
+    metadata.set_item("local", true)?;
+    let node = Node {
+        id: id.clone(),
+        kind,
+        qualified_name: qname.clone(),
+        name: qname.rsplit('\\').next().unwrap_or(&qname).to_string(),
+        file_path: Some(relative_to(path, project_root)),
+        span: Some(occurrence.span),
+        metadata: metadata.unbind(),
+    };
+    graph.insert_node(id.clone(), Py::new(py, node)?);
+    push_relation(py, graph, occurrence.enclosing_id.clone(), id.clone(), RelationKind::Declares)?;
+    Ok(Some(id))
 }
 
 /// BOUNDARY nodes and EXPOSES / CONSUMES edges.

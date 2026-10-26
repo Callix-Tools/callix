@@ -477,6 +477,97 @@ fn positional_key(project_root: &Path, file_path: &str, occurrence: &OccurrenceR
     )
 }
 
+/// The parts of the detail of an occurrence that hands a value on: the keys it
+/// sits under, the element store it belongs to, whether it is returned or passed
+/// as an argument, and what kind of value it is.
+#[derive(Default)]
+struct ValueDetail {
+    at: String,
+    store: Option<usize>,
+    ret: bool,
+    arg: Option<String>,
+    kind: Option<String>,
+}
+
+impl ValueDetail {
+    fn parse(detail: Option<&str>) -> Self {
+        let mut out = ValueDetail::default();
+        let Some(detail) = detail else {
+            return out;
+        };
+        for part in detail.split('|') {
+            if let Some(at) = part.strip_prefix("at:") {
+                out.at = at.to_owned();
+            } else if let Some(store) = part.strip_prefix("store:") {
+                out.store = store.parse().ok();
+            } else if part == "return" {
+                out.ret = true;
+            } else if part.starts_with("arg:") {
+                out.arg = Some(part.to_owned());
+            } else if !part.is_empty() {
+                out.kind = Some(part.to_owned());
+            }
+        }
+        out
+    }
+}
+
+/// An element store whose holder is found by resolving the name it is made on.
+#[derive(Default)]
+struct StoreState {
+    holder: Option<String>,
+    keys: String,
+    values: Vec<String>,
+}
+
+/// The keys of an encoded path with the names among them (`#2`) replaced by what
+/// the resolver found them to be.
+fn substitute_keys(
+    spec: &str,
+    path: &str,
+    site: (u32, u32),
+    names: &HashMap<(String, u32, u32, usize), String>,
+) -> String {
+    spec.split(';')
+        .map(|part| match part.strip_prefix('#') {
+            Some(position) => position
+                .parse::<usize>()
+                .ok()
+                .and_then(|position| names.get(&(path.to_owned(), site.0, site.1, position)))
+                .map(|holder| format!("@{holder}"))
+                .unwrap_or_else(|| "*".to_owned()),
+            None => part.to_owned(),
+        })
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
+/// Hands `token` to whoever the occurrence says: the function it is returned
+/// from, the call it is an argument of, the element store it belongs to, or the
+/// holder that is its enclosing node.
+#[allow(clippy::too_many_arguments)]
+fn apply_value(
+    flow: &mut Flow,
+    stores: &mut HashMap<(String, usize), StoreState>,
+    path: &str,
+    enclosing: &str,
+    detail: &ValueDetail,
+    token: String,
+) {
+    if detail.ret {
+        flow.returned(enclosing, &token);
+        return;
+    }
+    let token = if detail.at.is_empty() { token } else { format!("at:{}|{token}", detail.at) };
+    if let Some(arg) = &detail.arg {
+        flow.arg_detail(path, arg, &token);
+    } else if let Some(store) = detail.store {
+        stores.entry((path.to_owned(), store)).or_default().values.push(token);
+    } else {
+        flow.hold(enclosing, token);
+    }
+}
+
 /// `d:INDEX:call` or `d:INDEX:name`.
 fn parse_decorate(detail: &str) -> Option<(usize, bool)> {
     let rest = detail.strip_prefix("d:")?;
@@ -508,19 +599,24 @@ fn apply_resolutions_inner(
     }
 
     let mut flow = Flow::default();
+    let mut names: HashMap<(String, u32, u32, usize), String> = HashMap::new();
+    let mut stores: HashMap<(String, usize), StoreState> = HashMap::new();
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
-        // A lambda handed on - assigned, passed or returned - names its own node,
-        // so there is nothing for the resolver to answer.
-        if let Some(detail) = occurrence.detail.as_deref()
-            && let Some((base, qname)) = detail.split_once("|lambda:")
+        // A lambda or a literal handed on - assigned, passed, returned, stored -
+        // names itself, so there is nothing for the resolver to answer.
+        let detail = ValueDetail::parse(occurrence.detail.as_deref());
+        if let Some(kind) = detail.kind.as_deref()
+            && (kind.starts_with("lambda:") || kind.starts_with("lit:"))
         {
-            let lambda_id = node_id(project_name, qname, NodeKind::Function.as_str());
-            if graph.has_node(&lambda_id) {
-                match base {
-                    "" => flow.alias(&occurrence.enclosing_id, &lambda_id),
-                    "return" => flow.returned(&occurrence.enclosing_id, &lambda_id),
-                    arg => flow.arg_detail(path, arg, &lambda_id),
+            let token = match kind.strip_prefix("lambda:") {
+                Some(qname) => {
+                    let id = node_id(project_name, qname, NodeKind::Function.as_str());
+                    graph.has_node(&id).then_some(id)
                 }
+                None => Some(kind.to_owned()),
+            };
+            if let Some(token) = token {
+                apply_value(&mut flow, &mut stores, path, &occurrence.enclosing_id, &detail, token);
             }
             metrics.queries -= 1;
             continue;
@@ -546,6 +642,8 @@ fn apply_resolutions_inner(
             None if is_alias
                 || occurrence.role == "iterate"
                 || occurrence.role == "recv"
+                || occurrence.role == "key"
+                || occurrence.role == "store"
                 || occurrence.role == "decorate" =>
             {
                 RelationKind::References
@@ -568,12 +666,46 @@ fn apply_resolutions_inner(
         // what the flow pass follows. An `alias` is not an edge of its own.
         if is_alias {
             if let Some(held) = target_id.as_deref() {
-                match occurrence.detail.as_deref() {
-                    Some("return") => flow.returned(&occurrence.enclosing_id, held),
-                    Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
-                    _ => flow.alias(&occurrence.enclosing_id, held),
+                let token = match detail.kind.as_deref() {
+                    None => Some(held.to_owned()),
+                    Some("result") => Some(format!("result:{held}")),
+                    // `x = d[k]`: whatever `d` holds under `k`.
+                    Some(kind) => kind.strip_prefix("get:").map(|keys| {
+                        let keys = substitute_keys(keys, path, (occurrence.line, occurrence.col), &names);
+                        format!("get:{keys}|{held}")
+                    }),
+                };
+                if let Some(token) = token {
+                    apply_value(&mut flow, &mut stores, path, &occurrence.enclosing_id, &detail, token);
                 }
             }
+            continue;
+        }
+        // The name a subscript is read with, which the keys of the call refer to.
+        if occurrence.role == "key" {
+            if let Some(holder) = target_id.as_deref()
+                && let Some((line, col, position)) = occurrence.detail.as_deref().and_then(|d| {
+                    let rest = d.strip_prefix("k:")?;
+                    let mut parts = rest.split(':');
+                    Some((parts.next()?.parse::<u32>().ok()?, parts.next()?.parse::<u32>().ok()?, parts.next()?.parse::<usize>().ok()?))
+                })
+            {
+                names.insert((path.clone(), line, col, position), holder.to_owned());
+            }
+            metrics.queries -= 1;
+            continue;
+        }
+        // `d[k] = v`, `l.append(v)`: what is stored, and in what.
+        if occurrence.role == "store" {
+            if let Some(holder) = target_id.as_deref()
+                && let Some(store) = detail.store
+            {
+                let keys = detail.kind.as_deref().and_then(|k| k.strip_prefix("keys:")).unwrap_or("");
+                let state = stores.entry((path.clone(), store)).or_default();
+                state.holder = Some(holder.to_owned());
+                state.keys = substitute_keys(keys, path, (occurrence.line, occurrence.col), &names);
+            }
+            metrics.queries -= 1;
             continue;
         }
         // `@dec` on a definition: what the name stands for afterwards.
@@ -610,13 +742,25 @@ fn apply_resolutions_inner(
             }
             continue;
         }
-        if occurrence.role == "call" && occurrence.detail.as_deref() == Some("result") {
+        if occurrence.role == "call"
+            && let Some(rest) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("result"))
+        {
             // The inner call has its own occurrence; this one is the outer call,
-            // of whatever the inner one returns.
+            // of whatever the inner one returns, `depth` calls deep.
             if let Some(function) = target_id.as_deref() {
-                flow.result_call(&occurrence.enclosing_id, function, occurrence.span, path);
+                let mut numbers = rest.trim_start_matches(':').split(':').filter_map(|n| n.parse::<u32>().ok());
+                let depth = numbers.next().unwrap_or(1) as usize;
+                let site = numbers.next().zip(numbers.next());
+                flow.result_call_deep(&occurrence.enclosing_id, function, occurrence.span, path, depth, site);
             }
             continue;
+        }
+        if occurrence.role == "call"
+            && let Some(keys) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("keys:"))
+        {
+            // `table[k]()`: the call is made through these keys.
+            let keys = substitute_keys(keys, path, (occurrence.line, occurrence.col), &names);
+            flow.call_path(&occurrence.enclosing_id, occurrence.line, occurrence.col, crate::flow::parse_path(&keys));
         }
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
@@ -687,6 +831,24 @@ fn apply_resolutions_inner(
             rel_kind,
             Some(metadata),
         )?;
+    }
+    // Stores whose holder was found: the elements are held under their keys.
+    for (_, state) in stores {
+        let Some(holder) = state.holder else {
+            continue;
+        };
+        for value in state.values {
+            let token = if state.keys.is_empty() {
+                value
+            } else if let Some(rest) = value.strip_prefix("at:")
+                && let Some((own, payload)) = rest.split_once('|')
+            {
+                format!("at:{};{own}|{payload}", state.keys)
+            } else {
+                format!("at:{}|{value}", state.keys)
+            };
+            flow.hold(&holder, token);
+        }
     }
     flow.finish(py, graph)?;
     Ok(metrics)

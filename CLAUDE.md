@@ -303,6 +303,18 @@ Things that are easy to get wrong:
   have been written elsewhere; `Graph::note_site_file` records the file then and
   only then. Placing a reference by the source node's file alone put eight gin
   references in an eleven-line file.
+- **Decorators, parameter defaults and a call's receiver are values the definition
+  depends on, and `scan_value` must reach them.** The Python and TypeScript
+  visitors once skipped all three — a bare `@deco` recorded nothing, a default was
+  never visited, and `a.b(c).d()` kept only `d` — so a route handler had no edge
+  to its router or its `Depends(...)`. The enclosing node is the decorated
+  definition. `tests/api/test_decorators_and_receivers.py` pins each form.
+- **A boundary's position must lie inside its handler's span, and its file must be
+  keyed like the nodes.** `apply_boundaries` finds the handler by comparing the
+  position with function spans under `node.file_path` (relative). A decorator or
+  attribute sits *before* the function, outside its span, so the extractors hand
+  over the function's name instead; Python and TypeScript once keyed the file by
+  its absolute path, which matched nothing and filed every route under its file.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

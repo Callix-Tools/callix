@@ -55,6 +55,28 @@ from a node in the first file. Where an edge was written, then, is `file` when
 present and the source node's `file_path` otherwise; the LSIF and SCIP exporters
 place a reference by it.
 
+### What a definition depends on besides its body
+
+A route handler is wired up outside its body, so the walk reads those places
+too, and each becomes an edge **from the decorated definition**:
+
+| Written as | Edge |
+|---|---|
+| `@audit`, `@router.get("/x")`, `@Guard`, `@Get(":id")` | `REFERENCES` to `audit` and to `router`; `CALLS` to `get`/`Get` |
+| `db=Depends(get_db)`, `opt = dep()` (a parameter default) | `CALLS` to `Depends`, `REFERENCES` to `get_db` |
+| `@Inject("x") id` (a parameter decorator, TypeScript) | `CALLS` to `Inject` |
+| `class A(Base, metaclass=Meta)` | `REFERENCES` to `Meta` |
+| `session.query(Model).filter(cond()).all()` | one edge per name in the chain: `session`, `query`, `Model`, `filter`, `cond`, `all` |
+
+`metadata["decorators"]` lists them by what is called: `["router.get", "audit"]`.
+The edge is `decorated -> decorator`, so the router behind a handler is one hop
+away, and a handler's `EXPOSES` edge starts at the handler, not at its file.
+
+What is **not** followed: a symbol the resolver cannot name stays an external
+symbol keyed by its position (`fastapi.Depends` is a site, not a name), and a
+router mounted in another module than the one that builds it keeps the prefix it
+was built with.
+
 Boundary edges carry the contract:
 
 ```python

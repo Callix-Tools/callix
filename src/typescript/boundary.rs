@@ -13,7 +13,7 @@ use crate::py::types::PyBytes;
 use crate::py::derive::gen_stub_pyfunction;
 use tree_sitter::{Node as TsNode, Query};
 
-use crate::boundaries::{BoundaryRef, normalize_http_path};
+use crate::boundaries::{BoundaryRef, join_http_path, normalize_http_path};
 use crate::ts;
 
 const HTTP_VERBS: [&str; 7] = ["get", "post", "put", "patch", "delete", "head", "options"];
@@ -255,9 +255,76 @@ impl<'a> Extractor<'a> {
             let Some(url) = self.first_url(*args).filter(|u| !u.is_empty()) else {
                 continue;
             };
-            refs.push(Self::http_ref("server", &method.to_uppercase(), &url, *deco));
+            // The route belongs to the method the decorator sits on, and the
+            // class's `@Controller("prefix")` is in front of its path. The
+            // decorator is a sibling before the method, outside its span, so
+            // the position handed on is the method's name.
+            let owner = deco
+                .parent()
+                .and_then(|call| call.parent())
+                .and_then(Self::decorated_member);
+            let anchor = owner
+                .and_then(|member| member.child_by_field_name("name"))
+                .unwrap_or(*deco);
+            let prefix = owner.and_then(|m| self.controller_prefix(m)).unwrap_or_default();
+            refs.push(Self::http_ref(
+                "server",
+                &method.to_uppercase(),
+                &join_http_path(&prefix, &url),
+                anchor,
+            ));
         }
         refs
+    }
+
+    /// The class member a decorator is written on: the next sibling that is not
+    /// itself a decorator or a comment.
+    fn decorated_member<'tree>(decorator: TsNode<'tree>) -> Option<TsNode<'tree>> {
+        let mut next = decorator.next_sibling();
+        while let Some(sibling) = next {
+            match sibling.kind() {
+                "decorator" | "comment" => next = sibling.next_sibling(),
+                "method_definition" | "public_field_definition" => return Some(sibling),
+                _ => return None,
+            }
+        }
+        None
+    }
+
+    /// `@Controller("users")` / `@Controller({ path: "users" })` on the class
+    /// that holds `member`.
+    fn controller_prefix(&self, member: TsNode<'_>) -> Option<String> {
+        let class = member.parent()?.parent()?;
+        let mut decorators: Vec<TsNode<'_>> =
+            ts::children(class).into_iter().filter(|c| c.kind() == "decorator").collect();
+        if let Some(parent) = class.parent()
+            && parent.kind() == "export_statement"
+        {
+            decorators.extend(ts::children(parent).into_iter().filter(|c| c.kind() == "decorator"));
+        }
+        for decorator in decorators {
+            let Some(call) = ts::child_of_type(decorator, "call_expression") else { continue };
+            let Some(name) = ts::child_of_type(call, "identifier") else { continue };
+            if self.text(name) != "Controller" {
+                continue;
+            }
+            let args = ts::child_of_type(call, "arguments")?;
+            let first = ts::named_children(args).into_iter().next()?;
+            if first.kind() == "object" {
+                for pair in ts::named_children(first) {
+                    let parts = ts::named_children(pair);
+                    if pair.kind() == "pair"
+                        && parts.len() > 1
+                        && self.text(parts[0]).trim_matches(['\'', '"']) == "path"
+                    {
+                        return self.url_template(parts[1]);
+                    }
+                }
+                return None;
+            }
+            return self.url_template(first);
+        }
+        None
     }
 
     /// Client calls `fetch(...)` and `axios.get(...)`.

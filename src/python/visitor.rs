@@ -396,10 +396,15 @@ impl<'a> PythonVisitor<'a> {
         // INHERITS_FROM.
         if let Some(arg_list) = arg_list {
             for child in ts::children(arg_list) {
-                if matches!(child.kind(), "identifier" | "attribute")
+                if matches!(child.kind(), "identifier" | "attribute" | "subscript")
                     && let Some(base_name_node) = ts::first_identifier(child)
                 {
                     self.record_occurrence("base", base_name_node, &class_id);
+                } else if child.kind() == "keyword_argument"
+                    && let Some(value) = ts::children(child).last()
+                {
+                    // `class A(Base, metaclass=Meta)`: the value is used.
+                    self.scan_value(*value, &class_id)?;
                 }
             }
         }
@@ -539,6 +544,13 @@ impl<'a> PythonVisitor<'a> {
                 RelationKind::Declares,
             )?;
 
+            // A default is evaluated where the function is defined, and the
+            // function is what depends on it: `db=Depends(get_db)` makes
+            // `get_db` a dependency of the handler.
+            if has_default && let Some(default) = ts::children(child).last() {
+                self.scan_value(*default, function_id)?;
+            }
+
             if let Some(ann_type_node) = ann_type_node {
                 self.record_annotation(ann_type_node, &param_id);
                 // Calls inside an annotation (Depends(get_dep)) are value
@@ -556,14 +568,21 @@ impl<'a> PythonVisitor<'a> {
     /// every identifier yields exactly one `read`, every call exactly one
     /// `call`.
     ///
-    /// A call's receiver (`obj` in `obj.m()`) is not recorded. Value
-    /// expressions contain no nested definitions, so no guard against them is
-    /// needed here.
+    /// A call's receiver (`obj` in `obj.m()`, and everything in a chain such as
+    /// `session.query(Model).filter(cond()).all()`) is scanned like any other
+    /// value: leaving it out dropped every name that is only ever used to call
+    /// a method on. Value expressions contain no nested definitions, so no guard
+    /// against them is needed here.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if node.kind() == "call" {
             if let Some(callee) = ts::child_of_types(node, &["identifier", "attribute"]) {
                 let name_node = if callee.kind() == "attribute" {
-                    ts::children(callee).last().copied().unwrap_or(callee)
+                    let parts = ts::children(callee);
+                    // Everything before the final `.name` is the receiver.
+                    for part in parts.iter().take(parts.len().saturating_sub(1)) {
+                        self.scan_value(*part, enclosing_id)?;
+                    }
+                    parts.last().copied().unwrap_or(callee)
                 } else {
                     callee
                 };
@@ -656,16 +675,22 @@ impl<'a> PythonVisitor<'a> {
         }
     }
 
-    /// Decorator arguments: `@deco(handler)` yields a `call` on deco and a
-    /// `read` on handler. A bare `@deco` has no call — nothing to record.
+    /// Decorators are values the decorated definition depends on, whatever form
+    /// they take: `@deco(handler)` yields a `call` on deco and a `read` on
+    /// handler, `@router.get("/x")` a `read` on `router` and a `call` on `get`,
+    /// and a bare `@deco` a `read` on deco. The enclosing node is the decorated
+    /// definition, so `decorated -> decorator` is how a reader finds the
+    /// router behind a handler.
     fn scan_decorators(
         &mut self,
         decorator_nodes: &[TsNode<'_>],
         enclosing_id: &str,
     ) -> PyResult<()> {
         for dec in decorator_nodes {
-            if let Some(call) = ts::child_of_type(*dec, "call") {
-                self.scan_value(call, enclosing_id)?;
+            for child in ts::children(*dec) {
+                if child.kind() != "@" {
+                    self.scan_value(child, enclosing_id)?;
+                }
             }
         }
         Ok(())
@@ -905,8 +930,16 @@ impl<'a> PythonVisitor<'a> {
 
     fn decorator_name(&self, decorator_node: TsNode<'_>) -> String {
         for child in ts::children(decorator_node) {
-            if matches!(child.kind(), "identifier" | "attribute" | "call") {
-                let name = self.name_from_node(child);
+            // `@router.get("/x")` is named by what is called, `router.get`.
+            let named = if child.kind() == "call" {
+                ts::child_of_types(child, &["identifier", "attribute"])
+            } else if matches!(child.kind(), "identifier" | "attribute") {
+                Some(child)
+            } else {
+                None
+            };
+            if let Some(named) = named {
+                let name = self.name_from_node(named);
                 if !name.is_empty() {
                     return name;
                 }

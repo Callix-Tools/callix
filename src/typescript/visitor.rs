@@ -402,8 +402,9 @@ impl<'a> TsVisitor<'a> {
             None => (Vec::new(), Vec::new()),
         };
 
+        let decorators = Self::decorators_of(node);
         let metadata = PyDict::new(self.py);
-        metadata.set_item("decorators", PyList::empty(self.py))?;
+        metadata.set_item("decorators", PyList::new(self.py, self.decorator_names(&decorators))?)?;
         metadata.set_item("bases", PyList::new(self.py, &bases)?)?;
         metadata.set_item("is_abstract", is_abstract)?;
         if is_interface {
@@ -414,6 +415,7 @@ impl<'a> TsVisitor<'a> {
             self.make_node(NodeKind::Class, &qname, &name, Some(node), metadata, Some(name_node))?;
         let class_id = class_node.get().id.clone();
         self.add_node_with_relation(class_node, RelationKind::Declares)?;
+        self.scan_decorators(&decorators, &class_id)?;
 
         for base_node in base_nodes {
             self.record_occurrence("base", base_node, &class_id);
@@ -576,6 +578,7 @@ impl<'a> TsVisitor<'a> {
         )?;
         let attr_id = attr.get().id.clone();
         self.add_node_with_relation(attr, RelationKind::Declares)?;
+        self.scan_decorators(&Self::decorators_of(node), &attr_id)?;
 
         // The use-site belongs to the class, not to the field itself — the
         // same as for variables in a lexical_declaration.
@@ -620,14 +623,16 @@ impl<'a> TsVisitor<'a> {
         let type_ann = ts::child_of_type(node, "type_annotation");
         let return_annotation = type_ann.map(|n| self.annotation_text(n));
 
+        let decorators = Self::decorators_of(node);
         let metadata = PyDict::new(self.py);
-        metadata.set_item("decorators", PyList::empty(self.py))?;
+        metadata.set_item("decorators", PyList::new(self.py, self.decorator_names(&decorators))?)?;
         metadata.set_item("is_async", is_async)?;
         metadata.set_item("return_annotation", return_annotation)?;
 
         let func = self.make_node(kind, &qname, &name, Some(node), metadata, Some(name_node))?;
         let func_id = func.get().id.clone();
         self.add_node_with_relation(func, RelationKind::Declares)?;
+        self.scan_decorators(&decorators, &func_id)?;
 
         if let Some(type_ann) = type_ann {
             self.record_annotation(type_ann, &func_id);
@@ -966,6 +971,14 @@ impl<'a> TsVisitor<'a> {
                 _ => None,
             };
 
+            // `@Body() dto`, `@Inject("x") service`: the function depends on them.
+            self.scan_decorators(&Self::decorators_of(child), function_id)?;
+            // A default is evaluated where the function is defined, and the
+            // function depends on it: `opt = dep()` makes `dep` a dependency.
+            if has_default && let Some(default) = Self::default_value(child) {
+                self.scan_value(default, function_id)?;
+            }
+
             let Some(name_node) = name_node else { continue };
             let param_name = self.text(name_node);
             if param_name.is_empty() || param_name == "this" {
@@ -996,6 +1009,80 @@ impl<'a> TsVisitor<'a> {
             }
         }
         Ok(())
+    }
+
+    // -- decorators -------------------------------------------------------
+
+    /// The decorators written on `node`, in source order. A decorated class that
+    /// is exported has them on the `export` wrapper instead.
+    fn decorators_of<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+        let mut found: Vec<TsNode<'tree>> =
+            ts::children(node).into_iter().filter(|c| c.kind() == "decorator").collect();
+        // A class member's decorators are not inside it: the grammar puts them
+        // in the class body, as the siblings just before the member.
+        let mut previous = node.prev_sibling();
+        while let Some(sibling) = previous {
+            match sibling.kind() {
+                "decorator" => found.push(sibling),
+                "comment" => {}
+                _ => break,
+            }
+            previous = sibling.prev_sibling();
+        }
+        if let Some(parent) = node.parent()
+            && parent.kind() == "export_statement"
+        {
+            found.extend(ts::children(parent).into_iter().filter(|c| c.kind() == "decorator"));
+        }
+        found.sort_by_key(|d| d.start_byte());
+        found
+    }
+
+    /// What each decorator is called: `@Get(":id")` is `Get`, `@a.B` is `a.B`.
+    fn decorator_names(&self, decorators: &[TsNode<'_>]) -> Vec<String> {
+        decorators
+            .iter()
+            .map(|decorator| {
+                for child in ts::children(*decorator) {
+                    let named = if child.kind() == "call_expression" {
+                        ts::child_of_types(child, &["identifier", "member_expression"])
+                    } else if matches!(child.kind(), "identifier" | "member_expression") {
+                        Some(child)
+                    } else {
+                        None
+                    };
+                    if let Some(named) = named {
+                        return self.name_from_node(named);
+                    }
+                }
+                String::new()
+            })
+            .collect()
+    }
+
+    /// A decorator is a value its target depends on, in any of its forms:
+    /// `@Guard` reads `Guard`, `@Get(":id")` calls `Get`, `@a.B(x)` reads `a`
+    /// and `x` and calls `B`. The enclosing node is the decorated one.
+    fn scan_decorators(
+        &mut self,
+        decorators: &[TsNode<'_>],
+        enclosing_id: &str,
+    ) -> PyResult<()> {
+        for decorator in decorators {
+            for child in ts::children(*decorator) {
+                if child.kind() != "@" {
+                    self.scan_value(child, enclosing_id)?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// The value after the `=` of a parameter, in whichever shape it parses to.
+    fn default_value<'tree>(parameter: TsNode<'tree>) -> Option<TsNode<'tree>> {
+        let children = ts::children(parameter);
+        let eq = children.iter().position(|c| c.kind() == "=")?;
+        children.get(eq + 1).copied()
     }
 
     // -- use-sites --------------------------------------------------------
@@ -1048,7 +1135,13 @@ impl<'a> TsVisitor<'a> {
                 if let Some(callee) = ts::child_of_types(node, &["identifier", "member_expression"])
                 {
                     let name_node = if callee.kind() == "member_expression" {
-                        ts::children(callee).last().copied().unwrap_or(callee)
+                        let parts = ts::children(callee);
+                        // Everything before the final `.name` is the receiver:
+                        // `build().find(1)` uses `build`, `a.b.c()` uses `a`.
+                        for part in parts.iter().take(parts.len().saturating_sub(1)) {
+                            self.scan_value(*part, enclosing_id)?;
+                        }
+                        parts.last().copied().unwrap_or(callee)
                     } else {
                         callee
                     };

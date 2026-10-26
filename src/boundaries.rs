@@ -125,6 +125,20 @@ fn collapse_params(path: &str) -> String {
 /// `/users/{}`); drops the trailing slash except at the root.
 #[gen_stub_pyfunction]
 #[pyfunction]
+/// `"/users"` + `"/{id}"` → `"/users/{id}"`: exactly one slash between the two,
+/// and nothing added when a side is empty. Both sides are as written in the
+/// source; normalising is a separate step.
+pub fn join_http_path(prefix: &str, path: &str) -> String {
+    let prefix = prefix.trim_end_matches('/');
+    if prefix.is_empty() {
+        return path.to_string();
+    }
+    match path.trim_start_matches('/') {
+        "" => prefix.to_string(),
+        rest => format!("{prefix}/{rest}"),
+    }
+}
+
 pub fn normalize_http_path(raw: &str) -> String {
     let mut path = raw.trim().to_string();
 

@@ -358,7 +358,9 @@ fn build_root_structure_inner(
         let mut boundaries = extract_boundaries(tree.root_node(), &source);
         boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
         if !boundaries.is_empty() {
-            all_boundaries.push((abs_path, file_id, boundaries));
+            // Keyed by the relative path, like the nodes: `apply_boundaries`
+            // looks the enclosing function up by `file_path`.
+            all_boundaries.push((file_rel, file_id, boundaries));
         }
     }
 

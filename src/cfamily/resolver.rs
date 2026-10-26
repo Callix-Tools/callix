@@ -427,7 +427,10 @@ impl CFamilyIndex {
             return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
         }
         let _ = role;
-        self.by_bare_name(name, site, from_file)
+        match self.by_bare_name(name, site, from_file) {
+            Outcome::Outside if site.speculative => Outcome::NotACall,
+            found => found,
+        }
     }
 
     /// The old question: a name, and what a file can see by that name. Overloads

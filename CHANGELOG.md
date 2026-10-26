@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-10-26
+### Features
+
+- feat: close the accuracy suites for every language (Python, PHP, C/C++, Go, Rust, TypeScript) by @Neko1313 in [#10](https://github.com/Callix-Tools/callix/pull/10)
+
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.4.0...v1.5.0
 ## [1.4.0] - 2026-10-26
 ### Features
 

@@ -16,9 +16,9 @@
       "relations": 182
     },
     "crates/mdtest/src/matcher.rs": {
-      "hash": "2549180ac50f8e18",
-      "nodes": 161,
-      "relations": 222
+      "hash": "38d84a4558756c92",
+      "nodes": 162,
+      "relations": 223
     },
     "crates/mdtest/src/parser.rs": {
       "hash": "e6d93774dc1d9ce4",
@@ -26,9 +26,9 @@
       "relations": 285
     },
     "crates/ruff/build.rs": {
-      "hash": "6a586ac20e03344a",
-      "nodes": 7,
-      "relations": 8
+      "hash": "ad6ecb5e52a568ff",
+      "nodes": 8,
+      "relations": 9
     },
     "crates/ruff/src/args.rs": {
       "hash": "98246f1e3316bae4",
@@ -901,9 +901,9 @@
       "relations": 31
     },
     "crates/ruff_linter/src/checkers/ast/mod.rs": {
-      "hash": "e3bc482c16455e31",
-      "nodes": 331,
-      "relations": 456
+      "hash": "28942c4f6fb5ce45",
+      "nodes": 332,
+      "relations": 457
     },
     "crates/ruff_linter/src/checkers/filesystem.rs": {
       "hash": "7677834cc5337321",
@@ -931,9 +931,9 @@
       "relations": 57
     },
     "crates/ruff_linter/src/checkers/physical_lines.rs": {
-      "hash": "8ecfd4a629c2245d",
-      "nodes": 27,
-      "relations": 61
+      "hash": "bbda2f65f56345e3",
+      "nodes": 28,
+      "relations": 62
     },
     "crates/ruff_linter/src/checkers/tokens.rs": {
       "hash": "75b0ce5f03692acb",
@@ -5241,9 +5241,9 @@
       "relations": 32
     },
     "crates/ruff_linter/src/rules/refurb/rules/reimplemented_operator.rs": {
-      "hash": "93dce230695c6d39",
-      "nodes": 82,
-      "relations": 112
+      "hash": "808b8be2e1c44061",
+      "nodes": 83,
+      "relations": 113
     },
     "crates/ruff_linter/src/rules/refurb/rules/reimplemented_starmap.rs": {
       "hash": "d6861f8ac8793ebf",
@@ -6711,9 +6711,9 @@
       "relations": 13
     },
     "crates/ruff_python_formatter/src/statement/stmt_if.rs": {
-      "hash": "99384425111006f0",
-      "nodes": 18,
-      "relations": 33
+      "hash": "cf2ff4e5a60ba31b",
+      "nodes": 19,
+      "relations": 34
     },
     "crates/ruff_python_formatter/src/statement/stmt_import.rs": {
       "hash": "b547638a47151aaa",
@@ -7666,9 +7666,9 @@
       "relations": 126
     },
     "crates/ty/build.rs": {
-      "hash": "e821453a2513c6f9",
-      "nodes": 11,
-      "relations": 12
+      "hash": "ad4dfaac29c8b1cb",
+      "nodes": 12,
+      "relations": 13
     },
     "crates/ty/src/args.rs": {
       "hash": "a189ac77fe91c845",
@@ -8276,9 +8276,9 @@
       "relations": 143
     },
     "crates/ty_python_semantic/src/place.rs": {
-      "hash": "bf7fb2d068b41950",
-      "nodes": 298,
-      "relations": 375
+      "hash": "3b185c71dc6934b3",
+      "nodes": 301,
+      "relations": 378
     },
     "crates/ty_python_semantic/src/pull_types.rs": {
       "hash": "664a8f8e01dea6ee",
@@ -8721,9 +8721,9 @@
       "relations": 315
     },
     "crates/ty_python_semantic/src/types/relation_error.rs": {
-      "hash": "6f5901fcb65c324b",
-      "nodes": 54,
-      "relations": 71
+      "hash": "4aade88e8877a5ca",
+      "nodes": 55,
+      "relations": 72
     },
     "crates/ty_python_semantic/src/types/set_theoretic.rs": {
       "hash": "8b3d99e669936494",
@@ -8906,9 +8906,9 @@
       "relations": 38
     },
     "crates/ty_server/src/server/api/notifications/did_change_workspace_folders.rs": {
-      "hash": "dc28fa502aa9606c",
-      "nodes": 11,
-      "relations": 20
+      "hash": "c48b43798a05576e",
+      "nodes": 12,
+      "relations": 21
     },
     "crates/ty_server/src/server/api/notifications/did_close.rs": {
       "hash": "0577b11f2c5f9b02",
@@ -9316,9 +9316,9 @@
       "relations": 429
     },
     "crates/ty_wasm/tests/api.rs": {
-      "hash": "5c92b26695a85b14",
-      "nodes": 9,
-      "relations": 12
+      "hash": "21fbac875b0623b9",
+      "nodes": 10,
+      "relations": 13
     },
     "fuzz/fuzz_targets/ruff_fix_validity.rs": {
       "hash": "9182710b58c3dec5",
@@ -9365,11 +9365,11 @@
       "parameter": 23612,
       "project": 52,
       "type_alias": 117,
-      "variable": 683
+      "variable": 696
     },
     "relations": {
       "contains": 3737,
-      "declares": 82106,
+      "declares": 82119,
       "depends_on": 868,
       "imports": 14825,
       "resolves_to": 15121
@@ -9379,28 +9379,28 @@
   "ref": "0.15.18",
   "resolution": {
     "metrics": {
-      "external": 84710,
-      "internal": 161965,
-      "queries": 293171,
-      "resolved": 291519,
-      "unresolved": 1652
+      "external": 89169,
+      "internal": 170002,
+      "queries": 310323,
+      "resolved": 307993,
+      "unresolved": 1913
     },
     "relations": {
-      "calls": 155949,
+      "calls": 167347,
       "contains": 3737,
-      "declares": 82106,
+      "declares": 82119,
       "depends_on": 868,
       "has_type": 30460,
       "imports": 14825,
       "inherits_from": 3992,
-      "references": 56298,
+      "references": 58231,
       "resolves_to": 15121
     },
     "status": "ok"
   },
   "totals": {
     "files": 1870,
-    "nodes": 84392,
-    "relations": 116657
+    "nodes": 84405,
+    "relations": 116670
   }
 }

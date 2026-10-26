@@ -106,9 +106,9 @@
       "relations": 28
     },
     "binding/multipart_form_mapping_test.go": {
-      "hash": "9c51ab4e8bf064c3",
-      "nodes": 24,
-      "relations": 40
+      "hash": "1398627255955644",
+      "nodes": 25,
+      "relations": 41
     },
     "binding/plain.go": {
       "hash": "72073f9f11814739",
@@ -191,9 +191,9 @@
       "relations": 20
     },
     "context.go": {
-      "hash": "b87f8eaadca0b09e",
-      "nodes": 382,
-      "relations": 446
+      "hash": "be8cfa7cee11951f",
+      "nodes": 386,
+      "relations": 450
     },
     "context_appengine.go": {
       "hash": "04d7893418fb52f6",
@@ -211,9 +211,9 @@
       "relations": 472
     },
     "debug.go": {
-      "hash": "5b79d3b6c9657308",
-      "nodes": 27,
-      "relations": 38
+      "hash": "827d459eb71c21f3",
+      "nodes": 28,
+      "relations": 39
     },
     "debug_test.go": {
       "hash": "47f920ea6368ffdd",
@@ -256,14 +256,14 @@
       "relations": 33
     },
     "gin.go": {
-      "hash": "9721e1144b0cd89c",
-      "nodes": 152,
-      "relations": 212
+      "hash": "51fb420f0bc8dd0d",
+      "nodes": 162,
+      "relations": 222
     },
     "ginS/gins.go": {
-      "hash": "95c6f93ba94a9b13",
-      "nodes": 56,
-      "relations": 63
+      "hash": "a87648622e4b74e5",
+      "nodes": 72,
+      "relations": 79
     },
     "ginS/gins_test.go": {
       "hash": "7e44eae7f698bfa1",
@@ -271,9 +271,9 @@
       "relations": 56
     },
     "gin_integration_test.go": {
-      "hash": "c201943ee8011700",
-      "nodes": 58,
-      "relations": 140
+      "hash": "a36638bf9ad714f7",
+      "nodes": 59,
+      "relations": 141
     },
     "gin_test.go": {
       "hash": "473a5e1f3a172f16",
@@ -306,9 +306,9 @@
       "relations": 27
     },
     "logger.go": {
-      "hash": "b3c16f32c27e5899",
-      "nodes": 59,
-      "relations": 86
+      "hash": "5ff56ba5d60c5c9a",
+      "nodes": 60,
+      "relations": 87
     },
     "logger_test.go": {
       "hash": "d0f5040b26c2a2cd",
@@ -341,9 +341,9 @@
       "relations": 29
     },
     "recovery.go": {
-      "hash": "723c980831adfd12",
-      "nodes": 41,
-      "relations": 70
+      "hash": "2a9b7085296e8408",
+      "nodes": 42,
+      "relations": 71
     },
     "recovery_test.go": {
       "hash": "3c0095301bb92de5",
@@ -441,9 +441,9 @@
       "relations": 54
     },
     "routergroup.go": {
-      "hash": "2251f290066bfbc8",
-      "nodes": 84,
-      "relations": 111
+      "hash": "0a2a4026fc41bb4a",
+      "nodes": 96,
+      "relations": 123
     },
     "routergroup_test.go": {
       "hash": "8935c86e4aef0ba4",
@@ -451,9 +451,9 @@
       "relations": 58
     },
     "routes_test.go": {
-      "hash": "aa7c4e292b4c4856",
-      "nodes": 81,
-      "relations": 132
+      "hash": "1b4668dfcbacdfa1",
+      "nodes": 82,
+      "relations": 133
     },
     "test_helpers.go": {
       "hash": "594f9ca9284787aa",
@@ -466,9 +466,9 @@
       "relations": 107
     },
     "tree_test.go": {
-      "hash": "308ee4e1706ac1fd",
-      "nodes": 77,
-      "relations": 88
+      "hash": "82ef359bc7e69f2d",
+      "nodes": 78,
+      "relations": 89
     },
     "utils.go": {
       "hash": "ae02048f29d37fc8",
@@ -498,14 +498,14 @@
       "import": 511,
       "method": 444,
       "module": 7,
-      "parameter": 1539,
+      "parameter": 1587,
       "project": 1,
       "type_alias": 34,
-      "variable": 166
+      "variable": 167
     },
     "relations": {
       "contains": 104,
-      "declares": 4304,
+      "declares": 4353,
       "depends_on": 35,
       "exposes": 201,
       "imports": 511,
@@ -517,28 +517,28 @@
   "resolution": {
     "metrics": {
       "external": 7251,
-      "internal": 8932,
-      "queries": 20586,
-      "resolved": 20508,
+      "internal": 8965,
+      "queries": 20614,
+      "resolved": 20536,
       "unresolved": 78
     },
     "relations": {
       "calls": 8839,
       "contains": 104,
-      "declares": 4304,
+      "declares": 4353,
       "depends_on": 35,
       "exposes": 201,
-      "has_type": 1213,
+      "has_type": 1227,
       "imports": 511,
       "inherits_from": 26,
-      "references": 6106,
+      "references": 6125,
       "resolves_to": 511
     },
     "status": "ok"
   },
   "totals": {
     "files": 97,
-    "nodes": 4289,
-    "relations": 5666
+    "nodes": 4338,
+    "relations": 5715
   }
 }

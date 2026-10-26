@@ -9463,13 +9463,13 @@
   "resolution": {
     "metrics": {
       "external": 104777,
-      "internal": 212582,
+      "internal": 212572,
       "queries": 523793,
       "resolved": 400679,
       "unresolved": 78902
     },
     "relations": {
-      "calls": 60620,
+      "calls": 60622,
       "consumes": 188,
       "contains": 3791,
       "declares": 98863,

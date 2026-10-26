@@ -239,8 +239,11 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
 `stub_gen` and the wheel matrix are untouched):
 
 - **`crates/callix-export`** reads the canonical graph JSON into its own model —
-  no pyo3, no Python — and writes LSIF, CycloneDX, CSV, DOT, Mermaid and the
-  text/Markdown/JSON reports. Each exporter is `fn(&Graph, &mut dyn Write,
+  no pyo3, no Python — and writes LSIF, SCIP, CycloneDX, CSV, DOT, Mermaid and the
+  text/Markdown/JSON reports. `index.rs` reads the graph as an index (documents,
+  placed definitions and references, symbols) once for both LSIF and SCIP; `ops.rs`
+  writes the model back as `json.dumps` would and does merge and diff. The SCIP
+  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
   structural checker the tests use.

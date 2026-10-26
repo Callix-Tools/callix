@@ -18,7 +18,7 @@ fn run(name: &str, options: &Options) -> (String, Vec<callix_export::Warning>) {
 #[test]
 fn registry_lists_every_format_once() {
     let names: Vec<_> = exporters().iter().map(|e| e.name()).collect();
-    assert_eq!(names, ["lsif", "cyclonedx", "csv-nodes", "csv-edges", "dot", "mermaid"]);
+    assert_eq!(names, ["lsif", "scip", "cyclonedx", "csv-nodes", "csv-edges", "dot", "mermaid"]);
     assert!(exporter("nope").is_err());
 }
 

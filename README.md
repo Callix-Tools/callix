@@ -94,7 +94,7 @@ docker run --rm -v "$PWD:/workspace" ghcr.io/callix-tools/callix:full \
   export . -f lsif -o dump.lsif        # GitLab code navigation, Sourcegraph-style tools
 ```
 
-`callix export` also writes CycloneDX, CSV, Graphviz and Mermaid; `callix report`
+`callix export` also writes SCIP, CycloneDX, CSV, Graphviz and Mermaid; `callix report`
 prints summaries, resolver status, dependencies, boundaries and call lists. The
 `full` image carries the Go and Rust toolchains, so every language that has a
 real resolver gets it. See

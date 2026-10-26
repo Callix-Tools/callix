@@ -159,3 +159,31 @@ fn a_structural_graph_still_exports_its_definitions() {
     assert!(index.documents.iter().all(|d| d.occurrences.iter().all(|o| o.roles == 1)));
     assert!(warnings.iter().any(|w| w.code == "no-references"));
 }
+
+#[test]
+fn symbol_documentation_carries_what_the_author_wrote() {
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"f","kind":"function","qualified_name":"a.f","name":"f","file_path":"a.py","span":[1,1,2,8],
+        "metadata":{"name_span":{"__span__":[1,5,1,6]},"doc":"Does the thing."}},
+       {"id":"g","kind":"function","qualified_name":"a.g","name":"g","file_path":"a.py","span":[4,1,5,8],
+        "metadata":{"name_span":{"__span__":[4,5,4,6]}}}],
+      "relations":[]}"#;
+    let (bytes, warnings) = export(&Graph::from_json(json).unwrap());
+    let index = decode_scip(&bytes);
+    let docs = |name: &str| -> Vec<String> {
+        index
+            .documents
+            .iter()
+            .flat_map(|d| d.symbols.iter())
+            .find(|(symbol, _, _)| symbol.contains(name))
+            .map(|(_, _, docs)| docs.clone())
+            .unwrap_or_default()
+    };
+    // The signature-like line first, then the author's text.
+    assert_eq!(docs("`a.f`"), ["function a.f", "Does the thing."]);
+    assert_eq!(docs("`a.g`"), ["function a.g"]);
+    // Something in the graph is documented, so there is nothing to warn about.
+    assert!(warnings.iter().all(|w| w.code != "no-documentation"), "{warnings:?}");
+}

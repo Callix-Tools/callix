@@ -81,6 +81,31 @@ just the identifier, and that is the one resolution uses: a resolver answers
 with the position of a definition's *name*, so the lookup has to be against
 name spans.
 
+## Documentation
+
+`node.metadata["doc"]` holds what the author wrote about a definition, as plain
+text with the comment markers removed. It is on classes, functions, methods,
+variables, attributes and type aliases, and absent when there is nothing:
+
+| Where it is read from | Languages |
+|---|---|
+| the **docstring**, first statement of a function or class body (cleaned the way PEP 257 describes) | Python |
+| the **comment block directly above** the definition: `///`, `/** … */`, `//`, `#` | all of them |
+
+"Directly above" means the last line of the comment is the line before the
+definition, with only attributes or decorators between them; a blank line ends
+the block. A comment that trails another statement (`x = 1  # why`) belongs to
+that statement, not to the next one. In C and C++ a definition with no comment
+takes the one on its prototype, since that is where headers keep it; the
+definition's own comment wins when both exist.
+
+```python
+node.metadata["doc"]    # 'Create a member.\n\nRaises ValueError if the name is empty.'
+```
+
+Comments inside bodies, license headers and `TODO` notes are not definitions'
+documentation and are not recorded.
+
 ## Paths are relative, always
 
 `file_path` is relative to the root passed to `analyze()`, on every node that

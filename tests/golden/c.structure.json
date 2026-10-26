@@ -329,6 +329,7 @@
       "metadata": {
         "access": "",
         "declared_in": [],
+        "doc": "File-local: main.c declares a function of the same name, and the two are\n   different functions.",
         "is_definition": true,
         "is_static": true,
         "is_template": false,
@@ -387,6 +388,7 @@
         "declared_in": [
           "include/engine.h"
         ],
+        "doc": "Declared here, defined in engine.c: the two share a qualified name.",
         "is_definition": true,
         "is_static": false,
         "is_template": false,
@@ -578,6 +580,7 @@
       "metadata": {
         "access": "",
         "declared_in": [],
+        "doc": "Same name as engine.c's static helper, and a different function.",
         "is_definition": true,
         "is_static": true,
         "is_template": false,

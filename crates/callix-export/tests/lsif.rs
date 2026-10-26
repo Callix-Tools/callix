@@ -191,3 +191,30 @@ fn a_reference_goes_to_the_file_it_was_written_in() {
         }
     }
 }
+
+#[test]
+fn a_hover_carries_what_the_author_wrote() {
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"f","kind":"function","qualified_name":"a.f","name":"f","file_path":"a.py","span":[1,1,2,8],
+        "metadata":{"name_span":{"__span__":[1,5,1,6]},"doc":"Does the thing.\n\nCarefully."}},
+       {"id":"g","kind":"function","qualified_name":"a.g","name":"g","file_path":"a.py","span":[4,1,5,8],
+        "metadata":{"name_span":{"__span__":[4,5,4,6]}}}],
+      "relations":[]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let contents: Vec<&serde_json::Value> = labelled(&el, "hoverResult")
+        .iter()
+        .map(|h| &h["result"]["contents"])
+        .collect();
+    // Documented: the kind and name as code, then the text as Markdown.
+    assert!(
+        contents.iter().any(|c| c[0]["value"] == "function a.f" && c[1] == "Does the thing.\n\nCarefully."),
+        "{contents:?}"
+    );
+    // Undocumented: the kind and name alone.
+    assert!(contents.iter().any(|c| c[0]["value"] == "function a.g" && c.as_array().unwrap().len() == 1));
+}

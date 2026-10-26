@@ -185,6 +185,7 @@
       "metadata": {
         "access": "",
         "declared_in": [],
+        "doc": "Abstract base: Engine inherits through Base.",
         "is_definition": true,
         "is_template": false,
         "linkage": "external",
@@ -751,6 +752,7 @@
         "declared_in": [
           "include/engine.hpp"
         ],
+        "doc": "Overloads: same name, different parameters.",
         "is_definition": true,
         "is_static": false,
         "is_template": false,

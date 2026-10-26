@@ -63,6 +63,7 @@
       "id": "1a3e96574fc8649d",
       "kind": "variable",
       "metadata": {
+        "doc": "A module-level constant.",
         "name_span": {
           "__span__": [
             8,
@@ -86,6 +87,7 @@
       "id": "7d403562af6794af",
       "kind": "function",
       "metadata": {
+        "doc": "Builds an engine and calls a method on it.",
         "name_span": {
           "__span__": [
             11,
@@ -133,6 +135,7 @@
       "id": "5b21469d954ebe7f",
       "kind": "function",
       "metadata": {
+        "doc": "Takes a trait object and calls through it.",
         "name_span": {
           "__span__": [
             18,
@@ -180,6 +183,7 @@
       "id": "c8b8dfb44ece22e7",
       "kind": "function",
       "metadata": {
+        "doc": "Uses the alias in a signature.",
         "name_span": {
           "__span__": [
             23,
@@ -285,6 +289,7 @@
       "id": "25f5b0d083e79fbe",
       "kind": "type_alias",
       "metadata": {
+        "doc": "Types the service annotates against.\nAn alias the service uses in signatures.",
         "name_span": {
           "__span__": [
             4,
@@ -308,6 +313,7 @@
       "id": "f9fee88ace817fbc",
       "kind": "class",
       "metadata": {
+        "doc": "Implemented by Engine.",
         "name_span": {
           "__span__": [
             7,
@@ -331,6 +337,7 @@
       "id": "f5efd438c53480a2",
       "kind": "class",
       "metadata": {
+        "doc": "Carries a field.",
         "name_span": {
           "__span__": [
             12,
@@ -377,6 +384,7 @@
       "id": "fb8aa0c2bfb33c58",
       "kind": "class",
       "metadata": {
+        "doc": "Embeds a base and adds a field.",
         "name_span": {
           "__span__": [
             23,

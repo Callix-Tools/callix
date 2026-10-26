@@ -18,7 +18,7 @@ found. This page is what those two things amount to.
 | Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a map index or a channel is followed only by the same pass. |
 | Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Macro-generated items. |
 | PHP | a symbol table over the sources | by the declared type of the receiver, a `new` assigned to it, and namespaces | A method called on a variable with no declared type has no edge. A callable named by a string or an array is followed only when it is handed to a built-in that calls it (`array_map`, `usort`, `call_user_func`, …). |
-| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Function pointers, `std::function`, template-dependent names, macros, the preprocessor. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
+| C, C++ | a symbol table over the sources | by the receiver's declared type and the class's bases, a written scope, an unqualified name in a method meaning the class first, `#include` visibility, and the call's arity and the look of its arguments for overloads | Template-dependent names, macros, the preprocessor. An overloaded operator, a functor and `delete` are bound by the declared type of the variable, so only when it holds an object or a pointer the function can see declared. A receiver whose type nothing declares falls back to the bare name, and the edge says `ambiguous` when the name is not unique. |
 
 "Resolved" never means "correct". `resolver_status: ok` means the backend came
 up; `degraded` means the backend is a table of names, not a type checker.
@@ -57,8 +57,11 @@ ambiguous edges out of 4 375 is telling you which ones to distrust.
 It is a small, flow-insensitive and context-insensitive pass that runs after
 resolution. A variable assigned two functions holds both; a parameter holds the
 argument of every call site that passes it. It follows names, attribute chains,
-container literals and `table[key]`, the names a function returns and the result
-of a call that is called. It over-approximates where a call graph usually does,
+container literals and `table[key]`, the names a function returns, the result
+of a call that is called, a call's result handed on as an argument, a call made
+through a parameter that holds a function (its own arguments reach that
+function's parameters), and the iteration protocol: `for x in it` calls
+`__iter__` and `__next__` of the class `it` is shown to hold an instance of. It over-approximates where a call graph usually does,
 and the label says so. It follows nothing it cannot resolve to a node of the
 project.
 
@@ -77,13 +80,13 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 81 | 107 | 0.79 | 0.97 |
+| Python (PyCG) | 112 | 86 | 107 | 0.84 | 0.97 |
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |
 | PHP | 42 | 41 | 42 | 0.98 | 1.00 |
-| C++ | 40 | 38 | 40 | 0.97 | 1.00 |
-| C | 27 | 25 | 27 | 0.95 | 1.00 |
+| C++ | 41 | 41 | 41 | 1.00 | 1.00 |
+| C | 27 | 26 | 27 | 0.98 | 1.00 |
 
 How to read them:
 
@@ -100,7 +103,7 @@ How to read them:
   getting through. They are not a sample of how code is written.
 - Precision is near 1.0 because a resolver either names a callee it found or says
   nothing. The honest cost of that is recall: for Python, the 49 calls that stop
-  at a variable, and the function values no pass follows, are the 21 % missing.
+  at a variable, and the function values no pass follows, are the 16 % missing.
 - A callee outside the program has no name in the graph, so it is scored apart
   and leniently, and is not in these numbers.
 
@@ -114,19 +117,21 @@ The `idioms/` directory of each language holds the ways code is commonly written
 that a first pass did not cover. The cases that still fail are kept, with their
 expected edge, so that the number does not flatter:
 
-- **C++**: a function pointer or a `std::function` called through its variable
-  (tree-sitter-cpp reads `void (*f)() = g;` as an expression), macros, and a
-  `delete` through a base pointer, which lands on the base's destructor because
-  only the declared type is known.
+- **C++**: macros, and a `delete` through a base pointer, which lands on the base's
+  destructor because only the declared type is known.
 - **PHP**: a callable named by a string or an array is a call only when it is handed to one of
   a closed list of built-ins that call it (`array_map`, `usort`, `call_user_func`, …).
   Handed to a function of the project that calls its own parameter, it is not followed.
-- **Python**: a function fetched from a container by an index the pass cannot
-  tell apart from another, a polymorphic receiver (it lands on the declared
-  class, not each subclass), `super(Cls, self)`.
-- **C and C++**: a callback handed to a library function (`qsort`, `.map(f)`) is a
-  reference to the function, not a call: whether the library calls it is
-  unknowable from the program.
+- **Python**: a lambda (it is not a node of the graph, so there is nothing to call),
+  the value a generator yields or an iterator's `__next__` returns, a function
+  fetched from a container by an index the pass cannot tell apart from another,
+  a polymorphic receiver (it lands on the declared class, not each subclass),
+  `super(Cls, self)`.
+- **C and C++**: a callback handed to a library function is a call only for a closed
+  list of them (`qsort`, `bsearch`, `signal`, `pthread_create`, `std::sort`,
+  `std::for_each`, …); handed to any other function it is a reference, because whether
+  that function calls it is unknowable from the program. A function-like macro is not
+  expanded.
 
 ### The floor
 

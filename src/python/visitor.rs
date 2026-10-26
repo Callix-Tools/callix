@@ -823,6 +823,11 @@ impl<'a> PythonVisitor<'a> {
             }
             return Ok(());
         }
+        if node.kind() == "for_statement"
+            && let Some(iterable) = node.child_by_field_name("right")
+        {
+            self.record_iteration(iterable, enclosing_id);
+        }
         for child in ts::children(node) {
             if child.kind() == "block" {
                 self.walk_body(child, enclosing_id)?;
@@ -837,6 +842,19 @@ impl<'a> PythonVisitor<'a> {
 
     fn record_occurrence(&mut self, role: &str, name_node: TsNode<'_>, enclosing_id: &str) {
         self.record_occurrence_with(role, name_node, enclosing_id, None);
+    }
+
+    /// `for x in it:` runs `it.__iter__()` and `it.__next__()`. Nothing in the
+    /// source names them, so the iterable is recorded and the flow pass finds the
+    /// class it holds: the name itself, or the callee of `Cls()`.
+    fn record_iteration(&mut self, iterable: TsNode<'_>, enclosing_id: &str) {
+        let named = match iterable.kind() {
+            "call" => iterable.child_by_field_name("function").and_then(Self::plain_name),
+            _ => Self::plain_name(iterable),
+        };
+        if let Some(name) = named {
+            self.record_occurrence("iterate", name, enclosing_id);
+        }
     }
 
     fn record_occurrence_with(

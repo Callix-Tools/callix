@@ -94,6 +94,50 @@ fn declarations<'tree>(container: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
+/// Library functions that call a function they are handed, with the position of
+/// that argument. The list is closed: a function handed to anything else is a
+/// reference, because whether the callee calls it cannot be known from the
+/// program.
+fn callback_positions(callee: &str, in_std: bool) -> &'static [usize] {
+    match (in_std, callee) {
+        (false, "qsort" | "qsort_r") => &[3],
+        (false, "bsearch") => &[4],
+        (false, "atexit" | "at_quick_exit") => &[0],
+        (false, "signal") => &[1],
+        (false, "pthread_create") => &[2],
+        (false, "pthread_once" | "call_once" | "thrd_create" | "tss_create") => &[1],
+        (false, "ftw" | "nftw") => &[1],
+        (true, "sort" | "stable_sort" | "partial_sort" | "nth_element" | "for_each" | "find_if" | "find_if_not"
+            | "count_if" | "remove_if" | "all_of" | "any_of" | "none_of" | "replace_if" | "partition") => &[2],
+        (true, "call_once") => &[1],
+        _ => &[],
+    }
+}
+
+/// The name in `void (*f)()` when the grammar read the declaration as a call:
+/// `call(call(void, (*f)), ())`.
+fn misparsed_pointer_name<'tree>(left: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    if left.kind() != "call_expression" {
+        return None;
+    }
+    let inner = left.child_by_field_name("function")?;
+    if inner.kind() != "call_expression" {
+        return None;
+    }
+    let head = inner.child_by_field_name("function")?;
+    if !matches!(head.kind(), "primitive_type" | "type_identifier" | "sized_type_specifier") {
+        return None;
+    }
+    let arguments = ts::named_children(inner.child_by_field_name("arguments")?);
+    let [pointer] = arguments.as_slice() else {
+        return None;
+    };
+    if pointer.kind() != "pointer_expression" {
+        return None;
+    }
+    ts::named_children(*pointer).first().copied().filter(|n| n.kind() == "identifier")
+}
+
 /// A node's descendants, itself included, depth-first.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
@@ -1406,6 +1450,39 @@ impl<'a> Reader<'a> {
                 }
             }
         }
+        // tree-sitter-cpp reads `void (*f)() = g;` as an assignment to a call: the
+        // pointer's name is inside the first argument list. It is a declaration.
+        for node in &nodes {
+            if node.kind() != "assignment_expression" {
+                continue;
+            }
+            let Some(name) = node.child_by_field_name("left").and_then(misparsed_pointer_name) else {
+                continue;
+            };
+            let name_text = self.text(name);
+            if !called.contains(&name_text) || !declared.insert(name_text.clone()) {
+                continue;
+            }
+            self.push_decl(FoundDecl {
+                kind: NodeKind::Variable,
+                qualified_name: format!("{function_qname}{MEMBER_SEPARATOR}{name_text}"),
+                name: name_text,
+                span: ts::span(*node),
+                doc: None,
+                name_span: ts::span(name),
+                defines: true,
+                linkage: Linkage::Internal,
+                owner: owner.clone(),
+                record_kind: "local",
+                access: "",
+                is_static: false,
+                is_extern: false,
+                is_virtual: false,
+                is_template: false,
+                type_text: String::new(),
+                signature: String::new(),
+            });
+        }
         // `fp = g;` inside the function.
         for node in &nodes {
             if node.kind() != "assignment_expression" {
@@ -1413,6 +1490,10 @@ impl<'a> Reader<'a> {
             }
             let (Some(left), Some(right)) = (node.child_by_field_name("left"), node.child_by_field_name("right")) else {
                 continue;
+            };
+            let left = match misparsed_pointer_name(left) {
+                Some(name) => name,
+                None => left,
             };
             if left.kind() != "identifier" {
                 continue;
@@ -2111,13 +2192,38 @@ impl<'a> Reader<'a> {
                             site,
                             name: "operator()".to_string(),
                         });
-                        continue;
                     }
                     if let Some(function) = node.child_by_field_name("function")
                         && let Some(named) = self.called_name(function)
                     {
                         let site = self.call_site(node, function, context);
+                        let callee = self.text(named);
+                        let in_std = site.qualifier.first().is_some_and(|q| q == "std");
                         self.push_site("call", named, owner, site);
+                        // A function handed to a library function that calls it.
+                        if let Some(arguments) = node.child_by_field_name("arguments") {
+                            for index in callback_positions(&callee, in_std) {
+                                let Some(argument) = ts::named_children(arguments).into_iter().nth(*index) else {
+                                    continue;
+                                };
+                                let target = match argument.kind() {
+                                    "identifier" => Some(argument),
+                                    "pointer_expression" => ts::named_children(argument)
+                                        .first()
+                                        .copied()
+                                        .filter(|inner| inner.kind() == "identifier"),
+                                    _ => None,
+                                };
+                                if let Some(target) = target {
+                                    let site = CallSite {
+                                        class_scope: context.class_scope.clone(),
+                                        speculative: true,
+                                        ..CallSite::default()
+                                    };
+                                    self.push_site("call", target, owner, site);
+                                }
+                            }
+                        }
                         // The names handed to the call say which parameter they are
                         // handed to; only a function can be followed from there.
                         if let Some(arguments) = node.child_by_field_name("arguments") {

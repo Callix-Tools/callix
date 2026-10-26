@@ -165,8 +165,10 @@ What it will not do:
 - **Resolve overloads exactly.** Choosing the overload a call selects needs the
   argument types, which needs a type checker; the table scores how the arguments
   are spelled and says `ambiguous` when that does not decide.
-- **Follow function values.** A function pointer, a `std::function` or a table of
-  callbacks is a call that stops at a variable.
+- **Follow every function value.** A function pointer, a `std::function` or a table
+  of callbacks is followed through assignments, initialisers, arguments and returns
+  (`flow` edges). A callback handed to a library function is a call only for a
+  closed list of them (`qsort`, `signal`, `std::sort`, …).
 - **Resolve templates.** A name that depends on a template parameter is unknown
   until instantiation. An overloaded operator, a functor and `delete` are bound
   by the declared type of the variable they are applied to (an object, not a

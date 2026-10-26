@@ -2049,21 +2049,21 @@
   "ref": "v4.4.3",
   "resolution": {
     "metrics": {
-      "external": 5633,
-      "internal": 9590,
-      "queries": 17067,
-      "resolved": 15223,
-      "unresolved": 1844
+      "external": 7561,
+      "internal": 10639,
+      "queries": 20212,
+      "resolved": 18200,
+      "unresolved": 2012
     },
     "relations": {
-      "calls": 4434,
+      "calls": 4838,
       "contains": 1011,
       "declares": 8411,
       "depends_on": 96,
       "has_type": 2416,
       "imports": 1206,
       "inherits_from": 580,
-      "references": 7793,
+      "references": 10366,
       "resolves_to": 1387
     },
     "status": "ok"

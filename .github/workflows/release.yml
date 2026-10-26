@@ -429,3 +429,16 @@ jobs:
 
       - name: Inspect
         run: docker buildx imagetools inspect "$IMAGE:${{ needs.version.outputs.version }}${{ matrix.target == 'slim' && '-slim' || '' }}"
+
+  # ---------------------------------------------------------------------------
+  # 7. Pull the tags back out of the registry, on both architectures, and run
+  #    the smoke test against what ghcr serves.
+  # ---------------------------------------------------------------------------
+  docker-verify:
+    needs: [version, docker-manifest]
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/verify-image.yml
+    with:
+      tag: ${{ needs.version.outputs.version }}

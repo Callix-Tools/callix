@@ -1,0 +1,75 @@
+name: Verify image
+
+# Pulls the published multi-arch tag back out of ghcr on a native runner of each
+# architecture and runs the smoke test against what the registry serves — not
+# against what the build job had locally. `release.yml` calls it after the
+# manifests are pushed; it can also be dispatched for any existing tag.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Image tag to verify, without the flavour suffix (1.2.3)
+        required: true
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        target: [slim, full]
+    env:
+      TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Name the image
+        run: |
+          repo="ghcr.io/${GITHUB_REPOSITORY,,}"
+          if [ "${{ matrix.target }}" = slim ]; then
+            echo "IMAGE=$repo:$TAG-slim" >> "$GITHUB_ENV"
+          else
+            echo "IMAGE=$repo:$TAG" >> "$GITHUB_ENV"
+          fi
+
+      - name: Pull from the registry
+        run: |
+          docker pull --platform linux/${{ matrix.arch }} "$IMAGE"
+          # The manifest must be an index naming both architectures, and the
+          # image we got must be the one we asked for.
+          docker buildx imagetools inspect "$IMAGE" | tee index.txt
+          grep -q 'linux/amd64' index.txt
+          grep -q 'linux/arm64' index.txt
+          if grep -q 'unknown/unknown' index.txt; then
+            echo "::error::the index lists attestation manifests as platforms"
+            exit 1
+          fi
+          test "$(docker image inspect --format '{{.Architecture}}' "$IMAGE")" = "${{ matrix.arch }}"
+          docker image inspect --format 'digest={{index .RepoDigests 0}}' "$IMAGE"
+
+      - name: Version
+        run: |
+          out=$(docker run --rm "$IMAGE" --version)
+          echo "$out"
+          test "$out" = "callix $TAG"
+
+      - name: Smoke test
+        run: sh docker/smoke.sh "$IMAGE" "${{ matrix.target }}"

@@ -42,11 +42,32 @@ two services in the same graph. Merge them, then call
 Resolution records where the edge was written:
 
 ```python
-relation.metadata["span"]      # the occurrence's span
-relation.metadata["access"]    # 'read' | 'write', on REFERENCES
-relation.metadata["file"]      # only when the edge was written in another file
-                               # than its source node's (see below)
+relation.metadata["span"]       # the occurrence's span
+relation.metadata["access"]     # 'read' | 'write', on REFERENCES
+relation.metadata["file"]       # only when the edge was written in another file
+                                # than its source node's (see below)
+relation.metadata["resolution"] # how the edge was found (see below)
+relation.metadata["via"]        # on a 'flow' edge: the holder the callee was followed through
+relation.metadata["ambiguous"]  # on a 'name' edge: several declarations carried the name
 ```
+
+### How the edge was found
+
+`resolution` is one of `definition`, `value`, `flow`, `external`, `unlocated` or
+`name`, and it is what separates an edge the resolver located from one it guessed:
+
+| Value | Means |
+|---|---|
+| `definition` | The backend located a definition in the project and the edge points at it. |
+| `value` | A call whose target is a variable, a parameter or a field: the backend found what the callee was read from, not the callee. |
+| `flow` | A `value` call followed through assignments, arguments and returns to a callable it can be shown to hold; `via` names the holder. Flow-insensitive: a holder assigned two callables gets an edge to each. |
+| `external` | The definition is outside the project (standard library, a dependency). |
+| `unlocated` | The backend answered with a place callix could not bind to a node. |
+| `name` | Matched by name in a symbol table (PHP, C, C++), with no type information. |
+
+An edge written by a visitor rather than by resolution (`DECLARES`, `CONTAINS`,
+`IMPORTS`) carries none of these. [How accurate resolution is](../project/accuracy.md)
+says what each language's backend follows and what it does not.
 
 `file` exists because definitions that share a qualified name are one node, and
 that node lives in the first file that declared it. Go allows any number of
@@ -58,11 +79,13 @@ place a reference by it.
 ### What a definition depends on besides its body
 
 A route handler is wired up outside its body, so the walk reads those places
-too, and each becomes an edge **from the decorated definition**:
+too. What the definition *depends on* is an edge from the decorated definition;
+a decorator is *called* by the scope the definition sits in (the module, the
+class), because that is when it runs:
 
 | Written as | Edge |
 |---|---|
-| `@audit`, `@router.get("/x")`, `@Guard`, `@Get(":id")` | `REFERENCES` to `audit` and to `router`; `CALLS` to `get`/`Get` |
+| `@audit`, `@router.get("/x")`, `@Guard`, `@Get(":id")` | from the definition: `REFERENCES` to `audit`, `router`, `get`/`Get`. From the scope that holds it: `CALLS` to `audit`, `get`/`Get` |
 | `db=Depends(get_db)`, `opt = dep()` (a parameter default) | `CALLS` to `Depends`, `REFERENCES` to `get_db` |
 | `@Inject("x") id` (a parameter decorator, TypeScript) | `CALLS` to `Inject` |
 | `class A(Base, metaclass=Meta)` | `REFERENCES` to `Meta` |

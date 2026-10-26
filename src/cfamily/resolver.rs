@@ -572,3 +572,88 @@ fn pick<T: Clone>(candidates: &[T], qualified: impl Fn(&T) -> String, site: &Cal
     let top: Vec<usize> = scored.iter().filter(|(score, _)| *score == best).map(|(_, i)| *i).collect();
     (candidates[top[0]].clone(), top.len() > 1)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn site(arity: usize, kinds: &[&str]) -> CallSite {
+        CallSite {
+            arity: Some(arity),
+            arg_kinds: kinds.iter().map(|k| k.to_string()).collect(),
+            ..CallSite::default()
+        }
+    }
+
+    fn names(list: &[&str]) -> Vec<String> {
+        list.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn parameters_are_split_at_the_top_level_only() {
+        assert_eq!(params_of("n::f(int,const char*)"), names(&["int", "const char*"]));
+        assert_eq!(params_of("f(std::map<int,int>,int)"), names(&["std::map<int,int>", "int"]));
+        assert_eq!(params_of("f(void(*)(int),int)"), names(&["void(*)(int)", "int"]));
+        assert!(params_of("f()").is_empty());
+        assert!(params_of("plain").is_empty());
+    }
+
+    #[test]
+    fn a_type_reduces_to_the_class_it_names() {
+        assert_eq!(type_key("const Shape&").as_deref(), Some("Shape"));
+        assert_eq!(type_key("std::vector<Shape>*").as_deref(), Some("std::vector"));
+        assert_eq!(type_key("struct engine *").as_deref(), Some("engine"));
+        assert_eq!(type_key("unsigned long"), None);
+        assert_eq!(type_key("const char*"), None);
+    }
+
+    #[test]
+    fn an_overload_is_picked_by_how_the_arguments_are_spelled() {
+        let candidates = names(&["f(int)", "f(double)", "f(const char*)"]);
+        let pick_for = |s: &CallSite| pick(&candidates, |c| c.clone(), s);
+        assert_eq!(pick_for(&site(1, &["int"])), ("f(int)".to_string(), false));
+        assert_eq!(pick_for(&site(1, &["float"])), ("f(double)".to_string(), false));
+        assert_eq!(pick_for(&site(1, &["string"])), ("f(const char*)".to_string(), false));
+    }
+
+    #[test]
+    fn a_tie_picks_the_first_and_says_it_was_a_tie() {
+        let candidates = names(&["f(A&)", "f(B&)"]);
+        let (first, ambiguous) = pick(&candidates, |c| c.clone(), &site(1, &["?"]));
+        assert_eq!(first, "f(A&)");
+        assert!(ambiguous);
+    }
+
+    #[test]
+    fn the_parameter_count_comes_before_the_types() {
+        let candidates = names(&["f(int)", "f(int,int)"]);
+        assert_eq!(pick(&candidates, |c| c.clone(), &site(2, &["int", "int"])), ("f(int,int)".to_string(), false));
+    }
+
+    #[test]
+    fn a_member_is_looked_up_in_the_receivers_class_and_then_its_bases() {
+        let mut index = CFamilyIndex::new();
+        index.declare_class("Shape");
+        index.declare_class("Sq");
+        index.add_base("Sq", "Shape");
+        index.declare_member("Shape", "area", "Shape::area()", NodeKind::Method);
+        index.declare_member("Shape", "id", "Shape::id()", NodeKind::Method);
+        index.declare_member("Sq", "area", "Sq::area()", NodeKind::Method);
+
+        let receiver = |class: &str| CallSite { receiver_type: Some(class.to_string()), ..CallSite::default() };
+        let found = |name: &str, class: &str| match index.resolve(name, "call", &receiver(class), "main.cpp") {
+            Outcome::Found { qualified_name, .. } => Some(qualified_name),
+            _ => None,
+        };
+        // The nearest class that has the name hides the others.
+        assert_eq!(found("area", "Sq").as_deref(), Some("Sq::area()"));
+        assert_eq!(found("area", "Shape").as_deref(), Some("Shape::area()"));
+        // Inherited.
+        assert_eq!(found("id", "Sq").as_deref(), Some("Shape::id()"));
+        // A receiver of a type the project does not declare is not a project call.
+        assert!(matches!(
+            index.resolve("size", "call", &receiver("std::string"), "main.cpp"),
+            Outcome::Outside
+        ));
+    }
+}

@@ -21,6 +21,7 @@ task check                       # cargo check, no module build
 task test                        # unit + golden + test:rust + example
 task unit                        # pytest over tests/unit and tests/api
 task golden                      # fixture graphs vs tests/golden (UPDATE=1 rewrites)
+task accuracy [-- go/micro -v]   # resolvers vs hand-written call graphs; task accuracy:update raises the floor
 task test:rust                   # cargo test --workspace — 137 core tests + exporters + the CLI end to end
 task baseline                    # fingerprints of 14 real projects (not in CI)
 task stubs / task stubs:check    # regenerate / verify committed .pyi
@@ -32,20 +33,29 @@ task docs:build                  # Docusaurus build — what the docs CI runs
 DEBUG=1 task ...                 # switch every cargo task to the debug profile
 ```
 
-### The regression net, in four layers
+### The regression net, in five layers
 
 Correctness used to rest on parity runs against graphlens. graphlens is now
-archived, so the harness stands on its own, and the four layers answer different
-questions — a change to a visitor should be checked against the last two:
+archived, so the harness stands on its own, and the layers answer different
+questions — a change to a visitor should be checked against the last three:
 
 | Layer | What it is | Catches |
 |---|---|---|
-| `task test:rust` | 137 `#[test]`s in 17 files | enum wire values, `sort_paths`, the SCIP decoder, dependency parsers |
-| `task unit` | pytest over `tests/unit` + `tests/api` | the public Python API that 1.0 freezes |
+| `task test:rust` | `#[test]`s across the workspace | enum wire values, `sort_paths`, the SCIP decoder, dependency parsers, the C family's overload picking |
+| `task unit` | pytest over `tests/unit`, `tests/api` and `tests/accuracy` | the public Python API that 1.0 freezes, and the accuracy floor below |
 | `task golden` | whole graphs of `tests/fixtures/*`, frozen in `tests/golden/` | any change to any visitor, exactly |
+| `task accuracy` | seven suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
 | `task baseline` | fingerprints of 14 real repositories | what a three-file fixture cannot reach: scale, and the resolvers |
 
-The first three run in CI and need no toolchain — every adapter runs with
+`tests/accuracy` is the only layer that can say a change made resolution *worse*.
+`thresholds.json` is a ratchet — pytest fails below the recorded floor,
+`task accuracy:update` only raises it, and `run.py --reset` is how a change that
+trades one number for another says so. Ground truth is written from the
+language's rules, not from callix's output; `tests/accuracy/README.md` has the
+conventions. Cases the resolver fails are the reason they exist — do not bend a
+`callgraph.json` to match the tool.
+
+The golden, unit and baseline layers need no toolchain — every golden adapter runs with
 `resolve=False`, which is also what makes them deterministic. Baselines need
 ~3 GB of clones and several minutes, so they are deliberately **not** in CI; run
 them, with `--lang` to stay narrow, when you touch a visitor, the graph model or
@@ -208,6 +218,44 @@ manylinux container mounts the workspace under another uid).
 Resolvers are swappable from Python — any object with `prepare`/`resolve_all`/
 `status` — as are dependency parsers (`can_parse`/`parse`). Rust calls them
 through the ordinary Python protocol.
+
+### What an edge claims about how it was found
+
+A resolver's answer is one of several quite different things, and the graph does
+not call them all "resolved". Every `CALLS`/`REFERENCES`/`HAS_TYPE`/`INHERITS_FROM`
+edge a resolution pass writes has `metadata["resolution"]` — `definition`,
+`value`, `flow`, `external`, `unlocated` or `name` — set in one place,
+`src/resolution.rs::Resolution::classify` (the C family's table writes `name`, and
+`ambiguous: true` when it had to choose between declarations). Invariants:
+
+- **Never describe an answer as better than it is.** A call that landed on a
+  variable, parameter or field is `value`, not `definition`; `ResolverMetrics.resolved`
+  means "the backend answered", and `to_value`/`unlocated` count the cases it
+  answered with something that is not a callee or not a node.
+- **`flow` is written only by `src/flow.rs`**, after the resolution loop, and only
+  for a `value` call. Visitors feed it: an `alias` occurrence (the right-hand side
+  of `x = y`, *enclosed by the variable*, `detail` `return`/`result` for a returned
+  name or a call's result) and a `read` occurrence whose `detail` is
+  `arg:LINE:COL:INDEX` (or `...:=NAME`) when it is a call argument. The loop of
+  every adapter that has them (`python/adapter.rs`, which TypeScript also uses,
+  `golang`, `rustlang`) builds a `Flow`, hands it the bound targets and calls
+  `finish`. It is flow- and context-insensitive and says so with the label.
+- **A decorator is called by the scope the definition sits in**, not by the
+  definition; the definition only `REFERENCES` it. Calls in a closure belong to the
+  function that contains it. Both conventions are what the accuracy suites assume.
+- **A local is a node only when it is called** (Go, Rust): nothing else needs one,
+  and a node per local would multiply the graph.
+- **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
+  (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
+  directory is not a property of the directory.
+- **`declared_at`** on a node lists extra name spans the type checker may answer
+  with (overload signatures, a function-valued field); `SpanIndex::from_graph`
+  reads it.
+
+`callix analyze` prints where each language's calls went, and
+`callix report -t status` counts the edges by `resolution`; the per-language
+"known limits" there (`crates/callix-export/src/report.rs::language_resolution`)
+are claims — change them when a limit is lifted, and when one is found.
 
 ### One constructor, eight adapters — seven of them with a resolver
 

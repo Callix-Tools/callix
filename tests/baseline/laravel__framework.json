@@ -14396,14 +14396,14 @@
   "ref": "v13.23.0",
   "resolution": {
     "metrics": {
-      "external": 80659,
-      "internal": 116809,
-      "queries": 283108,
-      "resolved": 197468,
-      "unresolved": 85640
+      "external": 81068,
+      "internal": 117673,
+      "queries": 284145,
+      "resolved": 198741,
+      "unresolved": 85404
     },
     "relations": {
-      "calls": 127713,
+      "calls": 128855,
       "consumes": 962,
       "contains": 3369,
       "declares": 74174,
@@ -14412,7 +14412,7 @@
       "has_type": 6539,
       "imports": 7334,
       "inherits_from": 4927,
-      "references": 58289,
+      "references": 58420,
       "resolves_to": 7509
     },
     "status": "degraded"

@@ -16,9 +16,9 @@
       "relations": 10
     },
     "packages/bench/datetime-regex.ts": {
-      "hash": "8e589c4c4c97310a",
-      "nodes": 9,
-      "relations": 10
+      "hash": "3360e30d2e004a4a",
+      "nodes": 13,
+      "relations": 14
     },
     "packages/bench/datetime.ts": {
       "hash": "18703942970997e3",
@@ -46,9 +46,9 @@
       "relations": 14
     },
     "packages/bench/instanceof.ts": {
-      "hash": "e0dd60e176fbd314",
-      "nodes": 32,
-      "relations": 35
+      "hash": "fb1e114e0b151006",
+      "nodes": 33,
+      "relations": 36
     },
     "packages/bench/ipv4-regex.ts": {
       "hash": "eb0dcad71d7ab7a0",
@@ -76,9 +76,9 @@
       "relations": 22
     },
     "packages/bench/metabench.ts": {
-      "hash": "eea1b083da498cc1",
-      "nodes": 48,
-      "relations": 59
+      "hash": "72ef7c704c340cc4",
+      "nodes": 54,
+      "relations": 65
     },
     "packages/bench/number.ts": {
       "hash": "e2c7f47d332a76f7",
@@ -91,9 +91,9 @@
       "relations": 13
     },
     "packages/bench/object-creation.ts": {
-      "hash": "d0d42d81677f1717",
-      "nodes": 7,
-      "relations": 8
+      "hash": "737540affa24d6be",
+      "nodes": 8,
+      "relations": 9
     },
     "packages/bench/object-fail.ts": {
       "hash": "3b6e087c763abf2a",
@@ -131,9 +131,9 @@
       "relations": 17
     },
     "packages/bench/property-access.ts": {
-      "hash": "5a0de1f228ea525f",
-      "nodes": 10,
-      "relations": 13
+      "hash": "e83e4e39352e32b7",
+      "nodes": 11,
+      "relations": 14
     },
     "packages/bench/safe.ts": {
       "hash": "9afcd4052d416835",
@@ -191,9 +191,9 @@
       "relations": 10
     },
     "packages/docs/app/blog/page.tsx": {
-      "hash": "14cd4e54e22321b7",
-      "nodes": 6,
-      "relations": 9
+      "hash": "2a3165365a1f2621",
+      "nodes": 10,
+      "relations": 13
     },
     "packages/docs/app/layout.config.tsx": {
       "hash": "1dba5bd1ef150624",
@@ -206,9 +206,9 @@
       "relations": 32
     },
     "packages/docs/app/llms-full.txt/route.ts": {
-      "hash": "085230251fbff07e",
-      "nodes": 13,
-      "relations": 20
+      "hash": "1f79307951b685a3",
+      "nodes": 15,
+      "relations": 22
     },
     "packages/docs/app/llms.txt/route.ts": {
       "hash": "60e2166684f680d0",
@@ -321,9 +321,9 @@
       "relations": 9
     },
     "packages/docs/content/api.test.ts": {
-      "hash": "16045fdbf1656d6b",
-      "nodes": 78,
-      "relations": 89
+      "hash": "10f0cd118a2cd43d",
+      "nodes": 84,
+      "relations": 95
     },
     "packages/docs/loaders/get-llm-text.ts": {
       "hash": "5951663e9e549ec5",
@@ -341,7 +341,7 @@
       "relations": 11
     },
     "packages/docs/pages/api/_og.tsx": {
-      "hash": "24ec3d1aedfcbce7",
+      "hash": "ba9b809fda9585cb",
       "nodes": 6,
       "relations": 9
     },
@@ -376,9 +376,9 @@
       "relations": 14
     },
     "packages/resolution/attw.test.ts": {
-      "hash": "5ed4784f81a7637d",
-      "nodes": 10,
-      "relations": 23
+      "hash": "7974771b6382ebf9",
+      "nodes": 15,
+      "relations": 28
     },
     "packages/resolution/src/index.cts": {
       "hash": "077f6c80066c3071",
@@ -571,14 +571,14 @@
       "relations": 3
     },
     "packages/zod/src/v3/ZodError.ts": {
-      "hash": "35c25918172a4907",
-      "nodes": 111,
-      "relations": 116
+      "hash": "62e296c7b6294c57",
+      "nodes": 115,
+      "relations": 120
     },
     "packages/zod/src/v3/benchmarks/datetime.ts": {
-      "hash": "d78d5bdc72403655",
-      "nodes": 9,
-      "relations": 10
+      "hash": "437ba7cd7c727a8a",
+      "nodes": 13,
+      "relations": 14
     },
     "packages/zod/src/v3/benchmarks/discriminatedUnion.ts": {
       "hash": "63080fc90da1cc67",
@@ -676,39 +676,39 @@
       "relations": 1
     },
     "packages/zod/src/v3/tests/Mocker.ts": {
-      "hash": "4c2ef22f37d553fe",
-      "nodes": 20,
-      "relations": 19
+      "hash": "3f45672f4eff34b4",
+      "nodes": 21,
+      "relations": 20
     },
     "packages/zod/src/v3/tests/all-errors.test.ts": {
-      "hash": "f26f1b76a9f5da90",
-      "nodes": 8,
-      "relations": 15
+      "hash": "d43b5e84081d90da",
+      "nodes": 16,
+      "relations": 23
     },
     "packages/zod/src/v3/tests/anyunknown.test.ts": {
-      "hash": "6d32cfa1aec90e4b",
-      "nodes": 5,
-      "relations": 12
+      "hash": "693cba581c3eb90f",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v3/tests/array.test.ts": {
-      "hash": "485ec70d26514b7f",
-      "nodes": 12,
-      "relations": 19
+      "hash": "310bcecd797b030a",
+      "nodes": 14,
+      "relations": 21
     },
     "packages/zod/src/v3/tests/async-parsing.test.ts": {
-      "hash": "3778f0e31c77b898",
-      "nodes": 25,
-      "relations": 30
+      "hash": "cb80a4f3cad715c4",
+      "nodes": 40,
+      "relations": 45
     },
     "packages/zod/src/v3/tests/async-refinements.test.ts": {
-      "hash": "91273bf5b71e4d97",
-      "nodes": 4,
-      "relations": 9
+      "hash": "e04388e06a7f6556",
+      "nodes": 9,
+      "relations": 14
     },
     "packages/zod/src/v3/tests/base.test.ts": {
-      "hash": "b2279a3c009dd385",
-      "nodes": 5,
-      "relations": 12
+      "hash": "f1357935dc6d6e9e",
+      "nodes": 11,
+      "relations": 18
     },
     "packages/zod/src/v3/tests/bigint.test.ts": {
       "hash": "99af532cecf7a6af",
@@ -716,29 +716,29 @@
       "relations": 18
     },
     "packages/zod/src/v3/tests/branded.test.ts": {
-      "hash": "db7671cfe4c5176b",
-      "nodes": 4,
-      "relations": 9
+      "hash": "887f81291d3b6648",
+      "nodes": 12,
+      "relations": 17
     },
     "packages/zod/src/v3/tests/catch.test.ts": {
-      "hash": "6c7dc6166edce6fc",
-      "nodes": 5,
-      "relations": 12
+      "hash": "06a9e67f59a9da3a",
+      "nodes": 17,
+      "relations": 24
     },
     "packages/zod/src/v3/tests/coerce.test.ts": {
-      "hash": "18a758d8cd5ccec1",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v3/tests/complex.test.ts": {
-      "hash": "3400d93217608f69",
+      "hash": "e562e6928bc993da",
       "nodes": 5,
       "relations": 10
     },
+    "packages/zod/src/v3/tests/complex.test.ts": {
+      "hash": "db23d4685e32858f",
+      "nodes": 9,
+      "relations": 14
+    },
     "packages/zod/src/v3/tests/custom.test.ts": {
-      "hash": "23671586d2a29010",
-      "nodes": 4,
-      "relations": 9
+      "hash": "5ce7e48c60862f84",
+      "nodes": 8,
+      "relations": 13
     },
     "packages/zod/src/v3/tests/date.test.ts": {
       "hash": "aa4da9edc0e537b6",
@@ -751,34 +751,34 @@
       "relations": 6
     },
     "packages/zod/src/v3/tests/default.test.ts": {
-      "hash": "778c46afbf6d789c",
-      "nodes": 5,
-      "relations": 12
+      "hash": "e0e90752e8911b0f",
+      "nodes": 12,
+      "relations": 19
     },
     "packages/zod/src/v3/tests/description.test.ts": {
-      "hash": "b35d48e2c1ba3703",
-      "nodes": 5,
-      "relations": 10
+      "hash": "9472fcef54cd48f0",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v3/tests/discriminated-unions.test.ts": {
-      "hash": "04e88a967a42fa61",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v3/tests/enum.test.ts": {
-      "hash": "c5256945b7106c6c",
-      "nodes": 5,
+      "hash": "20448b53b4654363",
+      "nodes": 7,
       "relations": 12
     },
+    "packages/zod/src/v3/tests/enum.test.ts": {
+      "hash": "ca26a2b7e345725b",
+      "nodes": 18,
+      "relations": 25
+    },
     "packages/zod/src/v3/tests/error.test.ts": {
-      "hash": "060bb8026f2a3f67",
-      "nodes": 12,
-      "relations": 21
+      "hash": "5bfe82a4b4d01479",
+      "nodes": 30,
+      "relations": 39
     },
     "packages/zod/src/v3/tests/firstparty.test.ts": {
-      "hash": "dc59e574d97508d2",
-      "nodes": 4,
-      "relations": 9
+      "hash": "c9be2de447fc9e11",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v3/tests/firstpartyschematypes.test.ts": {
       "hash": "b25f627119fd6dd3",
@@ -786,24 +786,24 @@
       "relations": 12
     },
     "packages/zod/src/v3/tests/function.test.ts": {
-      "hash": "79aa2bd68fa043ba",
+      "hash": "aaea970663744e45",
+      "nodes": 34,
+      "relations": 41
+    },
+    "packages/zod/src/v3/tests/generics.test.ts": {
+      "hash": "04386fecde6d7365",
       "nodes": 11,
       "relations": 18
     },
-    "packages/zod/src/v3/tests/generics.test.ts": {
-      "hash": "8c832000714af01c",
-      "nodes": 5,
-      "relations": 12
-    },
     "packages/zod/src/v3/tests/instanceof.test.ts": {
-      "hash": "80ab56022aa0d295",
-      "nodes": 5,
-      "relations": 12
+      "hash": "abae80a921f39bf5",
+      "nodes": 18,
+      "relations": 25
     },
     "packages/zod/src/v3/tests/intersection.test.ts": {
-      "hash": "d78c22fb90ce5dee",
-      "nodes": 4,
-      "relations": 9
+      "hash": "e7e310aa5f0198b3",
+      "nodes": 19,
+      "relations": 24
     },
     "packages/zod/src/v3/tests/language-server.source.ts": {
       "hash": "cd97528184250513",
@@ -816,14 +816,14 @@
       "relations": 3
     },
     "packages/zod/src/v3/tests/literal.test.ts": {
-      "hash": "4f777205a3b70b0d",
-      "nodes": 9,
-      "relations": 14
+      "hash": "c8ad0bbc03ba1516",
+      "nodes": 12,
+      "relations": 17
     },
     "packages/zod/src/v3/tests/map.test.ts": {
-      "hash": "9b4a304ff0ea2e35",
-      "nodes": 8,
-      "relations": 17
+      "hash": "f4c37a5bf3459cc0",
+      "nodes": 10,
+      "relations": 19
     },
     "packages/zod/src/v3/tests/masking.test.ts": {
       "hash": "3144722afc62f02e",
@@ -831,24 +831,24 @@
       "relations": 3
     },
     "packages/zod/src/v3/tests/mocker.test.ts": {
-      "hash": "33bd1b51add85021",
-      "nodes": 3,
-      "relations": 6
+      "hash": "3cd2ccbceedc3ee3",
+      "nodes": 4,
+      "relations": 7
     },
     "packages/zod/src/v3/tests/nan.test.ts": {
-      "hash": "e18c0b8aed8d2d09",
-      "nodes": 5,
-      "relations": 10
-    },
-    "packages/zod/src/v3/tests/nativeEnum.test.ts": {
-      "hash": "044ba90ab388ff82",
-      "nodes": 5,
+      "hash": "2a2c4839c1469bb6",
+      "nodes": 7,
       "relations": 12
     },
+    "packages/zod/src/v3/tests/nativeEnum.test.ts": {
+      "hash": "9181c6e3017381f8",
+      "nodes": 11,
+      "relations": 18
+    },
     "packages/zod/src/v3/tests/nullable.test.ts": {
-      "hash": "8ea20b860ffa797c",
-      "nodes": 8,
-      "relations": 13
+      "hash": "331c03080ac191b0",
+      "nodes": 9,
+      "relations": 14
     },
     "packages/zod/src/v3/tests/number.test.ts": {
       "hash": "1060a7676df6b1db",
@@ -856,29 +856,29 @@
       "relations": 27
     },
     "packages/zod/src/v3/tests/object-augmentation.test.ts": {
-      "hash": "92c1b9df928e58d3",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v3/tests/object-in-es5-env.test.ts": {
-      "hash": "c43916d649c9828e",
+      "hash": "3a95ed928b659314",
       "nodes": 7,
       "relations": 12
     },
-    "packages/zod/src/v3/tests/object.test.ts": {
-      "hash": "0be579a4814c3527",
-      "nodes": 8,
-      "relations": 15
-    },
-    "packages/zod/src/v3/tests/optional.test.ts": {
-      "hash": "e9cc790db9487ee3",
+    "packages/zod/src/v3/tests/object-in-es5-env.test.ts": {
+      "hash": "40a6fd6353cc2e9c",
       "nodes": 8,
       "relations": 13
     },
+    "packages/zod/src/v3/tests/object.test.ts": {
+      "hash": "8aa1a8d43f80fac0",
+      "nodes": 46,
+      "relations": 53
+    },
+    "packages/zod/src/v3/tests/optional.test.ts": {
+      "hash": "9e50341176ca609d",
+      "nodes": 9,
+      "relations": 14
+    },
     "packages/zod/src/v3/tests/parseUtil.test.ts": {
-      "hash": "b2e29f62da1d4b82",
-      "nodes": 7,
-      "relations": 15
+      "hash": "cfc846b65fd3fd7e",
+      "nodes": 10,
+      "relations": 18
     },
     "packages/zod/src/v3/tests/parser.test.ts": {
       "hash": "9693263633bc8fb2",
@@ -886,34 +886,34 @@
       "relations": 9
     },
     "packages/zod/src/v3/tests/partials.test.ts": {
-      "hash": "71f91925c6a3f728",
-      "nodes": 8,
-      "relations": 19
+      "hash": "14eae64a77e3bccc",
+      "nodes": 17,
+      "relations": 28
     },
     "packages/zod/src/v3/tests/pickomit.test.ts": {
-      "hash": "10b114da53193825",
-      "nodes": 6,
-      "relations": 13
+      "hash": "8013e03824d0e8b0",
+      "nodes": 17,
+      "relations": 24
     },
     "packages/zod/src/v3/tests/pipeline.test.ts": {
-      "hash": "2f3c9e9491b2721c",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v3/tests/preprocess.test.ts": {
-      "hash": "30c27edc7546e726",
-      "nodes": 5,
+      "hash": "41e4138c7f1d9026",
+      "nodes": 7,
       "relations": 12
     },
+    "packages/zod/src/v3/tests/preprocess.test.ts": {
+      "hash": "6208366aa9a7cba0",
+      "nodes": 10,
+      "relations": 17
+    },
     "packages/zod/src/v3/tests/primitive.test.ts": {
-      "hash": "16cffff19c89358e",
-      "nodes": 33,
-      "relations": 42
+      "hash": "72a6d5328484bedd",
+      "nodes": 34,
+      "relations": 43
     },
     "packages/zod/src/v3/tests/promise.test.ts": {
-      "hash": "4254daff4ca7163c",
-      "nodes": 7,
-      "relations": 14
+      "hash": "948d72575ff45d4d",
+      "nodes": 18,
+      "relations": 25
     },
     "packages/zod/src/v3/tests/readonly.test.ts": {
       "hash": "f6513f26eb92fbfc",
@@ -921,69 +921,69 @@
       "relations": 16
     },
     "packages/zod/src/v3/tests/record.test.ts": {
-      "hash": "4efb2c5297cf4694",
-      "nodes": 11,
-      "relations": 18
+      "hash": "982bbc6b34548c0d",
+      "nodes": 22,
+      "relations": 29
     },
     "packages/zod/src/v3/tests/recursive.test.ts": {
-      "hash": "f14b6da33fc7d576",
-      "nodes": 9,
-      "relations": 12
-    },
-    "packages/zod/src/v3/tests/refine.test.ts": {
-      "hash": "de3407aa9290474b",
-      "nodes": 6,
+      "hash": "0c9d5365c0ab519f",
+      "nodes": 11,
       "relations": 14
     },
+    "packages/zod/src/v3/tests/refine.test.ts": {
+      "hash": "678b91417ceff167",
+      "nodes": 20,
+      "relations": 28
+    },
     "packages/zod/src/v3/tests/safeparse.test.ts": {
-      "hash": "f7c7b9c70bf2630c",
+      "hash": "3fda31d190447ac3",
+      "nodes": 6,
+      "relations": 11
+    },
+    "packages/zod/src/v3/tests/set.test.ts": {
+      "hash": "5b3e536cb3717752",
+      "nodes": 17,
+      "relations": 26
+    },
+    "packages/zod/src/v3/tests/standard-schema.test.ts": {
+      "hash": "7d6f48a233f72eea",
+      "nodes": 14,
+      "relations": 23
+    },
+    "packages/zod/src/v3/tests/string.test.ts": {
+      "hash": "f9552c10c9cecbcc",
+      "nodes": 76,
+      "relations": 83
+    },
+    "packages/zod/src/v3/tests/transformer.test.ts": {
+      "hash": "c8f54d9b0b172855",
+      "nodes": 22,
+      "relations": 29
+    },
+    "packages/zod/src/v3/tests/tuple.test.ts": {
+      "hash": "835805fca39cfdf7",
+      "nodes": 17,
+      "relations": 25
+    },
+    "packages/zod/src/v3/tests/unions.test.ts": {
+      "hash": "d9b44c0822a74d49",
+      "nodes": 8,
+      "relations": 13
+    },
+    "packages/zod/src/v3/tests/validations.test.ts": {
+      "hash": "2966b9c2c29c67a9",
       "nodes": 5,
       "relations": 10
     },
-    "packages/zod/src/v3/tests/set.test.ts": {
-      "hash": "07d77283f2e1c133",
-      "nodes": 13,
-      "relations": 22
-    },
-    "packages/zod/src/v3/tests/standard-schema.test.ts": {
-      "hash": "2c2f2a6d9b56ac17",
-      "nodes": 6,
-      "relations": 15
-    },
-    "packages/zod/src/v3/tests/string.test.ts": {
-      "hash": "457dd97cc35162d5",
-      "nodes": 23,
-      "relations": 30
-    },
-    "packages/zod/src/v3/tests/transformer.test.ts": {
-      "hash": "e8416a10b11767bd",
-      "nodes": 7,
-      "relations": 14
-    },
-    "packages/zod/src/v3/tests/tuple.test.ts": {
-      "hash": "ffb6371f4b26c4b5",
-      "nodes": 9,
-      "relations": 17
-    },
-    "packages/zod/src/v3/tests/unions.test.ts": {
-      "hash": "7bad0460d29757c8",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v3/tests/validations.test.ts": {
-      "hash": "0974c9019025b92e",
-      "nodes": 4,
-      "relations": 9
-    },
     "packages/zod/src/v3/tests/void.test.ts": {
-      "hash": "451bd6ae11fdcedf",
-      "nodes": 5,
-      "relations": 12
+      "hash": "ef9099cf725c8d57",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v3/types.ts": {
-      "hash": "308fbee5bf1660bf",
-      "nodes": 1072,
-      "relations": 1115
+      "hash": "0b8b109379cc363a",
+      "nodes": 1147,
+      "relations": 1190
     },
     "packages/zod/src/v4-mini/index.ts": {
       "hash": "2392ad0b77b83f19",
@@ -1016,9 +1016,9 @@
       "relations": 19
     },
     "packages/zod/src/v4/classic/from-json-schema.ts": {
-      "hash": "7477aa7fadd46201",
-      "nodes": 88,
-      "relations": 99
+      "hash": "87f1ec02d48c250c",
+      "nodes": 89,
+      "relations": 100
     },
     "packages/zod/src/v4/classic/index.ts": {
       "hash": "c64be45acdd42a5f",
@@ -1041,39 +1041,39 @@
       "relations": 832
     },
     "packages/zod/src/v4/classic/tests/anyunknown.test.ts": {
-      "hash": "59a9a077370a3e01",
-      "nodes": 5,
-      "relations": 12
+      "hash": "a12860953640ad1b",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v4/classic/tests/apply.test.ts": {
-      "hash": "9cc49f36ee736c07",
-      "nodes": 5,
-      "relations": 12
+      "hash": "3b0cb1e8b3f95633",
+      "nodes": 10,
+      "relations": 17
     },
     "packages/zod/src/v4/classic/tests/array.test.ts": {
-      "hash": "6a59c9b40cfdd633",
-      "nodes": 5,
-      "relations": 12
+      "hash": "d0dfc110e0de41b0",
+      "nodes": 9,
+      "relations": 16
     },
     "packages/zod/src/v4/classic/tests/assignability.test.ts": {
-      "hash": "ba3557ac345635d7",
-      "nodes": 4,
-      "relations": 9
+      "hash": "ccdcd03a86e33ad8",
+      "nodes": 14,
+      "relations": 19
     },
     "packages/zod/src/v4/classic/tests/async-parsing.test.ts": {
-      "hash": "d219dc28e98e29ec",
-      "nodes": 24,
-      "relations": 29
+      "hash": "35baa9c5c423397b",
+      "nodes": 37,
+      "relations": 42
     },
     "packages/zod/src/v4/classic/tests/async-refinements.test.ts": {
-      "hash": "8ff7de9a7ad62fbc",
-      "nodes": 4,
-      "relations": 9
+      "hash": "c3363041a2cb2d19",
+      "nodes": 12,
+      "relations": 17
     },
     "packages/zod/src/v4/classic/tests/base.test.ts": {
-      "hash": "a8e5216b24875d42",
-      "nodes": 4,
-      "relations": 9
+      "hash": "8264b203b0a486a6",
+      "nodes": 5,
+      "relations": 10
     },
     "packages/zod/src/v4/classic/tests/bigint.test.ts": {
       "hash": "869ab1824c1187ea",
@@ -1081,14 +1081,14 @@
       "relations": 18
     },
     "packages/zod/src/v4/classic/tests/brand.test.ts": {
-      "hash": "357cee5e473df283",
-      "nodes": 4,
-      "relations": 9
+      "hash": "e49eb11f9454839e",
+      "nodes": 15,
+      "relations": 20
     },
     "packages/zod/src/v4/classic/tests/catch.test.ts": {
-      "hash": "78410bbd168672a3",
-      "nodes": 5,
-      "relations": 12
+      "hash": "aab769bb6f4f5549",
+      "nodes": 16,
+      "relations": 23
     },
     "packages/zod/src/v4/classic/tests/coalesce.test.ts": {
       "hash": "d7644e19b736babc",
@@ -1096,19 +1096,19 @@
       "relations": 6
     },
     "packages/zod/src/v4/classic/tests/codec-examples.test.ts": {
-      "hash": "a91864e444853524",
-      "nodes": 23,
-      "relations": 28
+      "hash": "69b618442c37da91",
+      "nodes": 49,
+      "relations": 54
     },
     "packages/zod/src/v4/classic/tests/codec.test.ts": {
-      "hash": "b96ca3ead6e9f152",
-      "nodes": 7,
-      "relations": 16
+      "hash": "a938c1835b611ae3",
+      "nodes": 61,
+      "relations": 70
     },
     "packages/zod/src/v4/classic/tests/coerce.test.ts": {
-      "hash": "a1ef4d3363bd726c",
-      "nodes": 5,
-      "relations": 12
+      "hash": "501af63cfb01c5dc",
+      "nodes": 7,
+      "relations": 14
     },
     "packages/zod/src/v4/classic/tests/continuability.test.ts": {
       "hash": "d5361c4853f287f1",
@@ -1116,59 +1116,59 @@
       "relations": 9
     },
     "packages/zod/src/v4/classic/tests/custom.test.ts": {
-      "hash": "b5647b40c4f77b9c",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/classic/tests/date.test.ts": {
-      "hash": "215bf7c65ba3ebb2",
+      "hash": "bdaa7297d7ed8ad0",
       "nodes": 9,
       "relations": 14
     },
+    "packages/zod/src/v4/classic/tests/date.test.ts": {
+      "hash": "4d9786fcf6a87798",
+      "nodes": 10,
+      "relations": 15
+    },
     "packages/zod/src/v4/classic/tests/datetime.test.ts": {
-      "hash": "0991c0de019aaf26",
-      "nodes": 5,
-      "relations": 12
+      "hash": "9bf5c335c74a0cde",
+      "nodes": 26,
+      "relations": 33
     },
     "packages/zod/src/v4/classic/tests/default.test.ts": {
-      "hash": "65452a87ec382f96",
-      "nodes": 5,
-      "relations": 12
+      "hash": "4433835e6de9697c",
+      "nodes": 22,
+      "relations": 29
     },
     "packages/zod/src/v4/classic/tests/describe-meta-checks.test.ts": {
-      "hash": "fa580484723e8da1",
-      "nodes": 5,
-      "relations": 12
+      "hash": "b694a8ce81d64ee8",
+      "nodes": 7,
+      "relations": 14
     },
     "packages/zod/src/v4/classic/tests/description.test.ts": {
-      "hash": "b7bcac0445a0f05a",
-      "nodes": 5,
-      "relations": 10
+      "hash": "9304d062776052ae",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v4/classic/tests/detached-methods.test.ts": {
-      "hash": "60ef3c5231975e58",
-      "nodes": 5,
-      "relations": 10
+      "hash": "7fbb6d3dcd1d02fc",
+      "nodes": 33,
+      "relations": 38
     },
     "packages/zod/src/v4/classic/tests/discriminated-unions.test.ts": {
-      "hash": "092cf3af729f0370",
-      "nodes": 5,
-      "relations": 12
+      "hash": "5b67b28bfadd278d",
+      "nodes": 34,
+      "relations": 41
     },
     "packages/zod/src/v4/classic/tests/enum.test.ts": {
-      "hash": "8ffd4a1c3d7c4af4",
-      "nodes": 5,
-      "relations": 12
+      "hash": "7860818fa208ff57",
+      "nodes": 31,
+      "relations": 38
     },
     "packages/zod/src/v4/classic/tests/error-utils.test.ts": {
-      "hash": "ceae89131271f14a",
-      "nodes": 11,
-      "relations": 18
+      "hash": "40ae6dbf4599e97c",
+      "nodes": 29,
+      "relations": 36
     },
     "packages/zod/src/v4/classic/tests/error.test.ts": {
-      "hash": "e3958938c3079654",
-      "nodes": 9,
-      "relations": 16
+      "hash": "30eeaa3d7aacde85",
+      "nodes": 35,
+      "relations": 42
     },
     "packages/zod/src/v4/classic/tests/file.test.ts": {
       "hash": "2d3202114f94042b",
@@ -1176,9 +1176,9 @@
       "relations": 25
     },
     "packages/zod/src/v4/classic/tests/firstparty.test.ts": {
-      "hash": "ac305d42fe565e8a",
-      "nodes": 5,
-      "relations": 12
+      "hash": "a56058cc00e9cd36",
+      "nodes": 8,
+      "relations": 15
     },
     "packages/zod/src/v4/classic/tests/fix-json-issue.test.ts": {
       "hash": "30b3e1c7c9366d3f",
@@ -1186,49 +1186,49 @@
       "relations": 24
     },
     "packages/zod/src/v4/classic/tests/from-json-schema.test.ts": {
-      "hash": "120936d77916accc",
-      "nodes": 5,
-      "relations": 12
+      "hash": "d78f596e6d88100b",
+      "nodes": 27,
+      "relations": 34
     },
     "packages/zod/src/v4/classic/tests/function.test.ts": {
-      "hash": "4233a47911b25b0c",
-      "nodes": 14,
-      "relations": 21
+      "hash": "250b4bdcd49b51b1",
+      "nodes": 43,
+      "relations": 50
     },
     "packages/zod/src/v4/classic/tests/generics.test.ts": {
-      "hash": "4ec1bc1f7a43a529",
-      "nodes": 7,
-      "relations": 14
+      "hash": "afba3cb9b48f664a",
+      "nodes": 17,
+      "relations": 24
     },
     "packages/zod/src/v4/classic/tests/global-config.test.ts": {
-      "hash": "03ab232dc209c11d",
-      "nodes": 6,
-      "relations": 15
+      "hash": "9b02df279b3d68e6",
+      "nodes": 7,
+      "relations": 16
     },
     "packages/zod/src/v4/classic/tests/hash.test.ts": {
-      "hash": "f64b55521300a002",
-      "nodes": 6,
-      "relations": 15
+      "hash": "deb958a9fae3f394",
+      "nodes": 19,
+      "relations": 28
     },
     "packages/zod/src/v4/classic/tests/index.test.ts": {
-      "hash": "73dec96f3960a3b1",
-      "nodes": 6,
-      "relations": 15
+      "hash": "fe4989461e009646",
+      "nodes": 35,
+      "relations": 44
     },
     "packages/zod/src/v4/classic/tests/instanceof.test.ts": {
-      "hash": "76706b55c1c61d66",
-      "nodes": 5,
-      "relations": 12
+      "hash": "3113aae4cf38b60e",
+      "nodes": 21,
+      "relations": 28
     },
     "packages/zod/src/v4/classic/tests/intersection.test.ts": {
-      "hash": "8fa327fbd5b841b8",
-      "nodes": 6,
-      "relations": 15
+      "hash": "8a0ae31a8de7fcf7",
+      "nodes": 25,
+      "relations": 34
     },
     "packages/zod/src/v4/classic/tests/jitless-allows-eval.test.ts": {
-      "hash": "651078b8f002f61e",
-      "nodes": 5,
-      "relations": 12
+      "hash": "a97ddf4a62028394",
+      "nodes": 7,
+      "relations": 14
     },
     "packages/zod/src/v4/classic/tests/json.test.ts": {
       "hash": "5188c1000027ef50",
@@ -1236,29 +1236,29 @@
       "relations": 6
     },
     "packages/zod/src/v4/classic/tests/lazy.test.ts": {
-      "hash": "92a0ca8312f0b370",
-      "nodes": 17,
-      "relations": 24
+      "hash": "d50dab4e83ddc2ad",
+      "nodes": 34,
+      "relations": 41
     },
     "packages/zod/src/v4/classic/tests/literal.test.ts": {
-      "hash": "a79f3c14035e80ec",
+      "hash": "50050b0c6334e9ea",
+      "nodes": 12,
+      "relations": 17
+    },
+    "packages/zod/src/v4/classic/tests/locales_ka.test.ts": {
+      "hash": "2d03eb44862061b7",
       "nodes": 8,
       "relations": 13
     },
-    "packages/zod/src/v4/classic/tests/locales_ka.test.ts": {
-      "hash": "59099e30580be91e",
-      "nodes": 4,
-      "relations": 9
-    },
     "packages/zod/src/v4/classic/tests/locales_ro.test.ts": {
-      "hash": "40627aeb06d93707",
-      "nodes": 4,
-      "relations": 9
+      "hash": "6062d057648f28e5",
+      "nodes": 8,
+      "relations": 13
     },
     "packages/zod/src/v4/classic/tests/map.test.ts": {
-      "hash": "71a2add4decaf7cd",
-      "nodes": 12,
-      "relations": 19
+      "hash": "a7a31677ddb082f9",
+      "nodes": 24,
+      "relations": 31
     },
     "packages/zod/src/v4/classic/tests/nan.test.ts": {
       "hash": "0a940e882173b97f",
@@ -1266,64 +1266,64 @@
       "relations": 13
     },
     "packages/zod/src/v4/classic/tests/nested-refine.test.ts": {
-      "hash": "d372765cb7289962",
-      "nodes": 4,
-      "relations": 9
+      "hash": "72cba88964ccdff8",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v4/classic/tests/nonoptional.test.ts": {
-      "hash": "5f71ebd0097b8123",
-      "nodes": 5,
-      "relations": 12
+      "hash": "497650e46b7b8ac1",
+      "nodes": 10,
+      "relations": 17
     },
     "packages/zod/src/v4/classic/tests/nullable.test.ts": {
-      "hash": "065a23147fbf767e",
-      "nodes": 4,
-      "relations": 9
+      "hash": "16fd90e665302613",
+      "nodes": 7,
+      "relations": 12
     },
     "packages/zod/src/v4/classic/tests/number.test.ts": {
-      "hash": "1d77c96ac6a431d5",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/classic/tests/object.test.ts": {
-      "hash": "3147143c7f5e901a",
-      "nodes": 10,
+      "hash": "207f3415d33a0a94",
+      "nodes": 16,
       "relations": 21
     },
+    "packages/zod/src/v4/classic/tests/object.test.ts": {
+      "hash": "1dbc460de632eafa",
+      "nodes": 58,
+      "relations": 69
+    },
     "packages/zod/src/v4/classic/tests/optional.test.ts": {
-      "hash": "3c332237b9e4920e",
-      "nodes": 5,
-      "relations": 12
+      "hash": "5c35c865a3b71e32",
+      "nodes": 30,
+      "relations": 37
     },
     "packages/zod/src/v4/classic/tests/partial.test.ts": {
-      "hash": "f53d75582fd4c804",
-      "nodes": 6,
-      "relations": 13
+      "hash": "cb96979aa92b0341",
+      "nodes": 22,
+      "relations": 29
     },
     "packages/zod/src/v4/classic/tests/pickomit.test.ts": {
-      "hash": "f9d573f4eb6c8ccd",
-      "nodes": 6,
-      "relations": 13
+      "hash": "556350f5d6a24a2a",
+      "nodes": 21,
+      "relations": 28
     },
     "packages/zod/src/v4/classic/tests/pipe.test.ts": {
-      "hash": "31c86ac93ee75d12",
-      "nodes": 4,
-      "relations": 9
+      "hash": "28aab2032a053071",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v4/classic/tests/prefault.test.ts": {
-      "hash": "3177e1faca3331c0",
-      "nodes": 5,
-      "relations": 12
+      "hash": "6830dd41febe9dc2",
+      "nodes": 9,
+      "relations": 16
     },
     "packages/zod/src/v4/classic/tests/preprocess-types.test.ts": {
-      "hash": "2659d9d05a20f8b9",
-      "nodes": 4,
-      "relations": 9
+      "hash": "afbccd5e27acf571",
+      "nodes": 9,
+      "relations": 14
     },
     "packages/zod/src/v4/classic/tests/preprocess.test.ts": {
-      "hash": "bf48d7343db9a80f",
-      "nodes": 5,
-      "relations": 12
+      "hash": "18288312c9103621",
+      "nodes": 13,
+      "relations": 20
     },
     "packages/zod/src/v4/classic/tests/primitive.test.ts": {
       "hash": "6b956c9ead06747d",
@@ -1331,64 +1331,64 @@
       "relations": 36
     },
     "packages/zod/src/v4/classic/tests/promise.test.ts": {
-      "hash": "0e3001abe8533190",
-      "nodes": 7,
-      "relations": 14
+      "hash": "4e4d17fceef349b6",
+      "nodes": 14,
+      "relations": 21
     },
     "packages/zod/src/v4/classic/tests/prototypes.test.ts": {
-      "hash": "64bba7ce3cf0a2f1",
-      "nodes": 6,
-      "relations": 11
+      "hash": "7253e07d0984f54f",
+      "nodes": 7,
+      "relations": 12
     },
     "packages/zod/src/v4/classic/tests/readonly.test.ts": {
-      "hash": "02c9bf2ef275cc08",
-      "nodes": 8,
-      "relations": 15
+      "hash": "5e3e30a2aa48b112",
+      "nodes": 39,
+      "relations": 46
     },
     "packages/zod/src/v4/classic/tests/record.test.ts": {
-      "hash": "0b102c011793cc69",
-      "nodes": 5,
-      "relations": 12
+      "hash": "c9da8b27e98ef2f0",
+      "nodes": 33,
+      "relations": 40
     },
     "packages/zod/src/v4/classic/tests/recursive-types.test.ts": {
-      "hash": "d700bf49ebe65002",
-      "nodes": 6,
-      "relations": 13
+      "hash": "fb02d1ac014961f9",
+      "nodes": 61,
+      "relations": 68
     },
     "packages/zod/src/v4/classic/tests/refine.test.ts": {
-      "hash": "e68353f7bed3b43a",
-      "nodes": 6,
-      "relations": 15
+      "hash": "e73e8f6b1a2fefb2",
+      "nodes": 22,
+      "relations": 31
     },
     "packages/zod/src/v4/classic/tests/registries.test.ts": {
-      "hash": "fd50d54543c3a12c",
-      "nodes": 5,
-      "relations": 12
+      "hash": "8a687e7f0ac67e7e",
+      "nodes": 20,
+      "relations": 27
     },
     "packages/zod/src/v4/classic/tests/set.test.ts": {
-      "hash": "81ccf887e473e86b",
-      "nodes": 12,
-      "relations": 19
+      "hash": "94ad7a82e2604404",
+      "nodes": 20,
+      "relations": 27
     },
     "packages/zod/src/v4/classic/tests/standard-schema.test.ts": {
-      "hash": "ad98b770c3953fa1",
-      "nodes": 4,
-      "relations": 9
+      "hash": "d9b3a244eecd97d1",
+      "nodes": 7,
+      "relations": 12
     },
     "packages/zod/src/v4/classic/tests/string-formats.test.ts": {
-      "hash": "ee1a1c2bb091effe",
-      "nodes": 4,
-      "relations": 9
+      "hash": "867df890ff1a377f",
+      "nodes": 11,
+      "relations": 16
     },
     "packages/zod/src/v4/classic/tests/string.test.ts": {
-      "hash": "4752f7f8c3fb7bd9",
-      "nodes": 19,
-      "relations": 26
+      "hash": "af2dd9510f9530ae",
+      "nodes": 91,
+      "relations": 98
     },
     "packages/zod/src/v4/classic/tests/stringbool.test.ts": {
-      "hash": "a7c48f34f0b23a2a",
-      "nodes": 5,
-      "relations": 12
+      "hash": "0b5f2d59298828c3",
+      "nodes": 13,
+      "relations": 20
     },
     "packages/zod/src/v4/classic/tests/template-literal.test.ts": {
       "hash": "e676ff92f8373af3",
@@ -1396,34 +1396,34 @@
       "relations": 62
     },
     "packages/zod/src/v4/classic/tests/to-json-schema-methods.test.ts": {
-      "hash": "86f9f5a7197a6ec2",
-      "nodes": 10,
-      "relations": 17
+      "hash": "7f9a4b7b359b36bc",
+      "nodes": 17,
+      "relations": 24
     },
     "packages/zod/src/v4/classic/tests/to-json-schema.test.ts": {
-      "hash": "0e4a9efeba342784",
-      "nodes": 10,
-      "relations": 19
+      "hash": "184012e91f4ade4b",
+      "nodes": 59,
+      "relations": 68
     },
     "packages/zod/src/v4/classic/tests/transform.test.ts": {
-      "hash": "bc77d43f87d8670c",
-      "nodes": 5,
-      "relations": 12
+      "hash": "6939c588daf5d7b9",
+      "nodes": 25,
+      "relations": 32
     },
     "packages/zod/src/v4/classic/tests/tuple.test.ts": {
-      "hash": "6dc6097b09be7c00",
-      "nodes": 5,
-      "relations": 12
+      "hash": "2bd01ebbd9787ac7",
+      "nodes": 34,
+      "relations": 41
     },
     "packages/zod/src/v4/classic/tests/union.test.ts": {
-      "hash": "1af671d92d5ef708",
-      "nodes": 5,
-      "relations": 12
+      "hash": "e46aca72b024eed6",
+      "nodes": 14,
+      "relations": 21
     },
     "packages/zod/src/v4/classic/tests/url.test.ts": {
-      "hash": "42bb4d8f3248f720",
-      "nodes": 5,
-      "relations": 12
+      "hash": "268eac9fd4d22abc",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v4/classic/tests/validations.test.ts": {
       "hash": "8fc70c087dc0a51d",
@@ -1431,14 +1431,14 @@
       "relations": 9
     },
     "packages/zod/src/v4/classic/tests/void.test.ts": {
-      "hash": "4db3ea41462cffe4",
-      "nodes": 5,
-      "relations": 12
+      "hash": "4afd2629e2005b26",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v4/core/api.ts": {
-      "hash": "cff1c22e486032f2",
-      "nodes": 519,
-      "relations": 525
+      "hash": "6e42c353a14c4c1c",
+      "nodes": 523,
+      "relations": 529
     },
     "packages/zod/src/v4/core/checks.ts": {
       "hash": "6f76228d1a92d6e1",
@@ -1476,9 +1476,9 @@
       "relations": 47
     },
     "packages/zod/src/v4/core/json-schema-processors.ts": {
-      "hash": "498920972a214ea8",
-      "nodes": 290,
-      "relations": 304
+      "hash": "16230e43445e529e",
+      "nodes": 291,
+      "relations": 305
     },
     "packages/zod/src/v4/core/json-schema.ts": {
       "hash": "5db6bf6dc5303ed1",
@@ -1486,9 +1486,9 @@
       "relations": 18
     },
     "packages/zod/src/v4/core/parse.ts": {
-      "hash": "ae1ff16735452cfe",
-      "nodes": 54,
-      "relations": 60
+      "hash": "92d0a59c0630f2d4",
+      "nodes": 68,
+      "relations": 74
     },
     "packages/zod/src/v4/core/regexes.ts": {
       "hash": "7116b2ff7f6be875",
@@ -1511,49 +1511,49 @@
       "relations": 5
     },
     "packages/zod/src/v4/core/tests/extend.test.ts": {
-      "hash": "8b9326ae945212c2",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/core/tests/index.test.ts": {
-      "hash": "cc7be71bf5d64fdf",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/core/tests/locales/be.test.ts": {
-      "hash": "1f43c42da370df51",
-      "nodes": 6,
-      "relations": 13
-    },
-    "packages/zod/src/v4/core/tests/locales/el.test.ts": {
-      "hash": "69222af8dca3b258",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/core/tests/locales/en.test.ts": {
-      "hash": "8436f8e8573bd533",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/core/tests/locales/es.test.ts": {
-      "hash": "38351e011921f78e",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/core/tests/locales/fr.test.ts": {
-      "hash": "ca7d1505c3569b35",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/core/tests/locales/he.test.ts": {
-      "hash": "bc98fa89c26a8fc3",
-      "nodes": 7,
+      "hash": "bcd60e3a91b2b6f8",
+      "nodes": 13,
       "relations": 18
     },
+    "packages/zod/src/v4/core/tests/index.test.ts": {
+      "hash": "fae4e1d3505e5d76",
+      "nodes": 8,
+      "relations": 15
+    },
+    "packages/zod/src/v4/core/tests/locales/be.test.ts": {
+      "hash": "a4a2fd0a649a25cf",
+      "nodes": 8,
+      "relations": 15
+    },
+    "packages/zod/src/v4/core/tests/locales/el.test.ts": {
+      "hash": "f41299d0b66717f6",
+      "nodes": 38,
+      "relations": 45
+    },
+    "packages/zod/src/v4/core/tests/locales/en.test.ts": {
+      "hash": "02e9669db28294a1",
+      "nodes": 6,
+      "relations": 11
+    },
+    "packages/zod/src/v4/core/tests/locales/es.test.ts": {
+      "hash": "9defe1c15e414a71",
+      "nodes": 31,
+      "relations": 38
+    },
+    "packages/zod/src/v4/core/tests/locales/fr.test.ts": {
+      "hash": "84cce79d1922b13d",
+      "nodes": 9,
+      "relations": 16
+    },
+    "packages/zod/src/v4/core/tests/locales/he.test.ts": {
+      "hash": "9b4a33f0c4a42c37",
+      "nodes": 12,
+      "relations": 23
+    },
     "packages/zod/src/v4/core/tests/locales/hr.test.ts": {
-      "hash": "608806b471bacf6a",
-      "nodes": 5,
-      "relations": 12
+      "hash": "52b0feb24a099c4e",
+      "nodes": 29,
+      "relations": 36
     },
     "packages/zod/src/v4/core/tests/locales/nl.test.ts": {
       "hash": "8db7f03a51a7f1dd",
@@ -1561,39 +1561,39 @@
       "relations": 9
     },
     "packages/zod/src/v4/core/tests/locales/ru.test.ts": {
-      "hash": "78b5f7a61da3f7ef",
+      "hash": "056c40c7edc282e9",
+      "nodes": 8,
+      "relations": 15
+    },
+    "packages/zod/src/v4/core/tests/locales/tr.test.ts": {
+      "hash": "ab0057f1fcdd7afe",
+      "nodes": 17,
+      "relations": 24
+    },
+    "packages/zod/src/v4/core/tests/locales/uz.test.ts": {
+      "hash": "8b2d0b1692335612",
+      "nodes": 24,
+      "relations": 29
+    },
+    "packages/zod/src/v4/core/tests/record-constructor.test.ts": {
+      "hash": "345f68705f7186a5",
+      "nodes": 18,
+      "relations": 23
+    },
+    "packages/zod/src/v4/core/tests/recursive-tuples.test.ts": {
+      "hash": "ce96411c6772267f",
       "nodes": 6,
       "relations": 13
     },
-    "packages/zod/src/v4/core/tests/locales/tr.test.ts": {
-      "hash": "9f58f56513335eb2",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/core/tests/locales/uz.test.ts": {
-      "hash": "82961ded0c4dcfc4",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/core/tests/record-constructor.test.ts": {
-      "hash": "109998a6e8c90c2d",
-      "nodes": 4,
-      "relations": 9
-    },
-    "packages/zod/src/v4/core/tests/recursive-tuples.test.ts": {
-      "hash": "2d4098fa5e56ddf8",
-      "nodes": 5,
-      "relations": 12
-    },
     "packages/zod/src/v4/core/to-json-schema.ts": {
-      "hash": "3b637bef35e596df",
-      "nodes": 122,
-      "relations": 133
+      "hash": "21bb749eeb083a98",
+      "nodes": 124,
+      "relations": 135
     },
     "packages/zod/src/v4/core/util.ts": {
-      "hash": "db38cea272f01d26",
-      "nodes": 276,
-      "relations": 284
+      "hash": "8346242daa7a5f79",
+      "nodes": 278,
+      "relations": 286
     },
     "packages/zod/src/v4/core/versions.ts": {
       "hash": "079aba1ab4b742c3",
@@ -1611,109 +1611,109 @@
       "relations": 3
     },
     "packages/zod/src/v4/locales/ar.ts": {
-      "hash": "eedb5271b34e210a",
-      "nodes": 10,
-      "relations": 15
+      "hash": "3fe7cff360157c2b",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/az.ts": {
-      "hash": "f9d224b2a42c0df9",
-      "nodes": 10,
-      "relations": 15
+      "hash": "7fae7279e2fdd28d",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/be.ts": {
-      "hash": "c3655874ff2295b2",
-      "nodes": 21,
-      "relations": 26
+      "hash": "10f2109701f03208",
+      "nodes": 30,
+      "relations": 35
     },
     "packages/zod/src/v4/locales/bg.ts": {
-      "hash": "ffd8cdeaa68c9a76",
-      "nodes": 10,
-      "relations": 15
+      "hash": "42def7db6401e00f",
+      "nodes": 17,
+      "relations": 22
     },
     "packages/zod/src/v4/locales/ca.ts": {
-      "hash": "c3b7031581657a69",
-      "nodes": 10,
-      "relations": 15
+      "hash": "0c80281e0563b9f7",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/cs.ts": {
-      "hash": "3080a37650beceda",
-      "nodes": 10,
-      "relations": 15
+      "hash": "72b6ae892aa2cf9c",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/da.ts": {
-      "hash": "fcd02cfb5a0aef95",
-      "nodes": 10,
-      "relations": 15
+      "hash": "f46bb4779d904477",
+      "nodes": 17,
+      "relations": 22
     },
     "packages/zod/src/v4/locales/de.ts": {
-      "hash": "7f6475c4516e1ab3",
-      "nodes": 10,
-      "relations": 15
+      "hash": "9bfef46cf3af1698",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/el.ts": {
-      "hash": "940a59596f0ff2de",
-      "nodes": 10,
-      "relations": 15
+      "hash": "c670c327befc8cc6",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/en.ts": {
-      "hash": "65f0af967b7b381a",
-      "nodes": 10,
-      "relations": 15
+      "hash": "d2a9340d29d0c464",
+      "nodes": 17,
+      "relations": 22
     },
     "packages/zod/src/v4/locales/eo.ts": {
-      "hash": "c9a0ea950edde43c",
-      "nodes": 10,
-      "relations": 15
+      "hash": "64024daf273b62e3",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/es.ts": {
-      "hash": "44ac4635683f43a1",
-      "nodes": 10,
-      "relations": 15
+      "hash": "3163e99af41592c6",
+      "nodes": 17,
+      "relations": 22
     },
     "packages/zod/src/v4/locales/fa.ts": {
-      "hash": "184ab12eeb1494be",
-      "nodes": 10,
-      "relations": 15
+      "hash": "91249a5462c36a01",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/fi.ts": {
-      "hash": "68654a78973696ee",
-      "nodes": 10,
-      "relations": 15
+      "hash": "34b508f6a630bba5",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/fr-CA.ts": {
-      "hash": "234b9eb8cc5a8e19",
-      "nodes": 10,
-      "relations": 15
+      "hash": "ffcbab620e0f71ad",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/fr.ts": {
-      "hash": "b275f3959f56f86e",
-      "nodes": 10,
-      "relations": 15
+      "hash": "dd768b9c947cff27",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/he.ts": {
-      "hash": "4d420eead3eaaaf4",
-      "nodes": 22,
-      "relations": 27
+      "hash": "1c6b9c2375690995",
+      "nodes": 42,
+      "relations": 47
     },
     "packages/zod/src/v4/locales/hr.ts": {
-      "hash": "43acab95b4595f3b",
-      "nodes": 10,
-      "relations": 15
+      "hash": "13279aade78d50fa",
+      "nodes": 17,
+      "relations": 22
     },
     "packages/zod/src/v4/locales/hu.ts": {
-      "hash": "3552c3eb99779bf5",
-      "nodes": 10,
-      "relations": 15
+      "hash": "860d81ae60a026d1",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/hy.ts": {
-      "hash": "7008c64f0750947b",
-      "nodes": 21,
-      "relations": 26
+      "hash": "2deebc435946f2d8",
+      "nodes": 30,
+      "relations": 35
     },
     "packages/zod/src/v4/locales/id.ts": {
-      "hash": "6b86b67abd1d0d2e",
-      "nodes": 10,
-      "relations": 15
+      "hash": "970bd8a35430b04e",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/index.ts": {
       "hash": "3b9ed50bc4e2a99a",
@@ -1721,24 +1721,24 @@
       "relations": 105
     },
     "packages/zod/src/v4/locales/is.ts": {
-      "hash": "c0798ff6c86be1b8",
-      "nodes": 10,
-      "relations": 15
+      "hash": "1b0e8abc31386392",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/it.ts": {
-      "hash": "20877a1c49626fd7",
-      "nodes": 10,
-      "relations": 15
+      "hash": "c83b008f6fbd7212",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ja.ts": {
-      "hash": "fd7cb9e1bb5649a3",
-      "nodes": 10,
-      "relations": 15
+      "hash": "970a3a0b1a60e86f",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ka.ts": {
-      "hash": "5f8f873e1a12a03a",
-      "nodes": 10,
-      "relations": 15
+      "hash": "1707249f9f223eb3",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/kh.ts": {
       "hash": "9d448cd38ba740b2",
@@ -1746,94 +1746,94 @@
       "relations": 6
     },
     "packages/zod/src/v4/locales/km.ts": {
-      "hash": "1f815be3364cdbfc",
-      "nodes": 10,
-      "relations": 15
+      "hash": "764c1cf8b0db8109",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ko.ts": {
-      "hash": "5168054239425f89",
-      "nodes": 10,
-      "relations": 15
+      "hash": "afdc43a31ef71764",
+      "nodes": 18,
+      "relations": 23
     },
     "packages/zod/src/v4/locales/lt.ts": {
-      "hash": "48cb12ceccd238e9",
-      "nodes": 23,
-      "relations": 28
+      "hash": "81c3b6fb5ce79c54",
+      "nodes": 30,
+      "relations": 35
     },
     "packages/zod/src/v4/locales/mk.ts": {
-      "hash": "5e21c5beda0972c9",
-      "nodes": 10,
-      "relations": 15
+      "hash": "990a4528c38d8d04",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ms.ts": {
-      "hash": "1337fe3be77fadd4",
-      "nodes": 10,
-      "relations": 15
+      "hash": "f5343476761b2f4b",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/nl.ts": {
-      "hash": "8ef896e60f86c85d",
-      "nodes": 10,
-      "relations": 15
+      "hash": "96524ee524c83b29",
+      "nodes": 18,
+      "relations": 23
     },
     "packages/zod/src/v4/locales/no.ts": {
-      "hash": "a788d7f018bcc0b9",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b1217c5e98ab55b4",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ota.ts": {
-      "hash": "7a9f7c798e1ebad8",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b4a146681e5dee36",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/pl.ts": {
-      "hash": "3a447802db16b189",
-      "nodes": 10,
-      "relations": 15
+      "hash": "7518e2294d94847f",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ps.ts": {
-      "hash": "0c00cf47180070fe",
-      "nodes": 10,
-      "relations": 15
+      "hash": "4c0c1cb36ba38ad0",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/pt.ts": {
-      "hash": "bc663045ebf5a28f",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b52d9640a1ff2ede",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ro.ts": {
-      "hash": "9e63462588c7ebba",
-      "nodes": 10,
-      "relations": 15
+      "hash": "c0592e4385f8a1ee",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ru.ts": {
-      "hash": "de4c53294d9b5611",
-      "nodes": 21,
-      "relations": 26
+      "hash": "603904bb99a2fa1a",
+      "nodes": 30,
+      "relations": 35
     },
     "packages/zod/src/v4/locales/sl.ts": {
-      "hash": "c15258b8e1d82473",
-      "nodes": 10,
-      "relations": 15
+      "hash": "449afd18463c772c",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/sv.ts": {
-      "hash": "9e948b8b341c97c4",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b742fd4932bda837",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ta.ts": {
-      "hash": "6979432d238f8d0b",
-      "nodes": 10,
-      "relations": 15
+      "hash": "ac6ddcc052a35043",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/th.ts": {
-      "hash": "bca8a44845bc7697",
-      "nodes": 10,
-      "relations": 15
+      "hash": "a4482022bf488264",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/tr.ts": {
-      "hash": "b1d14dc622f35f96",
-      "nodes": 10,
-      "relations": 15
+      "hash": "cac1af4729f7e488",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ua.ts": {
       "hash": "73b4b056f5385fab",
@@ -1841,39 +1841,39 @@
       "relations": 6
     },
     "packages/zod/src/v4/locales/uk.ts": {
-      "hash": "a482cb5a1b83eaf2",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b3f828f0687a58ce",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/ur.ts": {
-      "hash": "40ac36de534ba3b0",
-      "nodes": 10,
-      "relations": 15
+      "hash": "5883b192df08e8bb",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/uz.ts": {
-      "hash": "a392889447740640",
-      "nodes": 10,
-      "relations": 15
+      "hash": "74d92c463ea2460d",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/vi.ts": {
-      "hash": "c5c82329602eb0cb",
-      "nodes": 10,
-      "relations": 15
+      "hash": "4b7547a44684e862",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/yo.ts": {
-      "hash": "07a2f74f9bba05b3",
-      "nodes": 10,
-      "relations": 15
+      "hash": "295f3a566e6971bc",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/zh-CN.ts": {
-      "hash": "eb1205b7244a6aba",
-      "nodes": 10,
-      "relations": 15
+      "hash": "7b4e693735bd2071",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/locales/zh-TW.ts": {
-      "hash": "07a643e0e1f515cb",
-      "nodes": 10,
-      "relations": 15
+      "hash": "c6acb93f2958bb94",
+      "nodes": 16,
+      "relations": 21
     },
     "packages/zod/src/v4/mini/checks.ts": {
       "hash": "bec1fc53ccef8ec8",
@@ -1911,39 +1911,39 @@
       "relations": 465
     },
     "packages/zod/src/v4/mini/tests/apply.test.ts": {
-      "hash": "76911b439d414c6f",
-      "nodes": 5,
-      "relations": 12
+      "hash": "58eb545ba7ab952f",
+      "nodes": 10,
+      "relations": 17
     },
     "packages/zod/src/v4/mini/tests/assignability.test.ts": {
-      "hash": "77e5ed671b5cd17b",
-      "nodes": 3,
-      "relations": 6
+      "hash": "55e68c795a3b30d7",
+      "nodes": 4,
+      "relations": 7
     },
     "packages/zod/src/v4/mini/tests/brand.test.ts": {
-      "hash": "4b27ff74ca43c1dc",
-      "nodes": 4,
-      "relations": 9
+      "hash": "892ff95cb2fe9adb",
+      "nodes": 13,
+      "relations": 18
     },
     "packages/zod/src/v4/mini/tests/checks.test.ts": {
-      "hash": "2d2e486068413ddd",
-      "nodes": 4,
-      "relations": 9
+      "hash": "2217e4036f28857b",
+      "nodes": 8,
+      "relations": 13
     },
     "packages/zod/src/v4/mini/tests/codec.test.ts": {
-      "hash": "9e1b592fb7405cb9",
-      "nodes": 7,
-      "relations": 16
+      "hash": "50c861dac0ea139b",
+      "nodes": 48,
+      "relations": 57
     },
     "packages/zod/src/v4/mini/tests/computed.test.ts": {
-      "hash": "25f0d534c9eccad9",
-      "nodes": 5,
-      "relations": 12
+      "hash": "bafb74166b49b6b6",
+      "nodes": 10,
+      "relations": 17
     },
     "packages/zod/src/v4/mini/tests/error.test.ts": {
-      "hash": "c2c7ff65a5d64cd3",
-      "nodes": 4,
-      "relations": 9
+      "hash": "b41bfb295a1fc35d",
+      "nodes": 6,
+      "relations": 11
     },
     "packages/zod/src/v4/mini/tests/functions.test.ts": {
       "hash": "5f7d5c448a012ad4",
@@ -1951,39 +1951,39 @@
       "relations": 6
     },
     "packages/zod/src/v4/mini/tests/index.test.ts": {
-      "hash": "34c188947b9dadec",
-      "nodes": 6,
-      "relations": 15
+      "hash": "8e4451c1ccc114bf",
+      "nodes": 35,
+      "relations": 44
     },
     "packages/zod/src/v4/mini/tests/number.test.ts": {
-      "hash": "35a087f407c3ce41",
-      "nodes": 5,
-      "relations": 12
+      "hash": "24af74bb15df51de",
+      "nodes": 6,
+      "relations": 13
     },
     "packages/zod/src/v4/mini/tests/object.test.ts": {
-      "hash": "346c5b7a77934e2b",
-      "nodes": 6,
-      "relations": 13
+      "hash": "fc5928a883ee7213",
+      "nodes": 16,
+      "relations": 23
     },
     "packages/zod/src/v4/mini/tests/prototypes.test.ts": {
-      "hash": "2ae25c4fa66f0305",
-      "nodes": 8,
-      "relations": 13
-    },
-    "packages/zod/src/v4/mini/tests/recursive-types.test.ts": {
-      "hash": "a2ad4ae8781a133c",
-      "nodes": 5,
-      "relations": 12
-    },
-    "packages/zod/src/v4/mini/tests/standard-schema.test.ts": {
-      "hash": "9833f515639e745a",
-      "nodes": 7,
+      "hash": "d8dc352f5dc104a8",
+      "nodes": 9,
       "relations": 14
     },
+    "packages/zod/src/v4/mini/tests/recursive-types.test.ts": {
+      "hash": "6a01871fb9516d6e",
+      "nodes": 48,
+      "relations": 55
+    },
+    "packages/zod/src/v4/mini/tests/standard-schema.test.ts": {
+      "hash": "c139f36ea646b45b",
+      "nodes": 12,
+      "relations": 19
+    },
     "packages/zod/src/v4/mini/tests/string.test.ts": {
-      "hash": "c45aea8e0d967c47",
-      "nodes": 6,
-      "relations": 13
+      "hash": "e5661c00c4eab32c",
+      "nodes": 10,
+      "relations": 17
     },
     "packages/zod/vitest.config.ts": {
       "hash": "042a967c12fcd971",
@@ -2023,23 +2023,23 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 1104,
-      "class": 673,
+      "attribute": 1088,
+      "class": 694,
       "dependency": 96,
       "external_symbol": 199,
       "file": 404,
-      "function": 782,
+      "function": 838,
       "import": 1386,
-      "method": 462,
+      "method": 503,
       "module": 607,
-      "parameter": 1582,
+      "parameter": 1677,
       "project": 8,
       "type_alias": 446,
-      "variable": 1950
+      "variable": 3948
     },
     "relations": {
       "contains": 1011,
-      "declares": 8411,
+      "declares": 10606,
       "depends_on": 96,
       "imports": 1206,
       "resolves_to": 1387
@@ -2049,28 +2049,28 @@
   "ref": "v4.4.3",
   "resolution": {
     "metrics": {
-      "external": 7561,
-      "internal": 10639,
-      "queries": 20212,
-      "resolved": 18200,
-      "unresolved": 2012
+      "external": 35872,
+      "internal": 31856,
+      "queries": 80344,
+      "resolved": 71903,
+      "unresolved": 8441
     },
     "relations": {
-      "calls": 4838,
+      "calls": 27481,
       "contains": 1011,
-      "declares": 8411,
+      "declares": 10606,
       "depends_on": 96,
-      "has_type": 2416,
+      "has_type": 2586,
       "imports": 1206,
-      "inherits_from": 580,
-      "references": 10366,
+      "inherits_from": 584,
+      "references": 38481,
       "resolves_to": 1387
     },
     "status": "ok"
   },
   "totals": {
     "files": 404,
-    "nodes": 9699,
-    "relations": 12111
+    "nodes": 11894,
+    "relations": 14306
   }
 }

@@ -18,9 +18,16 @@ use crate::ids::node_id;
 use crate::node::{Node, NodeKind};
 use crate::occurrence::{ImportClassifier, OccurrenceRef};
 use crate::relation::{Relation, RelationKind};
+use crate::span::Span;
 use crate::ts;
 
 use super::resolve_relative_import;
+
+/// Which parameter of a call an argument is passed to.
+enum Slot {
+    Index(usize),
+    Keyword(String),
+}
 
 const NESTED_DEF_TYPES: [&str; 3] = [
     "function_definition",
@@ -132,6 +139,15 @@ impl<'a> PythonVisitor<'a> {
             "import_from_statement" => self.visit_import_from_statement(node),
             "expression_statement" => self.visit_expression_statement(node),
             "return_statement" => self.visit_return_statement(node),
+            // Compound statements at file or class level read their headers - the
+            // condition, the iterable, the context manager, the raised class - as
+            // surely as the same statements in a function do.
+            "if_statement" | "for_statement" | "while_statement" | "with_statement"
+            | "try_statement" | "raise_statement" | "assert_statement" | "match_statement"
+            | "delete_statement" => {
+                let container = self.container();
+                self.walk_statement(node, &container)
+            }
             _ => self.visit_children(node),
         }
     }
@@ -605,36 +621,7 @@ impl<'a> PythonVisitor<'a> {
     /// against them is needed here.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if node.kind() == "call" {
-            if let Some(callee) = ts::child_of_types(node, &["identifier", "attribute"]) {
-                let name_node = if callee.kind() == "attribute" {
-                    let parts = ts::children(callee);
-                    // Everything before the final `.name` is the receiver.
-                    for part in parts.iter().take(parts.len().saturating_sub(1)) {
-                        self.scan_value(*part, enclosing_id)?;
-                    }
-                    parts.last().copied().unwrap_or(callee)
-                } else {
-                    callee
-                };
-                self.record_occurrence("call", name_node, enclosing_id);
-            }
-            if let Some(arg_list) = ts::child_of_type(node, "argument_list") {
-                for child in ts::children(arg_list) {
-                    if matches!(child.kind(), "(" | ")" | ",") {
-                        continue;
-                    }
-                    if child.kind() == "keyword_argument" {
-                        // The value only (the last child) — a kwarg's name
-                        // must not produce REFERENCES.
-                        if let Some(value) = ts::children(child).last() {
-                            self.scan_value(*value, enclosing_id)?;
-                        }
-                    } else {
-                        self.scan_value(child, enclosing_id)?;
-                    }
-                }
-            }
-            return Ok(());
+            return self.scan_call(node, enclosing_id, enclosing_id);
         }
         if node.kind() == "identifier" {
             self.record_occurrence("read", node, enclosing_id);
@@ -644,6 +631,153 @@ impl<'a> PythonVisitor<'a> {
             self.scan_value(child, enclosing_id)?;
         }
         Ok(())
+    }
+
+    /// A call. `caller_id` is who makes it - usually the enclosing node, but a
+    /// decorator is applied by the scope the decorated definition sits in, not by
+    /// the definition.
+    fn scan_call(&mut self, node: TsNode<'_>, enclosing_id: &str, caller_id: &str) -> PyResult<()> {
+        let mut call_site = None;
+        if let Some(callee) = ts::child_of_types(node, &["identifier", "attribute"]) {
+            let name_node = if callee.kind() == "attribute" {
+                let parts = ts::children(callee);
+                // Everything before the final `.name` is the receiver.
+                for part in parts.iter().take(parts.len().saturating_sub(1)) {
+                    self.scan_value(*part, enclosing_id)?;
+                }
+                parts.last().copied().unwrap_or(callee)
+            } else {
+                callee
+            };
+            self.record_occurrence("call", name_node, caller_id);
+            call_site = Some(ts::span(name_node));
+        } else if let Some(callee) = ts::children(node).first().copied() {
+            match callee.kind() {
+                // `f()()`: a call of whatever `f` returns.
+                "call" => {
+                    self.scan_call(callee, enclosing_id, caller_id)?;
+                    if let Some(inner) = Self::callee_name(callee) {
+                        self.record_occurrence_with("call", inner, caller_id, Some("result".into()));
+                    }
+                }
+                // `table["key"]()`: a call of whatever the container holds.
+                "subscript" => {
+                    self.scan_value(callee, enclosing_id)?;
+                    if let Some(base) = ts::children(callee).first().copied().and_then(Self::plain_name) {
+                        self.record_occurrence("call", base, caller_id);
+                    }
+                }
+                _ => self.scan_value(callee, enclosing_id)?,
+            }
+        }
+        if let Some(arg_list) = ts::child_of_type(node, "argument_list") {
+            let mut index = 0usize;
+            for child in ts::children(arg_list) {
+                if matches!(child.kind(), "(" | ")" | ",") {
+                    continue;
+                }
+                if child.kind() == "keyword_argument" {
+                    // The value only (the last child) — a kwarg's name
+                    // must not produce REFERENCES.
+                    if let Some(value) = ts::children(child).last().copied() {
+                        let keyword = ts::children(child)
+                            .first()
+                            .filter(|n| n.kind() == "identifier")
+                            .map(|n| self.text(*n));
+                        self.scan_argument(value, enclosing_id, call_site, keyword.map(Slot::Keyword))?;
+                    }
+                } else {
+                    self.scan_argument(child, enclosing_id, call_site, Some(Slot::Index(index)))?;
+                    index += 1;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// The identifier a call's callee ends in.
+    fn callee_name<'t>(call: TsNode<'t>) -> Option<TsNode<'t>> {
+        ts::child_of_types(call, &["identifier", "attribute"]).and_then(Self::plain_name)
+    }
+
+    /// What `value` hands to the variable it is assigned to: a name holds what it
+    /// resolves to, a call holds what the callee returns, and a container holds
+    /// whatever its elements are (so `table["k"]` can be followed to them).
+    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+        if let Some(name) = Self::plain_name(value) {
+            self.record_occurrence_with("alias", name, variable_id, None);
+            return;
+        }
+        match value.kind() {
+            "call" => {
+                if let Some(name) = Self::callee_name(value) {
+                    self.record_occurrence_with("alias", name, variable_id, Some("result".into()));
+                }
+            }
+            "subscript" => {
+                if let Some(base) = ts::children(value).first().copied().and_then(Self::plain_name) {
+                    self.record_occurrence_with("alias", base, variable_id, None);
+                }
+            }
+            "dictionary" | "list" | "tuple" | "set" if depth < 3 => {
+                for element in ts::children(value) {
+                    let element = if element.kind() == "pair" {
+                        match ts::children(element).last().copied() {
+                            Some(v) => v,
+                            None => continue,
+                        }
+                    } else {
+                        element
+                    };
+                    self.record_aliases(element, variable_id, depth + 1);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// One argument of a call. A plain name or attribute chain is a `read` that
+    /// also says which call, and which parameter of it, it is passed to: that is
+    /// what lets a callback be followed from the call site to the parameter that
+    /// finally calls it.
+    fn scan_argument(
+        &mut self,
+        value: TsNode<'_>,
+        enclosing_id: &str,
+        call_site: Option<Span>,
+        slot: Option<Slot>,
+    ) -> PyResult<()> {
+        if let (Some(site), Some(slot), Some(name)) = (call_site, slot.as_ref(), Self::plain_name(value)) {
+            if value.kind() == "attribute" {
+                // The receiver of `obj.attr` is read as well.
+                for part in ts::children(value) {
+                    if part.id() != name.id() && part.kind() != "." {
+                        self.scan_value(part, enclosing_id)?;
+                    }
+                }
+            }
+            let slot = match slot {
+                Slot::Index(i) => i.to_string(),
+                Slot::Keyword(k) => format!("={k}"),
+            };
+            let detail = format!("arg:{}:{}:{slot}", site.start_line, site.start_col);
+            self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+            return Ok(());
+        }
+        // `g(f())`: the parameter holds whatever `f` returns.
+        if let (Some(site), Some(slot)) = (call_site, slot)
+            && value.kind() == "call"
+            && let Some(function) = value.child_by_field_name("function")
+            && let Some(name) = Self::plain_name(function)
+        {
+            let slot = match slot {
+                Slot::Index(i) => i.to_string(),
+                Slot::Keyword(k) => format!("={k}"),
+            };
+            let detail = format!("arg:{}:{}:{slot}:result", site.start_line, site.start_col);
+            self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+        }
+        self.scan_value(value, enclosing_id)
     }
 
     fn walk_body(&mut self, body: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
@@ -675,6 +809,20 @@ impl<'a> PythonVisitor<'a> {
         if node.kind() == "return_statement" {
             return self.visit_return_statement(node);
         }
+        if node.kind() == "raise_statement" {
+            // `raise A` instantiates A as surely as `raise A()` does.
+            if let Some(raised) = ts::children(node).into_iter().find(|c| c.kind() != "raise")
+                && let Some(name) = Self::plain_name(raised)
+            {
+                self.record_occurrence("call", name, enclosing_id);
+            }
+            for child in ts::children(node) {
+                if child.kind() != "raise" {
+                    self.scan_value(child, enclosing_id)?;
+                }
+            }
+            return Ok(());
+        }
         for child in ts::children(node) {
             if child.kind() == "block" {
                 self.walk_body(child, enclosing_id)?;
@@ -688,6 +836,16 @@ impl<'a> PythonVisitor<'a> {
     }
 
     fn record_occurrence(&mut self, role: &str, name_node: TsNode<'_>, enclosing_id: &str) {
+        self.record_occurrence_with(role, name_node, enclosing_id, None);
+    }
+
+    fn record_occurrence_with(
+        &mut self,
+        role: &str,
+        name_node: TsNode<'_>,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         let span = ts::span(name_node);
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
@@ -695,7 +853,20 @@ impl<'a> PythonVisitor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
+            detail,
         });
+    }
+
+    /// The identifier a name or attribute chain ends in - the position the
+    /// resolver is asked about - when `node` is nothing but such a chain.
+    fn plain_name<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
+        match node.kind() {
+            "identifier" => Some(node),
+            // `a.b`, `self.b`, `make().b`: the position asked about is the
+            // attribute; whatever is before it is read separately.
+            "attribute" => ts::children(node).into_iter().rev().find(|c| c.kind() == "identifier"),
+            _ => None,
+        }
     }
 
     /// Records an `annotation` for the leading identifier of a `type` node.
@@ -716,10 +887,29 @@ impl<'a> PythonVisitor<'a> {
         decorator_nodes: &[TsNode<'_>],
         enclosing_id: &str,
     ) -> PyResult<()> {
+        // A decorator is *called* when the definition is executed, which is by the
+        // scope the definition sits in; the decorated definition only *depends* on
+        // it. So the call edge comes from the container, and the reads (of the
+        // router, of the arguments) stay with the definition.
+        let container = self.container();
         for dec in decorator_nodes {
             for child in ts::children(*dec) {
-                if child.kind() != "@" {
-                    self.scan_value(child, enclosing_id)?;
+                match child.kind() {
+                    "@" => {}
+                    "call" => {
+                        self.scan_call(child, enclosing_id, &container)?;
+                        // The definition depends on what decorates it.
+                        if let Some(name) = Self::callee_name(child) {
+                            self.record_occurrence("read", name, enclosing_id);
+                        }
+                    }
+                    "identifier" | "attribute" => {
+                        self.scan_value(child, enclosing_id)?;
+                        if let Some(name) = Self::plain_name(child) {
+                            self.record_occurrence("call", name, &container);
+                        }
+                    }
+                    _ => self.scan_value(child, enclosing_id)?,
                 }
             }
         }
@@ -747,6 +937,10 @@ impl<'a> PythonVisitor<'a> {
         let container = self.container();
         for child in ts::children(node) {
             if child.kind() != "return" {
+                // Calling the function yields what is returned.
+                if let Some(name) = Self::plain_name(child) {
+                    self.record_occurrence_with("alias", name, &container, Some("return".into()));
+                }
                 self.scan_value(child, &container)?;
             }
         }
@@ -820,10 +1014,17 @@ impl<'a> PythonVisitor<'a> {
             metadata,
             Some(name_node),
         )?;
+        let var_id = var_node.get().id.clone();
         self.add_node_with_relation(var_node, RelationKind::Declares)?;
 
         let container = self.container();
         self.record_occurrence("write", name_node, &container);
+
+        // `x = y`: the variable holds what `y` resolves to. The enclosing node of
+        // an `alias` is the variable, so the flow pass knows who holds it.
+        if !is_alias && let Some(value) = rhs {
+            self.record_aliases(value, &var_id, 0);
+        }
 
         match rhs {
             Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,

@@ -1,0 +1,1 @@
+{"main()": ["from_a()", "from_b()"], "from_a()": ["a.cpp::h()"], "from_b()": ["b.cpp::h()"], "a.cpp::h()": [], "b.cpp::h()": []}

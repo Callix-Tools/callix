@@ -13,7 +13,9 @@ The live table lives in the
 refreshed by CI. It analyses eight real projects — apache/superset,
 colinhacks/zod, gin-gonic/gin, casdoor/casdoor, gohugoio/hugo,
 BurntSushi/ripgrep, tokio-rs/axum, astral-sh/ruff — roughly 1.6 million lines
-in total, and reports lines per second, peak memory and the resolved share.
+in total, and reports lines per second, peak memory and the share of use-sites the
+backend answered (not a measure of correctness: see
+[how accurate resolution is](./accuracy.md)).
 
 :::note Four languages, not eight
 The suite covers Python, TypeScript, Go and Rust. PHP, C and C++ have fixtures

@@ -57,20 +57,26 @@ containment edges, but no `CALLS`, `REFERENCES`, `HAS_TYPE` or `INHERITS_FROM`
 
 ## Check the result before trusting it
 
-A graph always tells you how complete it is — and for three languages the answer
-is never `ok`, because PHP, C and C++ resolve through a symbol table rather than
-a type checker:
+A graph says how it was resolved — and for three languages the status is never
+`ok`, because PHP, C and C++ resolve through a symbol table rather than a type
+checker:
 
 ```python
 graph.metadata["resolver_status"]    # 'ok' | 'degraded' | 'unavailable'
 graph.metadata["resolver_metrics"]
 # {'queries': 28, 'resolved': 25, 'internal': 12, 'external': 13,
-#  'unresolved': 3, 'seconds': 0.034, 'resolved_pct': 89.3}
+#  'unresolved': 3, 'seconds': 0.034, 'to_value': 2, 'unlocated': 1,
+#  'resolved_pct': 89.3}
 ```
 
-Without this, a fast run that resolved nothing is indistinguishable from a fast
-run that resolved everything. Pass `strict=True` to `analyze()` to raise
-`AdapterError` instead of returning a degraded graph.
+`resolved` means the backend answered, not that it found the callee: `to_value`
+counts the calls that stopped at a variable, and every edge records in
+`metadata["resolution"]` how it was found (`definition`, `value`, `flow`,
+`external`, `unlocated`, `name`). Without this, a fast run that resolved nothing
+is indistinguishable from a fast run that resolved everything. Pass
+`strict=True` to `analyze()` to raise `AdapterError` instead of returning a
+degraded graph, and read [how accurate resolution is](../project/accuracy.md) for
+what each language's resolver follows.
 
 ## Save it
 

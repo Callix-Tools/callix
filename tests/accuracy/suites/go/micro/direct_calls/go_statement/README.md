@@ -1,0 +1,1 @@
+`go g()` calls g.

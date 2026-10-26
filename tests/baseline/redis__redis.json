@@ -1016,9 +1016,9 @@
       "relations": 20
     },
     "deps/jemalloc/src/hook.c": {
-      "hash": "9e051e7e89637a8e",
-      "nodes": 41,
-      "relations": 53
+      "hash": "7f83d65dbd80eda7",
+      "nodes": 44,
+      "relations": 56
     },
     "deps/jemalloc/src/hpa.c": {
       "hash": "a55f90ca168ca5ba",
@@ -1126,9 +1126,9 @@
       "relations": 34
     },
     "deps/jemalloc/src/prof_sys.c": {
-      "hash": "a5156ce6fa6ba5f6",
-      "nodes": 103,
-      "relations": 121
+      "hash": "5697bb9036b4b694",
+      "nodes": 105,
+      "relations": 123
     },
     "deps/jemalloc/src/psset.c": {
       "hash": "27da4f3f58633bec",
@@ -1196,9 +1196,9 @@
       "relations": 7
     },
     "deps/jemalloc/src/tsd.c": {
-      "hash": "4ed197f80fb8a0aa",
-      "nodes": 87,
-      "relations": 102
+      "hash": "86b2bce791059c88",
+      "nodes": 88,
+      "relations": 103
     },
     "deps/jemalloc/src/witness.c": {
       "hash": "fad48c39c4caf151",
@@ -2106,9 +2106,9 @@
       "relations": 11
     },
     "deps/lua/src/ldo.c": {
-      "hash": "9ebd380d760f6e55",
-      "nodes": 108,
-      "relations": 152
+      "hash": "f6ea03225f0b766a",
+      "nodes": 109,
+      "relations": 153
     },
     "deps/lua/src/ldo.h": {
       "hash": "ca339e295c1bf238",
@@ -2273,7 +2273,7 @@
     "deps/lua/src/lua.c": {
       "hash": "b8041af3d4c469ff",
       "nodes": 80,
-      "relations": 96
+      "relations": 97
     },
     "deps/lua/src/lua.h": {
       "hash": "d2c274f88ab68138",
@@ -2291,9 +2291,9 @@
       "relations": 193
     },
     "deps/lua/src/lua_cmsgpack.c": {
-      "hash": "bb565035d85adff8",
-      "nodes": 107,
-      "relations": 126
+      "hash": "7d171620371f15fd",
+      "nodes": 108,
+      "relations": 127
     },
     "deps/lua/src/lua_struct.c": {
       "hash": "f9168e2b674a25f2",
@@ -2841,9 +2841,9 @@
       "relations": 291
     },
     "src/dict.c": {
-      "hash": "618faa3963a64566",
-      "nodes": 365,
-      "relations": 409
+      "hash": "4302fc7b881498e4",
+      "nodes": 373,
+      "relations": 417
     },
     "src/dict.h": {
       "hash": "a8fe998539a8c60f",
@@ -3141,9 +3141,9 @@
       "relations": 84
     },
     "src/module.c": {
-      "hash": "9ff82138e1df0075",
-      "nodes": 2125,
-      "relations": 2316
+      "hash": "882ff9ae751d0847",
+      "nodes": 2126,
+      "relations": 2317
     },
     "src/modules/helloacl.c": {
       "hash": "73262ef0b2f331f2",
@@ -3256,9 +3256,9 @@
       "relations": 135
     },
     "src/quicklist.c": {
-      "hash": "520fae13814304f4",
-      "nodes": 281,
-      "relations": 309
+      "hash": "bf149315e89bd3f4",
+      "nodes": 282,
+      "relations": 310
     },
     "src/quicklist.h": {
       "hash": "14ebd3524bfafdd1",
@@ -3406,8 +3406,8 @@
       "relations": 562
     },
     "src/server.c": {
-      "hash": "aeb0a9f34267c929",
-      "nodes": 644,
+      "hash": "053c49e85a4d13a7",
+      "nodes": 645,
       "relations": 755
     },
     "src/server.h": {
@@ -3561,9 +3561,9 @@
       "relations": 2
     },
     "src/threads_mngr.c": {
-      "hash": "9d6e57dd534ce5de",
-      "nodes": 22,
-      "relations": 33
+      "hash": "a50013b284c5b202",
+      "nodes": 23,
+      "relations": 34
     },
     "src/threads_mngr.h": {
       "hash": "bf7f621e3b67c377",
@@ -3909,11 +3909,11 @@
       "parameter": 22575,
       "project": 15,
       "type_alias": 1039,
-      "variable": 1152
+      "variable": 1172
     },
     "relations": {
       "contains": 809,
-      "declares": 52916,
+      "declares": 52936,
       "depends_on": 21,
       "imports": 3127,
       "resolves_to": 3128
@@ -3923,27 +3923,27 @@
   "ref": "8.10.0",
   "resolution": {
     "metrics": {
-      "external": 111424,
-      "internal": 50053,
-      "queries": 161477,
-      "resolved": 161477,
+      "external": 62400,
+      "internal": 134130,
+      "queries": 196530,
+      "resolved": 196530,
       "unresolved": 0
     },
     "relations": {
-      "calls": 80126,
+      "calls": 81618,
       "contains": 809,
-      "declares": 52916,
+      "declares": 52936,
       "depends_on": 21,
       "has_type": 22099,
       "imports": 3127,
-      "references": 59252,
+      "references": 60766,
       "resolves_to": 3128
     },
     "status": "degraded"
   },
   "totals": {
     "files": 779,
-    "nodes": 45618,
-    "relations": 60001
+    "nodes": 45638,
+    "relations": 60021
   }
 }

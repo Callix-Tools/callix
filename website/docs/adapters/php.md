@@ -98,7 +98,14 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   `$container->get('service')` returns.
 
 Everything unresolved still produces an edge to an `EXTERNAL_SYMBOL`, so a
-reference is never silently dropped.
+reference is never silently dropped. What the edge says about itself is its
+`resolution`: `definition` for a declaration of the project, `external` for a
+name no analysed source declares (a built-in such as `explode`, a library), and
+`unlocated` for a member of a class the project does declare that the table
+could not find on it (inherited from `vendor/`, declared only on an
+implementation, or magic). On laravel/framework, of 128 874 calls, 62 898 reach a
+definition, 24 605 are outside the project and 41 371 are `unlocated`: that last
+number is the one to read before trusting a PHP call graph.
 
 ## Boundaries
 

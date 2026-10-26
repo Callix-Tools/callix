@@ -89,6 +89,24 @@ an exception's base class gets a `builtins.` prefix that has to be stripped.
 
 ## Correctness
 
+Two different questions, answered by two different layers. The golden files and
+the baselines say whether callix still produces what it did. [`tests/accuracy`](tests/accuracy)
+says whether that is **right**: small programs per language, each with the call
+graph a reader would draw, scored with the PyCG artifact's sound/complete rule
+and edge recall and precision.
+
+```bash
+task accuracy                     # every suite, with the resolver on
+task accuracy -- go/micro -v      # one suite, every miss spelled out
+task accuracy:update              # raise the floor after an improvement
+```
+
+`thresholds.json` is a ratchet, enforced by `task unit` and CI. A change that
+makes a language resolve less must say so (`python tests/accuracy/run.py --reset`)
+and the diff shows what was given up. When you add a case, write the call graph
+from the language's rules *before* running callix on it; a case callix fails is
+the reason the case exists, not a reason to edit it.
+
 ```bash
 task golden              # compare the fixture graphs against tests/golden
 task golden UPDATE=1     # rewrite them, once a change is understood

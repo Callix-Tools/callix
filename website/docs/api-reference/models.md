@@ -63,10 +63,14 @@ sends the edge to a node in the graph; the rest produce an `EXTERNAL_SYMBOL`.
 A use-site waiting to be resolved.
 
 ```python
-OccurrenceRef(role, line, col, enclosing_id, span)
+OccurrenceRef(role, line, col, enclosing_id, span, detail=None)
 ```
 
-`role` is `call`, `read`, `write`, `annotation` or `base`.
+`role` is `call`, `read`, `write`, `annotation`, `base` or `alias` (the
+right-hand side of `x = y`, enclosed by the variable). `detail` carries what a
+role cannot: `arg:LINE:COL:INDEX` on a `read` that is an argument of the call at
+`LINE:COL`, and `return` / `result` on an `alias`. The flow pass reads them; a
+custom resolver sees them as ordinary use-sites to answer.
 
 ## ResolverStatus
 
@@ -82,12 +86,14 @@ no symbols to resolve — see [Resolvers](../adapters/resolvers.md).
 
 ```python
 metrics.queries      # positions handed to the resolver
-metrics.resolved     # answers that came back
+metrics.resolved     # answers that came back - a place, not necessarily a callee
 metrics.internal     # bound to a node in the graph
-metrics.external     # became an EXTERNAL_SYMBOL
+metrics.external     # became an EXTERNAL_SYMBOL (outside the project, or not bound)
 metrics.unresolved   # no answer
+metrics.to_value     # calls that stopped at a variable, a parameter or a field
+metrics.unlocated    # answers callix could not bind to a node
 metrics.seconds
-metrics.resolved_pct
+metrics.resolved_pct # share answered; not a measure of correctness
 ```
 
 ## GraphDiff

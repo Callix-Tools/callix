@@ -8,7 +8,7 @@
     "cache/cache_bench.cc": {
       "hash": "f7f8b184458c10b7",
       "nodes": 7,
-      "relations": 10
+      "relations": 13
     },
     "cache/cache_bench_tool.cc": {
       "hash": "4ad865c270ba679e",
@@ -376,9 +376,9 @@
       "relations": 137
     },
     "db/blob/db_blob_basic_test.cc": {
-      "hash": "11eddece251b04b6",
-      "nodes": 66,
-      "relations": 98
+      "hash": "b3cb39e0f9718cba",
+      "nodes": 67,
+      "relations": 99
     },
     "db/blob/db_blob_compaction_test.cc": {
       "hash": "a6bce28e65632afb",
@@ -391,9 +391,9 @@
       "relations": 19
     },
     "db/blob/db_blob_index_test.cc": {
-      "hash": "c54a95c8809b9c86",
-      "nodes": 49,
-      "relations": 96
+      "hash": "4caed5add13029ce",
+      "nodes": 58,
+      "relations": 105
     },
     "db/blob/prefetch_buffer_collection.cc": {
       "hash": "3927a23e9511ddc1",
@@ -461,9 +461,9 @@
       "relations": 54
     },
     "db/compaction/compaction.cc": {
-      "hash": "a40aa0a1c741cacc",
-      "nodes": 136,
-      "relations": 181
+      "hash": "fc217d8e99fef4a2",
+      "nodes": 137,
+      "relations": 182
     },
     "db/compaction/compaction.h": {
       "hash": "513a7bd4daf90242",
@@ -491,9 +491,9 @@
       "relations": 316
     },
     "db/compaction/compaction_job.cc": {
-      "hash": "a70aabd4cd70e6c7",
-      "nodes": 286,
-      "relations": 388
+      "hash": "8575a25587f8688e",
+      "nodes": 287,
+      "relations": 389
     },
     "db/compaction/compaction_job.h": {
       "hash": "f226593c2bc9aa0c",
@@ -506,9 +506,9 @@
       "relations": 381
     },
     "db/compaction/compaction_job_test.cc": {
-      "hash": "9258a5747455fd82",
-      "nodes": 251,
-      "relations": 381
+      "hash": "93f8c73858cf1689",
+      "nodes": 252,
+      "relations": 382
     },
     "db/compaction/compaction_outputs.cc": {
       "hash": "6d3f7837679223f1",
@@ -521,9 +521,9 @@
       "relations": 216
     },
     "db/compaction/compaction_picker.cc": {
-      "hash": "cc260413a20b95d5",
-      "nodes": 154,
-      "relations": 187
+      "hash": "5802d13ec3d2172b",
+      "nodes": 155,
+      "relations": 188
     },
     "db/compaction/compaction_picker.h": {
       "hash": "97b0e292999619a4",
@@ -551,9 +551,9 @@
       "relations": 18
     },
     "db/compaction/compaction_picker_test.cc": {
-      "hash": "dd534639b16d651d",
-      "nodes": 312,
-      "relations": 423
+      "hash": "5c724f8e79dea137",
+      "nodes": 314,
+      "relations": 425
     },
     "db/compaction/compaction_picker_universal.cc": {
       "hash": "7dbab9bb178b69d4",
@@ -606,9 +606,9 @@
       "relations": 118
     },
     "db/compaction/tiered_compaction_test.cc": {
-      "hash": "4f6a91be41f6f0e2",
-      "nodes": 126,
-      "relations": 190
+      "hash": "ba8309fa8b1323ea",
+      "nodes": 129,
+      "relations": 193
     },
     "db/comparator_db_test.cc": {
       "hash": "04ca92f314642bc8",
@@ -636,19 +636,19 @@
       "relations": 80
     },
     "db/db_basic_test.cc": {
-      "hash": "b15fdd5b376023ac",
-      "nodes": 343,
-      "relations": 510
+      "hash": "452dcfd339509275",
+      "nodes": 345,
+      "relations": 512
     },
     "db/db_block_cache_test.cc": {
-      "hash": "cbb2e941a51cb654",
-      "nodes": 220,
-      "relations": 359
+      "hash": "0ee92484f473de1d",
+      "nodes": 222,
+      "relations": 361
     },
     "db/db_bloom_filter_test.cc": {
-      "hash": "edf3613c98b48938",
-      "nodes": 234,
-      "relations": 364
+      "hash": "49d888152c7569f6",
+      "nodes": 239,
+      "relations": 369
     },
     "db/db_clip_test.cc": {
       "hash": "f3530fe09220ea4b",
@@ -656,9 +656,9 @@
       "relations": 14
     },
     "db/db_compaction_abort_test.cc": {
-      "hash": "e3bcd7c57b46fdea",
-      "nodes": 79,
-      "relations": 136
+      "hash": "70abbccd13563c61",
+      "nodes": 83,
+      "relations": 140
     },
     "db/db_compaction_filter_test.cc": {
       "hash": "f72b2f5819829a84",
@@ -666,14 +666,14 @@
       "relations": 174
     },
     "db/db_compaction_test.cc": {
-      "hash": "c145a4fd3e40cea4",
-      "nodes": 369,
-      "relations": 514
+      "hash": "5308c27cd70e69d5",
+      "nodes": 375,
+      "relations": 520
     },
     "db/db_dynamic_level_test.cc": {
-      "hash": "d0ac675102efbcd6",
-      "nodes": 13,
-      "relations": 24
+      "hash": "e5764d57603add54",
+      "nodes": 15,
+      "relations": 26
     },
     "db/db_encryption_test.cc": {
       "hash": "2d1ae09a2dcc2d68",
@@ -681,14 +681,14 @@
       "relations": 27
     },
     "db/db_etc3_test.cc": {
-      "hash": "c6e2de05bd422882",
-      "nodes": 6,
-      "relations": 9
+      "hash": "29b2c82177843066",
+      "nodes": 9,
+      "relations": 12
     },
     "db/db_filesnapshot.cc": {
-      "hash": "9a2f5d00816f28f6",
-      "nodes": 36,
-      "relations": 75
+      "hash": "e0a45e96d69cf592",
+      "nodes": 37,
+      "relations": 76
     },
     "db/db_flush_test.cc": {
       "hash": "ff8bdd0ea7acbfaf",
@@ -711,9 +711,9 @@
       "relations": 70
     },
     "db/db_impl/db_impl.cc": {
-      "hash": "06136e49572c0c4d",
-      "nodes": 699,
-      "relations": 949
+      "hash": "52b9ffb99c396f90",
+      "nodes": 701,
+      "relations": 951
     },
     "db/db_impl/db_impl.h": {
       "hash": "e847bf2523ca904f",
@@ -721,9 +721,9 @@
       "relations": 1813
     },
     "db/db_impl/db_impl_compaction_flush.cc": {
-      "hash": "ed8a839f08cbc1fc",
-      "nodes": 291,
-      "relations": 349
+      "hash": "820238d86715a113",
+      "nodes": 292,
+      "relations": 350
     },
     "db/db_impl/db_impl_debug.cc": {
       "hash": "04b746c38df055d3",
@@ -751,9 +751,9 @@
       "relations": 48
     },
     "db/db_impl/db_impl_open.cc": {
-      "hash": "2642fc31aa99a046",
-      "nodes": 266,
-      "relations": 326
+      "hash": "683551936a7fc91b",
+      "nodes": 269,
+      "relations": 329
     },
     "db/db_impl/db_impl_readonly.cc": {
       "hash": "94bb2e4ca6546c18",
@@ -811,9 +811,9 @@
       "relations": 332
     },
     "db/db_iter_stress_test.cc": {
-      "hash": "8cc4d397141846d3",
-      "nodes": 87,
-      "relations": 161
+      "hash": "04a93322de05f5bb",
+      "nodes": 88,
+      "relations": 162
     },
     "db/db_iter_test.cc": {
       "hash": "6ea2a67033a595c6",
@@ -821,9 +821,9 @@
       "relations": 204
     },
     "db/db_iterator_test.cc": {
-      "hash": "13365ab81d1b6497",
-      "nodes": 127,
-      "relations": 174
+      "hash": "359d739910698d78",
+      "nodes": 129,
+      "relations": 176
     },
     "db/db_kv_checksum_test.cc": {
       "hash": "a8ecd0f2277551d2",
@@ -851,14 +851,14 @@
       "relations": 59
     },
     "db/db_merge_operator_test.cc": {
-      "hash": "cca12c03fbf9f5bb",
-      "nodes": 57,
-      "relations": 97
+      "hash": "78239ea92efd8d28",
+      "nodes": 59,
+      "relations": 99
     },
     "db/db_options_test.cc": {
-      "hash": "8b3a051b6205020d",
-      "nodes": 72,
-      "relations": 113
+      "hash": "2676b774ca3dac7a",
+      "nodes": 76,
+      "relations": 117
     },
     "db/db_properties_test.cc": {
       "hash": "91ce45aef50b8b24",
@@ -866,9 +866,9 @@
       "relations": 206
     },
     "db/db_range_del_test.cc": {
-      "hash": "b1be05d46a5be435",
-      "nodes": 113,
-      "relations": 146
+      "hash": "c366a1c4e42770ba",
+      "nodes": 117,
+      "relations": 150
     },
     "db/db_rate_limiter_test.cc": {
       "hash": "64211dfcac3ee663",
@@ -876,14 +876,14 @@
       "relations": 108
     },
     "db/db_readonly_with_timestamp_test.cc": {
-      "hash": "f7085d3dd8230810",
-      "nodes": 26,
-      "relations": 33
+      "hash": "eb4b0c7b30a85cf9",
+      "nodes": 27,
+      "relations": 34
     },
     "db/db_secondary_test.cc": {
-      "hash": "50ac5f4d46d423ed",
-      "nodes": 85,
-      "relations": 121
+      "hash": "eac7db24bc0f3611",
+      "nodes": 93,
+      "relations": 129
     },
     "db/db_sst_test.cc": {
       "hash": "d7cfc2dc5a8db08c",
@@ -891,9 +891,9 @@
       "relations": 81
     },
     "db/db_statistics_test.cc": {
-      "hash": "509a09ad1da45633",
-      "nodes": 19,
-      "relations": 36
+      "hash": "cdbb677fd77b3b27",
+      "nodes": 20,
+      "relations": 37
     },
     "db/db_table_properties_test.cc": {
       "hash": "6e07a57c20cd3e45",
@@ -906,14 +906,14 @@
       "relations": 27
     },
     "db/db_test.cc": {
-      "hash": "c9e4c243e587d190",
-      "nodes": 489,
-      "relations": 764
+      "hash": "eced776e8ec288d8",
+      "nodes": 498,
+      "relations": 773
     },
     "db/db_test2.cc": {
-      "hash": "c7ad2ef56e271c0f",
-      "nodes": 243,
-      "relations": 363
+      "hash": "a75d8a21350d57e0",
+      "nodes": 251,
+      "relations": 371
     },
     "db/db_test_util.cc": {
       "hash": "3cfc7153672ff422",
@@ -921,24 +921,24 @@
       "relations": 363
     },
     "db/db_test_util.h": {
-      "hash": "b074b8e2ff0a27c2",
-      "nodes": 317,
-      "relations": 793
+      "hash": "c0b52afad1023870",
+      "nodes": 318,
+      "relations": 794
     },
     "db/db_universal_compaction_test.cc": {
-      "hash": "de26fa0072171563",
-      "nodes": 77,
-      "relations": 110
+      "hash": "5cc360a3b0ca93b1",
+      "nodes": 81,
+      "relations": 114
     },
     "db/db_wal_test.cc": {
-      "hash": "6f381cba92b5d213",
-      "nodes": 149,
-      "relations": 205
+      "hash": "00fbc8403d0871fb",
+      "nodes": 152,
+      "relations": 208
     },
     "db/db_with_timestamp_basic_test.cc": {
-      "hash": "17ac38c25d0e13fd",
-      "nodes": 129,
-      "relations": 183
+      "hash": "5d6b7f507b8d3ab1",
+      "nodes": 142,
+      "relations": 196
     },
     "db/db_with_timestamp_compaction_test.cc": {
       "hash": "ac6f91d7037f71f6",
@@ -961,9 +961,9 @@
       "relations": 27
     },
     "db/db_write_test.cc": {
-      "hash": "55e33e14aabf0758",
-      "nodes": 47,
-      "relations": 83
+      "hash": "5727da8c52db1e11",
+      "nodes": 48,
+      "relations": 84
     },
     "db/dbformat.cc": {
       "hash": "ee4787833053e208",
@@ -981,9 +981,9 @@
       "relations": 38
     },
     "db/deletefile_test.cc": {
-      "hash": "3804a71fcfb8a2da",
-      "nodes": 46,
-      "relations": 90
+      "hash": "a7ed490d8b1b27cb",
+      "nodes": 47,
+      "relations": 91
     },
     "db/error_handler.cc": {
       "hash": "1e60d71ce9bd32b3",
@@ -1096,9 +1096,9 @@
       "relations": 162
     },
     "db/forward_iterator_bench.cc": {
-      "hash": "75634887823ebfae",
-      "nodes": 92,
-      "relations": 186
+      "hash": "2d4b694122144527",
+      "nodes": 95,
+      "relations": 187
     },
     "db/history_trimming_iterator.h": {
       "hash": "10f73683d94bae4e",
@@ -1121,9 +1121,9 @@
       "relations": 62
     },
     "db/internal_stats.cc": {
-      "hash": "751fedcc4459153f",
-      "nodes": 446,
-      "relations": 598
+      "hash": "a656634cc8bdc43a",
+      "nodes": 447,
+      "relations": 599
     },
     "db/internal_stats.h": {
       "hash": "a8b8ea24f043f982",
@@ -1141,9 +1141,9 @@
       "relations": 232
     },
     "db/listener_test.cc": {
-      "hash": "68134164615383ce",
-      "nodes": 222,
-      "relations": 395
+      "hash": "3a25cb8a8ecbd271",
+      "nodes": 223,
+      "relations": 396
     },
     "db/log_reader.cc": {
       "hash": "c64097fba6afeb0f",
@@ -1261,19 +1261,19 @@
       "relations": 32
     },
     "db/merge_test.cc": {
-      "hash": "e3ebe4fef9aa99f3",
-      "nodes": 123,
-      "relations": 189
+      "hash": "a6b889b0b7f79ae1",
+      "nodes": 124,
+      "relations": 190
     },
     "db/multi_cf_iterator_impl.h": {
-      "hash": "a7ef32102d0c0b59",
-      "nodes": 65,
-      "relations": 115
+      "hash": "ae6e8a91cf6fc69c",
+      "nodes": 66,
+      "relations": 116
     },
     "db/multi_cf_iterator_test.cc": {
-      "hash": "cf48960e2e356ecb",
-      "nodes": 38,
-      "relations": 47
+      "hash": "2db3affa8c06335b",
+      "nodes": 40,
+      "relations": 49
     },
     "db/multi_scan.cc": {
       "hash": "166b39c66ffdcd93",
@@ -1301,9 +1301,9 @@
       "relations": 30
     },
     "db/perf_context_test.cc": {
-      "hash": "e3a408ddbeaa24d0",
-      "nodes": 46,
-      "relations": 83
+      "hash": "ecff5506777ed279",
+      "nodes": 47,
+      "relations": 84
     },
     "db/periodic_task_scheduler.cc": {
       "hash": "3bfa5cdd0b529f3b",
@@ -1316,14 +1316,14 @@
       "relations": 66
     },
     "db/periodic_task_scheduler_test.cc": {
-      "hash": "dc97f0f7671268f3",
-      "nodes": 19,
-      "relations": 36
+      "hash": "ad2ddeebce1e7e73",
+      "nodes": 20,
+      "relations": 37
     },
     "db/pinned_iterators_manager.h": {
-      "hash": "cd22be73bc091446",
-      "nodes": 29,
-      "relations": 52
+      "hash": "3e792dc80e86b643",
+      "nodes": 30,
+      "relations": 53
     },
     "db/plain_table_db_test.cc": {
       "hash": "6417fc0afa08c564",
@@ -1361,14 +1361,14 @@
       "relations": 109
     },
     "db/range_del_aggregator_test.cc": {
-      "hash": "fb067e3b49441ac3",
-      "nodes": 79,
-      "relations": 110
+      "hash": "8a01fd25b0b2fbe3",
+      "nodes": 80,
+      "relations": 111
     },
     "db/range_tombstone_fragmenter.cc": {
-      "hash": "69d95f21e3125714",
-      "nodes": 65,
-      "relations": 92
+      "hash": "daf15a1a7eda6f44",
+      "nodes": 66,
+      "relations": 93
     },
     "db/range_tombstone_fragmenter.h": {
       "hash": "1c8e7cb91f51e3fd",
@@ -1396,9 +1396,9 @@
       "relations": 80
     },
     "db/seqno_time_test.cc": {
-      "hash": "3250b6c63593a316",
-      "nodes": 45,
-      "relations": 70
+      "hash": "cd8b7f3bd2e0c1fd",
+      "nodes": 46,
+      "relations": 71
     },
     "db/seqno_to_time_mapping.cc": {
       "hash": "f7e616854a25052f",
@@ -1531,14 +1531,14 @@
       "relations": 4
     },
     "db/version_set_test.cc": {
-      "hash": "0ee2a1b93f6d8e03",
-      "nodes": 378,
-      "relations": 565
+      "hash": "a9556fc3af476d05",
+      "nodes": 379,
+      "relations": 566
     },
     "db/version_util.cc": {
-      "hash": "0df8ebe645c10584",
-      "nodes": 23,
-      "relations": 42
+      "hash": "22c0cbe631f52c3c",
+      "nodes": 24,
+      "relations": 43
     },
     "db/version_util.h": {
       "hash": "b1aa3c7ca17aeeb8",
@@ -1576,9 +1576,9 @@
       "relations": 114
     },
     "db/wide/db_wide_basic_test.cc": {
-      "hash": "8ea60e0bd9453ca2",
-      "nodes": 58,
-      "relations": 99
+      "hash": "3a9f3483e49f6746",
+      "nodes": 73,
+      "relations": 114
     },
     "db/wide/wide_column_serialization.cc": {
       "hash": "ebf5aa60bf380324",
@@ -1591,9 +1591,9 @@
       "relations": 81
     },
     "db/wide/wide_column_serialization_test.cc": {
-      "hash": "84b03320995379d2",
-      "nodes": 61,
-      "relations": 79
+      "hash": "a1e744c0e1a75998",
+      "nodes": 62,
+      "relations": 80
     },
     "db/wide/wide_columns.cc": {
       "hash": "cb2cd47b0185acc5",
@@ -1686,9 +1686,9 @@
       "relations": 66
     },
     "db_stress_tool/cf_consistency_stress.cc": {
-      "hash": "71dde143b697ca67",
-      "nodes": 58,
-      "relations": 78
+      "hash": "0cdb1b160da16be2",
+      "nodes": 60,
+      "relations": 80
     },
     "db_stress_tool/db_stress.cc": {
       "hash": "90a4be9bb2872898",
@@ -1841,9 +1841,9 @@
       "relations": 253
     },
     "db_stress_tool/no_batched_ops_stress.cc": {
-      "hash": "6348d0ff8dfa3e66",
-      "nodes": 104,
-      "relations": 143
+      "hash": "f38418f27018fd74",
+      "nodes": 111,
+      "relations": 150
     },
     "env/composite_env.cc": {
       "hash": "fdff5075b85fdc0e",
@@ -1861,9 +1861,9 @@
       "relations": 67
     },
     "env/env.cc": {
-      "hash": "4c70e8dbcd5490f6",
-      "nodes": 474,
-      "relations": 627
+      "hash": "0fee0eb15b9eef14",
+      "nodes": 475,
+      "relations": 628
     },
     "env/env_basic_test.cc": {
       "hash": "9f06f8d006c9637c",
@@ -1976,9 +1976,9 @@
       "relations": 27
     },
     "env/unique_id_gen.cc": {
-      "hash": "0d1a07f73eb3d7a6",
-      "nodes": 73,
-      "relations": 123
+      "hash": "c9dacb63b1284d90",
+      "nodes": 74,
+      "relations": 124
     },
     "env/unique_id_gen.h": {
       "hash": "f8b64d2e61df15bc",
@@ -2611,9 +2611,9 @@
       "relations": 36
     },
     "include/rocksdb/utilities/object_registry.h": {
-      "hash": "d1a743a21fa6dcd4",
-      "nodes": 141,
-      "relations": 263
+      "hash": "6082e16139b38522",
+      "nodes": 142,
+      "relations": 264
     },
     "include/rocksdb/utilities/optimistic_transaction_db.h": {
       "hash": "1ed729dd6816bfe3",
@@ -3306,9 +3306,9 @@
       "relations": 99
     },
     "memory/jemalloc_nodump_allocator.cc": {
-      "hash": "6c83dcbdf74a2756",
-      "nodes": 19,
-      "relations": 42
+      "hash": "6f27b693b73fbdb8",
+      "nodes": 20,
+      "relations": 43
     },
     "memory/jemalloc_nodump_allocator.h": {
       "hash": "cffa0373991d2993",
@@ -3371,8 +3371,8 @@
       "relations": 211
     },
     "memtable/memtablerep_bench.cc": {
-      "hash": "bb1dece9bb8958e1",
-      "nodes": 199,
+      "hash": "3053fce9cc826dc3",
+      "nodes": 200,
       "relations": 310
     },
     "memtable/skiplist.h": {
@@ -3661,9 +3661,9 @@
       "relations": 46
     },
     "options/options_test.cc": {
-      "hash": "ac04b96a18a53432",
-      "nodes": 196,
-      "relations": 284
+      "hash": "184f3f53c89e0aa4",
+      "nodes": 197,
+      "relations": 285
     },
     "port/mmap.cc": {
       "hash": "8ab85bd2fc999ea6",
@@ -3696,9 +3696,9 @@
       "relations": 107
     },
     "port/stack_trace.cc": {
-      "hash": "9826925a0d0a452e",
-      "nodes": 47,
-      "relations": 81
+      "hash": "bb3f52b431b5ae9c",
+      "nodes": 49,
+      "relations": 83
     },
     "port/stack_trace.h": {
       "hash": "b35d20d4a90a13e5",
@@ -3811,9 +3811,9 @@
       "relations": 522
     },
     "table/block_based/block_based_table_builder.cc": {
-      "hash": "bbc3d0122d24f511",
-      "nodes": 343,
-      "relations": 595
+      "hash": "c702c11c22ad177b",
+      "nodes": 346,
+      "relations": 598
     },
     "table/block_based/block_based_table_builder.h": {
       "hash": "8e3640c4400e1b7d",
@@ -3821,9 +3821,9 @@
       "relations": 155
     },
     "table/block_based/block_based_table_factory.cc": {
-      "hash": "8fe2c68c596d0a8e",
-      "nodes": 90,
-      "relations": 147
+      "hash": "a3acb5875f897a79",
+      "nodes": 91,
+      "relations": 148
     },
     "table/block_based/block_based_table_factory.h": {
       "hash": "bcaf9d862dc85546",
@@ -3841,9 +3841,9 @@
       "relations": 241
     },
     "table/block_based/block_based_table_reader.cc": {
-      "hash": "216f22f1200d99a4",
-      "nodes": 418,
-      "relations": 567
+      "hash": "9d4bbcb9b7168bd6",
+      "nodes": 419,
+      "relations": 568
     },
     "table/block_based/block_based_table_reader.h": {
       "hash": "cc2e866c61dca7fa",
@@ -3906,9 +3906,9 @@
       "relations": 39
     },
     "table/block_based/block_test.cc": {
-      "hash": "e6b1d7d3912f9d86",
-      "nodes": 226,
-      "relations": 343
+      "hash": "762ddb1939497302",
+      "nodes": 236,
+      "relations": 353
     },
     "table/block_based/block_type.h": {
       "hash": "b6ed78995357d495",
@@ -4306,9 +4306,9 @@
       "relations": 120
     },
     "table/plain/plain_table_factory.cc": {
-      "hash": "a54ce6892bf7e485",
-      "nodes": 50,
-      "relations": 84
+      "hash": "6364ea432f60e449",
+      "nodes": 51,
+      "relations": 85
     },
     "table/plain/plain_table_factory.h": {
       "hash": "f4780a9a87ea6232",
@@ -4406,9 +4406,9 @@
       "relations": 74
     },
     "table/table_test.cc": {
-      "hash": "40d08015ba7469d1",
-      "nodes": 941,
-      "relations": 1518
+      "hash": "51620c8301274463",
+      "nodes": 950,
+      "relations": 1527
     },
     "table/two_level_iterator.cc": {
       "hash": "9e7d95b8d097e9f4",
@@ -4496,9 +4496,9 @@
       "relations": 20
     },
     "test_util/transaction_test_util.cc": {
-      "hash": "e57a8a9b792eae5d",
-      "nodes": 55,
-      "relations": 86
+      "hash": "b0a238765c2757a9",
+      "nodes": 56,
+      "relations": 87
     },
     "test_util/transaction_test_util.h": {
       "hash": "94a81936283d0bad",
@@ -4511,9 +4511,9 @@
       "relations": 1444
     },
     "third-party/gtest-1.8.1/fused-src/gtest/gtest.h": {
-      "hash": "d640ffee81250dd8",
-      "nodes": 7105,
-      "relations": 9990
+      "hash": "44488ca845eaf2af",
+      "nodes": 7113,
+      "relations": 9998
     },
     "third-party/gtest-1.8.1/fused-src/gtest/gtest_main.cc": {
       "hash": "8eae6412c1421925",
@@ -4551,9 +4551,9 @@
       "relations": 8
     },
     "tools/db_bench_tool.cc": {
-      "hash": "e430dce3fdd0868f",
-      "nodes": 724,
-      "relations": 1232
+      "hash": "fcccb75e690f99b0",
+      "nodes": 725,
+      "relations": 1233
     },
     "tools/db_bench_tool_test.cc": {
       "hash": "4336ad0686485410",
@@ -4686,9 +4686,9 @@
       "relations": 375
     },
     "tools/write_stress.cc": {
-      "hash": "8e6132568e4ba737",
-      "nodes": 27,
-      "relations": 67
+      "hash": "24cf5c558e56b592",
+      "nodes": 32,
+      "relations": 72
     },
     "trace_replay/block_cache_tracer.cc": {
       "hash": "89868465680fd680",
@@ -4876,9 +4876,9 @@
       "relations": 26
     },
     "util/compression_test.cc": {
-      "hash": "1067c46d5edd2431",
-      "nodes": 121,
-      "relations": 198
+      "hash": "df1a46fe0b37ef14",
+      "nodes": 123,
+      "relations": 200
     },
     "util/concurrent_task_limiter_impl.cc": {
       "hash": "2fd9a460a1fc3a65",
@@ -4926,9 +4926,9 @@
       "relations": 40
     },
     "util/defer_test.cc": {
-      "hash": "87695b236e88c41b",
-      "nodes": 9,
-      "relations": 17
+      "hash": "13f280b2627216d1",
+      "nodes": 10,
+      "relations": 18
     },
     "util/distributed_mutex.h": {
       "hash": "028095c3d9dca122",
@@ -4981,9 +4981,9 @@
       "relations": 53
     },
     "util/filter_bench.cc": {
-      "hash": "672697a65939aa54",
-      "nodes": 83,
-      "relations": 162
+      "hash": "75f86395ee2ba9ca",
+      "nodes": 84,
+      "relations": 163
     },
     "util/hash.cc": {
       "hash": "24f2a3e3a9087012",
@@ -5021,9 +5021,9 @@
       "relations": 71
     },
     "util/heap_test.cc": {
-      "hash": "0f972624faac20bd",
-      "nodes": 14,
-      "relations": 30
+      "hash": "46bf2d5d70d8a462",
+      "nodes": 15,
+      "relations": 31
     },
     "util/interval_test.cc": {
       "hash": "f093c7559a120e3a",
@@ -5151,9 +5151,9 @@
       "relations": 288
     },
     "util/semaphore.h": {
-      "hash": "3ecb66153d7972b1",
-      "nodes": 15,
-      "relations": 26
+      "hash": "055d9eb564420e5e",
+      "nodes": 16,
+      "relations": 27
     },
     "util/set_comparator.h": {
       "hash": "fc0ebda72011921b",
@@ -5236,9 +5236,9 @@
       "relations": 78
     },
     "util/thread_local.cc": {
-      "hash": "747c63cda18de883",
-      "nodes": 97,
-      "relations": 137
+      "hash": "077f74cd3cbd8e25",
+      "nodes": 99,
+      "relations": 139
     },
     "util/thread_local.h": {
       "hash": "c393bf1e7eb8a337",
@@ -5256,9 +5256,9 @@
       "relations": 31
     },
     "util/threadpool_imp.cc": {
-      "hash": "60b5f9291bea928f",
-      "nodes": 122,
-      "relations": 201
+      "hash": "2d67e16367a68581",
+      "nodes": 123,
+      "relations": 202
     },
     "util/threadpool_imp.h": {
       "hash": "43641feb2d82e451",
@@ -5266,9 +5266,9 @@
       "relations": 61
     },
     "util/timer.h": {
-      "hash": "0efef23dc6ca6cf5",
-      "nodes": 59,
-      "relations": 111
+      "hash": "c00d2f0e874a0847",
+      "nodes": 60,
+      "relations": 112
     },
     "util/timer_queue.h": {
       "hash": "f08062ce729bd409",
@@ -5371,9 +5371,9 @@
       "relations": 18
     },
     "utilities/backup/backup_engine_test.cc": {
-      "hash": "391fa87836bd2b26",
-      "nodes": 398,
-      "relations": 619
+      "hash": "8457bf73a4a92a61",
+      "nodes": 399,
+      "relations": 620
     },
     "utilities/blob_db/blob_compaction_filter.cc": {
       "hash": "fb9fae12d3fa1501",
@@ -5431,9 +5431,9 @@
       "relations": 214
     },
     "utilities/blob_db/blob_dump_tool.cc": {
-      "hash": "60370bbba53606ff",
-      "nodes": 49,
-      "relations": 78
+      "hash": "fa2b8012cedb8c50",
+      "nodes": 50,
+      "relations": 79
     },
     "utilities/blob_db/blob_dump_tool.h": {
       "hash": "c63d7fe7b3b21c3e",
@@ -5546,9 +5546,9 @@
       "relations": 38
     },
     "utilities/checkpoint/checkpoint_test.cc": {
-      "hash": "61895db5fd192df0",
-      "nodes": 121,
-      "relations": 204
+      "hash": "3020c6d6b1a07153",
+      "nodes": 122,
+      "relations": 205
     },
     "utilities/compaction_filters.cc": {
       "hash": "667189f2d11463c2",
@@ -5891,9 +5891,9 @@
       "relations": 118
     },
     "utilities/secondary_index/faiss_ivf_index_test.cc": {
-      "hash": "fe5773eb4531aede",
-      "nodes": 14,
-      "relations": 36
+      "hash": "731a5f7685b97181",
+      "nodes": 17,
+      "relations": 39
     },
     "utilities/secondary_index/secondary_index_helper.h": {
       "hash": "a3772445972e4db1",
@@ -6006,9 +6006,9 @@
       "relations": 99
     },
     "utilities/transactions/lock/point/any_lock_manager_test.h": {
-      "hash": "ba0600561f9c6bf1",
-      "nodes": 13,
-      "relations": 15
+      "hash": "73791088eaf206d3",
+      "nodes": 14,
+      "relations": 16
     },
     "utilities/transactions/lock/point/point_lock_bench.cc": {
       "hash": "939ff2d6ad4025c3",
@@ -6036,9 +6036,9 @@
       "relations": 37
     },
     "utilities/transactions/lock/point/point_lock_manager_test.cc": {
-      "hash": "fa6f6b8c56f58dd1",
-      "nodes": 44,
-      "relations": 54
+      "hash": "69714dda7098ef01",
+      "nodes": 50,
+      "relations": 60
     },
     "utilities/transactions/lock/point/point_lock_manager_test.h": {
       "hash": "793529f04d764116",
@@ -6286,9 +6286,9 @@
       "relations": 73
     },
     "utilities/transactions/optimistic_transaction_test.cc": {
-      "hash": "efb9faebcdd00a8e",
-      "nodes": 75,
-      "relations": 118
+      "hash": "bd477dcfdc59f7e0",
+      "nodes": 77,
+      "relations": 120
     },
     "utilities/transactions/pessimistic_transaction.cc": {
       "hash": "e0efea1a35afd8b7",
@@ -6341,9 +6341,9 @@
       "relations": 10
     },
     "utilities/transactions/transaction_test.cc": {
-      "hash": "8498f95acc62785b",
-      "nodes": 176,
-      "relations": 241
+      "hash": "745c94da64f32359",
+      "nodes": 182,
+      "relations": 247
     },
     "utilities/transactions/transaction_test.h": {
       "hash": "9430a76ee5efb7b4",
@@ -6371,9 +6371,9 @@
       "relations": 67
     },
     "utilities/transactions/write_prepared_transaction_test.cc": {
-      "hash": "9d12adc93cb03a67",
-      "nodes": 166,
-      "relations": 245
+      "hash": "4933f29af51c35b0",
+      "nodes": 171,
+      "relations": 250
     },
     "utilities/transactions/write_prepared_txn.cc": {
       "hash": "cbaea9a3c979ba6a",
@@ -6386,9 +6386,9 @@
       "relations": 112
     },
     "utilities/transactions/write_prepared_txn_db.cc": {
-      "hash": "2a7b1c11d649ceee",
-      "nodes": 138,
-      "relations": 181
+      "hash": "02d557a0145f887b",
+      "nodes": 139,
+      "relations": 182
     },
     "utilities/transactions/write_prepared_txn_db.h": {
       "hash": "4a0bf187276d40ef",
@@ -6396,14 +6396,14 @@
       "relations": 479
     },
     "utilities/transactions/write_unprepared_transaction_test.cc": {
-      "hash": "4a81e3dac20b4a5c",
-      "nodes": 35,
-      "relations": 52
+      "hash": "59fbb1c322bf7e39",
+      "nodes": 38,
+      "relations": 55
     },
     "utilities/transactions/write_unprepared_txn.cc": {
-      "hash": "347249d756ac162a",
-      "nodes": 101,
-      "relations": 112
+      "hash": "33f4ede9c87ffce9",
+      "nodes": 102,
+      "relations": 113
     },
     "utilities/transactions/write_unprepared_txn.h": {
       "hash": "ffa363dadfba1278",
@@ -6421,9 +6421,9 @@
       "relations": 40
     },
     "utilities/trie_index/bitvector.cc": {
-      "hash": "9e97fa5b234d2bdb",
-      "nodes": 35,
-      "relations": 46
+      "hash": "142695b297da6821",
+      "nodes": 37,
+      "relations": 48
     },
     "utilities/trie_index/bitvector.h": {
       "hash": "5e537b31d8e1480f",
@@ -6431,9 +6431,9 @@
       "relations": 186
     },
     "utilities/trie_index/louds_trie.cc": {
-      "hash": "6f99bde74638d157",
-      "nodes": 77,
-      "relations": 90
+      "hash": "4212b335df84458a",
+      "nodes": 78,
+      "relations": 91
     },
     "utilities/trie_index/louds_trie.h": {
       "hash": "40eb43ab8755ce53",
@@ -6441,9 +6441,9 @@
       "relations": 288
     },
     "utilities/trie_index/trie_index_db_test.cc": {
-      "hash": "bb3fecb55f618d4b",
-      "nodes": 124,
-      "relations": 188
+      "hash": "6e3e8518008134d4",
+      "nodes": 126,
+      "relations": 190
     },
     "utilities/trie_index/trie_index_factory.cc": {
       "hash": "c5a9d1b3072017d9",
@@ -6456,9 +6456,9 @@
       "relations": 128
     },
     "utilities/trie_index/trie_index_test.cc": {
-      "hash": "33ac4b69c166aaf9",
-      "nodes": 235,
-      "relations": 341
+      "hash": "014792843b90f25b",
+      "nodes": 238,
+      "relations": 344
     },
     "utilities/ttl/db_ttl_impl.cc": {
       "hash": "fda91e7ee56ec675",
@@ -6501,9 +6501,9 @@
       "relations": 295
     },
     "utilities/write_batch_with_index/write_batch_with_index_internal.cc": {
-      "hash": "8d593f0469b30419",
-      "nodes": 100,
-      "relations": 128
+      "hash": "b9b36414b879ebc0",
+      "nodes": 101,
+      "relations": 129
     },
     "utilities/write_batch_with_index/write_batch_with_index_internal.h": {
       "hash": "0a3f148dd25c08b3",
@@ -6511,9 +6511,9 @@
       "relations": 302
     },
     "utilities/write_batch_with_index/write_batch_with_index_test.cc": {
-      "hash": "118f66e7fda310e4",
-      "nodes": 194,
-      "relations": 272
+      "hash": "2eee20383b426a41",
+      "nodes": 198,
+      "relations": 276
     }
   },
   "kinds": {
@@ -6530,11 +6530,11 @@
       "parameter": 41335,
       "project": 8,
       "type_alias": 836,
-      "variable": 979
+      "variable": 1236
     },
     "relations": {
       "contains": 1369,
-      "declares": 146982,
+      "declares": 147239,
       "depends_on": 17,
       "imports": 11322,
       "resolves_to": 11322
@@ -6544,28 +6544,28 @@
   "ref": "v11.1.2",
   "resolution": {
     "metrics": {
-      "external": 195664,
-      "internal": 238150,
-      "queries": 433814,
-      "resolved": 433814,
+      "external": 177330,
+      "internal": 301371,
+      "queries": 478701,
+      "resolved": 478701,
       "unresolved": 0
     },
     "relations": {
-      "calls": 287473,
+      "calls": 298799,
       "contains": 1369,
-      "declares": 146982,
+      "declares": 147239,
       "depends_on": 17,
       "has_type": 76117,
       "imports": 11322,
       "inherits_from": 1982,
-      "references": 68242,
+      "references": 73485,
       "resolves_to": 11322
     },
     "status": "degraded"
   },
   "totals": {
     "files": 1303,
-    "nodes": 105339,
-    "relations": 171012
+    "nodes": 105596,
+    "relations": 171269
   }
 }

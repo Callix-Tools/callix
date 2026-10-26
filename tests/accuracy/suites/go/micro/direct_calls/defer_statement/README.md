@@ -1,0 +1,1 @@
+`defer g()` calls g.

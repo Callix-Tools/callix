@@ -71,6 +71,10 @@ def test_as_dict_shape():
         "external": 1,
         "unresolved": 6,
         "seconds": 1.5,
+        # Subsets of internal and external: calls that found a variable instead of
+        # a callee, and answers that could not be bound to a node.
+        "to_value": 0,
+        "unlocated": 0,
         # Derived, not stored — present so a reader never recomputes it.
         "resolved_pct": 40.0,
     }
@@ -92,7 +96,8 @@ def test_as_dict_rounds_half_to_even_like_python():
 def test_repr_lists_the_counters_but_not_the_timing():
     m = ResolverMetrics(queries=1, resolved=2, internal=3, external=4, unresolved=5, seconds=9.0)
     assert repr(m) == (
-        "ResolverMetrics(queries=1, resolved=2, internal=3, external=4, unresolved=5)"
+        "ResolverMetrics(queries=1, resolved=2, internal=3, external=4, unresolved=5, "
+        "to_value=0, unlocated=0)"
     )
 
 

@@ -27,6 +27,7 @@ mod dependencies;
 #[cfg(feature = "python")]
 mod diffing;
 mod error;
+mod flow;
 mod golang;
 mod graph;
 mod ids;
@@ -36,6 +37,7 @@ mod occurrence;
 mod php;
 mod python;
 mod relation;
+mod resolution;
 mod resolver_slot;
 mod roots;
 mod rustlang;

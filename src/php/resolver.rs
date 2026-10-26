@@ -136,6 +136,88 @@ fn last_name<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
     ts::children(node).into_iter().rev().find(|c| c.kind() == "name")
 }
 
+/// Built-in functions that call the callable they are given. A callable named by
+/// a string or an array is only a call when the function receiving it makes one,
+/// which is why the list is closed: guessing for every function that takes a
+/// string would bind half the strings of a program.
+pub(super) const CALLBACK_FUNCTIONS: [&str; 22] = [
+    "array_map", "array_filter", "array_reduce", "array_walk", "array_walk_recursive",
+    "usort", "uasort", "uksort", "array_udiff", "array_uintersect", "call_user_func",
+    "call_user_func_array", "is_callable", "iterator_apply", "register_shutdown_function",
+    "set_error_handler", "set_exception_handler", "spl_autoload_register", "preg_replace_callback",
+    "array_diff_ukey", "forward_static_call", "forward_static_call_array",
+];
+
+/// The callable a call to a callback-taking built-in names, if any: the string
+/// node of `'name'`, or of the method in `[$object, 'method']`, with the
+/// expression that names the class in the second case.
+pub(super) struct CallableLiteral<'tree> {
+    pub position: TsNode<'tree>,
+    pub text: String,
+    pub class: Option<TsNode<'tree>>,
+}
+
+/// The string literals and `[class, 'method']` pairs among a call's arguments.
+pub(super) fn callable_literals<'tree>(
+    call: TsNode<'tree>,
+    source: &[u8],
+) -> Vec<CallableLiteral<'tree>> {
+    let mut out = Vec::new();
+    let Some(function) = call.child_by_field_name("function") else {
+        return out;
+    };
+    if !matches!(function.kind(), "name" | "qualified_name" | "relative_name") {
+        return out;
+    }
+    let callee = ts::text(function, source).to_lowercase();
+    let callee = callee.rsplit('\\').next().unwrap_or(&callee);
+    if !CALLBACK_FUNCTIONS.contains(&callee) {
+        return out;
+    }
+    let Some(arguments) = call.child_by_field_name("arguments") else {
+        return out;
+    };
+    for argument in ts::children(arguments) {
+        let Some(value) = ts::children(argument).into_iter().rev().find(|c| c.is_named()) else {
+            continue;
+        };
+        match value.kind() {
+            "string" | "encapsed_string" => {
+                if let Some(text) = string_literal(value, source) {
+                    out.push(CallableLiteral { position: value, text, class: None });
+                }
+            }
+            "array_creation_expression" => {
+                let elements: Vec<TsNode<'tree>> = ts::children(value)
+                    .into_iter()
+                    .filter(|c| c.kind() == "array_element_initializer")
+                    .collect();
+                if let [first, second] = elements.as_slice()
+                    && let Some(class) = ts::children(*first).into_iter().find(|c| c.is_named())
+                    && let Some(method) = ts::children(*second).into_iter().find(|c| c.is_named())
+                    && matches!(method.kind(), "string" | "encapsed_string")
+                    && let Some(text) = string_literal(method, source)
+                {
+                    out.push(CallableLiteral { position: method, text, class: Some(class) });
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+/// The text of a string literal with no interpolation, unescaped as far as a
+/// name needs: `'App\\f'` is `App\f`.
+fn string_literal(node: TsNode<'_>, source: &[u8]) -> Option<String> {
+    let raw = ts::text(node, source);
+    let inner = raw.get(1..raw.len().checked_sub(1)?)?;
+    if inner.is_empty() || inner.contains('$') || inner.contains('{') {
+        return None;
+    }
+    Some(inner.replace("\\\\", "\\").trim_start_matches('\\').to_string())
+}
+
 /// The bare identifier behind a variable: `$user` → `user`.
 ///
 /// `by_ref` wraps the variable in `&$user`, which a parameter accepts.
@@ -251,8 +333,15 @@ pub struct PhpResolver {
     /// contribute members, so all three are walked when a member is not
     /// declared on the class itself.
     parents: HashMap<String, Vec<String>>,
-    /// (class, property) → the class its type declaration names.
+    /// (class, property) → the class its type declaration names. A method's
+    /// declared return class is kept here too, under the property name
+    /// `()method`, which no property can have.
     property_types: HashMap<MemberKey, ClassRef>,
+    /// (class, method) of methods declared to return `self` or `static`: what
+    /// they return is the class they are called on.
+    self_returning: HashSet<MemberKey>,
+    /// The enums the workspace declares, as table keys: `E::A` is an `E`.
+    enums: HashSet<String>,
     /// (document, lowercased short name) → the class it declares — the other
     /// half of the PSR-4 fallback.
     short_names: HashMap<(u32, String), String>,
@@ -285,6 +374,8 @@ impl Default for PhpResolver {
             class_constants: HashMap::new(),
             parents: HashMap::new(),
             property_types: HashMap::new(),
+            self_returning: HashSet::new(),
+            enums: HashSet::new(),
             short_names: HashMap::new(),
             pending: Vec::new(),
             psr4: Vec::new(),
@@ -748,6 +839,9 @@ impl PhpResolver {
         self.short_names
             .entry((doc, name.to_lowercase()))
             .or_insert_with(|| key.clone());
+        if node.kind() == "enum_declaration" {
+            self.enums.insert(key.clone());
+        }
 
         // `extends` and `implements` only: an enum's backing type is a
         // positional `primitive_type` sharing the child list with them, and a
@@ -783,8 +877,20 @@ impl PhpResolver {
         };
         let name = ts::text(name_node, source).to_lowercase();
         self.methods
-            .entry((class.to_lowercase(), name))
+            .entry((class.to_lowercase(), name.clone()))
             .or_insert(Self::site(doc, name_node));
+
+        // What the method is declared to return: `self`/`static` is the class it is
+        // called on, one class name is that class, anything else (a union, a
+        // built-in) names no single receiver and is left unresolved.
+        if let Some(return_type) = node.child_by_field_name("return_type") {
+            let text = ts::text(return_type, source).trim_start_matches('?').to_lowercase();
+            if text == "self" || text == "static" {
+                self.self_returning.insert((class.to_lowercase(), name.clone()));
+            } else if let [only] = class_refs(return_type)[..] {
+                self.push_pending(doc, source, class, Some(&format!("(){name}")), only, namespace);
+            }
+        }
 
         // A promoted constructor parameter is a parameter and a property at
         // once, and the property is what the rest of the class refers to.
@@ -1007,6 +1113,47 @@ impl PhpResolver {
                 let inner = ts::named_children(node).into_iter().next()?;
                 self.infer(doc, source, inner, scope)
             }
+            // `E::A`: a case of an enum is an instance of it.
+            "class_constant_access_expression" => {
+                let children: Vec<TsNode<'_>> = ts::children(node)
+                    .into_iter()
+                    .filter(|c| !matches!(c.kind(), "comment" | "text_interpolation"))
+                    .collect();
+                let (&qualifier, &member) = (children.first()?, children.last()?);
+                if children.len() < 2
+                    || member.kind() != "name"
+                    || ts::text(member, source).eq_ignore_ascii_case("class")
+                {
+                    return None;
+                }
+                let ClassRef::Declared(key) = self.infer(doc, source, qualifier, scope)? else {
+                    return None;
+                };
+                self.enums.contains(&key).then_some(ClassRef::Declared(key))
+            }
+            // `A::create()->run()`, `$a->self()->run()`: a method declared to return
+            // a class, or `self`/`static`, tells what the call evaluates to. Only a
+            // declared return type does: inferring one from a body would take the
+            // type checker this resolver stands in for.
+            "member_call_expression" | "nullsafe_member_call_expression" | "scoped_call_expression" => {
+                let name_node = node.child_by_field_name("name")?;
+                if name_node.kind() != "name" {
+                    return None;
+                }
+                let owner = node
+                    .child_by_field_name("object")
+                    .or_else(|| node.child_by_field_name("scope"))?;
+                let ClassRef::Declared(key) = self.infer(doc, source, owner, scope)? else {
+                    return None;
+                };
+                let method = ts::text(name_node, source).to_lowercase();
+                self.in_hierarchy(&key, |class| {
+                    if self.self_returning.contains(&(class.to_string(), method.clone())) {
+                        return Some(ClassRef::Declared(key.clone()));
+                    }
+                    self.property_types.get(&(class.to_string(), format!("(){method}"))).cloned()
+                })
+            }
             // A function's or a container's return type is out of reach: it
             // would take the type checker this resolver stands in for.
             _ => None,
@@ -1160,6 +1307,15 @@ impl PhpResolver {
                             &namespace,
                             NameKind::Function,
                         ),
+                        // `$object()` calls the `__invoke` of the object's class.
+                        "variable_name" => {
+                            if let Some(receiver) = self.infer(doc, source, function, scope)
+                                && let Some(ident) = variable_identifier(function)
+                            {
+                                self.record_member(doc, ident, &receiver, "__invoke", Slot::Method);
+                            }
+                            self.walk_uses(doc, source, function, scope);
+                        }
                         // Calling the result of an expression: `$factory()`.
                         _ => self.walk_uses(doc, source, function, scope),
                     }
@@ -1167,13 +1323,60 @@ impl PhpResolver {
                 if let Some(arguments) = node.child_by_field_name("arguments") {
                     self.walk_uses(doc, source, arguments, scope);
                 }
+                // `array_map('f', …)`, `usort($x, [$this, 'cmp'])`: the callable is called.
+                for literal in callable_literals(node, source) {
+                    match literal.class {
+                        None => {
+                            let answer =
+                                self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function);
+                            self.record(doc, literal.position, answer);
+                        }
+                        Some(class) => {
+                            let receiver = if class.kind() == "class_constant_access_expression" {
+                                ts::children(class)
+                                    .into_iter()
+                                    .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
+                                    .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
+                            } else {
+                                self.infer(doc, source, class, scope)
+                            };
+                            if let Some(receiver) = receiver {
+                                self.record_member(doc, literal.position, &receiver, &literal.text, Slot::Method);
+                            }
+                        }
+                    }
+                }
             }
             "object_creation_expression" => {
                 let namespace = scope.namespace.clone();
                 for child in ts::children(node) {
+                    let keyword = child.kind() == "name"
+                        && matches!(ts::text(child, source).to_ascii_lowercase().as_str(), "static" | "self" | "parent");
                     match child.kind() {
-                        "name" | "qualified_name" | "relative_name" => {
+                        "name" | "qualified_name" | "relative_name" if !keyword => {
                             self.record_name(doc, source, child, &namespace, NameKind::Class);
+                        }
+                        // `new static()`: the class the keyword stands for.
+                        "relative_scope" | "name" => {
+                            let class = if child.kind() == "name"
+                                && ts::text(child, source).eq_ignore_ascii_case("parent")
+                            {
+                                scope.parent.clone()
+                            } else if child.kind() == "name" {
+                                scope.class.clone()
+                            } else {
+                                self.infer(doc, source, child, scope)
+                            };
+                            if let Some(ClassRef::Declared(key)) = class
+                                && let Some(entry) = self.classes.get(&key)
+                            {
+                                let site = entry.site;
+                                self.record(
+                                    doc,
+                                    child,
+                                    Answer::Internal(site),
+                                );
+                            }
                         }
                         _ => self.walk_uses(doc, source, child, scope),
                     }

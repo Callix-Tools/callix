@@ -193,18 +193,81 @@ fn summary(graph: &Graph) -> Report {
     }
 }
 
-/// What each language's resolver can promise, for the status report.
+/// What each language's resolver does, and what it does not, for the status
+/// report. It says how the answers are found - by types or by names - and the
+/// kinds of call that are known to be missed, because "ok" alone promises more
+/// than a type checker without a points-to analysis can deliver.
 fn language_resolution(language: &str) -> (&'static str, &'static str) {
     match language {
-        "python" => ("ty (embedded)", "ok"),
-        "typescript" | "javascript" => ("typescript-go (embedded)", "ok"),
-        "go" => ("go/packages + go/types", "ok, needs the Go toolchain and the module cache"),
-        "rust" => ("rust-analyzer scip", "ok, needs rust-analyzer and Cargo"),
-        "php" => ("symbol table", "degraded by design"),
-        "c" | "cpp" => ("symbol table", "degraded by design"),
+        "python" => (
+            "ty (embedded), by types",
+            "calls through a name or an attribute whose type is known; a function carried in a \
+             container, an argument or a return value is followed by a flow pass and marked `flow`; \
+             `getattr`, `**kwargs` forwarding and a polymorphic receiver are not followed",
+        ),
+        "typescript" | "javascript" => (
+            "typescript-go (embedded), by types",
+            "calls through a name or a member whose type is known; function values are followed by \
+             a flow pass and marked `flow`; `any`, dynamic `import()` and string-keyed lookups are \
+             not followed",
+        ),
+        "go" => (
+            "go/packages + go/types, by types; needs the Go toolchain",
+            "static calls and concrete methods; a function value is followed by a flow pass and \
+             marked `flow`; a call through an interface lands on the interface's method, never on \
+             an implementation",
+        ),
+        "rust" => (
+            "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
+            "static calls and concrete methods; a function value is followed by a flow pass and \
+             marked `flow`; a call through a trait lands on the trait's method, not on an impl",
+        ),
+        "php" => (
+            "symbol table, by names",
+            "approximate: no type inference, so a method is found by the declared type of its \
+             receiver (or a `new` assigned to it) when there is one and otherwise by name; a \
+             callable named by a string or an array is followed only inside a built-in that calls it",
+        ),
+        "c" | "cpp" => (
+            "symbol table, by names",
+            "approximate: a member call is bound by the receiver's declared type and the class's \
+             bases, overloads by arity and the look of the arguments, `#include` reachability for \
+             the rest; no type checking, so a receiver whose type is not declared falls back to \
+             the name (such edges say `ambiguous`); `std::function`, function pointers and macros \
+             are not followed",
+        ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),
     }
+}
+
+/// How the edges of one kind were resolved, counted from the edges themselves.
+fn resolution_rows(graph: &Graph, kind: RelationKind) -> Option<Vec<String>> {
+    let mut counts: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut ambiguous = 0usize;
+    let mut total = 0usize;
+    for relation in graph.relations_of(kind) {
+        total += 1;
+        let how = relation.metadata.get("resolution").and_then(Value::as_str).unwrap_or("unrecorded");
+        *counts.entry(how).or_default() += 1;
+        if relation.metadata.get("ambiguous").and_then(Value::as_bool).unwrap_or(false) {
+            ambiguous += 1;
+        }
+    }
+    if total == 0 {
+        return None;
+    }
+    let part = |key: &str| counts.get(key).copied().unwrap_or(0);
+    Some(vec![
+        kind.as_str().to_uppercase(),
+        total.to_string(),
+        part("definition").to_string(),
+        part("value").to_string(),
+        part("external").to_string(),
+        part("unlocated").to_string(),
+        part("name").to_string(),
+        ambiguous.to_string(),
+    ])
 }
 
 fn status(graph: &Graph) -> Report {
@@ -226,7 +289,7 @@ fn status(graph: &Graph) -> Report {
         let pct = metric("resolved_pct").unwrap_or(if queries > 0.0 { resolved * 100.0 / queries } else { 0.0 });
         items.push(("queries", format!("{queries:.0}")));
         items.push(("resolved", format!("{resolved:.0} ({pct:.1}%)")));
-        for key in ["internal", "external", "unresolved"] {
+        for key in ["internal", "external", "unresolved", "to_value", "unlocated"] {
             if let Some(v) = metric(key) {
                 items.push((key, format!("{v:.0}")));
             }
@@ -244,11 +307,26 @@ fn status(graph: &Graph) -> Report {
         })
         .collect();
 
+    let edge_rows: Vec<Vec<String>> = [
+        RelationKind::Calls,
+        RelationKind::References,
+        RelationKind::HasType,
+        RelationKind::InheritsFrom,
+    ]
+    .into_iter()
+    .filter_map(|kind| resolution_rows(graph, kind))
+    .collect();
+
     Report {
         title: "Resolver status".into(),
         sections: vec![
             pairs("Resolution", items),
-            table("Per language", &["language", "files", "backend", "expected quality"], language_rows),
+            table(
+                "How the edges were resolved",
+                &["edges", "total", "definition", "value", "external", "unlocated", "name", "ambiguous"],
+                edge_rows,
+            ),
+            table("Per language", &["language", "files", "backend", "known limits"], language_rows),
         ],
     }
 }

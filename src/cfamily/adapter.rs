@@ -25,6 +25,8 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use indexmap::IndexMap;
+use crate::flow::{Flow, Slot as FlowSlot};
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -51,8 +53,8 @@ use super::detector::{
     C_EXTENSIONS, CPP_EXTENSIONS, c_roots, collect_c_files, collect_cpp_files, cpp_roots, is_c,
     is_cpp, project_name,
 };
-use super::headers::{DeclLedger, Linkage, claims, include_search_dirs};
-use super::resolver::{CFamilyIndex, SymbolTable};
+use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
+use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
 use super::visitor::{CFamilyEmitter, FileFacts, FoundOccurrence, Owner, declared_scopes, read_file};
 use super::{Dialect, parse_tree};
 
@@ -67,6 +69,8 @@ struct Analysed {
     file_id: String,
     facts: FileFacts,
     boundaries: Vec<BoundaryRef>,
+    /// The project-relative paths of the files this one includes.
+    included: Vec<String>,
 }
 
 /// Reads a file and decides whether this dialect owns it.
@@ -109,6 +113,7 @@ fn push_relation(
 /// It records where it was written, as every other adapter's does — `span`, and
 /// `access` on a `REFERENCES` — which is what lets two call sites of the same
 /// function stay two edges and what an index (LSIF) needs to place a reference.
+#[allow(clippy::too_many_arguments)]
 fn push_reference(
     py: Python<'_>,
     graph: &mut Graph,
@@ -117,9 +122,17 @@ fn push_reference(
     kind: RelationKind,
     occurrence: &FoundOccurrence,
     site_file: &str,
+    resolution: Resolution,
+    ambiguous: bool,
 ) -> PyResult<()> {
     let metadata = PyDict::new(py);
     metadata.set_item("span", occurrence.span)?;
+    metadata.set_item(resolution::KEY, resolution.as_str())?;
+    if ambiguous {
+        // Several declarations carried the name and the table has no types to
+        // choose between them: the edge is the first of them, and says so.
+        metadata.set_item(resolution::AMBIGUOUS_KEY, true)?;
+    }
     if occurrence.role == "read" || occurrence.role == "write" {
         metadata.set_item("access", occurrence.role)?;
     }
@@ -324,7 +337,19 @@ fn build_root(
         let mut boundaries = extract_boundaries(tree.root_node(), &source, dialect);
         boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
 
-        analysed.push(Analysed { file_rel, file_abs, file_id, facts, boundaries });
+        // The files this one includes, as the project-relative paths their
+        // declarations are filed under; an include that leaves the project
+        // names no file and is dropped.
+        let included: Vec<String> = facts
+            .includes
+            .iter()
+            .filter(|include| include.style != "computed")
+            .filter_map(|include| {
+                resolve_include(&include.path, include.style == "quoted", &file_rel, &search_dirs, &known_files)
+            })
+            .collect();
+
+        analysed.push(Analysed { file_rel, file_abs, file_id, facts, boundaries, included });
     }
 
     Ok((project, analysed))
@@ -352,8 +377,31 @@ fn resolve_with_table(
 ) -> PyResult<ResolverMetrics> {
     let mut index = CFamilyIndex::new();
 
+    // (function, name) → a parameter or a called local of that function. Reached
+    // through the function it belongs to and never by its bare name: `cb` is a
+    // different parameter in every function that has one.
+    let mut parameters: std::collections::HashMap<(String, String), (String, NodeKind)> =
+        std::collections::HashMap::new();
+    // A class's fields in declaration order, for the positional elements of an
+    // initialiser: `struct ops o = { g };` fills the first field.
+    let mut fields_by_class: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+
     for file in analysed {
         for decl in &file.facts.declarations {
+            if decl.kind == NodeKind::Parameter || (decl.kind == NodeKind::Variable && decl.record_kind == "local") {
+                if let Owner::Decl { qualified_name, .. } = &decl.owner {
+                    parameters.insert(
+                        (qualified_name.clone(), decl.name.clone()),
+                        (decl.qualified_name.clone(), decl.kind),
+                    );
+                }
+                continue;
+            }
+            if decl.kind == NodeKind::Attribute
+                && let Owner::Decl { qualified_name, kind: NodeKind::Class } = &decl.owner
+            {
+                fields_by_class.entry(qualified_name.clone()).or_default().push(decl.qualified_name.clone());
+            }
             index.declare(
                 &decl.name,
                 &decl.qualified_name,
@@ -361,17 +409,138 @@ fn resolve_with_table(
                 &file.file_rel,
                 decl.linkage == Linkage::Internal,
             );
+            // Classes, their members and fields: what a receiver's type is asked.
+            // `F::operator()()`: the call operator's own parentheses are not the signature's.
+            let without_signature = match decl.qualified_name.find("operator()") {
+                Some(at) => &decl.qualified_name[..at + "operator()".len()],
+                None => decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name),
+            };
+            match decl.kind {
+                NodeKind::Class => index.declare_class(&decl.qualified_name),
+                NodeKind::Method => {
+                    if let Some((class, member)) = without_signature.rsplit_once("::") {
+                        index.declare_member(class, member, &decl.qualified_name, decl.kind);
+                    }
+                }
+                NodeKind::Attribute => {
+                    if let Some((class, field)) = without_signature.rsplit_once("::") {
+                        index.declare_field(class, field, &decl.qualified_name, &decl.type_text);
+                    }
+                }
+                _ => {}
+            }
         }
-        for include in &file.facts.includes {
-            index.include(&file.file_rel, &include.path);
+        for occurrence in &file.facts.occurrences {
+            if occurrence.role == "base"
+                && let Owner::Decl { qualified_name, kind: NodeKind::Class } = &occurrence.owner
+            {
+                index.add_base(qualified_name, &occurrence.name);
+            }
+        }
+        for (alias, target) in &file.facts.namespace_aliases {
+            index.declare_namespace_alias(alias, target);
+        }
+        for included in &file.included {
+            index.include(&file.file_rel, included);
         }
     }
     index.close_includes();
 
     let mut metrics = ResolverMetrics::default();
+    let mut flow = Flow::default();
     for file in analysed {
         for occurrence in &file.facts.occurrences {
-            let Some(kind) = role_to_kind(occurrence.role) else {
+            // What a variable or a member is initialised with feeds the flow pass;
+            // it is no edge of its own. Only a function is worth following.
+            if occurrence.role == "alias" {
+                if let Some((qualified_name, NodeKind::Function | NodeKind::Method, _)) =
+                    index.lookup(&occurrence.name, &file.file_rel)
+                {
+                    let target = node_id(project, &qualified_name, NodeKind::Function.as_str());
+                    let target = if graph.has_node(&target) {
+                        target
+                    } else {
+                        node_id(project, &qualified_name, NodeKind::Method.as_str())
+                    };
+                    // Who holds it: the field a positional initialiser element fills,
+                    // the variable an assignment names, or the owner of the site.
+                    let holder = if let Some((class, position)) = &occurrence.site.initializer_member {
+                        fields_by_class
+                            .iter()
+                            .find(|(q, _)| q.as_str() == class || q.ends_with(&format!("::{class}")))
+                            .and_then(|(_, fields)| fields.get(*position))
+                            .map(|field| node_id(project, field, NodeKind::Attribute.as_str()))
+                    } else if let Some(name) = &occurrence.site.assigned_to {
+                        let local = match &occurrence.owner {
+                            Owner::Decl { qualified_name, .. } => parameters.get(&(qualified_name.clone(), name.clone())),
+                            Owner::File => None,
+                        };
+                        match local {
+                            Some((qualified, kind)) => Some(node_id(project, qualified, kind.as_str())),
+                            None => match index.lookup(name, &file.file_rel) {
+                                Some((qualified, NodeKind::Variable, _)) => {
+                                    Some(node_id(project, &qualified, NodeKind::Variable.as_str()))
+                                }
+                                _ => None,
+                            },
+                        }
+                    } else {
+                        Some(enclosing_id(project, file, &occurrence.owner))
+                    };
+                    if let Some(holder) = holder
+                        && graph.has_node(&holder)
+                        && graph.has_node(&target)
+                    {
+                        flow.alias(&holder, &target);
+                    }
+                }
+                continue;
+            }
+            // A name handed to a call: a reference to the function, and a binding
+            // of the call's parameter for the flow pass. Anything that is not a
+            // function (a local, a variable) says nothing and is dropped.
+            if let Some((line, col, position)) = occurrence.site.argument_of {
+                let enclosing = enclosing_id(project, file, &occurrence.owner);
+                // A parameter of the enclosing function handed on: the chain that
+                // lets a callback travel down several functions.
+                let own_parameter = match &occurrence.owner {
+                    Owner::Decl { qualified_name, .. } => {
+                        parameters.get(&(qualified_name.clone(), occurrence.name.clone()))
+                    }
+                    Owner::File => None,
+                };
+                let resolved = match own_parameter {
+                    Some((parameter, kind)) => Some((parameter.clone(), *kind)),
+                    None => match index.lookup(&occurrence.name, &file.file_rel) {
+                        Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) => {
+                            Some((qualified_name, kind))
+                        }
+                        _ => None,
+                    },
+                };
+                // Anything else - a local, a variable - says nothing and is dropped.
+                let Some((qualified_name, target_kind)) = resolved else {
+                    continue;
+                };
+                let target_id = node_id(project, &qualified_name, target_kind.as_str());
+                if !graph.has_node(&target_id) || !graph.has_node(&enclosing) {
+                    continue;
+                }
+                metrics.queries += 1;
+                metrics.resolved += 1;
+                metrics.internal += 1;
+                flow.arg_at(&file.file_rel, line, col, FlowSlot::Index(position), &target_id);
+                // A reference to a function; a parameter or a local handed on is no
+                // reference worth an edge.
+                if !matches!(target_kind, NodeKind::Parameter | NodeKind::Variable) {
+                    push_reference(
+                        py, graph, enclosing, target_id, RelationKind::References, occurrence, &file.file_rel,
+                        Resolution::Name, false,
+                    )?;
+                }
+                continue;
+            }
+            let Some(mut kind) = role_to_kind(occurrence.role) else {
                 continue;
             };
             metrics.queries += 1;
@@ -382,8 +551,67 @@ fn resolve_with_table(
                 continue;
             }
 
-            match index.lookup(&occurrence.name, &file.file_rel) {
-                Some((qualified_name, target_kind, _ambiguous)) => {
+            // A bare name that is a parameter of the function it is written in means
+            // that parameter, not whichever one of the project carries the name.
+            let bare = occurrence.site.receiver_name.is_none()
+                && occurrence.site.qualifier.is_empty()
+                && !occurrence.site.constructs
+                && !occurrence.site.in_initializer_list;
+            let own_parameter = match &occurrence.owner {
+                Owner::Decl { qualified_name, .. } if bare && occurrence.role == "call" => {
+                    parameters.get(&(qualified_name.clone(), occurrence.name.clone()))
+                }
+                _ => None,
+            };
+            if let Some((parameter, parameter_kind)) = own_parameter {
+                let target_id = node_id(project, parameter, parameter_kind.as_str());
+                if graph.has_node(&target_id) {
+                    metrics.resolved += 1;
+                    metrics.internal += 1;
+                    metrics.to_value += 1;
+                    flow.call_at(&file.file_rel, occurrence.span.start_line, occurrence.span.start_col, Some(&target_id));
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                        Resolution::Value, false,
+                    )?;
+                    continue;
+                }
+            }
+            // A call, a construction and a base in an initialiser list are asked of
+            // the class table with everything the site says; the rest by name.
+            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list {
+                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel) {
+                    Outcome::Found { qualified_name, kind, ambiguous } => Some(Some((qualified_name, kind, ambiguous))),
+                    // Nothing the project declares: a library, a built-in. A
+                    // construction of one is no edge at all; a call is an external one.
+                    Outcome::Outside if occurrence.site.constructs => {
+                        metrics.queries -= 1;
+                        continue;
+                    }
+                    Outcome::Outside => Some(None),
+                    // A guess at an overloaded operator that nothing declares.
+                    Outcome::NotACall if occurrence.site.speculative => {
+                        metrics.queries -= 1;
+                        continue;
+                    }
+                    Outcome::NotACall => None,
+                }
+            } else {
+                None
+            };
+            let answer = match asked {
+                Some(answer) => answer,
+                None => index.lookup(&occurrence.name, &file.file_rel),
+            };
+            // A base in an initialiser list is written like a field and is a call of
+            // the base's constructor.
+            if occurrence.site.in_initializer_list
+                && matches!(answer, Some((_, NodeKind::Method | NodeKind::Class, _)))
+            {
+                kind = RelationKind::Calls;
+            }
+            match answer {
+                Some((qualified_name, target_kind, ambiguous)) => {
                     let target_id = node_id(project, &qualified_name, target_kind.as_str());
                     if !graph.has_node(&target_id) {
                         metrics.unresolved += 1;
@@ -391,7 +619,24 @@ fn resolve_with_table(
                     }
                     metrics.resolved += 1;
                     metrics.internal += 1;
-                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
+                    // Matched by name: the table has no types. A call that lands on
+                    // a variable (a function pointer) found no callee at all.
+                    let resolution = match graph.node_kind(&target_id) {
+                        Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                            if kind == RelationKind::Calls =>
+                        {
+                            metrics.to_value += 1;
+                            Resolution::Value
+                        }
+                        _ => Resolution::Name,
+                    };
+                    if occurrence.role == "call" {
+                        flow.call_at(&file.file_rel, occurrence.span.start_line, occurrence.span.start_col, Some(&target_id));
+                    }
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                        resolution, ambiguous,
+                    )?;
                 }
                 None => {
                     // Not declared in anything this translation unit can see: a
@@ -411,11 +656,15 @@ fn resolve_with_table(
                         ensure_external_symbol(py, graph, project, &key, "unknown")?;
                     metrics.resolved += 1;
                     metrics.external += 1;
-                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                        Resolution::External, false,
+                    )?;
                 }
             }
         }
     }
+    flow.finish(py, graph)?;
     Ok(metrics)
 }
 
@@ -460,6 +709,7 @@ fn resolve_with_custom(
                     col: occurrence.span.start_col,
                     enclosing_id: enclosing,
                     span: occurrence.span,
+                    detail: None,
                 },
             ));
         }

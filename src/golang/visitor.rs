@@ -3,7 +3,7 @@
 //! Simpler than Python and TypeScript: Go has no nested declaration scopes,
 //! so there are no stacks — only a file's top-level declarations are walked.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
@@ -51,6 +51,22 @@ fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
         "selector_expression" => function.child_by_field_name("field"),
         _ => None,
     }
+}
+
+/// The name a chain of selectors ends in - the position the resolver is asked
+/// about - when `node` is a name, a selector or a parenthesised one.
+fn plain_name<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    match node.kind() {
+        "identifier" => Some(node),
+        "selector_expression" => node.child_by_field_name("field"),
+        "parenthesized_expression" => ts::named_children(node).first().copied().and_then(plain_name),
+        _ => None,
+    }
+}
+
+/// The name a call's callee ends in.
+fn callee_name<'tree>(call: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    call.child_by_field_name("function").and_then(plain_name)
 }
 
 /// Whether the node is the left-hand side of an assignment or increment.
@@ -186,6 +202,16 @@ impl<'a> GoExtractor<'a> {
     }
 
     fn add_occurrence(&mut self, role: &str, name_node: TsNode<'_>, enclosing_id: &str) {
+        self.add_occurrence_with(role, name_node, enclosing_id, None);
+    }
+
+    fn add_occurrence_with(
+        &mut self,
+        role: &str,
+        name_node: TsNode<'_>,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         let span = ts::span(name_node);
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
@@ -193,6 +219,7 @@ impl<'a> GoExtractor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
+            detail,
         });
     }
 
@@ -205,8 +232,30 @@ impl<'a> GoExtractor<'a> {
             let Some(function) = node.child_by_field_name("function") else {
                 continue;
             };
+            let mut site = None;
             if let Some(name_node) = called_name(function) {
                 self.add_occurrence("call", name_node, enclosing_id);
+                site = Some(ts::span(name_node));
+            } else if function.kind() == "call_expression" {
+                // `f()()`: a call of whatever `f` returns. The inner call has its
+                // own occurrence.
+                if let Some(inner) = callee_name(function) {
+                    self.add_occurrence_with("call", inner, enclosing_id, Some("result".into()));
+                }
+            } else if function.kind() == "index_expression" {
+                // `table[key]()`: a call of whatever the container holds.
+                if let Some(base) = function.child_by_field_name("operand").and_then(plain_name) {
+                    self.add_occurrence("call", base, enclosing_id);
+                }
+            }
+            // The names handed to the call say which parameter they are handed to.
+            if let (Some(site), Some(arguments)) = (site, node.child_by_field_name("arguments")) {
+                for (index, argument) in ts::named_children(arguments).into_iter().enumerate() {
+                    if let Some(name) = plain_name(argument) {
+                        let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
+                        self.add_occurrence_with("read", name, enclosing_id, Some(detail));
+                    }
+                }
             }
         }
     }
@@ -226,6 +275,17 @@ impl<'a> GoExtractor<'a> {
                     && parent.child_by_field_name("function") == Some(node)
             });
             if is_callee {
+                continue;
+            }
+            // A selector handed to a call is recorded with the call.
+            let is_argument = node.parent().is_some_and(|parent| {
+                parent.kind() == "argument_list"
+                    && parent.parent().is_some_and(|call| {
+                        call.kind() == "call_expression"
+                            && call.child_by_field_name("function").and_then(called_name).is_some()
+                    })
+            });
+            if is_argument {
                 continue;
             }
             if let Some(field) = node.child_by_field_name("field") {
@@ -353,7 +413,199 @@ impl<'a> GoExtractor<'a> {
         }
         self.collect_calls(node, id);
         self.collect_references(node, id);
+        self.collect_flow(node, qname, id)?;
         Ok(())
+    }
+
+    /// What the function's values hold, for the flow pass: locals that are called
+    /// (`f := g; f()`), the names a function returns, and function-valued fields
+    /// of struct literals (`S{fn: g}`).
+    ///
+    /// A local is a node only when it is called: nothing else needs one, and a
+    /// node per local would multiply the graph for no reader.
+    fn collect_flow(&mut self, callable: TsNode<'_>, qname: &str, id: &str) -> PyResult<()> {
+        let Some(body) = callable.child_by_field_name("body") else {
+            return Ok(());
+        };
+        let nodes = descendants(body);
+
+        let mut called: HashSet<String> = HashSet::new();
+        for node in &nodes {
+            if node.kind() != "call_expression" {
+                continue;
+            }
+            let Some(function) = node.child_by_field_name("function") else {
+                continue;
+            };
+            let base = match function.kind() {
+                "identifier" => Some(function),
+                "index_expression" => function.child_by_field_name("operand").filter(|o| o.kind() == "identifier"),
+                _ => None,
+            };
+            if let Some(base) = base {
+                called.insert(self.text(base));
+            }
+        }
+
+        // Declarations first, so an assignment above a declaration still finds it.
+        let mut locals: HashMap<String, String> = HashMap::new();
+        for node in &nodes {
+            let names: Vec<TsNode<'_>> = match node.kind() {
+                "short_var_declaration" => node
+                    .child_by_field_name("left")
+                    .map(|left| ts::named_children(left))
+                    .unwrap_or_default(),
+                "var_spec" => {
+                    let mut cursor = node.walk();
+                    node.children_by_field_name("name", &mut cursor).collect()
+                }
+                _ => continue,
+            };
+            for name_node in names {
+                let name = self.text(name_node);
+                if name_node.kind() != "identifier" || !called.contains(&name) || locals.contains_key(&name) {
+                    continue;
+                }
+                let local_qname = format!("{qname}.{name}");
+                let local_id = node_id(self.project_name, &local_qname, NodeKind::Variable.as_str());
+                if !self.graph.has_node(&local_id) {
+                    let metadata = PyDict::new(self.py);
+                    metadata.set_item("name_span", ts::span(name_node))?;
+                    let local = Node {
+                        id: local_id.clone(),
+                        kind: NodeKind::Variable,
+                        qualified_name: local_qname,
+                        name: name.clone(),
+                        file_path: Some(self.file_rel.to_string()),
+                        span: Some(ts::span(*node)),
+                        metadata: metadata.unbind(),
+                    };
+                    self.graph.insert_node(local_id.clone(), Py::new(self.py, local)?);
+                    self.push_relation(id.to_string(), local_id.clone(), RelationKind::Declares)?;
+                }
+                locals.insert(name, local_id);
+            }
+        }
+
+        for node in &nodes {
+            match node.kind() {
+                "short_var_declaration" | "assignment_statement" | "var_spec" => {
+                    let (lefts, rights) = if node.kind() == "var_spec" {
+                        let mut cursor = node.walk();
+                        let names: Vec<_> = node.children_by_field_name("name", &mut cursor).collect();
+                        let values = node.child_by_field_name("value").map(|v| ts::named_children(v)).unwrap_or_default();
+                        (names, values)
+                    } else {
+                        // Only a plain `=` or `:=`: `+=` and friends assign no function.
+                        if node.kind() == "assignment_statement"
+                            && node.child_by_field_name("operator").is_some_and(|op| self.text(op) != "=")
+                        {
+                            continue;
+                        }
+                        (
+                            node.child_by_field_name("left").map(|l| ts::named_children(l)).unwrap_or_default(),
+                            node.child_by_field_name("right").map(|r| ts::named_children(r)).unwrap_or_default(),
+                        )
+                    };
+                    if lefts.len() != rights.len() {
+                        continue;
+                    }
+                    for (left, right) in lefts.into_iter().zip(rights) {
+                        let Some(var_id) = locals.get(&self.text(left)).cloned() else {
+                            continue;
+                        };
+                        self.record_aliases(right, &var_id, 0);
+                    }
+                }
+                "return_statement" => {
+                    for value in ts::named_children(*node).into_iter().flat_map(|l| {
+                        if l.kind() == "expression_list" { ts::named_children(l) } else { vec![l] }
+                    }) {
+                        if let Some(name) = plain_name(value) {
+                            self.add_occurrence_with("alias", name, id, Some("return".into()));
+                        }
+                    }
+                }
+                "composite_literal" => self.struct_literal_fields(*node),
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    /// What `value` hands to the variable it is assigned to.
+    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+        if let Some(name) = plain_name(value) {
+            self.add_occurrence_with("alias", name, variable_id, None);
+            return;
+        }
+        match value.kind() {
+            "call_expression" => {
+                if let Some(name) = callee_name(value) {
+                    self.add_occurrence_with("alias", name, variable_id, Some("result".into()));
+                }
+            }
+            "index_expression" => {
+                if let Some(base) = value.child_by_field_name("operand").and_then(plain_name) {
+                    self.add_occurrence_with("alias", base, variable_id, None);
+                }
+            }
+            "unary_expression" if depth < 3 => {
+                // &x, <-ch: what is taken from is what is held.
+                if let Some(operand) = value.child_by_field_name("operand") {
+                    self.record_aliases(operand, variable_id, depth + 1);
+                }
+            }
+            "composite_literal" if depth < 3 => {
+                if let Some(body) = value.child_by_field_name("body") {
+                    for element in ts::named_children(body) {
+                        let element = match element.kind() {
+                            "keyed_element" => ts::named_children(element).last().copied(),
+                            _ => Some(element),
+                        };
+                        // literal_element wraps its expression.
+                        let element = element.and_then(|e| {
+                            if e.kind() == "literal_element" { ts::named_children(e).first().copied() } else { Some(e) }
+                        });
+                        if let Some(element) = element {
+                            self.record_aliases(element, variable_id, depth + 1);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// `S{fn: g}`: the field `S.fn` holds what `g` resolves to.
+    fn struct_literal_fields(&mut self, literal: TsNode<'_>) {
+        let Some(type_name) = type_name_node(literal.child_by_field_name("type")) else {
+            return;
+        };
+        let type_name = self.text(type_name);
+        let Some(body) = literal.child_by_field_name("body") else {
+            return;
+        };
+        for element in ts::named_children(body) {
+            if element.kind() != "keyed_element" {
+                continue;
+            }
+            let parts = ts::named_children(element);
+            let (Some(key), Some(value)) = (parts.first().copied(), parts.last().copied()) else {
+                continue;
+            };
+            let key = if key.kind() == "literal_element" { ts::named_children(key).first().copied() } else { Some(key) };
+            let value = if value.kind() == "literal_element" { ts::named_children(value).first().copied() } else { Some(value) };
+            let (Some(key), Some(value)) = (key, value) else {
+                continue;
+            };
+            if key.kind() != "identifier" {
+                continue;
+            }
+            let field_qname = format!("{}.{type_name}.{}", self.package_qname, self.text(key));
+            let field_id = node_id(self.project_name, &field_qname, NodeKind::Attribute.as_str());
+            self.record_aliases(value, &field_id, 0);
+        }
     }
 
     /// ATTRIBUTE nodes for a struct's named fields, plus their annotations.
@@ -385,6 +637,34 @@ impl<'a> GoExtractor<'a> {
                     self.record_annotation(field_type, &id);
                 }
             }
+        }
+        Ok(())
+    }
+
+    /// METHOD nodes for the methods an interface declares: a call through an
+    /// interface lands on the interface's method, and without a node for it the
+    /// call went nowhere.
+    fn collect_interface_methods(
+        &mut self,
+        type_node: TsNode<'_>,
+        type_qname: &str,
+        type_id: &str,
+    ) -> PyResult<()> {
+        if type_node.kind() != "interface_type" {
+            return Ok(());
+        }
+        for element in ts::children(type_node) {
+            if element.kind() != "method_elem" {
+                continue;
+            }
+            let Some(name_node) = element.child_by_field_name("name") else {
+                continue;
+            };
+            let name = self.text(name_node);
+            let qname = format!("{type_qname}.{name}");
+            let id = self.declare(&qname, &name, NodeKind::Method, element, name_node)?;
+            self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+            self.collect_parameters(element, &qname, &id)?;
         }
         Ok(())
     }
@@ -437,6 +717,7 @@ impl<'a> GoExtractor<'a> {
             {
                 self.collect_bases(type_node, &id);
                 self.collect_fields(type_node, &qname, &id)?;
+                self.collect_interface_methods(type_node, &qname, &id)?;
             }
         }
         Ok(())
@@ -448,10 +729,21 @@ impl<'a> GoExtractor<'a> {
             let names: Vec<TsNode<'_>> = spec
                 .children_by_field_name("name", &mut cursor)
                 .collect();
-            for name_node in names {
-                let name = self.text(name_node);
+            let values: Vec<TsNode<'_>> = spec
+                .child_by_field_name("value")
+                .map(|v| ts::named_children(v))
+                .unwrap_or_default();
+            for (position, name_node) in names.iter().enumerate() {
+                let name = self.text(*name_node);
                 let qname = format!("{}.{name}", self.package_qname);
-                self.declare(&qname, &name, NodeKind::Variable, spec, name_node)?;
+                let id = self.declare(&qname, &name, NodeKind::Variable, spec, *name_node)?;
+                // `var handler = g`: the variable holds what it is initialised with.
+                if spec_kind == "var_spec"
+                    && values.len() == names.len()
+                    && let Some(value) = values.get(position)
+                {
+                    self.record_aliases(*value, &id, 0);
+                }
             }
         }
         Ok(())
@@ -535,9 +827,12 @@ impl<'a> GoExtractor<'a> {
         let Some(receiver) = method_node.child_by_field_name("receiver") else {
             return String::new();
         };
+        // The receiver's own type: the leftmost name, `Box` in `b Box[T]`, not a
+        // type parameter after it.
         walk_type(receiver, "type_identifier")
-            .first()
-            .map(|n| self.text(*n))
+            .into_iter()
+            .min_by_key(|n| n.start_byte())
+            .map(|n| self.text(n))
             .unwrap_or_default()
     }
 

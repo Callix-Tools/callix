@@ -1087,6 +1087,16 @@ impl<'a> PhpVisitor<'a> {
                         self.record_occurrence("call", name_node, &container);
                     }
                 }
+                // `$object()`: a call of whatever the variable holds. The site is the
+                // variable's name, which the resolver answers when the variable is
+                // known to hold an object with `__invoke`.
+                "variable_name" => {
+                    if let Some(ident) = variable_identifier(function) {
+                        let container = self.container();
+                        self.record_occurrence("call", ident, &container);
+                    }
+                    self.visit(function)?;
+                }
                 // Calling the result of an expression: `$factory()`,
                 // `$this->make()()`, `(fn () => 1)()`.
                 _ => self.visit(function)?,
@@ -1094,6 +1104,11 @@ impl<'a> PhpVisitor<'a> {
         }
         if let Some(arguments) = node.child_by_field_name("arguments") {
             self.scan_arguments(arguments)?;
+        }
+        // A callable named by a string or an array, handed to a built-in that calls it.
+        let container = self.container();
+        for literal in super::resolver::callable_literals(node, self.source) {
+            self.record_occurrence("call", literal.position, &container);
         }
         Ok(())
     }
@@ -1114,6 +1129,9 @@ impl<'a> PhpVisitor<'a> {
                         self.record_occurrence("call", name_node, &container);
                     }
                 }
+                // `new static()`, `new self()`, `new parent()`: the class the
+                // keyword stands for, which only the resolver knows.
+                "relative_scope" => self.record_occurrence("call", child, &container),
                 _ => self.visit(child)?,
             }
         }
@@ -1296,6 +1314,7 @@ impl<'a> PhpVisitor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
+            detail: None,
         });
     }
 

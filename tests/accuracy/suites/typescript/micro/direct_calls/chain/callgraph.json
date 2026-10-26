@@ -1,0 +1,1 @@
+{"main.ts": ["main.a"], "main.a": ["main.b"], "main.b": ["main.c"], "main.c": []}

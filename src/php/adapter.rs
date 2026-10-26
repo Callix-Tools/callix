@@ -15,6 +15,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use indexmap::IndexMap;
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -545,6 +546,9 @@ fn resolve_pass(
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
+        // What the answer was bound to, before an unbound one becomes an external
+        // symbol: that is what decides how the edge is described.
+        let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {
@@ -564,8 +568,22 @@ fn resolve_pass(
             }
         }
 
+        let mut resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        // The table found no declaration in the analysed sources for a name whose
+        // origin it cannot classify - a built-in function, a global from a library.
+        // That is outside the project, which is what `external` says; `unlocated`
+        // is for a class the project does declare and a member it does not.
+        if resolution == Resolution::Unlocated && bound_kind.is_none() && reference.origin == "unknown" {
+            resolution = Resolution::External;
+        }
+        match resolution {
+            Resolution::Value => metrics.to_value += 1,
+            Resolution::Unlocated => metrics.unlocated += 1,
+            _ => {}
+        }
         let metadata = PyDict::new(py);
         metadata.set_item("span", occurrence.span)?;
+        metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }

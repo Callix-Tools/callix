@@ -175,9 +175,18 @@ impl EmbeddedTyResolver {
             ));
         }
         let system = OsSystem::new(&root);
-        let metadata = ProjectMetadata::discover(&root, &system).map_err(|e| {
+        let mut metadata = ProjectMetadata::discover(&root, &system).map_err(|e| {
             crate::py::exceptions::PyRuntimeError::new_err(format!("ty could not read the project: {e}"))
         })?;
+        // `discover` walks up to the nearest `pyproject.toml`. A directory without
+        // one of its own would then be resolved from some ancestor - a repository
+        // checkout around it, a monorepo above it - and every absolute import of
+        // the directory's own modules would miss. The analysed root is the
+        // project; its own configuration is honoured, an ancestor's is not.
+        if metadata.root() != root.as_path() {
+            let name = root.file_name().unwrap_or("root");
+            metadata = ProjectMetadata::new(name, root.clone());
+        }
         self.db = Some(ProjectDatabase::use_defaults(metadata, system));
         self.root = Some(PathBuf::from(project_root));
         Ok(())

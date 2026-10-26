@@ -5,7 +5,7 @@
 //! deferring, an `impl Trait for Type` written above `struct Type` would find
 //! no type node and lose the `base` occurrence.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
@@ -17,18 +17,6 @@ use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::relation::{Relation, RelationKind};
 use crate::ts;
-
-/// A node's descendants (itself included) in the order Python walks them: a
-/// stack popped from the end, i.e. depth-first and right to left.
-fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
-    let mut out = Vec::new();
-    let mut stack = vec![node];
-    while let Some(current) = stack.pop() {
-        out.push(current);
-        stack.extend(ts::children(current));
-    }
-    out
-}
 
 /// Every descendant of the given kind; we do not descend into a match.
 fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
@@ -57,18 +45,53 @@ fn is_assignment_target(node: TsNode<'_>) -> bool {
     })
 }
 
-/// The callee's name token; None when an expression result is called.
-fn called_name<'tree>(function: TsNode<'tree>) -> Option<TsNode<'tree>> {
-    match function.kind() {
-        // foo()
-        "identifier" => Some(function),
-        // util::helper() / Type::assoc()
-        "scoped_identifier" => function.child_by_field_name("name"),
-        // obj.method()
-        "field_expression" => function.child_by_field_name("field"),
-        // calling an expression result, e.g. funcs[0]()
+/// The name a path or a field access ends in - the position the resolver is
+/// asked about - when `node` is a name, a path, a field or a turbofish.
+fn plain_name<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    match node.kind() {
+        "identifier" => Some(node),
+        "scoped_identifier" => node.child_by_field_name("name"),
+        "field_expression" => node.child_by_field_name("field"),
+        "generic_function" => node.child_by_field_name("function").and_then(plain_name),
+        "parenthesized_expression" => ts::named_children(node).first().copied().and_then(plain_name),
         _ => None,
     }
+}
+
+/// The name a call's callee ends in.
+fn callee_name<'tree>(call: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    call.child_by_field_name("function").and_then(plain_name)
+}
+
+/// A scope's descendants, not entering the functions declared inside it: those
+/// are nodes of their own and own what they call.
+fn owned_descendants<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = vec![scope];
+    while let Some(current) = stack.pop() {
+        out.push(current);
+        for child in ts::children(current) {
+            if child.kind() != "function_item" {
+                stack.push(child);
+            }
+        }
+    }
+    out
+}
+
+/// The functions declared directly in a scope, not those inside them.
+fn nested_functions<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = ts::children(scope);
+    while let Some(current) = stack.pop() {
+        if current.kind() == "function_item" {
+            out.push(current);
+        } else {
+            stack.extend(ts::children(current));
+        }
+    }
+    out.reverse();
+    out
 }
 
 pub struct RustExtractor<'a> {
@@ -148,6 +171,9 @@ impl<'a> RustExtractor<'a> {
                     {
                         let qname = format!("{}::{}", self.module_qname, self.text(name_node));
                         self.collect_fields(child, &qname, &id)?;
+                        if child.kind() == "trait_item" {
+                            self.collect_trait_methods(child, &qname, &id)?;
+                        }
                     }
                 }
                 "type_item" => {
@@ -231,6 +257,16 @@ impl<'a> RustExtractor<'a> {
     }
 
     fn add_occurrence(&mut self, role: &str, name_node: TsNode<'_>, enclosing_id: &str) {
+        self.add_occurrence_with(role, name_node, enclosing_id, None);
+    }
+
+    fn add_occurrence_with(
+        &mut self,
+        role: &str,
+        name_node: TsNode<'_>,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         let span = ts::span(name_node);
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
@@ -238,20 +274,42 @@ impl<'a> RustExtractor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
+            detail,
         });
     }
 
     /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
-        for node in descendants(scope) {
+        for node in owned_descendants(scope) {
             if node.kind() != "call_expression" {
                 continue;
             }
             let Some(function) = node.child_by_field_name("function") else {
                 continue;
             };
-            if let Some(name_node) = called_name(function) {
+            let mut site = None;
+            if let Some(name_node) = plain_name(function) {
                 self.add_occurrence("call", name_node, enclosing_id);
+                site = Some(ts::span(name_node));
+            } else if function.kind() == "call_expression" {
+                // `f()()`: a call of whatever `f` returns.
+                if let Some(inner) = callee_name(function) {
+                    self.add_occurrence_with("call", inner, enclosing_id, Some("result".into()));
+                }
+            } else if function.kind() == "index_expression"
+                && let Some(base) = ts::named_children(function).first().copied().and_then(plain_name)
+            {
+                // `table[i]()`: a call of whatever the container holds.
+                self.add_occurrence("call", base, enclosing_id);
+            }
+            // The names handed to the call say which parameter they are handed to.
+            if let (Some(site), Some(arguments)) = (site, node.child_by_field_name("arguments")) {
+                for (index, argument) in ts::named_children(arguments).into_iter().enumerate() {
+                    if let Some(name) = plain_name(argument) {
+                        let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
+                        self.add_occurrence_with("read", name, enclosing_id, Some(detail));
+                    }
+                }
             }
         }
     }
@@ -261,7 +319,7 @@ impl<'a> RustExtractor<'a> {
     /// A field in callee position (`obj.method()`) is skipped: `collect_calls`
     /// already recorded it, and one site must not yield two occurrences.
     fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
-        for node in descendants(scope) {
+        for node in owned_descendants(scope) {
             if node.kind() != "field_expression" {
                 continue;
             }
@@ -270,6 +328,17 @@ impl<'a> RustExtractor<'a> {
                     && parent.child_by_field_name("function") == Some(node)
             });
             if is_callee {
+                continue;
+            }
+            // A field handed to a call is recorded with the call.
+            let is_argument = node.parent().is_some_and(|parent| {
+                parent.kind() == "arguments"
+                    && parent.parent().is_some_and(|call| {
+                        call.kind() == "call_expression"
+                            && call.child_by_field_name("function").and_then(plain_name).is_some()
+                    })
+            });
+            if is_argument {
                 continue;
             }
             if let Some(field) = node.child_by_field_name("field") {
@@ -377,6 +446,34 @@ impl<'a> RustExtractor<'a> {
         Ok(())
     }
 
+    /// METHOD nodes for the methods a trait declares, with or without a default
+    /// body: a call through a bound or a trait object lands on the trait's
+    /// method, and without a node for it the call went nowhere.
+    fn collect_trait_methods(
+        &mut self,
+        trait_node: TsNode<'_>,
+        trait_qname: &str,
+        trait_id: &str,
+    ) -> PyResult<()> {
+        let Some(body) = trait_node.child_by_field_name("body") else {
+            return Ok(());
+        };
+        for item in ts::children(body) {
+            if !matches!(item.kind(), "function_item" | "function_signature_item") {
+                continue;
+            }
+            let Some(name_node) = item.child_by_field_name("name") else {
+                continue;
+            };
+            let name = self.text(name_node);
+            let qname = format!("{trait_qname}.{name}");
+            let id = self.declare(&qname, &name, NodeKind::Method, item, name_node)?;
+            self.push_relation(trait_id.to_string(), id.clone(), RelationKind::Declares)?;
+            self.on_callable(item, &qname, &id)?;
+        }
+        Ok(())
+    }
+
     fn on_function_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name_node) = node.child_by_field_name("name") else {
             return Ok(());
@@ -400,7 +497,173 @@ impl<'a> RustExtractor<'a> {
         }
         self.collect_calls(node, id);
         self.collect_references(node, id);
+        self.collect_flow(node, qname, id)?;
+        // Functions declared inside this one are nodes of their own.
+        if let Some(body) = node.child_by_field_name("body") {
+            for inner in nested_functions(body) {
+                let Some(name_node) = inner.child_by_field_name("name") else {
+                    continue;
+                };
+                let name = self.text(name_node);
+                let inner_qname = format!("{qname}::{name}");
+                let inner_id = self.declare(&inner_qname, &name, NodeKind::Function, inner, name_node)?;
+                self.on_callable(inner, &inner_qname, &inner_id)?;
+            }
+        }
         Ok(())
+    }
+
+    /// What the function's values hold, for the flow pass: locals that are called
+    /// (`let f = g; f()`), the names the function returns, and function-valued
+    /// fields of struct expressions (`S { f: g }`).
+    fn collect_flow(&mut self, callable: TsNode<'_>, qname: &str, id: &str) -> PyResult<()> {
+        let Some(body) = callable.child_by_field_name("body") else {
+            return Ok(());
+        };
+        let nodes = owned_descendants(body);
+
+        let mut called: HashSet<String> = HashSet::new();
+        for node in &nodes {
+            if node.kind() != "call_expression" {
+                continue;
+            }
+            let Some(function) = node.child_by_field_name("function") else {
+                continue;
+            };
+            let base = match function.kind() {
+                "identifier" => Some(function),
+                "index_expression" => ts::named_children(function).first().copied().filter(|o| o.kind() == "identifier"),
+                _ => None,
+            };
+            if let Some(base) = base {
+                called.insert(self.text(base));
+            }
+        }
+
+        let mut locals: HashMap<String, String> = HashMap::new();
+        for node in &nodes {
+            if node.kind() != "let_declaration" {
+                continue;
+            }
+            let Some(pattern) = node.child_by_field_name("pattern") else {
+                continue;
+            };
+            if pattern.kind() != "identifier" {
+                continue;
+            }
+            let name = self.text(pattern);
+            if !called.contains(&name) || locals.contains_key(&name) {
+                continue;
+            }
+            let local_qname = format!("{qname}.{name}");
+            let local_id = node_id(self.project_name, &local_qname, NodeKind::Variable.as_str());
+            if !self.graph.has_node(&local_id) {
+                let metadata = PyDict::new(self.py);
+                metadata.set_item("name_span", ts::span(pattern))?;
+                let local = Node {
+                    id: local_id.clone(),
+                    kind: NodeKind::Variable,
+                    qualified_name: local_qname,
+                    name: name.clone(),
+                    file_path: Some(self.file_rel.to_string()),
+                    span: Some(ts::span(*node)),
+                    metadata: metadata.unbind(),
+                };
+                self.graph.insert_node(local_id.clone(), Py::new(self.py, local)?);
+                self.push_relation(id.to_string(), local_id.clone(), RelationKind::Declares)?;
+            }
+            locals.insert(name, local_id);
+        }
+
+        for node in &nodes {
+            match node.kind() {
+                "let_declaration" | "assignment_expression" => {
+                    let (left, right) = if node.kind() == "let_declaration" {
+                        (node.child_by_field_name("pattern"), node.child_by_field_name("value"))
+                    } else {
+                        (node.child_by_field_name("left"), node.child_by_field_name("right"))
+                    };
+                    let (Some(left), Some(right)) = (left, right) else {
+                        continue;
+                    };
+                    if let Some(var_id) = locals.get(&self.text(left)).cloned() {
+                        self.record_aliases(right, &var_id, 0);
+                    }
+                }
+                "return_expression" => {
+                    if let Some(value) = ts::named_children(*node).first().copied()
+                        && let Some(name) = plain_name(value)
+                    {
+                        self.add_occurrence_with("alias", name, id, Some("return".into()));
+                    }
+                }
+                "struct_expression" => self.struct_expression_fields(*node),
+                _ => {}
+            }
+        }
+        // The function's tail expression is returned as surely as `return` does.
+        if let Some(tail) = ts::named_children(body).last().copied()
+            && let Some(name) = plain_name(tail)
+        {
+            self.add_occurrence_with("alias", name, id, Some("return".into()));
+        }
+        Ok(())
+    }
+
+    /// What `value` hands to the variable it is bound to.
+    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+        if let Some(name) = plain_name(value) {
+            self.add_occurrence_with("alias", name, variable_id, None);
+            return;
+        }
+        match value.kind() {
+            "call_expression" => {
+                if let Some(name) = callee_name(value) {
+                    self.add_occurrence_with("alias", name, variable_id, Some("result".into()));
+                }
+            }
+            "reference_expression" | "unary_expression" | "type_cast_expression" if depth < 3 => {
+                if let Some(inner) = value.child_by_field_name("value").or_else(|| ts::named_children(value).last().copied()) {
+                    self.record_aliases(inner, variable_id, depth + 1);
+                }
+            }
+            "array_expression" | "tuple_expression" if depth < 3 => {
+                for element in ts::named_children(value) {
+                    self.record_aliases(element, variable_id, depth + 1);
+                }
+            }
+            "index_expression" => {
+                if let Some(base) = ts::named_children(value).first().copied().and_then(plain_name) {
+                    self.add_occurrence_with("alias", base, variable_id, None);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// `S { f: g }`: the field `S.f` holds what `g` resolves to.
+    fn struct_expression_fields(&mut self, literal: TsNode<'_>) {
+        let Some(name) = literal.child_by_field_name("name") else {
+            return;
+        };
+        let type_name = self.text(name);
+        let Some(body) = literal.child_by_field_name("body") else {
+            return;
+        };
+        for initializer in ts::named_children(body) {
+            if initializer.kind() != "field_initializer" {
+                continue;
+            }
+            let (Some(field), Some(value)) = (
+                initializer.child_by_field_name("field"),
+                initializer.child_by_field_name("value"),
+            ) else {
+                continue;
+            };
+            let field_qname = format!("{}::{type_name}.{}", self.module_qname, self.text(field));
+            let field_id = node_id(self.project_name, &field_qname, NodeKind::Attribute.as_str());
+            self.record_aliases(value, &field_id, 0);
+        }
     }
 
     fn on_impl_item(&mut self, node: TsNode<'_>) -> PyResult<()> {

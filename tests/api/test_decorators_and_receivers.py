@@ -177,7 +177,11 @@ def test_typescript_decorators_defaults_and_receivers(tmp_path: Path) -> None:
     # The method decorators (`@Get`, `@Guard`), the parameter's (`@Inject`) and
     # the parameter's default (`dep()`).
     assert {"a.Get", "a.Guard", "a.Inject", "a.dep"} <= method_edges
-    assert "a.Controller" in targets(graph, "a.UsersController", RelationKind.CALLS)
+    # A decorator is called by the scope the definition sits in: the file applies
+    # `@Controller` to the class, the class applies `@Get` and `@Guard` to its
+    # method. The decorated definition depends on what decorates it (above).
+    assert "a.Controller" in targets(graph, "a.ts", RelationKind.CALLS)
+    assert {"a.Get", "a.Guard"} <= targets(graph, "a.UsersController", RelationKind.CALLS)
     # The receiver of `build().find(1)` is a call too.
     assert "a.build" in targets(graph, "a.ts", RelationKind.CALLS)
 

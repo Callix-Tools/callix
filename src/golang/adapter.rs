@@ -9,6 +9,8 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use indexmap::IndexMap;
+use crate::flow::Flow;
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -501,14 +503,18 @@ fn resolve_pass(
     let refs: Vec<Option<ResolvedRef>> = resolver.resolve_all(py, occurrences)?;
     metrics.seconds = started.elapsed().as_secs_f64();
 
+    let mut flow = Flow::default();
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
         };
         metrics.resolved += 1;
-        let Some(rel_kind) = role_to_kind(&occurrence.role) else {
-            continue;
+        let is_alias = occurrence.role == "alias";
+        let rel_kind = match role_to_kind(&occurrence.role) {
+            Some(kind) => kind,
+            None if is_alias => RelationKind::References,
+            None => continue,
         };
 
         let mut target_id = None;
@@ -519,6 +525,44 @@ fn resolve_pass(
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
+        // What a call points at, and what a variable or a parameter holds, is
+        // what the flow pass follows. An `alias` is not an edge of its own.
+        if is_alias {
+            if let Some(held) = target_id.as_deref() {
+                match occurrence.detail.as_deref() {
+                    Some("return") => flow.returned(&occurrence.enclosing_id, held),
+                    Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
+                    _ => flow.alias(&occurrence.enclosing_id, held),
+                }
+            }
+            continue;
+        }
+        if occurrence.role == "call" && occurrence.detail.as_deref() == Some("result") {
+            if let Some(function) = target_id.as_deref() {
+                flow.result_call(&occurrence.enclosing_id, function, occurrence.span, path);
+            }
+            continue;
+        }
+        if occurrence.role == "call" {
+            flow.call(path, occurrence, target_id.as_deref());
+        } else if let Some(held) = target_id.as_deref() {
+            flow.arg(path, occurrence, held);
+        } else if occurrence.detail.is_some() {
+            // A name handed to a call that is no node of the project (a local,
+            // a standard-library function): the argument is only here to be
+            // followed, and there is nothing to follow.
+            continue;
+        }
+
+        // What the answer was bound to, before an unbound one becomes an external
+        // symbol: that is what decides how the edge is described.
+        let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
+        // `HandlerFunc(g)`, `T(x)`: a type "called" is a conversion, not a call.
+        if rel_kind == RelationKind::Calls
+            && matches!(bound_kind, Some(NodeKind::Class | NodeKind::TypeAlias))
+        {
+            continue;
+        }
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {
@@ -538,8 +582,15 @@ fn resolve_pass(
             }
         }
 
+        let resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        match resolution {
+            Resolution::Value => metrics.to_value += 1,
+            Resolution::Unlocated => metrics.unlocated += 1,
+            _ => {}
+        }
         let metadata = PyDict::new(py);
         metadata.set_item("span", occurrence.span)?;
+        metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }
@@ -556,6 +607,7 @@ fn resolve_pass(
         };
         graph.push_relation(Py::new(py, relation)?);
     }
+    flow.finish(py, graph)?;
     Ok(metrics)
 }
 

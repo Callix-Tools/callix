@@ -31,6 +31,10 @@ cannot answer.
 YAML's `ok` is not a rounding of `unavailable`: nothing failed and nothing is
 missing, because a YAML document declares no symbols to resolve.
 
+`ok` says the backend came up. It does not say how many calls it found: that is
+what each edge's `resolution` records, what `callix report -t status` counts and
+what [the accuracy suite](../project/accuracy.md) measures per language.
+
 ## Why two are linked in and two are not
 
 Python and TypeScript ship their standard-library type information as data —

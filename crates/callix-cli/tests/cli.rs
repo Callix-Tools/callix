@@ -336,3 +336,34 @@ fn references_are_filed_under_the_file_they_were_written_in() {
     assert!(checked > 0);
     fs::remove_dir_all(dir).ok();
 }
+
+#[test]
+fn the_status_report_counts_edges_by_how_they_were_resolved() {
+    let report = ok(&["report", p(&fixture("python")), "-t", "status", "-q"]);
+    assert!(report.contains("How the edges were resolved"), "{report}");
+    for column in ["definition", "value", "external", "unlocated", "name", "ambiguous"] {
+        assert!(report.contains(column), "no {column} column in\n{report}");
+    }
+    assert!(report.contains("CALLS"), "{report}");
+    // It says what the backend is and what it is known to miss, not just `ok`.
+    assert!(report.contains("by types"), "{report}");
+    assert!(report.contains("known limits"), "{report}");
+}
+
+#[test]
+fn analyze_says_where_the_calls_went() {
+    let out = callix(&["analyze", p(&fixture("python")), "-o", "/dev/null"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(stderr.contains("calls:"), "{stderr}");
+    assert!(stderr.contains("to a definition"), "{stderr}");
+    assert!(stderr.contains("outside the project"), "{stderr}");
+}
+
+#[test]
+fn a_symbol_table_language_reports_what_was_matched_by_name() {
+    let out = callix(&["analyze", p(&fixture("cpp")), "-o", "/dev/null"]);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(stderr.contains("matched by name"), "{stderr}");
+}

@@ -20,9 +20,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
+      # rust-analyzer and the standard library's sources: the Rust resolver, which
+      # the golden run and the accuracy suite both need and otherwise skip.
       - uses: dtolnay/rust-toolchain@stable
-      # Go is only needed at build time: the typescript-go bridge is linked
-      # statically, and users get a prebuilt wheel.
+        with:
+          components: rust-analyzer, rust-src
+      # Go builds the typescript-go bridge, which is linked statically, and is
+      # what the Go resolver (go/packages) shells out to when the golden run and
+      # the accuracy suite analyse Go.
       - uses: actions/setup-go@v7
         with:
           go-version: "1.26"

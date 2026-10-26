@@ -76,3 +76,9 @@ docs/_build/
 
 # Cargo build state inside test fixtures (rust-analyzer creates it)
 tests/fixtures/*/target/
+
+# What cargo and rust-analyzer write into the accuracy suite's projects, and what
+# the Go resolver leaves beside them
+/tests/accuracy/suites/**/target/
+/tests/accuracy/suites/**/Cargo.lock
+/tests/accuracy/suites/**/go.sum

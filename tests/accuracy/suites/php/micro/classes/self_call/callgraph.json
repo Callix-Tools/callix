@@ -1,0 +1,1 @@
+{"main.php": ["App\\A\\a"], "App\\A\\a": ["App\\A\\b"], "App\\A\\b": []}

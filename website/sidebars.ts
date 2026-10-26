@@ -66,6 +66,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'project/migrating-from-graphlens',
         'project/benchmarks',
+        'project/accuracy',
         'project/thread-safety',
         'project/versioning',
       ],

@@ -122,7 +122,7 @@ fn status_explains_the_resolver_state() {
     let text = render(ReportKind::Status, Format::Markdown, None);
     assert!(text.contains("- **status**: ok"));
     assert!(text.contains("100.0%"));
-    assert!(text.contains("| python | 2 | ty (embedded) | ok |"));
+    assert!(text.contains("| python | 2 | ty (embedded), by types |"));
 }
 
 #[test]

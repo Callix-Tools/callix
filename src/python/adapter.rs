@@ -12,6 +12,8 @@ use std::time::Instant;
 use indexmap::IndexMap;
 use std::path::{Path, PathBuf};
 
+use crate::flow::Flow;
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
@@ -498,14 +500,18 @@ fn apply_resolutions_inner(
         ));
     }
 
+    let mut flow = Flow::default();
     for ((path, occurrence), reference) in occurrences.iter().zip(refs.iter()) {
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
         };
         metrics.resolved += 1;
-        let Some(rel_kind) = role_to_kind(&occurrence.role) else {
-            continue;
+        let is_alias = occurrence.role == "alias";
+        let rel_kind = match role_to_kind(&occurrence.role) {
+            Some(kind) => kind,
+            None if is_alias => RelationKind::References,
+            None => continue,
         };
 
         let mut target_id = None;
@@ -519,6 +525,36 @@ fn apply_resolutions_inner(
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
+        // What a call points at, and what a variable or a parameter holds, is
+        // what the flow pass follows. An `alias` is not an edge of its own.
+        if is_alias {
+            if let Some(held) = target_id.as_deref() {
+                match occurrence.detail.as_deref() {
+                    Some("return") => flow.returned(&occurrence.enclosing_id, held),
+                    Some("result") => flow.alias_result(&occurrence.enclosing_id, held),
+                    _ => flow.alias(&occurrence.enclosing_id, held),
+                }
+            }
+            continue;
+        }
+        if occurrence.role == "call" && occurrence.detail.as_deref() == Some("result") {
+            // The inner call has its own occurrence; this one is the outer call,
+            // of whatever the inner one returns.
+            if let Some(function) = target_id.as_deref() {
+                flow.result_call(&occurrence.enclosing_id, function, occurrence.span, path);
+            }
+            continue;
+        }
+        if occurrence.role == "call" {
+            flow.call(path, occurrence, target_id.as_deref());
+        } else if let Some(held) = target_id.as_deref() {
+            flow.arg(path, occurrence, held);
+            // The call that produced the argument has an occurrence of its own.
+            if occurrence.detail.as_deref().is_some_and(|d| d.ends_with(":result")) {
+                continue;
+            }
+        }
+
         // An import is only worth an edge when it reaches a definition of the
         // project; the module edge already says where it points otherwise, and
         // an external symbol per imported name would only be noise.
@@ -528,6 +564,9 @@ fn apply_resolutions_inner(
             continue;
         }
 
+        // What the answer was bound to, before an unbound one becomes an external
+        // symbol: that is what decides how the edge is described.
+        let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {
@@ -550,8 +589,15 @@ fn apply_resolutions_inner(
             }
         }
 
+        let resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        match resolution {
+            Resolution::Value => metrics.to_value += 1,
+            Resolution::Unlocated => metrics.unlocated += 1,
+            _ => {}
+        }
         let metadata = PyDict::new(py);
         metadata.set_item("span", occurrence.span)?;
+        metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }
@@ -569,6 +615,7 @@ fn apply_resolutions_inner(
             Some(metadata),
         )?;
     }
+    flow.finish(py, graph)?;
     Ok(metrics)
 }
 

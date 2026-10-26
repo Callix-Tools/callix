@@ -144,6 +144,16 @@ tasks:
     cmds:
       - uv run python tests/test_fixtures.py {{if eq .UPDATE "1"}}--update{{end}}
 
+  accuracy:
+    desc: Score the resolvers against hand-written call graphs (tests/accuracy; -v for every miss)
+    cmds:
+      - uv run python tests/accuracy/run.py {{.CLI_ARGS}}
+
+  accuracy:update:
+    desc: Raise the accuracy floor in tests/accuracy/thresholds.json after an improvement
+    cmds:
+      - uv run python tests/accuracy/run.py --update
+
   baseline:
     desc: Compare real-project fingerprints (needs ~2GB of clones; not in CI)
     cmds:

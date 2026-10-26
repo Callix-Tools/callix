@@ -187,7 +187,7 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
             span = relation.metadata.get("span")
             file = relation.metadata.get("file") or source.file_path
             result.external[caller].add(_callee_text(root, file, span) or "")
-        elif target_kind.endswith(("VARIABLE", "PARAMETER")):
+        elif target_kind.endswith(("VARIABLE", "PARAMETER", "ATTRIBUTE")):
             result.to_value[caller].add(target.qualified_name)
         elif target_kind.endswith("CLASS") and language in _CLASS_IS_NOT_A_CALL:
             continue

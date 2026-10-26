@@ -1,1 +1,1 @@
-{"main.ts": ["main.make", "main.f"], "main.make": [], "main.f": ["main.g"], "main.g": []}
+{"main.ts": ["main.make"], "main.make": ["main.g"], "main.g": []}

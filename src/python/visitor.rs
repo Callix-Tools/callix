@@ -876,7 +876,13 @@ impl<'a> PythonVisitor<'a> {
             for child in ts::children(*dec) {
                 match child.kind() {
                     "@" => {}
-                    "call" => self.scan_call(child, enclosing_id, &container)?,
+                    "call" => {
+                        self.scan_call(child, enclosing_id, &container)?;
+                        // The definition depends on what decorates it.
+                        if let Some(name) = Self::callee_name(child) {
+                            self.record_occurrence("read", name, enclosing_id);
+                        }
+                    }
                     "identifier" | "attribute" => {
                         self.scan_value(child, enclosing_id)?;
                         if let Some(name) = Self::plain_name(child) {

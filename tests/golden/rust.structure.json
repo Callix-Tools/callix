@@ -334,6 +334,29 @@
     },
     {
       "file_path": "src/store.rs",
+      "id": "1b0c585b5271b8b4",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            8,
+            8,
+            8,
+            16
+          ]
+        }
+      },
+      "name": "describe",
+      "qualified_name": "fixture::store::Labeled.describe",
+      "span": [
+        8,
+        5,
+        8,
+        34
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
       "id": "f5efd438c53480a2",
       "kind": "class",
       "metadata": {
@@ -651,6 +674,18 @@
       "metadata": {},
       "source_id": "ee7380c1341919d6",
       "target_id": "f9fee88ace817fbc"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "1b0c585b5271b8b4"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f9fee88ace817fbc",
+      "target_id": "1b0c585b5271b8b4"
     },
     {
       "kind": "declares",

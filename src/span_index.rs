@@ -54,6 +54,26 @@ impl Table {
     }
 }
 
+/// The spans of a node's `declared_at` list.
+#[cfg(feature = "python")]
+fn declared_spans(value: &Bound<'_, PyAny>) -> Vec<Span> {
+    value.extract::<Vec<Span>>().unwrap_or_default()
+}
+
+#[cfg(not(feature = "python"))]
+fn declared_spans(value: &Bound<'_, PyAny>) -> Vec<Span> {
+    match value.value() {
+        crate::py::Value::List(items) => items
+            .iter()
+            .filter_map(|item| match item {
+                crate::py::Value::Span(span) => Some(*span),
+                _ => None,
+            })
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core")]
 #[derive(Default)]
@@ -103,6 +123,13 @@ impl SpanIndex {
                 && let Ok(name_span) = value.extract::<Span>()
             {
                 idx.name.add(file_path.clone(), node.id.clone(), name_span);
+            }
+            // Other places the definition is declared - the signatures an
+            // overloaded function is resolved to.
+            if let Some(value) = metadata.get_item("declared_at")? {
+                for span in declared_spans(&value) {
+                    idx.name.add(file_path.clone(), node.id.clone(), span);
+                }
             }
         }
         Ok(idx)

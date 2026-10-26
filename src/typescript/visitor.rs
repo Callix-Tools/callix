@@ -4,7 +4,7 @@
 //! kind), structure is built as we go, and use-sites accumulate as
 //! `OccurrenceRef`s for the resolution pass.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use indexmap::IndexMap;
 
@@ -19,6 +19,7 @@ use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::python::normalize_pkg_name;
 use crate::relation::{Relation, RelationKind};
+use crate::span::Span;
 use crate::ts;
 
 use super::module_resolver::{apply_alias, resolve_relative};
@@ -197,6 +198,9 @@ pub struct TsVisitor<'a> {
     container_stack: Vec<String>,
     kind_stack: Vec<NodeKind>,
     occurrences: Vec<OccurrenceRef>,
+    /// Overload signatures seen so far, by the qualified name of the function
+    /// they belong to: the implementation that follows is declared at each.
+    overloads: HashMap<String, Vec<Span>>,
 }
 
 impl<'a> TsVisitor<'a> {
@@ -229,6 +233,7 @@ impl<'a> TsVisitor<'a> {
             container_stack: vec![file_node_id.to_string()],
             kind_stack: vec![NodeKind::File],
             occurrences: Vec::new(),
+            overloads: HashMap::new(),
         }
     }
 
@@ -267,7 +272,8 @@ impl<'a> TsVisitor<'a> {
             "enum_declaration" => self.visit_enum(node),
             "public_field_definition" => self.visit_public_field(node),
             "property_signature" => self.visit_property_signature(node),
-            "method_signature" => self.visit_method_signature(node),
+            "method_signature" | "abstract_method_signature" => self.visit_method_signature(node),
+            "function_signature" => self.note_overload(node),
             "function_declaration" | "generator_function_declaration" | "method_definition" => {
                 self.handle_function(node)
             }
@@ -566,6 +572,11 @@ impl<'a> TsVisitor<'a> {
         let Some(prop) = ts::child_of_type(node, "property_identifier") else {
             return Ok(());
         };
+        // A field holding an arrow function or a function expression is a method:
+        // it is what `obj.f()` calls.
+        if let Some(value) = ts::child_of_types(node, &["arrow_function", "function_expression", "function"]) {
+            return self.handle_lexical_function(prop, value);
+        }
         let name = self.text(prop);
         let qname = format!("{}.{name}", self.scope());
         let attr = self.make_node(
@@ -628,6 +639,9 @@ impl<'a> TsVisitor<'a> {
         metadata.set_item("decorators", PyList::new(self.py, self.decorator_names(&decorators))?)?;
         metadata.set_item("is_async", is_async)?;
         metadata.set_item("return_annotation", return_annotation)?;
+        if let Some(spans) = self.overloads.remove(&qname) {
+            metadata.set_item("declared_at", PyList::new(self.py, spans)?)?;
+        }
 
         let func = self.make_node(kind, &qname, &name, Some(node), metadata, Some(name_node))?;
         let func_id = func.get().id.clone();
@@ -646,6 +660,17 @@ impl<'a> TsVisitor<'a> {
             self.walk_body(body, &func_id)?;
         }
         self.pop();
+        Ok(())
+    }
+
+    /// An overload signature `function f(x: number): void;`. It is no node: the
+    /// implementation that follows is the function, declared at each signature,
+    /// so that a call resolved to a signature still lands on it.
+    fn note_overload(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        if let Some(name_node) = ts::child_of_type(node, "identifier") {
+            let qname = format!("{}.{}", self.scope(), self.text(name_node));
+            self.overloads.entry(qname).or_default().push(ts::span(name_node));
+        }
         Ok(())
     }
 
@@ -698,6 +723,17 @@ impl<'a> TsVisitor<'a> {
         metadata.set_item("decorators", PyList::empty(self.py))?;
         metadata.set_item("is_async", is_async)?;
         metadata.set_item("return_annotation", return_annotation)?;
+        // For a field holding a function the type checker answers with the
+        // function's own position rather than the field's name; declare the
+        // function at its first character as well.
+        let start = ts::span(value);
+        let at_start = Span {
+            start_line: start.start_line,
+            start_col: start.start_col,
+            end_line: start.start_line,
+            end_col: start.start_col + 1,
+        };
+        metadata.set_item("declared_at", PyList::new(self.py, vec![at_start])?)?;
 
         let func = self.make_node(kind, &qname, &name, Some(value), metadata, Some(name_node))?;
         let func_id = func.get().id.clone();
@@ -711,8 +747,12 @@ impl<'a> TsVisitor<'a> {
         if let Some(params) = ts::child_of_type(value, "formal_parameters") {
             self.extract_parameters(params, &func_id, &qname)?;
         }
-        if let Some(body) = ts::child_of_type(value, "statement_block") {
-            self.walk_body(body, &func_id)?;
+        if let Some(body) = Self::function_body(value) {
+            if body.kind() == "statement_block" {
+                self.walk_body(body, &func_id)?;
+            } else {
+                self.scan_value(body, &func_id)?;
+            }
         }
         self.pop();
         Ok(())
@@ -754,7 +794,61 @@ impl<'a> TsVisitor<'a> {
             c.is_named() && c.id() != name_node.id() && c.kind() != "type_annotation"
         });
         if let Some(initializer) = initializer {
-            self.scan_value(initializer, &enclosing)?;
+            self.record_aliases(initializer, &var_id, 0);
+            if initializer.kind() == "object" {
+                self.visit_object_literal(initializer, &qname, &var_id, &enclosing)?;
+            } else {
+                self.scan_value(initializer, &enclosing)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// `const o = { m() {}, f: () => {} }`: the members that are functions are
+    /// functions `o.m` and `o.f`, declared by `o`, and what is called inside them
+    /// is theirs. The other members are values.
+    fn visit_object_literal(
+        &mut self,
+        object: TsNode<'_>,
+        qname: &str,
+        var_id: &str,
+        enclosing: &str,
+    ) -> PyResult<()> {
+        for member in ts::children(object) {
+            let function = match member.kind() {
+                "method_definition" => Some((None, member)),
+                "pair" => {
+                    let named = ts::named_children(member);
+                    match (named.first(), named.get(1)) {
+                        (Some(key), Some(value))
+                            if matches!(key.kind(), "property_identifier" | "identifier")
+                                && matches!(
+                                    value.kind(),
+                                    "arrow_function" | "function_expression" | "function"
+                                ) =>
+                        {
+                            Some((Some(*key), *value))
+                        }
+                        _ => None,
+                    }
+                }
+                _ => None,
+            };
+            match function {
+                Some((None, method)) => {
+                    self.push(qname.to_string(), var_id.to_string(), NodeKind::Variable);
+                    let result = self.handle_function(method);
+                    self.pop();
+                    result?;
+                }
+                Some((Some(key), value)) => {
+                    self.push(qname.to_string(), var_id.to_string(), NodeKind::Variable);
+                    let result = self.handle_lexical_function(key, value);
+                    self.pop();
+                    result?;
+                }
+                None => self.scan_value(member, enclosing)?,
+            }
         }
         Ok(())
     }
@@ -1068,10 +1162,33 @@ impl<'a> TsVisitor<'a> {
         decorators: &[TsNode<'_>],
         enclosing_id: &str,
     ) -> PyResult<()> {
+        // A decorator is called when the definition is evaluated, by the scope the
+        // definition sits in; the decorated definition only depends on it. So the
+        // call comes from the container and the reads stay with the definition.
+        let container = self.container();
         for decorator in decorators {
             for child in ts::children(*decorator) {
-                if child.kind() != "@" {
-                    self.scan_value(child, enclosing_id)?;
+                match child.kind() {
+                    "@" => {}
+                    "call_expression" => {
+                        self.scan_call(child, enclosing_id, &container)?;
+                        // The definition depends on what decorates it.
+                        if let Some(name) = Self::callee_name(child) {
+                            self.record_occurrence("read", name, enclosing_id);
+                        }
+                    }
+                    "identifier" | "member_expression" => {
+                        self.scan_value(child, enclosing_id)?;
+                        let name = if child.kind() == "member_expression" {
+                            ts::children(child).last().copied()
+                        } else {
+                            Some(child)
+                        };
+                        if let Some(name) = name {
+                            self.record_occurrence("call", name, &container);
+                        }
+                    }
+                    _ => self.scan_value(child, enclosing_id)?,
                 }
             }
         }
@@ -1114,6 +1231,16 @@ impl<'a> TsVisitor<'a> {
     }
 
     fn record_occurrence(&mut self, role: &str, name_node: TsNode<'_>, enclosing_id: &str) {
+        self.record_occurrence_with(role, name_node, enclosing_id, None);
+    }
+
+    fn record_occurrence_with(
+        &mut self,
+        role: &str,
+        name_node: TsNode<'_>,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         let span = ts::span(name_node);
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
@@ -1121,43 +1248,24 @@ impl<'a> TsVisitor<'a> {
             col: span.start_col,
             enclosing_id: enclosing_id.to_string(),
             span,
-            detail: None,
+            detail,
         });
     }
 
     /// Scans a value expression, collecting `call` and `read`.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        // A closure written inline - a callback, an IIFE - is part of the function
+        // that contains it: its calls are that function's. Named definitions are
+        // scope boundaries and are visited as nodes of their own.
+        if matches!(node.kind(), "arrow_function" | "function" | "function_expression") {
+            return self.scan_closure(node, enclosing_id);
+        }
         if NESTED_DEF_TYPES.contains(&node.kind()) {
             return Ok(());
         }
 
         match node.kind() {
-            "call_expression" => {
-                if let Some(callee) = ts::child_of_types(node, &["identifier", "member_expression"])
-                {
-                    let name_node = if callee.kind() == "member_expression" {
-                        let parts = ts::children(callee);
-                        // Everything before the final `.name` is the receiver:
-                        // `build().find(1)` uses `build`, `a.b.c()` uses `a`.
-                        for part in parts.iter().take(parts.len().saturating_sub(1)) {
-                            self.scan_value(*part, enclosing_id)?;
-                        }
-                        parts.last().copied().unwrap_or(callee)
-                    } else {
-                        callee
-                    };
-                    self.record_occurrence("call", name_node, enclosing_id);
-                }
-                if let Some(args) = ts::child_of_type(node, "arguments") {
-                    for arg in ts::children(args) {
-                        if matches!(arg.kind(), "," | "(" | ")") {
-                            continue;
-                        }
-                        self.scan_value(arg, enclosing_id)?;
-                    }
-                }
-                Ok(())
-            }
+            "new_expression" | "call_expression" => self.scan_call(node, enclosing_id, enclosing_id),
             "identifier" => {
                 self.record_occurrence("read", node, enclosing_id);
                 Ok(())
@@ -1187,6 +1295,196 @@ impl<'a> TsVisitor<'a> {
         }
     }
 
+    /// A call or a `new`. `caller_id` makes it: the enclosing node, except for a
+    /// decorator, which the scope the decorated definition sits in applies.
+    fn scan_call(&mut self, node: TsNode<'_>, enclosing_id: &str, caller_id: &str) -> PyResult<()> {
+        let mut call_site = None;
+        if node.kind() == "new_expression" {
+            // `new A(x)` instantiates A: a call, of the class.
+            if let Some(constructor) = ts::named_children(node).first().copied() {
+                if let Some(name) = Self::plain_name(constructor) {
+                    if constructor.kind() == "member_expression" {
+                        self.scan_receiver(constructor, name, enclosing_id)?;
+                    }
+                    self.record_occurrence("call", name, caller_id);
+                    call_site = Some(ts::span(name));
+                } else {
+                    self.scan_value(constructor, enclosing_id)?;
+                }
+            }
+        } else if let Some(callee) = ts::children(node).first().copied() {
+            match callee.kind() {
+                // `super(...)` calls the base class's constructor.
+                "super" => {
+                    self.record_occurrence("call", callee, caller_id);
+                    call_site = Some(ts::span(callee));
+                }
+                "identifier" | "member_expression" => {
+                    let name_node = if callee.kind() == "member_expression" {
+                        // Everything before the final `.name` is the receiver:
+                        // `build().find(1)` uses `build`, `a.b.c()` uses `a`.
+                        let parts = ts::children(callee);
+                        for part in parts.iter().take(parts.len().saturating_sub(1)) {
+                            self.scan_value(*part, enclosing_id)?;
+                        }
+                        parts.last().copied().unwrap_or(callee)
+                    } else {
+                        callee
+                    };
+                    self.record_occurrence("call", name_node, caller_id);
+                    call_site = Some(ts::span(name_node));
+                }
+                // `f()()`: a call of whatever `f` returns.
+                "call_expression" => {
+                    self.scan_call(callee, enclosing_id, caller_id)?;
+                    if let Some(inner) = Self::callee_name(callee) {
+                        self.record_occurrence_with("call", inner, caller_id, Some("result".into()));
+                    }
+                }
+                // `table[key]()`: a call of whatever the container holds.
+                "subscript_expression" => {
+                    self.scan_value(callee, enclosing_id)?;
+                    if let Some(base) = ts::children(callee).first().copied().and_then(Self::plain_name) {
+                        self.record_occurrence("call", base, caller_id);
+                    }
+                }
+                _ => self.scan_value(callee, enclosing_id)?,
+            }
+        }
+        if let Some(args) = ts::child_of_type(node, "arguments") {
+            let mut index = 0usize;
+            for arg in ts::children(args) {
+                if matches!(arg.kind(), "," | "(" | ")") {
+                    continue;
+                }
+                match (call_site, Self::plain_name(arg)) {
+                    (Some(site), Some(name)) => {
+                        if arg.kind() == "member_expression" {
+                            self.scan_receiver(arg, name, enclosing_id)?;
+                        }
+                        // A name handed to a call also says which parameter it
+                        // is handed to: that is what lets a callback be followed
+                        // to the parameter that finally calls it.
+                        let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
+                        self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+                    }
+                    _ => self.scan_value(arg, enclosing_id)?,
+                }
+                index += 1;
+            }
+        }
+        Ok(())
+    }
+
+    /// The parts of a member chain before its final name are read.
+    fn scan_receiver(&mut self, chain: TsNode<'_>, name: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        for part in ts::children(chain) {
+            if part.id() != name.id() && part.kind() != "." {
+                self.scan_value(part, enclosing_id)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// The name a chain of identifiers and member accesses ends in - the position
+    /// the resolver is asked about - when `node` is nothing but such a chain.
+    fn plain_name<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
+        match node.kind() {
+            "identifier" => Some(node),
+            "member_expression" => {
+                let children = ts::children(node);
+                let simple = children.iter().all(|c| {
+                    matches!(
+                        c.kind(),
+                        "identifier" | "this" | "member_expression" | "property_identifier" | "."
+                    )
+                });
+                children.last().copied().filter(|l| simple && l.kind() == "property_identifier")
+            }
+            _ => None,
+        }
+    }
+
+    /// The name a call's callee ends in.
+    fn callee_name<'t>(call: TsNode<'t>) -> Option<TsNode<'t>> {
+        ts::children(call).first().copied().and_then(Self::plain_name)
+    }
+
+    /// What `value` hands to the variable it initialises: a name holds what it
+    /// resolves to, a call what the callee returns, a container its elements.
+    fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+        if let Some(name) = Self::plain_name(value) {
+            self.record_occurrence_with("alias", name, variable_id, None);
+            return;
+        }
+        match value.kind() {
+            "call_expression" => {
+                if let Some(name) = Self::callee_name(value) {
+                    self.record_occurrence_with("alias", name, variable_id, Some("result".into()));
+                }
+            }
+            "subscript_expression" => {
+                if let Some(base) = ts::children(value).first().copied().and_then(Self::plain_name) {
+                    self.record_occurrence_with("alias", base, variable_id, None);
+                }
+            }
+            "parenthesized_expression" | "as_expression" | "non_null_expression" | "satisfies_expression"
+                if depth < 3 =>
+            {
+                if let Some(inner) = ts::named_children(value).first().copied() {
+                    self.record_aliases(inner, variable_id, depth + 1);
+                }
+            }
+            "object" | "array" if depth < 3 => {
+                for element in ts::children(value) {
+                    let element = if element.kind() == "pair" {
+                        match ts::named_children(element).get(1).copied() {
+                            Some(v) => v,
+                            None => continue,
+                        }
+                    } else {
+                        element
+                    };
+                    self.record_aliases(element, variable_id, depth + 1);
+                }
+            }
+            "shorthand_property_identifier" => {
+                self.record_occurrence_with("alias", value, variable_id, None);
+            }
+            _ => {}
+        }
+    }
+
+    /// The body of a function-valued expression, which belongs to whoever
+    /// contains the expression.
+    fn scan_closure(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        if let Some(params) = ts::child_of_type(node, "formal_parameters") {
+            for param in ts::children(params) {
+                if let Some(default) = Self::default_value(param) {
+                    self.scan_value(default, enclosing_id)?;
+                }
+            }
+        }
+        if let Some(body) = Self::function_body(node) {
+            if body.kind() == "statement_block" {
+                self.walk_body(body, enclosing_id)?;
+            } else {
+                self.scan_value(body, enclosing_id)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// A function's body: the block, or the expression of `() => expr`.
+    fn function_body<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
+        if let Some(block) = ts::child_of_type(node, "statement_block") {
+            return Some(block);
+        }
+        let children = ts::children(node);
+        let arrow = children.iter().position(|c| c.kind() == "=>")?;
+        children.get(arrow + 1).copied()
+    }
+
     fn walk_body(&mut self, body: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         for child in ts::children(body) {
             self.walk_statement(child, enclosing_id)?;
@@ -1213,6 +1511,10 @@ impl<'a> TsVisitor<'a> {
         }
         if kind == "return_statement" {
             for child in ts::named_children(node) {
+                // Calling the function yields what is returned.
+                if let Some(name) = Self::plain_name(child) {
+                    self.record_occurrence_with("alias", name, enclosing_id, Some("return".into()));
+                }
                 self.scan_value(child, enclosing_id)?;
             }
             return Ok(());

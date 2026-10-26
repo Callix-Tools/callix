@@ -303,6 +303,29 @@
     },
     {
       "file_path": "store/store.go",
+      "id": "1f44a7b3d789973d",
+      "kind": "method",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            11,
+            2,
+            11,
+            10
+          ]
+        }
+      },
+      "name": "Describe",
+      "qualified_name": "example.com/fixture/store.Labeled.Describe",
+      "span": [
+        11,
+        2,
+        11,
+        19
+      ]
+    },
+    {
+      "file_path": "store/store.go",
       "id": "31d5b81cc735966e",
       "kind": "class",
       "metadata": {
@@ -556,6 +579,18 @@
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
       "target_id": "6386cb55dd3c2cde"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "1f44a7b3d789973d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "6386cb55dd3c2cde",
+      "target_id": "1f44a7b3d789973d"
     },
     {
       "kind": "declares",

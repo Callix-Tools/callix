@@ -1,1 +1,1 @@
-{"main.php": ["App\\A\\f"], "App\\A\\__construct": [], "App\\A\\f": ["App\\B\\m"], "App\\B\\m": []}
+{"main.php": ["App\\A\\__construct", "App\\A\\f"], "App\\A\\__construct": ["App\\B"], "App\\A\\f": ["App\\B\\m"], "App\\B\\m": []}

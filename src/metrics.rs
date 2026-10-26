@@ -26,13 +26,21 @@ pub struct ResolverMetrics {
     pub unresolved: u64,
     /// Seconds spent inside `resolve_all`.
     pub seconds: f64,
+    /// Calls whose target is a variable, a parameter or a field: the resolver found
+    /// what the callee was read from, not the callee. A subset of `internal`.
+    pub to_value: u64,
+    /// Answers that could not be bound to a node of the project although the
+    /// resolver called them internal, or that pointed inside an import. A subset of
+    /// `external`.
+    pub unlocated: u64,
 }
 
 #[gen_stub_pymethods]
 #[pymethods]
 impl ResolverMetrics {
     #[new]
-    #[pyo3(signature = (queries = 0, resolved = 0, internal = 0, external = 0, unresolved = 0, seconds = 0.0))]
+    #[pyo3(signature = (queries = 0, resolved = 0, internal = 0, external = 0, unresolved = 0, seconds = 0.0, to_value = 0, unlocated = 0))]
+    #[allow(clippy::too_many_arguments)]
     fn new(
         queries: u64,
         resolved: u64,
@@ -40,8 +48,10 @@ impl ResolverMetrics {
         external: u64,
         unresolved: u64,
         seconds: f64,
+        to_value: u64,
+        unlocated: u64,
     ) -> Self {
-        Self { queries, resolved, internal, external, unresolved, seconds }
+        Self { queries, resolved, internal, external, unresolved, seconds, to_value, unlocated }
     }
 
     /// Share of queries that returned a definition, in percent.
@@ -61,6 +71,8 @@ impl ResolverMetrics {
         self.external += other.external;
         self.unresolved += other.unresolved;
         self.seconds += other.seconds;
+        self.to_value += other.to_value;
+        self.unlocated += other.unlocated;
     }
 
     /// A flat dict for storage in `graph.metadata`.
@@ -72,14 +84,16 @@ impl ResolverMetrics {
         out.set_item("external", self.external)?;
         out.set_item("unresolved", self.unresolved)?;
         out.set_item("seconds", round_to(self.seconds, 3))?;
+        out.set_item("to_value", self.to_value)?;
+        out.set_item("unlocated", self.unlocated)?;
         out.set_item("resolved_pct", round_to(self.resolved_pct(), 1))?;
         Ok(out)
     }
 
     fn __repr__(&self) -> String {
         format!(
-            "ResolverMetrics(queries={}, resolved={}, internal={}, external={}, unresolved={})",
-            self.queries, self.resolved, self.internal, self.external, self.unresolved
+            "ResolverMetrics(queries={}, resolved={}, internal={}, external={}, unresolved={}, to_value={}, unlocated={})",
+            self.queries, self.resolved, self.internal, self.external, self.unresolved, self.to_value, self.unlocated
         )
     }
 }

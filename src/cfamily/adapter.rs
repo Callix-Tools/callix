@@ -25,6 +25,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use indexmap::IndexMap;
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -109,6 +110,7 @@ fn push_relation(
 /// It records where it was written, as every other adapter's does — `span`, and
 /// `access` on a `REFERENCES` — which is what lets two call sites of the same
 /// function stay two edges and what an index (LSIF) needs to place a reference.
+#[allow(clippy::too_many_arguments)]
 fn push_reference(
     py: Python<'_>,
     graph: &mut Graph,
@@ -117,9 +119,17 @@ fn push_reference(
     kind: RelationKind,
     occurrence: &FoundOccurrence,
     site_file: &str,
+    resolution: Resolution,
+    ambiguous: bool,
 ) -> PyResult<()> {
     let metadata = PyDict::new(py);
     metadata.set_item("span", occurrence.span)?;
+    metadata.set_item(resolution::KEY, resolution.as_str())?;
+    if ambiguous {
+        // Several declarations carried the name and the table has no types to
+        // choose between them: the edge is the first of them, and says so.
+        metadata.set_item(resolution::AMBIGUOUS_KEY, true)?;
+    }
     if occurrence.role == "read" || occurrence.role == "write" {
         metadata.set_item("access", occurrence.role)?;
     }
@@ -383,7 +393,7 @@ fn resolve_with_table(
             }
 
             match index.lookup(&occurrence.name, &file.file_rel) {
-                Some((qualified_name, target_kind, _ambiguous)) => {
+                Some((qualified_name, target_kind, ambiguous)) => {
                     let target_id = node_id(project, &qualified_name, target_kind.as_str());
                     if !graph.has_node(&target_id) {
                         metrics.unresolved += 1;
@@ -391,7 +401,21 @@ fn resolve_with_table(
                     }
                     metrics.resolved += 1;
                     metrics.internal += 1;
-                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
+                    // Matched by name: the table has no types. A call that lands on
+                    // a variable (a function pointer) found no callee at all.
+                    let resolution = match graph.node_kind(&target_id) {
+                        Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                            if kind == RelationKind::Calls =>
+                        {
+                            metrics.to_value += 1;
+                            Resolution::Value
+                        }
+                        _ => Resolution::Name,
+                    };
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                        resolution, ambiguous,
+                    )?;
                 }
                 None => {
                     // Not declared in anything this translation unit can see: a
@@ -411,7 +435,10 @@ fn resolve_with_table(
                         ensure_external_symbol(py, graph, project, &key, "unknown")?;
                     metrics.resolved += 1;
                     metrics.external += 1;
-                    push_reference(py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel)?;
+                    push_reference(
+                        py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                        Resolution::External, false,
+                    )?;
                 }
             }
         }

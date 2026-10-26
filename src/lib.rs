@@ -36,6 +36,7 @@ mod occurrence;
 mod php;
 mod python;
 mod relation;
+mod resolution;
 mod resolver_slot;
 mod roots;
 mod rustlang;

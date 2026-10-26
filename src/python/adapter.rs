@@ -12,6 +12,7 @@ use std::time::Instant;
 use indexmap::IndexMap;
 use std::path::{Path, PathBuf};
 
+use crate::resolution::{self, Resolution};
 use crate::py::prelude::*;
 use crate::py::types::PyDict;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
@@ -528,6 +529,9 @@ fn apply_resolutions_inner(
             continue;
         }
 
+        // What the answer was bound to, before an unbound one becomes an external
+        // symbol: that is what decides how the edge is described.
+        let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {
@@ -550,8 +554,15 @@ fn apply_resolutions_inner(
             }
         }
 
+        let resolution = Resolution::classify(rel_kind, bound_kind, &reference.origin);
+        match resolution {
+            Resolution::Value => metrics.to_value += 1,
+            Resolution::Unlocated => metrics.unlocated += 1,
+            _ => {}
+        }
         let metadata = PyDict::new(py);
         metadata.set_item("span", occurrence.span)?;
+        metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
         }

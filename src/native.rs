@@ -188,7 +188,7 @@ pub fn analyze_tree(
     Python::attach(|py| {
         let mut merged: Option<Graph> = None;
         let mut reports = Vec::new();
-        let mut counters: Vec<[f64; 6]> = Vec::new();
+        let mut counters: Vec<[f64; 8]> = Vec::new();
 
         for language in languages {
             let started = Instant::now();

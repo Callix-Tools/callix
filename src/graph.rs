@@ -135,6 +135,11 @@ impl Graph {
         }
     }
 
+    /// The kind of the node with this id, when there is one.
+    pub(crate) fn node_kind(&self, id: &str) -> Option<crate::node::NodeKind> {
+        self.nodes.get(id).map(|node| node.get().kind)
+    }
+
     pub(crate) fn has_node(&self, id: &str) -> bool {
         self.nodes.contains_key(id)
     }
@@ -696,9 +701,9 @@ impl Graph {
             .and_then(|v| v.extract::<String>().ok())
     }
 
-    /// `[queries, resolved, internal, external, unresolved, seconds]` from
-    /// `metadata["resolver_metrics"]`, when present.
-    pub(crate) fn metric_counters(&self, py: Python<'_>) -> Option<[f64; 6]> {
+    /// `[queries, resolved, internal, external, unresolved, seconds, to_value,
+    /// unlocated]` from `metadata["resolver_metrics"]`, when present.
+    pub(crate) fn metric_counters(&self, py: Python<'_>) -> Option<[f64; 8]> {
         let metrics = self.metadata.bind(py).get_item(RESOLVER_METRICS_KEY).ok().flatten()?;
         let crate::py::Value::Dict(map) = metrics.value().clone() else { return None };
         let number = |key: &str| {
@@ -715,12 +720,14 @@ impl Graph {
             number("external").unwrap_or(0.0),
             number("unresolved").unwrap_or(0.0),
             number("seconds").unwrap_or(0.0),
+            number("to_value").unwrap_or(0.0),
+            number("unlocated").unwrap_or(0.0),
         ])
     }
 
     /// Replaces `resolver_metrics` with the sums over every language that ran.
-    pub(crate) fn set_summed_metrics(&self, py: Python<'_>, parts: &[[f64; 6]]) {
-        let mut total = [0.0f64; 6];
+    pub(crate) fn set_summed_metrics(&self, py: Python<'_>, parts: &[[f64; 8]]) {
+        let mut total = [0.0f64; 8];
         for part in parts {
             for (sum, value) in total.iter_mut().zip(part) {
                 *sum += value;
@@ -734,6 +741,8 @@ impl Graph {
             let _ = metrics.set_item(*key, value as i64);
         }
         let _ = metrics.set_item("seconds", (total[5] * 1000.0).round() / 1000.0);
+        let _ = metrics.set_item("to_value", total[6] as i64);
+        let _ = metrics.set_item("unlocated", total[7] as i64);
         let _ = metrics.set_item("resolved_pct", percent);
         let _ = self.metadata.bind(py).set_item(RESOLVER_METRICS_KEY, &metrics);
     }

@@ -1,0 +1,1 @@
+A boxed closure called.

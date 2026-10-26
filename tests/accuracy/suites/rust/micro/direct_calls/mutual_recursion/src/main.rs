@@ -1,0 +1,4 @@
+fn even(n: u32) -> bool { if n == 0 { true } else { odd(n - 1) } }
+fn odd(n: u32) -> bool { if n == 0 { false } else { even(n - 1) } }
+
+fn main() { even(4); }

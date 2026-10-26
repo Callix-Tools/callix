@@ -14,7 +14,10 @@ import run
 
 @pytest.mark.parametrize("path", harness.suites(), ids=run.suite_name)
 def test_suite_does_not_regress(path) -> None:
-    score, outcomes = run.run_suite(path)
+    try:
+        score, outcomes = run.run_suite(path)
+    except harness.ResolverUnavailable as error:
+        pytest.skip(f"the {error} resolver is not available here")
     crashed = [o.case.name for o in outcomes if o.error]
     assert not crashed, f"cases that crashed: {crashed}"
 

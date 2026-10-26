@@ -78,7 +78,11 @@ def main(argv: list[str]) -> int:
     thresholds = load_thresholds()
     failed = False
     for path in paths:
-        score, outcomes = run_suite(path)
+        try:
+            score, outcomes = run_suite(path)
+        except harness.ResolverUnavailable as error:
+            print(f"== {suite_name(path)}: skipped, the {error} resolver is not available here\n")
+            continue
         report(score, outcomes, verbose)
         floor = thresholds.setdefault(score.suite, {})
         measured = score.metrics()

@@ -38,7 +38,10 @@ import callix
 ROOT = Path(__file__).resolve().parent
 SUITES = ROOT / "suites"
 
-_CONSTRUCTOR = {"python": "__init__", "typescript": "constructor"}
+_CONSTRUCTOR = {"python": ".__init__", "typescript": ".constructor", "php": "\\__construct"}
+
+# A struct or class used as a value is not a call: no ground truth lists one.
+_CLASS_IS_NOT_A_CALL = {"rust", "go"}
 
 _IDENT = re.compile(r"[A-Za-z_][A-Za-z_0-9]*(?:\s*(?:\.|::|->)\s*[A-Za-z_][A-Za-z_0-9]*)*")
 
@@ -161,7 +164,7 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
         if class_id in seen:
             return None
         seen.add(class_id)
-        found = by_name.get(nodes[class_id].qualified_name + "." + _CONSTRUCTOR[language])
+        found = by_name.get(nodes[class_id].qualified_name + _CONSTRUCTOR[language])
         if found is not None:
             return found.qualified_name
         for base in bases.get(class_id, []):
@@ -186,6 +189,8 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
             result.external[caller].add(_callee_text(root, file, span) or "")
         elif target_kind.endswith(("VARIABLE", "PARAMETER")):
             result.to_value[caller].add(target.qualified_name)
+        elif target_kind.endswith("CLASS") and language in _CLASS_IS_NOT_A_CALL:
+            continue
         elif target_kind.endswith("CLASS") and language in _CONSTRUCTOR:
             # No edge for `A()` unless `A` defines a constructor: that is what a
             # reader draws, and what PyCG's ground truth does.
@@ -200,7 +205,7 @@ def call_graph(graph: callix.Graph, root: Path, language: str) -> CallGraph:
 _SOURCE_SUFFIXES = {
     "python": (".py",),
     "typescript": (".ts", ".tsx", ".mts", ".cts"),
-}
+}  # languages whose modules are files; elsewhere the ground truth's keys say what is the program
 
 
 def _program_modules(root: Path, language: str) -> set[str]:
@@ -224,14 +229,25 @@ def evaluate(case: Case, analyze) -> Outcome:
     outcome = Outcome(case)
     try:
         built = call_graph(analyze(case.root), case.root, case.suite.split("/")[0])
+    except ResolverUnavailable:
+        raise
     except Exception as error:  # a crash is a failed case, and says so
         outcome.error = repr(error)
         return outcome
 
-    modules = _program_modules(case.root, case.suite.split("/")[0])
+    modules = _program_modules(case.root, case.suite.split("/")[0]) if case.suite.split("/")[0] in _SOURCE_SUFFIXES else set()
+
+    language = case.suite.split("/")[0]
+    keys = set(case.expected)
 
     def internal(name: str) -> bool:
-        return not name.startswith("<") and any(name == m or name.startswith(m + ".") for m in modules)
+        if name.startswith("<"):
+            return False
+        if language in _SOURCE_SUFFIXES:
+            return any(name == m or name.startswith(m + ".") for m in modules)
+        # Elsewhere a callee belongs to the program when the ground truth lists it
+        # as a function of its own: every function the program defines is a key.
+        return name in keys
 
     for caller, callees in case.expected.items():
         for callee in callees:
@@ -284,14 +300,30 @@ def score(suite_dir: Path, analyze) -> tuple[Score, list[Outcome]]:
     return total, outcomes
 
 
+class ResolverUnavailable(Exception):
+    """The toolchain a language's resolver needs is not installed here."""
+
+
 def adapter_for(suite_name: str):
     """The analyzer a suite runs, with the resolver on - that is what is measured."""
     language = suite_name.split("/")[0]
     adapters = {
         "python": callix.PythonAdapter,
         "typescript": callix.TypeScriptAdapter,
+        "go": callix.GoAdapter,
+        "rust": callix.RustAdapter,
+        "php": callix.PhpAdapter,
+        "c": callix.CAdapter,
+        "cpp": callix.CppAdapter,
     }
     factory = adapters.get(language)
     if factory is None:
         raise KeyError(f"no adapter registered for the {language!r} suites")
-    return lambda root: factory().analyze(str(root))
+
+    def analyze(root):
+        graph = factory().analyze(str(root))
+        if graph.metadata.get("resolver_status") == "unavailable":
+            raise ResolverUnavailable(language)
+        return graph
+
+    return analyze

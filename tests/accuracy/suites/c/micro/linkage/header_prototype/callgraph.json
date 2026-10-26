@@ -1,0 +1,1 @@
+{"main": ["util_go"], "util_go": ["util.c::inner"], "util.c::inner": []}

@@ -1,0 +1,1 @@
+{"main.php": ["App\\B\\__construct"], "App\\B\\__construct": ["App\\A\\__construct"], "App\\A\\__construct": []}

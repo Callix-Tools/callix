@@ -53,7 +53,7 @@ use super::detector::{
     is_cpp, project_name,
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs};
-use super::resolver::{CFamilyIndex, SymbolTable};
+use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
 use super::visitor::{CFamilyEmitter, FileFacts, FoundOccurrence, Owner, declared_scopes, read_file};
 use super::{Dialect, parse_tree};
 
@@ -371,6 +371,29 @@ fn resolve_with_table(
                 &file.file_rel,
                 decl.linkage == Linkage::Internal,
             );
+            // Classes, their members and fields: what a receiver's type is asked.
+            let without_signature = decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name);
+            match decl.kind {
+                NodeKind::Class => index.declare_class(&decl.qualified_name),
+                NodeKind::Method => {
+                    if let Some((class, member)) = without_signature.rsplit_once("::") {
+                        index.declare_member(class, member, &decl.qualified_name, decl.kind);
+                    }
+                }
+                NodeKind::Attribute => {
+                    if let Some((class, field)) = without_signature.rsplit_once("::") {
+                        index.declare_field(class, field, &decl.type_text);
+                    }
+                }
+                _ => {}
+            }
+        }
+        for occurrence in &file.facts.occurrences {
+            if occurrence.role == "base"
+                && let Owner::Decl { qualified_name, kind: NodeKind::Class } = &occurrence.owner
+            {
+                index.add_base(qualified_name, &occurrence.name);
+            }
         }
         for include in &file.facts.includes {
             index.include(&file.file_rel, &include.path);
@@ -381,7 +404,7 @@ fn resolve_with_table(
     let mut metrics = ResolverMetrics::default();
     for file in analysed {
         for occurrence in &file.facts.occurrences {
-            let Some(kind) = role_to_kind(occurrence.role) else {
+            let Some(mut kind) = role_to_kind(occurrence.role) else {
                 continue;
             };
             metrics.queries += 1;
@@ -392,7 +415,35 @@ fn resolve_with_table(
                 continue;
             }
 
-            match index.lookup(&occurrence.name, &file.file_rel) {
+            // A call, a construction and a base in an initialiser list are asked of
+            // the class table with everything the site says; the rest by name.
+            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list {
+                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel) {
+                    Outcome::Found { qualified_name, kind, ambiguous } => Some(Some((qualified_name, kind, ambiguous))),
+                    // Nothing the project declares: a library, a built-in. A
+                    // construction of one is no edge at all; a call is an external one.
+                    Outcome::Outside if occurrence.site.constructs => {
+                        metrics.queries -= 1;
+                        continue;
+                    }
+                    Outcome::Outside => Some(None),
+                    Outcome::NotACall => None,
+                }
+            } else {
+                None
+            };
+            let answer = match asked {
+                Some(answer) => answer,
+                None => index.lookup(&occurrence.name, &file.file_rel),
+            };
+            // A base in an initialiser list is written like a field and is a call of
+            // the base's constructor.
+            if occurrence.site.in_initializer_list
+                && matches!(answer, Some((_, NodeKind::Method | NodeKind::Class, _)))
+            {
+                kind = RelationKind::Calls;
+            }
+            match answer {
                 Some((qualified_name, target_kind, ambiguous)) => {
                     let target_id = node_id(project, &qualified_name, target_kind.as_str());
                     if !graph.has_node(&target_id) {

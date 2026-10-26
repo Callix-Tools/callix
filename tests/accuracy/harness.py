@@ -41,7 +41,7 @@ SUITES = ROOT / "suites"
 _CONSTRUCTOR = {"python": ".__init__", "typescript": ".constructor", "php": "\\__construct"}
 
 # A struct or class used as a value is not a call: no ground truth lists one.
-_CLASS_IS_NOT_A_CALL = {"rust", "go"}
+_CLASS_IS_NOT_A_CALL = {"rust", "go", "c", "cpp"}
 
 _IDENT = re.compile(r"[A-Za-z_][A-Za-z_0-9]*(?:\s*(?:\.|::|->)\s*[A-Za-z_][A-Za-z_0-9]*)*")
 

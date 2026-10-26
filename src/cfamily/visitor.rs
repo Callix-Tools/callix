@@ -28,7 +28,7 @@
 //! The visitor creates no CALLS / REFERENCES / HAS_TYPE / INHERITS_FROM edges —
 //! it records occurrences, and the adapter's resolution pass binds them.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::py::prelude::*;
 use crate::py::types::{PyDict, PyList};
@@ -417,11 +417,50 @@ pub struct FoundDecl {
     pub signature: String,
 }
 
+/// What a call site says about which function it means, beyond the name.
+///
+/// The name alone cannot tell `a.run()` from `b.run()`, `Shape::area` from
+/// `Sq::area`, or one overload from another; these are the parts of the syntax
+/// that can, without a type checker.
+#[derive(Clone, Default)]
+pub struct CallSite {
+    /// The scope written before the name: `n::A::f` is `["n", "A"]`.
+    pub qualifier: Vec<String>,
+    /// The type of `obj` in `obj.f()` / `obj->f()` / `this->f()`, when a
+    /// declaration in reach says so.
+    pub receiver_type: Option<String>,
+    /// The identifier `obj` itself, for a member of the enclosing class (`obj_->f()`).
+    pub receiver_name: Option<String>,
+    /// The qualified class of the method this site is in: what an unqualified
+    /// `f()` in a method means first.
+    pub class_scope: Option<String>,
+    /// How many arguments the call has.
+    pub arity: Option<usize>,
+    /// What each argument is, as far as its spelling shows: `int`, `float`,
+    /// `string`, `char`, `bool`, a type name, or `?`.
+    pub arg_kinds: Vec<String>,
+    /// A construction: `T x;`, `T x(1);`, `new T(1)`, a base in an initialiser list.
+    pub constructs: bool,
+    /// The site is the name in a member initialiser list, which is a field or a
+    /// base class.
+    pub in_initializer_list: bool,
+}
+
+/// What a function's declarations say about the names its body uses.
+#[derive(Default)]
+struct BodyContext {
+    /// Variable (parameter or local) → the class-like type it was declared with.
+    locals: HashMap<String, String>,
+    /// The qualified class of the method, for an unqualified call or `this`.
+    class_scope: Option<String>,
+}
+
 /// A use-site, before it has a node id to hang off.
 pub struct FoundOccurrence {
     pub role: &'static str,
     pub span: Span,
     pub owner: Owner,
+    pub site: CallSite,
     /// The identifier as written. C and C++ resolve by declaration visibility
     /// rather than by position, so the resolver needs the name itself — unlike
     /// the four languages whose backends answer "what is defined at this
@@ -738,10 +777,21 @@ impl<'a> Reader<'a> {
         name_node: TsNode<'_>,
         owner: &Owner,
     ) {
+        self.push_site(role, name_node, owner, CallSite::default());
+    }
+
+    fn push_site(
+        &mut self,
+        role: &'static str,
+        name_node: TsNode<'_>,
+        owner: &Owner,
+        site: CallSite,
+    ) {
         self.facts.occurrences.push(FoundOccurrence {
             role,
             span: ts::span(name_node),
             owner: owner.clone(),
+            site,
             name: self.text(name_node),
         });
     }
@@ -1236,15 +1286,142 @@ impl<'a> Reader<'a> {
             qualified_name: identity.qualified_name.clone(),
             kind: identity.kind,
         };
+        let context = self.body_context(node, &found, &identity);
         // `function_definition` is what the grammar produces for a body, for
         // `= default` and for `= delete`; every one of the three defines.
         self.declare_callable(node, &found, true, identity);
         if let Some(initializers) = ts::child_of_type(node, "field_initializer_list") {
-            self.collect_initializers(initializers, &owner);
+            self.collect_initializers(initializers, &owner, &context);
         }
         if let Some(body) = node.child_by_field_name("body") {
-            self.collect_body(body, &owner);
+            self.collect_body(body, &owner, &context);
         }
+    }
+
+    /// The class a method belongs to, and the types its parameters and locals
+    /// were declared with: what a call site in the body needs to say whose
+    /// `run()` it means.
+    fn body_context(&self, node: TsNode<'_>, found: &Declared<'_>, identity: &CallableId) -> BodyContext {
+        let mut context = BodyContext::default();
+        if identity.kind == NodeKind::Method {
+            let (extra, _) = split_qualified(found.name, self.source);
+            let mut scope = self.parts.clone();
+            scope.extend(extra);
+            if !scope.is_empty() {
+                context.class_scope = Some(scope.join("::"));
+            }
+        }
+        if let Some(function) = found.function
+            && let Some(parameters) = function.child_by_field_name("parameters")
+        {
+            for parameter in ts::named_children(parameters) {
+                if parameter.kind() != "parameter_declaration"
+                    && parameter.kind() != "optional_parameter_declaration"
+                {
+                    continue;
+                }
+                let (Some(type_node), Some(declarator)) = (
+                    parameter.child_by_field_name("type"),
+                    parameter.child_by_field_name("declarator"),
+                ) else {
+                    continue;
+                };
+                if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator)) {
+                    context.locals.insert(self.text(name.name), key);
+                }
+            }
+        }
+        if let Some(body) = node.child_by_field_name("body") {
+            for declaration in descendants(body) {
+                if declaration.kind() != "declaration" {
+                    continue;
+                }
+                let Some(type_node) = declaration.child_by_field_name("type") else {
+                    continue;
+                };
+                let mut cursor = declaration.walk();
+                let declarators: Vec<TsNode<'_>> =
+                    declaration.children_by_field_name("declarator", &mut cursor).collect();
+                for declarator in declarators {
+                    let (inner, value) = if declarator.kind() == "init_declarator" {
+                        (declarator.child_by_field_name("declarator"), declarator.child_by_field_name("value"))
+                    } else {
+                        (Some(declarator), None)
+                    };
+                    let Some(name) = inner.and_then(terminal_declarator) else {
+                        continue;
+                    };
+                    let key = if self.text(type_node) == "auto" {
+                        value.and_then(|v| self.constructed_type(v))
+                    } else {
+                        self.type_key(type_node)
+                    };
+                    if let Some(key) = key {
+                        context.locals.insert(self.text(name.name), key);
+                    }
+                }
+            }
+        }
+        context
+    }
+
+    /// The class a type spells, qualified as written and without template
+    /// arguments, pointers or references; None for a built-in or `auto`.
+    fn type_key(&self, node: TsNode<'_>) -> Option<String> {
+        match node.kind() {
+            "type_identifier" => Some(self.text(node)),
+            "qualified_identifier" => {
+                let (mut scope, leaf) = split_qualified(node, self.source);
+                scope.push(self.text(bare_name(leaf)));
+                Some(scope.join("::"))
+            }
+            "template_type" => node.child_by_field_name("name").and_then(|n| self.type_key(n)),
+            "primitive_type" | "sized_type_specifier" | "placeholder_type_specifier" => None,
+            "struct_specifier" | "class_specifier" | "union_specifier" => {
+                node.child_by_field_name("name").and_then(|n| self.type_key(n))
+            }
+            _ => ts::named_children(node).into_iter().find_map(|child| self.type_key(child)),
+        }
+    }
+
+    /// The class a constructing expression builds: `new T(…)`, `T(…)`.
+    fn constructed_type(&self, expression: TsNode<'_>) -> Option<String> {
+        match expression.kind() {
+            "new_expression" => expression.child_by_field_name("type").and_then(|t| self.type_key(t)),
+            "call_expression" => expression
+                .child_by_field_name("function")
+                .filter(|f| matches!(f.kind(), "type_identifier" | "qualified_identifier" | "template_type"))
+                .and_then(|f| self.type_key(f)),
+            _ => None,
+        }
+    }
+
+    /// What each argument of a call is, as far as its spelling shows.
+    fn argument_kinds(&self, arguments: TsNode<'_>, context: &BodyContext) -> Vec<String> {
+        ts::named_children(arguments)
+            .into_iter()
+            .map(|argument| match argument.kind() {
+                "number_literal" => {
+                    let text = self.text(argument).to_ascii_lowercase();
+                    let hex = text.starts_with("0x");
+                    if text.contains('.') || (!hex && (text.contains('e') || text.ends_with('f'))) {
+                        "float".to_string()
+                    } else {
+                        "int".to_string()
+                    }
+                }
+                "string_literal" | "raw_string_literal" | "concatenated_string" => "string".to_string(),
+                "char_literal" => "char".to_string(),
+                "true" | "false" => "bool".to_string(),
+                "null" | "nullptr" => "null".to_string(),
+                "identifier" => context.locals.get(&self.text(argument)).cloned().unwrap_or_else(|| "?".to_string()),
+                "pointer_expression" => ts::named_children(argument)
+                    .first()
+                    .and_then(|inner| context.locals.get(&self.text(*inner)).cloned())
+                    .unwrap_or_else(|| "?".to_string()),
+                _ => "?".to_string(),
+            })
+            .collect()
     }
 
     /// A `declaration` or a `field_declaration`, which may declare several
@@ -1642,19 +1819,37 @@ impl<'a> Reader<'a> {
     /// `Engine::Engine(Region region) : region_(region)`.
     ///
     /// The member being initialized is written, and the expressions handed to it
-    /// are ordinary values.
-    fn collect_initializers(&mut self, list: TsNode<'_>, owner: &Owner) {
+    /// are ordinary values. The name may as well be a base class, which is then a
+    /// call of its constructor; only the class table can tell, so the site says
+    /// where it is.
+    fn collect_initializers(&mut self, list: TsNode<'_>, owner: &Owner, context: &BodyContext) {
         for initializer in ts::named_children(list) {
             if initializer.kind() != "field_initializer" {
                 continue;
             }
             if let Some(&first) = ts::named_children(initializer).first()
-                && matches!(first.kind(), "field_identifier" | "identifier")
+                && matches!(first.kind(), "field_identifier" | "identifier" | "type_identifier" | "template_type" | "qualified_identifier")
             {
-                self.push_occurrence("write", first, owner);
+                let name = if first.kind() == "qualified_identifier" {
+                    bare_name(split_qualified(first, self.source).1)
+                } else {
+                    bare_name(first)
+                };
+                let mut site = CallSite {
+                    class_scope: context.class_scope.clone(),
+                    in_initializer_list: true,
+                    ..CallSite::default()
+                };
+                if let Some(args) = initializer.child_by_field_name("arguments").or_else(|| {
+                    ts::named_children(initializer).into_iter().find(|c| matches!(c.kind(), "argument_list" | "initializer_list"))
+                }) {
+                    site.arity = Some(ts::named_children(args).len());
+                    site.arg_kinds = self.argument_kinds(args, context);
+                }
+                self.push_site("write", name, owner, site);
             }
         }
-        self.collect_body(list, owner);
+        self.collect_body(list, owner, context);
     }
 
     /// Calls and member accesses inside a scope.
@@ -1665,24 +1860,39 @@ impl<'a> Reader<'a> {
     /// references under one occurrence per loop counter. The cost is that a read
     /// of a file-scope variable, which C spells with a bare identifier and
     /// nothing else, is invisible — a member access through `.` or `->` is not.
-    fn collect_body(&mut self, scope: TsNode<'_>, owner: &Owner) {
+    fn collect_body(&mut self, scope: TsNode<'_>, owner: &Owner, context: &BodyContext) {
         for node in descendants(scope) {
             match node.kind() {
                 "call_expression" => {
                     if let Some(function) = node.child_by_field_name("function")
                         && let Some(named) = self.called_name(function)
                     {
-                        self.push_occurrence("call", named, owner);
+                        let site = self.call_site(node, function, context);
+                        self.push_site("call", named, owner, site);
                     }
                 }
                 // `new Engine(1)` calls a constructor.
                 "new_expression" => {
                     if let Some(type_node) = node.child_by_field_name("type")
-                        && let Some(named) = type_name_node(type_node)
+                        && let Some((qualifier, named)) = self.type_name_with_scope(type_node)
                     {
-                        self.push_occurrence("call", named, owner);
+                        let mut site = CallSite {
+                            qualifier,
+                            class_scope: context.class_scope.clone(),
+                            constructs: true,
+                            ..CallSite::default()
+                        };
+                        if let Some(args) = node.child_by_field_name("arguments") {
+                            site.arity = Some(ts::named_children(args).len());
+                            site.arg_kinds = self.argument_kinds(args, context);
+                        } else {
+                            site.arity = Some(0);
+                        }
+                        self.push_site("call", named, owner, site);
                     }
                 }
+                // `Engine e;`, `Engine e(1);`, `Engine e{1};` construct an object.
+                "declaration" => self.constructions(node, owner, context),
                 "field_expression" => {
                     // A field in callee position was already recorded as a call;
                     // one site must not yield two occurrences.
@@ -1697,6 +1907,98 @@ impl<'a> Reader<'a> {
                 _ => {}
             }
         }
+    }
+
+    /// The scope and the name of the class a type spells.
+    fn type_name_with_scope<'tree>(&self, type_node: TsNode<'tree>) -> Option<(Vec<String>, TsNode<'tree>)> {
+        match type_node.kind() {
+            "type_identifier" => Some((Vec::new(), type_node)),
+            "qualified_identifier" => {
+                let (scope, leaf) = split_qualified(type_node, self.source);
+                Some((scope, bare_name(leaf)))
+            }
+            "template_type" => type_node.child_by_field_name("name").map(|n| (Vec::new(), n)),
+            _ => ts::named_children(type_node).into_iter().find_map(|c| self.type_name_with_scope(c)),
+        }
+    }
+
+    /// The constructions a local declaration spells.
+    fn constructions(&mut self, declaration: TsNode<'_>, owner: &Owner, context: &BodyContext) {
+        let Some(type_node) = declaration.child_by_field_name("type") else {
+            return;
+        };
+        if self.type_key(type_node).is_none() {
+            return;
+        }
+        let Some((qualifier, named)) = self.type_name_with_scope(type_node) else {
+            return;
+        };
+        let mut cursor = declaration.walk();
+        let declarators: Vec<TsNode<'_>> =
+            declaration.children_by_field_name("declarator", &mut cursor).collect();
+        for declarator in declarators {
+            // The arguments of the construction, when the declaration has them;
+            // `T x = expr;` copies, and `expr` is a call of its own.
+            let arguments = match declarator.kind() {
+                "identifier" => None,
+                "init_declarator" => {
+                    let inner = declarator.child_by_field_name("declarator");
+                    let value = declarator.child_by_field_name("value");
+                    match (inner.map(|i| i.kind()), value) {
+                        (Some("identifier"), Some(v)) if matches!(v.kind(), "argument_list" | "initializer_list") => Some(v),
+                        _ => continue,
+                    }
+                }
+                _ => continue,
+            };
+            let mut site = CallSite {
+                qualifier: qualifier.clone(),
+                class_scope: context.class_scope.clone(),
+                constructs: true,
+                arity: Some(0),
+                ..CallSite::default()
+            };
+            if let Some(arguments) = arguments {
+                site.arity = Some(ts::named_children(arguments).len());
+                site.arg_kinds = self.argument_kinds(arguments, context);
+            }
+            self.push_site("call", named, owner, site);
+        }
+    }
+
+    /// What a call says about which function it means.
+    fn call_site(&self, call: TsNode<'_>, function: TsNode<'_>, context: &BodyContext) -> CallSite {
+        let mut site = CallSite { class_scope: context.class_scope.clone(), ..CallSite::default() };
+        if let Some(arguments) = call.child_by_field_name("arguments") {
+            site.arity = Some(ts::named_children(arguments).len());
+            site.arg_kinds = self.argument_kinds(arguments, context);
+        }
+        match function.kind() {
+            "field_expression" => {
+                if let Some(receiver) = function.child_by_field_name("argument") {
+                    match receiver.kind() {
+                        "this" => site.receiver_type = context.class_scope.clone(),
+                        "identifier" => {
+                            let name = self.text(receiver);
+                            site.receiver_type = context.locals.get(&name).cloned();
+                            site.receiver_name = Some(name);
+                        }
+                        // `this->member->f()`: the member's declared type tells.
+                        "field_expression" => {
+                            if receiver.child_by_field_name("argument").is_some_and(|a| a.kind() == "this")
+                                && let Some(field) = receiver.child_by_field_name("field")
+                            {
+                                site.receiver_name = Some(self.text(field));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            "qualified_identifier" => site.qualifier = split_qualified(function, self.source).0,
+            _ => {}
+        }
+        site
     }
 
     /// The callee's name token; None when an expression result is called.

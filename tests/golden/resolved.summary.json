@@ -41,7 +41,7 @@
       "boundary": 1,
       "class": 5,
       "dependency": 1,
-      "external_symbol": 28,
+      "external_symbol": 25,
       "file": 3,
       "function": 3,
       "import": 7,
@@ -52,7 +52,7 @@
       "type_alias": 1
     },
     "relations": {
-      "calls": 14,
+      "calls": 16,
       "consumes": 1,
       "contains": 5,
       "declares": 56,
@@ -64,10 +64,10 @@
       "resolves_to": 7
     },
     "resolver": {
-      "external": 24,
-      "internal": 10,
-      "queries": 34,
-      "resolved": 34,
+      "external": 21,
+      "internal": 15,
+      "queries": 36,
+      "resolved": 36,
       "unresolved": 0
     },
     "resolver_status": "degraded"

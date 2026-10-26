@@ -39,12 +39,13 @@
 //! than detected, so that the same folder cannot yield structurally different
 //! graphs depending on whether `cmake` happened to have run.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::py::prelude::*;
 use crate::py::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
 use crate::node::NodeKind;
+use super::visitor::CallSite;
 use crate::status::ResolverStatus;
 
 /// The built-in backend, as the adapter's `ResolverSlot` records it.
@@ -88,6 +89,30 @@ pub struct CFamilyIndex {
     by_name: HashMap<String, Vec<Symbol>>,
     /// Which headers a file can see, transitively through `#include`.
     visible: HashMap<String, HashSet<String>>,
+    /// Qualified class name → the base classes as written.
+    classes: BTreeMap<String, Vec<String>>,
+    /// (qualified class, member name) → every member of that name, constructors
+    /// included, whose parameters tell overloads apart.
+    members: HashMap<(String, String), Vec<Member>>,
+    /// (qualified class, field name) → the class-like type the field was declared with.
+    fields: HashMap<(String, String), String>,
+}
+
+/// A member function of a class.
+#[derive(Clone)]
+struct Member {
+    qualified_name: String,
+    kind: NodeKind,
+}
+
+/// What a use-site that names a function resolved to.
+pub enum Outcome {
+    /// A declaration of the project; the flag says several fitted and the first won.
+    Found { qualified_name: String, kind: NodeKind, ambiguous: bool },
+    /// Not the table's question: a read, an annotation, a field in an initialiser list.
+    NotACall,
+    /// The site names nothing the project declares (a library type, a built-in).
+    Outside,
 }
 
 impl CFamilyIndex {
@@ -203,6 +228,195 @@ impl CFamilyIndex {
         Some((chosen.qualified_name.clone(), chosen.kind, visible.len() > 1))
     }
 
+    // -- classes and their members ----------------------------------------------
+
+    /// Records a class the project declares.
+    pub fn declare_class(&mut self, qualified_name: &str) {
+        self.classes.entry(qualified_name.to_string()).or_default();
+    }
+
+    /// Records a base class of `class`, as written.
+    pub fn add_base(&mut self, class: &str, base: &str) {
+        let bases = self.classes.entry(class.to_string()).or_default();
+        if !bases.iter().any(|b| b == base) {
+            bases.push(base.to_string());
+        }
+    }
+
+    /// Records a member function or constructor of `class`.
+    pub fn declare_member(&mut self, class: &str, name: &str, qualified_name: &str, kind: NodeKind) {
+        let entry = self.members.entry((class.to_string(), name.to_string())).or_default();
+        if !entry.iter().any(|m| m.qualified_name == qualified_name) {
+            entry.push(Member { qualified_name: qualified_name.to_string(), kind });
+        }
+    }
+
+    /// Records the type a field of `class` was declared with.
+    pub fn declare_field(&mut self, class: &str, field: &str, type_text: &str) {
+        if let Some(key) = type_key(type_text) {
+            self.fields.insert((class.to_string(), field.to_string()), key);
+        }
+    }
+
+    /// The classes a type as written can mean, sorted: the written name is the
+    /// whole qualified name or its tail (`Shape` for `n::Shape`).
+    fn classes_named(&self, written: &str) -> Vec<&String> {
+        let tail = format!("::{written}");
+        self.classes.keys().filter(|q| q.as_str() == written || q.ends_with(&tail)).collect()
+    }
+
+    /// The class itself and its bases, nearest first, each once.
+    fn lineage(&self, class: &str) -> Vec<String> {
+        let mut order = vec![class.to_string()];
+        let mut index = 0;
+        while index < order.len() && order.len() < 64 {
+            let current = order[index].clone();
+            for base in self.classes.get(&current).into_iter().flatten() {
+                if let Some(found) = self.classes_named(base).first()
+                    && !order.contains(found)
+                {
+                    order.push((*found).clone());
+                }
+            }
+            index += 1;
+        }
+        order
+    }
+
+    /// The member `name` of `class`: the nearest class in its lineage that has one
+    /// of that name hides the rest, as C++ name lookup does.
+    fn member_of(&self, class: &str, name: &str, site: &CallSite) -> Option<(Member, bool)> {
+        for candidate in self.lineage(class) {
+            if let Some(found) = self.members.get(&(candidate, name.to_string())) {
+                return Some(pick(found, |m| m.qualified_name.clone(), site));
+            }
+        }
+        None
+    }
+
+    /// The type of a field of `class` or of one of its bases.
+    fn field_type(&self, class: &str, field: &str) -> Option<String> {
+        self.lineage(class).into_iter().find_map(|c| self.fields.get(&(c, field.to_string())).cloned())
+    }
+
+    /// Resolves a call or a construction using everything the site says.
+    ///
+    /// The order is the order C++ reads a name in: a receiver's class decides a
+    /// member call; a written scope names a class or a namespace; an unqualified
+    /// name in a method means the class first. Only a receiver whose type is not
+    /// known falls back to the bare name - and then the edge says `ambiguous` when
+    /// the name is not unique.
+    pub fn resolve(&self, name: &str, role: &str, site: &CallSite, from_file: &str) -> Outcome {
+        let written = if site.qualifier.is_empty() {
+            name.to_string()
+        } else {
+            format!("{}::{name}", site.qualifier.join("::"))
+        };
+
+        // A construction: `T x;`, `new T(1)`, a base in an initialiser list.
+        let base_init = site.in_initializer_list
+            && site
+                .class_scope
+                .as_deref()
+                .is_some_and(|scope| self.classes.get(scope).is_some_and(|bases| bases.iter().any(|b| b == name)));
+        if site.constructs || base_init {
+            let classes = self.classes_named(&written);
+            let Some(class) = classes.first() else {
+                return Outcome::Outside;
+            };
+            let bare = class.rsplit("::").next().unwrap_or(class);
+            if let Some(constructors) = self.members.get(&((*class).clone(), bare.to_string())) {
+                let (member, mut ambiguous) = pick(constructors, |m| m.qualified_name.clone(), site);
+                ambiguous |= classes.len() > 1;
+                return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+            }
+            // No constructor of its own: the instantiation is of the class.
+            return Outcome::Found {
+                qualified_name: (*class).clone(),
+                kind: NodeKind::Class,
+                ambiguous: classes.len() > 1,
+            };
+        }
+        if site.in_initializer_list {
+            return Outcome::NotACall;
+        }
+
+        // A member call: the receiver's type decides.
+        let receiver_type = site.receiver_type.clone().or_else(|| {
+            let field = site.receiver_name.as_deref()?;
+            self.field_type(site.class_scope.as_deref()?, field)
+        });
+        if let Some(receiver) = receiver_type {
+            for class in self.classes_named(&receiver) {
+                if let Some((member, ambiguous)) = self.member_of(class, name, site) {
+                    return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+                }
+            }
+            return Outcome::Outside;
+        }
+        if site.receiver_name.is_some() {
+            // `obj.f()` with an `obj` nothing in reach declares: any `f` fits, and
+            // the table has no way to choose.
+            return self.by_bare_name(name, site, from_file);
+        }
+
+        // A written scope: a class's member, or a namespace's function.
+        if !site.qualifier.is_empty() {
+            let scope = site.qualifier.join("::");
+            for class in self.classes_named(&scope) {
+                if let Some((member, ambiguous)) = self.member_of(class, name, site) {
+                    return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+                }
+            }
+            let tail = format!("::{scope}::{name}");
+            let in_scope: Vec<&Symbol> = self
+                .by_name
+                .get(name)
+                .into_iter()
+                .flatten()
+                .filter(|s| {
+                    let bare = s.qualified_name.split('(').next().unwrap_or(&s.qualified_name);
+                    let full = format!("{scope}::{name}");
+                    (bare == full || bare.ends_with(&tail)) && (!s.internal || s.file_rel == from_file)
+                })
+                .collect();
+            if !in_scope.is_empty() {
+                let (symbol, ambiguous) = pick(&in_scope, |s| s.qualified_name.clone(), site);
+                return Outcome::Found { qualified_name: symbol.qualified_name.clone(), kind: symbol.kind, ambiguous };
+            }
+            return Outcome::Outside;
+        }
+
+        // An unqualified name inside a method means the class first.
+        if let Some(scope) = site.class_scope.as_deref()
+            && let Some((member, ambiguous)) = self.member_of(scope, name, site)
+        {
+            return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+        }
+        let _ = role;
+        self.by_bare_name(name, site, from_file)
+    }
+
+    /// The old question: a name, and what a file can see by that name. Overloads
+    /// are told apart by the call's arguments when there are several.
+    fn by_bare_name(&self, name: &str, site: &CallSite, from_file: &str) -> Outcome {
+        let Some(candidates) = self.by_name.get(name) else {
+            return Outcome::Outside;
+        };
+        let local: Vec<&Symbol> =
+            candidates.iter().filter(|s| s.internal && s.file_rel == from_file).collect();
+        let visible: Vec<&Symbol> = if local.is_empty() {
+            candidates.iter().filter(|s| !s.internal && self.reachable(from_file, &s.file_rel)).collect()
+        } else {
+            local
+        };
+        if visible.is_empty() {
+            return Outcome::Outside;
+        }
+        let (symbol, ambiguous) = pick(&visible, |s| s.qualified_name.clone(), site);
+        Outcome::Found { qualified_name: symbol.qualified_name.clone(), kind: symbol.kind, ambiguous }
+    }
+
 }
 
 /// The Python-visible resolver for C and C++.
@@ -234,4 +448,127 @@ impl CFamilyResolver {
     fn __repr__(&self) -> String {
         "CFamilyResolver(status=degraded)".to_string()
     }
+}
+
+/// The class-like name a declared type spells: qualifiers, pointers, references
+/// and template arguments removed; None for a built-in.
+pub fn type_key(text: &str) -> Option<String> {
+    let mut cleaned = String::new();
+    let mut depth = 0usize;
+    for c in text.chars() {
+        match c {
+            '<' => depth += 1,
+            '>' => depth = depth.saturating_sub(1),
+            _ if depth > 0 => {}
+            '*' | '&' => cleaned.push(' '),
+            _ => cleaned.push(c),
+        }
+    }
+    const SKIPPED: [&str; 7] = ["const", "volatile", "struct", "class", "enum", "typename", "static"];
+    const BUILTIN: [&str; 16] = [
+        "int", "long", "short", "char", "float", "double", "bool", "void", "unsigned", "signed",
+        "size_t", "auto", "wchar_t", "int8_t", "int16_t", "int32_t",
+    ];
+    cleaned
+        .split_whitespace()
+        .find(|word| !SKIPPED.contains(word) && !BUILTIN.contains(word))
+        .map(str::to_string)
+}
+
+/// The parameter types of a C++ qualified name: `n::f(int,const char*)`.
+fn params_of(qualified_name: &str) -> Vec<String> {
+    let Some(open) = qualified_name.find('(') else {
+        return Vec::new();
+    };
+    let Some(close) = qualified_name.rfind(')') else {
+        return Vec::new();
+    };
+    let inside = &qualified_name[open + 1..close];
+    let mut params = Vec::new();
+    let mut depth = 0usize;
+    let mut current = String::new();
+    for c in inside.chars() {
+        match c {
+            '<' | '(' | '[' => {
+                depth += 1;
+                current.push(c);
+            }
+            '>' | ')' | ']' => {
+                depth = depth.saturating_sub(1);
+                current.push(c);
+            }
+            ',' if depth == 0 => params.push(std::mem::take(&mut current)),
+            _ => current.push(c),
+        }
+    }
+    if !current.is_empty() {
+        params.push(current);
+    }
+    params
+}
+
+/// How well an argument of the kind a call spells fits a parameter type.
+fn fit(parameter: &str, argument: &str) -> i32 {
+    let bare: String = parameter
+        .replace("const", "")
+        .replace(['&', ' '], "")
+        .trim_matches('*')
+        .to_string();
+    let pointer = parameter.contains('*');
+    let integral = ["int", "long", "short", "unsigned", "size_t", "char", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t"];
+    let floating = ["float", "double"];
+    let is_integral = integral.iter().any(|t| bare.contains(t)) && !pointer;
+    let is_floating = floating.iter().any(|t| bare == *t) && !pointer;
+    match argument {
+        "int" => {
+            if is_integral && !bare.contains("char") { 3 } else if is_floating || bare == "bool" { 1 } else if pointer { 0 } else { -2 }
+        }
+        "float" => {
+            if is_floating { 3 } else if is_integral { 1 } else { -2 }
+        }
+        "string" => {
+            if pointer && bare.contains("char") || bare.contains("string") { 3 } else { -2 }
+        }
+        "char" => {
+            if bare.contains("char") && !pointer { 3 } else if is_integral { 1 } else { -2 }
+        }
+        "bool" => {
+            if bare == "bool" { 3 } else if is_integral { 1 } else { -2 }
+        }
+        "null" => {
+            if pointer { 3 } else { -1 }
+        }
+        "?" => 0,
+        named => {
+            if bare == named || bare.ends_with(&format!("::{named}")) { 3 } else { 0 }
+        }
+    }
+}
+
+/// The candidate a call's arguments pick, and whether more than one fitted as well.
+///
+/// With no overloads this is the only one. With several, those whose parameter
+/// count can take the call's arguments are kept and scored by how each argument's
+/// spelling fits; a tie is a tie, and the first wins ambiguously.
+fn pick<T: Clone>(candidates: &[T], qualified: impl Fn(&T) -> String, site: &CallSite) -> (T, bool) {
+    if candidates.len() == 1 {
+        return (candidates[0].clone(), false);
+    }
+    let mut scored: Vec<(i32, usize)> = Vec::new();
+    for (index, candidate) in candidates.iter().enumerate() {
+        let params = params_of(&qualified(candidate));
+        let score = match site.arity {
+            Some(arity) if params.len() == arity => {
+                1000 + params.iter().zip(&site.arg_kinds).map(|(p, a)| fit(p, a)).sum::<i32>()
+            }
+            // Defaults and variadics: close enough to try, worse than an exact count.
+            Some(arity) if params.len() > arity => 500,
+            Some(_) => -1000,
+            None => 0,
+        };
+        scored.push((score, index));
+    }
+    let best = scored.iter().map(|(score, _)| *score).max().unwrap_or(0);
+    let top: Vec<usize> = scored.iter().filter(|(score, _)| *score == best).map(|(_, i)| *i).collect();
+    (candidates[top[0]].clone(), top.len() > 1)
 }

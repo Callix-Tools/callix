@@ -751,7 +751,7 @@ impl<'a> PythonVisitor<'a> {
             if value.kind() == "attribute" {
                 // The receiver of `obj.attr` is read as well.
                 for part in ts::children(value) {
-                    if part.id() != name.id() && part.kind() == "identifier" {
+                    if part.id() != name.id() && part.kind() != "." {
                         self.scan_value(part, enclosing_id)?;
                     }
                 }
@@ -849,11 +849,9 @@ impl<'a> PythonVisitor<'a> {
     fn plain_name<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
         match node.kind() {
             "identifier" => Some(node),
-            "attribute" => ts::children(node)
-                .into_iter()
-                .rev()
-                .find(|c| c.kind() == "identifier")
-                .filter(|_| ts::children(node).iter().all(|c| matches!(c.kind(), "identifier" | "attribute" | "."))),
+            // `a.b`, `self.b`, `make().b`: the position asked about is the
+            // attribute; whatever is before it is read separately.
+            "attribute" => ts::children(node).into_iter().rev().find(|c| c.kind() == "identifier"),
             _ => None,
         }
     }

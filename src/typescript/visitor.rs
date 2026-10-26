@@ -278,8 +278,25 @@ impl<'a> TsVisitor<'a> {
                 self.handle_function(node)
             }
             "import_statement" => self.visit_import_statement(node),
+            "internal_module" | "module" => self.visit_namespace(node),
             _ => self.visit_children(node),
         }
+    }
+
+    /// `namespace N { export function f() {} }`: what is declared inside is `N.f`.
+    fn visit_namespace(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        let Some(name) = node.child_by_field_name("name") else {
+            return Ok(());
+        };
+        let qname = format!("{}.{}", self.scope(), self.text(name));
+        let container = self.container();
+        self.push(qname, container, NodeKind::Module);
+        let result = match node.child_by_field_name("body") {
+            Some(body) => self.visit_children(body),
+            None => Ok(()),
+        };
+        self.pop();
+        result
     }
 
     fn visit_children(&mut self, node: TsNode<'_>) -> PyResult<()> {
@@ -305,6 +322,9 @@ impl<'a> TsVisitor<'a> {
         let Some(expr) = ts::named_children(node).into_iter().next() else {
             return Ok(());
         };
+        if matches!(expr.kind(), "internal_module" | "module") {
+            return self.visit_namespace(expr);
+        }
         if matches!(
             expr.kind(),
             "assignment_expression" | "augmented_assignment_expression"
@@ -1391,15 +1411,10 @@ impl<'a> TsVisitor<'a> {
     fn plain_name<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
         match node.kind() {
             "identifier" => Some(node),
+            // `a.b`, `this.b`, `new A().b`, `f().b`: the position asked about is the
+            // property; whatever is before it is read separately.
             "member_expression" => {
-                let children = ts::children(node);
-                let simple = children.iter().all(|c| {
-                    matches!(
-                        c.kind(),
-                        "identifier" | "this" | "member_expression" | "property_identifier" | "."
-                    )
-                });
-                children.last().copied().filter(|l| simple && l.kind() == "property_identifier")
+                ts::children(node).last().copied().filter(|l| l.kind() == "property_identifier")
             }
             _ => None,
         }

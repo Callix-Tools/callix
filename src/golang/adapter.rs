@@ -557,6 +557,12 @@ fn resolve_pass(
         // What the answer was bound to, before an unbound one becomes an external
         // symbol: that is what decides how the edge is described.
         let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
+        // `HandlerFunc(g)`, `T(x)`: a type "called" is a conversion, not a call.
+        if rel_kind == RelationKind::Calls
+            && matches!(bound_kind, Some(NodeKind::Class | NodeKind::TypeAlias))
+        {
+            continue;
+        }
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {

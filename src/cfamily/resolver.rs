@@ -96,6 +96,9 @@ pub struct CFamilyIndex {
     members: HashMap<(String, String), Vec<Member>>,
     /// (qualified class, field name) → the class-like type the field was declared with.
     fields: HashMap<(String, String), String>,
+    /// (qualified class, field name) → the field's qualified name: what a call
+    /// through a function-pointer member lands on.
+    field_names: HashMap<(String, String), String>,
 }
 
 /// A member function of a class.
@@ -252,10 +255,16 @@ impl CFamilyIndex {
     }
 
     /// Records the type a field of `class` was declared with.
-    pub fn declare_field(&mut self, class: &str, field: &str, type_text: &str) {
+    pub fn declare_field(&mut self, class: &str, field: &str, qualified_name: &str, type_text: &str) {
+        self.field_names.insert((class.to_string(), field.to_string()), qualified_name.to_string());
         if let Some(key) = type_key(type_text) {
             self.fields.insert((class.to_string(), field.to_string()), key);
         }
+    }
+
+    /// The field `name` of `class` or one of its bases, when there is one.
+    fn field_of(&self, class: &str, name: &str) -> Option<String> {
+        self.lineage(class).into_iter().find_map(|c| self.field_names.get(&(c, name.to_string())).cloned())
     }
 
     /// The classes a type as written can mean, sorted: the written name is the
@@ -350,6 +359,10 @@ impl CFamilyIndex {
             for class in self.classes_named(&receiver) {
                 if let Some((member, ambiguous)) = self.member_of(class, name, site) {
                     return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+                }
+                // A call through a member that holds a function pointer.
+                if let Some(field) = self.field_of(class, name) {
+                    return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
                 }
             }
             return Outcome::Outside;

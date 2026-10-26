@@ -971,6 +971,35 @@
     },
     {
       "file_path": "src/main.cpp",
+      "id": "1ece0669d9d3768f",
+      "kind": "variable",
+      "metadata": {
+        "annotation": "auto",
+        "declared_in": [],
+        "is_definition": true,
+        "is_extern": false,
+        "is_static": false,
+        "linkage": "internal",
+        "name_span": {
+          "__span__": [
+            28,
+            10,
+            28,
+            16
+          ]
+        }
+      },
+      "name": "report",
+      "qualified_name": "main().report",
+      "span": [
+        28,
+        5,
+        30,
+        7
+      ]
+    },
+    {
+      "file_path": "src/main.cpp",
       "id": "bdf356508fefbbc5",
       "kind": "function",
       "metadata": {
@@ -1490,6 +1519,12 @@
       "metadata": {},
       "source_id": "ef15d20511e90a12",
       "target_id": "ee05308c541ade17"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "bdf356508fefbbc5",
+      "target_id": "1ece0669d9d3768f"
     },
     {
       "kind": "declares",

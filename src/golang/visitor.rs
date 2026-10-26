@@ -729,10 +729,21 @@ impl<'a> GoExtractor<'a> {
             let names: Vec<TsNode<'_>> = spec
                 .children_by_field_name("name", &mut cursor)
                 .collect();
-            for name_node in names {
-                let name = self.text(name_node);
+            let values: Vec<TsNode<'_>> = spec
+                .child_by_field_name("value")
+                .map(|v| ts::named_children(v))
+                .unwrap_or_default();
+            for (position, name_node) in names.iter().enumerate() {
+                let name = self.text(*name_node);
                 let qname = format!("{}.{name}", self.package_qname);
-                self.declare(&qname, &name, NodeKind::Variable, spec, name_node)?;
+                let id = self.declare(&qname, &name, NodeKind::Variable, spec, *name_node)?;
+                // `var handler = g`: the variable holds what it is initialised with.
+                if spec_kind == "var_spec"
+                    && values.len() == names.len()
+                    && let Some(value) = values.get(position)
+                {
+                    self.record_aliases(*value, &id, 0);
+                }
             }
         }
         Ok(())
@@ -816,9 +827,12 @@ impl<'a> GoExtractor<'a> {
         let Some(receiver) = method_node.child_by_field_name("receiver") else {
             return String::new();
         };
+        // The receiver's own type: the leftmost name, `Box` in `b Box[T]`, not a
+        // type parameter after it.
         walk_type(receiver, "type_identifier")
-            .first()
-            .map(|n| self.text(*n))
+            .into_iter()
+            .min_by_key(|n| n.start_byte())
+            .map(|n| self.text(n))
             .unwrap_or_default()
     }
 

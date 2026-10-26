@@ -1,0 +1,1 @@
+{"m::main": ["m::inner::g"], "m::inner::g": ["m::f"], "m::f": []}

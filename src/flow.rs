@@ -51,7 +51,7 @@ const RESULT: &str = "result:";
 /// Constructor method names, by language, for an argument to a class call.
 const CONSTRUCTORS: [&str; 3] = ["__init__", "constructor", "__construct"];
 
-enum Slot {
+pub(crate) enum Slot {
     Index(usize),
     Keyword(String),
 }
@@ -81,10 +81,25 @@ pub(crate) struct Flow {
 impl Flow {
     /// Notes where a call site points, so an argument can find its callee.
     pub(crate) fn call(&mut self, file: &str, occurrence: &OccurrenceRef, target: Option<&str>) {
+        self.call_at(file, occurrence.line, occurrence.col, target);
+    }
+
+    /// The same, for an adapter that keeps its occurrences in a shape of its own.
+    pub(crate) fn call_at(&mut self, file: &str, line: u32, col: u32, target: Option<&str>) {
         if let Some(target) = target {
-            self.calls
-                .insert((file.to_owned(), occurrence.line, occurrence.col), target.to_owned());
+            self.calls.insert((file.to_owned(), line, col), target.to_owned());
         }
+    }
+
+    /// A name handed to the call at `line:col` as argument `slot`.
+    pub(crate) fn arg_at(&mut self, file: &str, line: u32, col: u32, slot: Slot, target: &str) {
+        self.args.push(Arg {
+            file: file.to_owned(),
+            call_line: line,
+            call_col: col,
+            slot,
+            target: target.to_owned(),
+        });
     }
 
     /// `x = y`: the variable holds what the right-hand side resolved to.

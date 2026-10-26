@@ -444,6 +444,15 @@ pub struct CallSite {
     /// The site is the name in a member initialiser list, which is a field or a
     /// base class.
     pub in_initializer_list: bool,
+    /// The name is an argument of the call at (line, column) of its callee,
+    /// at this index: what lets a callback be followed to the parameter that calls it.
+    pub argument_of: Option<(u32, u32, usize)>,
+    /// The name is the `index`th, positional, element of an initialiser of this
+    /// type: the field in that place holds it.
+    pub initializer_member: Option<(String, usize)>,
+    /// The name is assigned to the variable of this name, in the function the
+    /// site is in: `fp = g;`.
+    pub assigned_to: Option<String>,
 }
 
 /// What a function's declarations say about the names its body uses.
@@ -1289,6 +1298,9 @@ impl<'a> Reader<'a> {
             kind: identity.kind,
         };
         let context = self.body_context(node, &found, &identity);
+        if let Some(body) = node.child_by_field_name("body") {
+            self.declare_called_locals(body, &owner, &identity.qualified_name);
+        }
         // `function_definition` is what the grammar produces for a body, for
         // `= default` and for `= delete`; every one of the three defines.
         self.declare_callable(node, &found, true, identity);
@@ -1297,6 +1309,105 @@ impl<'a> Reader<'a> {
         }
         if let Some(body) = node.child_by_field_name("body") {
             self.collect_body(body, &owner, &context);
+        }
+    }
+
+    /// Locals that are called - `handler h = g; h();` - are nodes, so that a call can
+    /// land on one and the flow pass can follow what it holds. Nothing else needs a
+    /// node for a local, and a node per local would multiply the graph.
+    fn declare_called_locals(&mut self, body: TsNode<'_>, owner: &Owner, function_qname: &str) {
+        let nodes = descendants(body);
+        let mut called: HashSet<String> = HashSet::new();
+        for node in &nodes {
+            if node.kind() != "call_expression" {
+                continue;
+            }
+            if let Some(function) = node.child_by_field_name("function")
+                && let Some(name) = self.called_name(function)
+                && matches!(function.kind(), "identifier" | "subscript_expression" | "parenthesized_expression" | "pointer_expression")
+            {
+                called.insert(self.text(name));
+            }
+        }
+        let mut declared: HashSet<String> = HashSet::new();
+        for declaration in &nodes {
+            if declaration.kind() != "declaration" {
+                continue;
+            }
+            let type_node = declaration.child_by_field_name("type");
+            let mut cursor = declaration.walk();
+            let declarators: Vec<TsNode<'_>> =
+                declaration.children_by_field_name("declarator", &mut cursor).collect();
+            for declarator in declarators {
+                let (inner, value) = if declarator.kind() == "init_declarator" {
+                    (declarator.child_by_field_name("declarator"), declarator.child_by_field_name("value"))
+                } else {
+                    (Some(declarator), None)
+                };
+                let Some(found) = inner.and_then(terminal_declarator) else {
+                    continue;
+                };
+                if found.is_callable() {
+                    continue;
+                }
+                let name = self.text(found.name);
+                let qname = format!("{function_qname}{MEMBER_SEPARATOR}{name}");
+                if !called.contains(&name) || !declared.insert(name.clone()) {
+                    // Not called, so no node; what an initialiser puts in the
+                    // fields of a struct is still worth following.
+                    if let Some(value) = value.filter(|v| v.kind() == "initializer_list") {
+                        let holder = Owner::Decl { qualified_name: qname, kind: NodeKind::Variable };
+                        let type_key = type_node.and_then(|t| self.type_key(t));
+                        self.record_initializer(value, &holder, type_key.as_deref(), 0);
+                    }
+                    continue;
+                }
+                self.push_decl(FoundDecl {
+                    kind: NodeKind::Variable,
+                    qualified_name: qname.clone(),
+                    name,
+                    span: ts::span(*declaration),
+                    doc: None,
+                    name_span: ts::span(found.name),
+                    defines: true,
+                    linkage: Linkage::Internal,
+                    owner: owner.clone(),
+                    record_kind: "local",
+                    access: "",
+                    is_static: false,
+                    is_extern: false,
+                    is_virtual: false,
+                    is_template: false,
+                    type_text: type_node.map(|n| self.text(n)).unwrap_or_default(),
+                    signature: String::new(),
+                });
+                if let Some(value) = value {
+                    let holder = Owner::Decl { qualified_name: qname, kind: NodeKind::Variable };
+                    let type_key = type_node.and_then(|t| self.type_key(t));
+                    self.record_initializer(value, &holder, type_key.as_deref(), 0);
+                }
+            }
+        }
+        // `fp = g;` inside the function.
+        for node in &nodes {
+            if node.kind() != "assignment_expression" {
+                continue;
+            }
+            let (Some(left), Some(right)) = (node.child_by_field_name("left"), node.child_by_field_name("right")) else {
+                continue;
+            };
+            if left.kind() != "identifier" {
+                continue;
+            }
+            let target = match right.kind() {
+                "identifier" => Some(right),
+                "pointer_expression" => ts::named_children(right).first().copied().filter(|i| i.kind() == "identifier"),
+                _ => None,
+            };
+            if let Some(target) = target {
+                let site = CallSite { assigned_to: Some(self.text(left)), ..CallSite::default() };
+                self.push_site("alias", target, owner, site);
+            }
         }
     }
 
@@ -1756,8 +1867,72 @@ impl<'a> Reader<'a> {
             signature: String::new(),
         });
         if let Some(type_node) = type_node {
-            let data_owner = Owner::Decl { qualified_name: qname, kind };
+            let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
             self.record_annotation(type_node, &data_owner);
+        }
+        // `handler h = g;`, `struct ops o = { .fn = g };`, `table[] = { a, b }`: the
+        // variable holds the functions it is initialised with, and a designated
+        // member holds its own.
+        if declarator.kind() == "init_declarator"
+            && let Some(value) = declarator.child_by_field_name("value")
+        {
+            let holder = Owner::Decl { qualified_name: qname, kind };
+            let type_key = type_node.and_then(|t| self.type_key(t));
+            self.record_initializer(value, &holder, type_key.as_deref(), 0);
+        }
+    }
+
+    /// What an initialiser hands to the variable it initialises.
+    fn record_initializer(&mut self, value: TsNode<'_>, holder: &Owner, type_key: Option<&str>, depth: usize) {
+        let alias = CallSite::default();
+        match value.kind() {
+            "identifier" => self.push_site("alias", value, holder, alias),
+            "pointer_expression" => {
+                if let Some(inner) = ts::named_children(value).first().copied().filter(|i| i.kind() == "identifier") {
+                    self.push_site("alias", inner, holder, alias);
+                }
+            }
+            "initializer_list" if depth < 3 => {
+                for element in ts::named_children(value) {
+                    if element.kind() == "initializer_pair" {
+                        // `.fn = g`: the member of the initialised type holds g.
+                        let field = ts::named_children(element)
+                            .into_iter()
+                            .find(|c| c.kind() == "field_designator")
+                            .and_then(|d| ts::named_children(d).into_iter().next())
+                            .map(|f| self.text(f));
+                        let entry = ts::named_children(element).last().copied();
+                        if let (Some(field), Some(type_key), Some(entry)) = (field, type_key, entry) {
+                            let member = Owner::Decl {
+                                qualified_name: format!("{type_key}::{field}"),
+                                kind: NodeKind::Attribute,
+                            };
+                            self.record_initializer(entry, &member, None, depth + 1);
+                        } else if let Some(entry) = entry {
+                            self.record_initializer(entry, holder, type_key, depth + 1);
+                        }
+                    } else {
+                        // A positional element: the field in that place holds it, which
+                        // the resolver knows from the type's declaration order.
+                        let before = self.facts.occurrences.len();
+                        self.record_initializer(element, holder, type_key, depth + 1);
+                        if let Some(type_key) = type_key
+                            && depth == 0
+                        {
+                            let position = ts::named_children(value)
+                                .iter()
+                                .position(|e| e.id() == element.id())
+                                .unwrap_or(0);
+                            for added in &mut self.facts.occurrences[before..] {
+                                if added.role == "alias" && added.site.initializer_member.is_none() {
+                                    added.site.initializer_member = Some((type_key.to_string(), position));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            _ => {}
         }
     }
 
@@ -1897,6 +2072,28 @@ impl<'a> Reader<'a> {
                     {
                         let site = self.call_site(node, function, context);
                         self.push_site("call", named, owner, site);
+                        // The names handed to the call say which parameter they are
+                        // handed to; only a function can be followed from there.
+                        if let Some(arguments) = node.child_by_field_name("arguments") {
+                            let at = ts::span(named);
+                            for (index, argument) in ts::named_children(arguments).into_iter().enumerate() {
+                                let target = match argument.kind() {
+                                    "identifier" => Some(argument),
+                                    "pointer_expression" => ts::named_children(argument)
+                                        .first()
+                                        .copied()
+                                        .filter(|inner| inner.kind() == "identifier"),
+                                    _ => None,
+                                };
+                                if let Some(target) = target {
+                                    let site = CallSite {
+                                        argument_of: Some((at.start_line, at.start_col, index)),
+                                        ..CallSite::default()
+                                    };
+                                    self.push_site("read", target, owner, site);
+                                }
+                            }
+                        }
                     }
                 }
                 // `new Engine(1)` calls a constructor.
@@ -1952,6 +2149,10 @@ impl<'a> Reader<'a> {
 
     /// The constructions a local declaration spells.
     fn constructions(&mut self, declaration: TsNode<'_>, owner: &Owner, context: &BodyContext) {
+        // C has no constructors: `struct s x;` declares an object and calls nothing.
+        if self.dialect != Dialect::Cpp {
+            return;
+        }
         let Some(type_node) = declaration.child_by_field_name("type") else {
             return;
         };
@@ -2042,7 +2243,16 @@ impl<'a> Reader<'a> {
                 Some(bare_name(leaf))
             }
             "template_function" | "template_method" => Some(bare_name(function)),
-            // (*fp)(x), handlers[0](x): nothing names the callee.
+            // handlers[i](x): the container is what is named.
+            "subscript_expression" => function
+                .child_by_field_name("argument")
+                .and_then(|inner| self.called_name(inner)),
+            // (*fp)(x), (fp)(x): the pointer is what is named.
+            "parenthesized_expression" | "pointer_expression" => ts::named_children(function)
+                .first()
+                .copied()
+                .and_then(|inner| self.called_name(inner)),
+            // Anything else calls an expression's result: nothing names the callee.
             _ => None,
         }
     }
@@ -2163,7 +2373,7 @@ impl<'a> CFamilyEmitter<'a> {
         // written here: a prototype in a header is a real declaration, and
         // "which files declare engine_build" has two answers.
         let owner_id = self.owner_id(&decl.owner, file_id);
-        if decl.kind != NodeKind::Parameter && owner_id != file_id {
+        if decl.kind != NodeKind::Parameter && decl.record_kind != "local" && owner_id != file_id {
             push_relation(
                 self.py,
                 graph,

@@ -58,6 +58,10 @@ jobs:
       - name: Smoke test
         run: sh docker/smoke.sh callix:ci ${{ matrix.target }}
 
+      # The fixtures are three files each; this is what the image is for.
+      - name: Real projects
+        run: sh docker/realworld.sh image callix:ci ${{ matrix.target }}
+
   # The release's binary tarballs, built and smoke-tested the same way on every
   # platform it ships, so the release job is not the first place they run.
   binary:
@@ -99,3 +103,9 @@ jobs:
           "$dir/callix" --version
           "$dir/callix" analyze tests/fixtures/yaml -q > /dev/null
           "$dir/callix" export tests/fixtures/python -f lsif -q | head -c 200
+
+      # The same projects on every platform the tarballs ship for. Go is
+      # installed above; Rust projects need rust-analyzer and stay with the
+      # `full` image.
+      - name: Real projects
+        run: sh docker/realworld.sh binary "$PWD/callix-0.0.0-${{ matrix.name }}/callix"

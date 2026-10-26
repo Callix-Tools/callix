@@ -1,0 +1,76 @@
+name: Verify release binaries
+
+# Downloads the CLI tarballs a GitHub Release carries, checks their checksums and
+# runs them on real projects on every platform they were built for. The build
+# jobs test what they just compiled; this tests what was published.
+#
+# It also runs when its own file changes in a pull request, against the latest
+# release, so a change to it is exercised before it is merged.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to verify (v1.2.3); empty means the latest release
+        required: false
+  pull_request:
+    paths:
+      - .github/workflows/verify-release.yml
+      - docker/realworld.sh
+      - docker/check_lsif.py
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,     name: linux-x86_64 }
+          - { os: ubuntu-22.04-arm, name: linux-aarch64 }
+          - { os: macos-latest,     name: macos-aarch64 }
+          # macos-latest is Apple Silicon; the Intel binary runs under Rosetta.
+          - { os: macos-latest,     name: macos-x86_64 }
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          cache: false
+
+      - name: Download the tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -eu
+          tag="$INPUT_TAG"
+          if [ -z "$tag" ]; then
+            tag="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)"
+          fi
+          version="${tag#v}"
+          echo "verifying $tag"
+          mkdir -p dl
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir dl \
+            --pattern "callix-$version-${{ matrix.name }}.tar.gz" \
+            --pattern "callix-$version-${{ matrix.name }}.tar.gz.sha256"
+          cd dl
+          # The checksum file names the tarball it covers.
+          if command -v sha256sum >/dev/null; then sha256sum -c ./*.sha256; else shasum -a 256 -c ./*.sha256; fi
+          tar xzf "callix-$version-${{ matrix.name }}.tar.gz"
+          echo "BIN=$PWD/callix-$version-${{ matrix.name }}/callix" >> "$GITHUB_ENV"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Version
+        run: |
+          out="$("$BIN" --version)"
+          echo "$out"
+          test "$out" = "callix $VERSION"
+
+      - name: Real projects
+        run: sh docker/realworld.sh binary "$BIN"

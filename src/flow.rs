@@ -145,6 +145,13 @@ impl Flow {
         let (Ok(call_line), Ok(call_col)) = (line.parse(), col.parse()) else {
             return;
         };
+        // `g(f())`: the argument is what `f` returns.
+        let (slot, result) = match slot.strip_suffix(":result") {
+            Some(slot) => (slot, true),
+            None => (slot, false),
+        };
+        let held = if result { format!("{RESULT}{target}") } else { target.to_owned() };
+        let target = held.as_str();
         let slot = match slot.strip_prefix('=') {
             Some(name) => Slot::Keyword(name.to_owned()),
             None => match slot.parse() {

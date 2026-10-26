@@ -549,6 +549,10 @@ fn apply_resolutions_inner(
             flow.call(path, occurrence, target_id.as_deref());
         } else if let Some(held) = target_id.as_deref() {
             flow.arg(path, occurrence, held);
+            // The call that produced the argument has an occurrence of its own.
+            if occurrence.detail.as_deref().is_some_and(|d| d.ends_with(":result")) {
+                continue;
+            }
         }
 
         // An import is only worth an edge when it reaches a definition of the

@@ -747,7 +747,7 @@ impl<'a> PythonVisitor<'a> {
         call_site: Option<Span>,
         slot: Option<Slot>,
     ) -> PyResult<()> {
-        if let (Some(site), Some(slot), Some(name)) = (call_site, slot, Self::plain_name(value)) {
+        if let (Some(site), Some(slot), Some(name)) = (call_site, slot.as_ref(), Self::plain_name(value)) {
             if value.kind() == "attribute" {
                 // The receiver of `obj.attr` is read as well.
                 for part in ts::children(value) {
@@ -763,6 +763,19 @@ impl<'a> PythonVisitor<'a> {
             let detail = format!("arg:{}:{}:{slot}", site.start_line, site.start_col);
             self.record_occurrence_with("read", name, enclosing_id, Some(detail));
             return Ok(());
+        }
+        // `g(f())`: the parameter holds whatever `f` returns.
+        if let (Some(site), Some(slot)) = (call_site, slot)
+            && value.kind() == "call"
+            && let Some(function) = value.child_by_field_name("function")
+            && let Some(name) = Self::plain_name(function)
+        {
+            let slot = match slot {
+                Slot::Index(i) => i.to_string(),
+                Slot::Keyword(k) => format!("={k}"),
+            };
+            let detail = format!("arg:{}:{}:{slot}:result", site.start_line, site.start_col);
+            self.record_occurrence_with("read", name, enclosing_id, Some(detail));
         }
         self.scan_value(value, enclosing_id)
     }

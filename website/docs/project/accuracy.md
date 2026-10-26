@@ -77,7 +77,7 @@ writing:
 
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
-| Python (PyCG) | 112 | 80 | 107 | 0.79 | 0.97 |
+| Python (PyCG) | 112 | 81 | 107 | 0.79 | 0.97 |
 | TypeScript | 49 | 47 | 49 | 0.97 | 1.00 |
 | Go | 48 | 47 | 48 | 0.99 | 1.00 |
 | Rust | 43 | 42 | 43 | 0.98 | 1.00 |

@@ -6,6 +6,9 @@
 // compiled, because the adapters' own methods live in the same `impl` blocks,
 // so the dead-code and unused-import lints say nothing useful in that build.
 #![cfg_attr(not(feature = "python"), allow(dead_code, unused_imports, unused_variables))]
+// PyO3's `from_py_object` expands to a `.clone()`, which clippy >= 1.99 flags on
+// the `Copy` types that use it (Span and the kind enums). Not ours to change.
+#![cfg_attr(feature = "python", allow(clippy::clone_on_copy))]
 
 pub mod py;
 

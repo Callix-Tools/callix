@@ -115,6 +115,19 @@ it was inferred. A client-side HTTP call is `0.85`–`0.9`, a queue topic `0.7`;
 the bands and what they mean are in
 [Boundaries](../graph-model/boundaries.md#confidence).
 
+## Which node a route hangs from
+
+A server-side edge starts at the **handler**: the decorated function in Python,
+the method in NestJS, the function under `#[get(...)]` in Rust. It starts at the
+file only when no function encloses the position.
+
+The path is the one a client would call. A prefix known from the same file is
+in front of it: `APIRouter(prefix="/users")`, `app.include_router(r,
+prefix="/api")`, Flask's `Blueprint(url_prefix=)` and `register_blueprint`, and
+NestJS's `@Controller("users")`. A router built in one module and mounted in
+another is not followed — its routes keep the prefix of the module they are
+written in.
+
 ## What is not recognized
 
 Detection is syntactic, and the list above is what the built-in extractors

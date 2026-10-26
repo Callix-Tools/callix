@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-10-26
+### Features
+
+- **python**: feat(python): resolve a project inside the directory, and keep what the authors wrote by @Neko1313 in [#11](https://github.com/Callix-Tools/callix/pull/11)
+
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.5.0...v1.6.0
 ## [1.5.0] - 2026-10-26
 ### Features
 

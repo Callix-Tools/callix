@@ -185,7 +185,7 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 
 [[package]]
 name = "callix"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "callix-compat",
  "get-size2",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "callix-cli"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "callix",
  "callix-export",
@@ -226,7 +226,7 @@ dependencies = [
 
 [[package]]
 name = "callix-compat"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "callix-export"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "serde",
  "serde_json",

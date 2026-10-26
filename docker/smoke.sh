@@ -12,7 +12,17 @@ FLAVOUR="${2:-full}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+
+# Analysing a Rust project makes cargo write `target/` into the mounted
+# workspace as root, which the invoking user cannot remove: clean up through the
+# image, and never let a cleanup problem change the verdict.
+cleanup() {
+    rm -rf "$work" 2>/dev/null && return 0
+    docker run --rm -v "$work:/w" --entrypoint sh "$IMAGE" \
+        -c 'rm -rf /w/* /w/.[!.]* 2>/dev/null; true' >/dev/null 2>&1 || true
+    rm -rf "$work" 2>/dev/null || true
+}
+trap cleanup EXIT
 cp -R "$ROOT/tests/fixtures" "$work/fixtures"
 chmod -R a+rwX "$work"
 

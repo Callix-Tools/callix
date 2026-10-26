@@ -266,3 +266,21 @@ print(square)
 """,
     )
     assert ("app.py", "app.square") not in found
+
+
+def test_a_function_of_the_project_named_like_a_library_one_is_left_alone(tmp_path: Path) -> None:
+    found = calls(
+        tmp_path,
+        """\
+def map(items, fn):
+    return items
+
+def square(x):
+    return x
+
+map([1, 2], square)
+""",
+    )
+    assert ("app.py", "app.map") in found
+    # what `map` does with its argument is its own business
+    assert ("app.py", "app.square") not in found

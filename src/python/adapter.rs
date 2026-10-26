@@ -486,6 +486,9 @@ struct ValueDetail {
     store: Option<usize>,
     ret: bool,
     arg: Option<String>,
+    /// The qualified name of a parameter the value is read from, for a holder that
+    /// is not found by resolving a name.
+    from: Option<String>,
     kind: Option<String>,
 }
 
@@ -504,6 +507,8 @@ impl ValueDetail {
                 out.ret = true;
             } else if part.starts_with("arg:") {
                 out.arg = Some(part.to_owned());
+            } else if let Some(from) = part.strip_prefix("from:") {
+                out.from = Some(from.to_owned());
             } else if !part.is_empty() {
                 out.kind = Some(part.to_owned());
             }
@@ -620,6 +625,20 @@ fn apply_resolutions_inner(
             }
             continue;
         }
+        // `({ handler })`: a variable that holds what a parameter holds under a key.
+        if occurrence.role == "alias"
+            && let Some(from) = detail.from.as_deref()
+        {
+            let holder = node_id(project_name, from, NodeKind::Parameter.as_str());
+            if graph.has_node(&holder) {
+                let token = match detail.kind.as_deref().and_then(|k| k.strip_prefix("get:")) {
+                    Some(keys) => format!("get:{keys}|{holder}"),
+                    None => holder,
+                };
+                apply_value(&mut flow, &mut stores, path, &occurrence.enclosing_id, &detail, token);
+            }
+            continue;
+        }
         // A decorator the type checker cannot place is unknown, and so is what it
         // makes of the function.
         if occurrence.role == "decorate"
@@ -691,19 +710,22 @@ fn apply_resolutions_inner(
             }
             continue;
         }
-        // `map(xs, f)`: the library calls what it is given. A function is called
-        // outright, a variable or a parameter by whatever it holds.
+        // `map(xs, f)`: the library calls what it is given, unless `map` is a function
+        // of the project; the flow pass knows which once every call is bound.
         if occurrence.role == "callarg" {
-            match target_id.as_deref().map(|held| (held, graph.node_kind(held))) {
-                Some((_, Some(NodeKind::Function | NodeKind::Method))) => {}
-                Some((held, Some(NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute))) => {
-                    flow.param_call(&occurrence.enclosing_id, held, occurrence.span);
-                    continue;
-                }
-                _ => {
-                    continue;
-                }
+            if let Some(held) = target_id.as_deref()
+                && matches!(
+                    graph.node_kind(held),
+                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                )
+                && let Some((line, col)) = occurrence.detail.as_deref().and_then(|d| {
+                    let mut parts = d.strip_prefix("c:")?.split(':');
+                    Some((parts.next()?.parse::<u32>().ok()?, parts.next()?.parse::<u32>().ok()?))
+                })
+            {
+                flow.library_callback(&occurrence.enclosing_id, path, line, col, held, occurrence.span);
             }
+            continue;
         }
         // The name a subscript is read with, which the keys of the call refer to.
         if occurrence.role == "key" {

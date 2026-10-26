@@ -12,10 +12,10 @@
     "sound": 50
   },
   "go/micro": {
-    "complete": 48,
+    "complete": 58,
     "precision": 1.0,
-    "recall": 0.9851,
-    "sound": 47
+    "recall": 1.0,
+    "sound": 58
   },
   "php/micro": {
     "complete": 61,
@@ -30,15 +30,15 @@
     "sound": 112
   },
   "rust/micro": {
-    "complete": 43,
+    "complete": 57,
     "precision": 1.0,
-    "recall": 0.9846,
-    "sound": 42
+    "recall": 1.0,
+    "sound": 57
   },
   "typescript/micro": {
-    "complete": 49,
+    "complete": 65,
     "precision": 1.0,
-    "recall": 0.9744,
-    "sound": 47
+    "recall": 1.0,
+    "sound": 65
   }
 }

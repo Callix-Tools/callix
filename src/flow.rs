@@ -83,6 +83,10 @@ pub(crate) struct Flow {
     deep_calls: Vec<(String, String, crate::span::Span, usize)>,
     /// `cb()` on a parameter: (the scope that calls, the parameter, where).
     param_calls: Vec<(String, String, crate::span::Span)>,
+    /// A function handed to a library function that calls it: (the scope that
+    /// calls, the file and the place of the callee's name, what was handed, where).
+    /// Written only when the callee turns out not to be a function of the project.
+    library_callbacks: Vec<(String, String, u32, u32, String, crate::span::Span)>,
     /// `for x in it:`: (the scope that loops, what `it` resolved to, where).
     iterations: Vec<(String, String, crate::span::Span, Option<String>)>,
     /// `recv.m()`: (the scope that calls, what `recv` resolved to, `m`, line, column
@@ -366,6 +370,29 @@ impl Flow {
             .push(format!("{RESULT}{function_id}"));
     }
 
+    /// `xs.map(f)`, `sort.Slice(x, f)`: `f` is handed to a library function that
+    /// calls it. The call is at `line:col` of the callee's name in `file`; if that
+    /// turns out to be a function of the project the edge is not written, because
+    /// what a function of the project does with its argument is its own business.
+    pub(crate) fn library_callback(
+        &mut self,
+        caller_id: &str,
+        file: &str,
+        line: u32,
+        col: u32,
+        target: &str,
+        span: crate::span::Span,
+    ) {
+        self.library_callbacks.push((
+            caller_id.to_owned(),
+            file.to_owned(),
+            line,
+            col,
+            target.to_owned(),
+            span,
+        ));
+    }
+
     /// `f()()`: the outer call is a call of whatever `f` returns.
     pub(crate) fn result_call(
         &mut self,
@@ -636,16 +663,17 @@ impl Flow {
             && self.call_paths.is_empty()
             && self.deep_calls.is_empty()
             && self.param_calls.is_empty()
+            && self.library_callbacks.is_empty()
         {
             return Ok(0);
         }
         self.bind_decorators(graph);
-        self.bind_arguments(graph);
+        self.bind_arguments(py, graph);
         self.bind_iterations(graph);
         self.follow(py, graph)
     }
 
-    fn bind_arguments(&mut self, graph: &Graph) {
+    fn bind_arguments(&mut self, py: Python<'_>, graph: &Graph) {
         if self.args.is_empty() {
             return;
         }
@@ -712,7 +740,21 @@ impl Flow {
                             .and_then(|id| graph.node_map().get(*id))
                             .is_some_and(|n| RECEIVERS.contains(&n.get().name.as_str()));
                     let parameter = match &arg.slot {
-                        Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied(),
+                        // An argument past the last parameter belongs to it when it is variadic.
+                        Slot::Index(index) => list.get(index + usize::from(skips_receiver)).copied().or_else(|| {
+                            list.last().copied().filter(|id| {
+                                graph.node_map().get(*id).is_some_and(|n| {
+                                    n.get()
+                                        .metadata
+                                        .bind(py)
+                                        .get_item("is_variadic")
+                                        .ok()
+                                        .flatten()
+                                        .and_then(|v| v.extract::<bool>().ok())
+                                        .unwrap_or(false)
+                                })
+                            })
+                        }),
                         Slot::Keyword(name) => list
                             .iter()
                             .copied()
@@ -1126,7 +1168,7 @@ impl Flow {
         }
         // A call of a parameter is a call of what it holds, even where the type
         // checker named one function for it.
-        if !self.param_calls.is_empty() {
+        if !self.param_calls.is_empty() || !self.library_callbacks.is_empty() {
             let mut have: HashSet<(String, String, u32, u32)> = HashSet::new();
             for relation in graph.relation_slice() {
                 let relation = relation.get();
@@ -1175,6 +1217,46 @@ impl Flow {
                 }
             }
         }
+        // A function handed to a library function that calls it.
+        let mut library: Vec<Relation> = Vec::new();
+        {
+            let mut seen: HashSet<(String, String, u32, u32)> = HashSet::new();
+            for relation in graph.relation_slice().iter().map(|r| r.get()).filter(|r| r.kind == RelationKind::Calls) {
+                if let Some(span) = relation.metadata.bind(py).get_item("span").ok().flatten().and_then(|v| v.extract::<crate::span::Span>().ok()) {
+                    seen.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for relation in added.iter() {
+                if let Some(span) = relation.metadata.bind(py).get_item("span").ok().flatten().and_then(|v| v.extract::<crate::span::Span>().ok()) {
+                    seen.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
+                }
+            }
+            for (caller, file, line, col, target, span) in &self.library_callbacks {
+                if self.calls.contains_key(&(file.clone(), *line, *col)) {
+                    continue;
+                }
+                let callables = match graph.node_kind(target) {
+                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Class) => vec![target.clone()],
+                    _ => self.callables(graph, target),
+                };
+                for callable in callables {
+                    if !seen.insert((caller.clone(), callable.clone(), span.start_line, span.start_col)) {
+                        continue;
+                    }
+                    let carried = PyDict::new(py);
+                    carried.set_item("span", *span)?;
+                    carried.set_item(resolution::KEY, resolution::Resolution::Flow.as_str())?;
+                    carried.set_item("via", "library callback")?;
+                    library.push(Relation {
+                        source_id: caller.clone(),
+                        target_id: callable,
+                        kind: RelationKind::Calls,
+                        metadata: carried.unbind(),
+                    });
+                }
+            }
+        }
+        added.extend(library);
         let count = added.len();
         if !dropped.is_empty() {
             let mut index = 0usize;

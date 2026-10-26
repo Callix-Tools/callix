@@ -129,6 +129,7 @@
       "kind": "parameter",
       "metadata": {
         "annotation": "string",
+        "is_variadic": false,
         "name_span": {
           "__span__": [
             13,
@@ -177,6 +178,7 @@
       "kind": "parameter",
       "metadata": {
         "annotation": "store.Labeled",
+        "is_variadic": false,
         "name_span": {
           "__span__": [
             20,

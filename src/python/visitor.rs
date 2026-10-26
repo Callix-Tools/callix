@@ -807,8 +807,10 @@ impl<'a> PythonVisitor<'a> {
                 }
             }
             // `map(xs, f)`, `sorted(xs, key=f)`: the library calls what it is given.
+            let at = ts::span(name_node);
             for (argument, _) in self.callback_arguments(callee, node) {
-                self.record_occurrence("callarg", argument, caller_id);
+                let detail = format!("c:{}:{}", at.start_line, at.start_col);
+                self.record_occurrence_with("callarg", argument, caller_id, Some(detail));
             }
             // `recv.m()`: what `recv` holds decides which class's `m` it is, when
             // the type checker cannot say. The receiver is recorded with the name

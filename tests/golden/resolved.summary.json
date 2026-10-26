@@ -185,7 +185,7 @@
     "nodes": {
       "attribute": 3,
       "class": 3,
-      "external_symbol": 4,
+      "external_symbol": 5,
       "file": 2,
       "function": 4,
       "import": 2,
@@ -197,7 +197,7 @@
       "variable": 1
     },
     "relations": {
-      "calls": 6,
+      "calls": 9,
       "contains": 4,
       "declares": 26,
       "has_type": 1,
@@ -207,10 +207,10 @@
       "resolves_to": 2
     },
     "resolver": {
-      "external": 3,
-      "internal": 8,
-      "queries": 13,
-      "resolved": 13,
+      "external": 4,
+      "internal": 10,
+      "queries": 16,
+      "resolved": 16,
       "unresolved": 0
     },
     "resolver_status": "ok"
@@ -247,8 +247,8 @@
     "resolver": {
       "external": 3,
       "internal": 20,
-      "queries": 35,
-      "resolved": 25,
+      "queries": 36,
+      "resolved": 26,
       "unresolved": 10
     },
     "resolver_status": "ok"

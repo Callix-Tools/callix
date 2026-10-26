@@ -181,6 +181,29 @@ fn is_relative_path(path: &str) -> bool {
     path.starts_with("./") || path.starts_with("../") || path.starts_with('.')
 }
 
+/// Library functions and methods that call a function they are given. The list is
+/// closed on purpose: a function handed to anything else is a reference, since
+/// whether the callee calls it cannot be known from the program. It applies only
+/// where the callee is not a function of the project, whose business it is what
+/// it does with an argument.
+fn calls_its_arguments(name: &str) -> bool {
+    matches!(
+        name,
+        // arrays, maps and sets
+        "map" | "forEach" | "filter" | "reduce" | "reduceRight" | "some" | "every" | "find"
+            | "findIndex" | "findLast" | "findLastIndex" | "flatMap" | "sort" | "toSorted" | "from"
+            // promises
+            | "then" | "catch" | "finally"
+            // timers and events
+            | "setTimeout" | "setInterval" | "setImmediate" | "queueMicrotask"
+            | "requestAnimationFrame" | "addEventListener" | "on" | "once" | "addListener"
+            | "subscribe"
+            // hooks and test frameworks, which run what they are given
+            | "useEffect" | "useLayoutEffect" | "useMemo" | "describe" | "it" | "test"
+            | "beforeEach" | "afterEach" | "beforeAll" | "afterAll"
+    )
+}
+
 pub struct TsVisitor<'a> {
     py: Python<'a>,
     graph: &'a mut Graph,
@@ -709,6 +732,15 @@ impl<'a> TsVisitor<'a> {
             if declarator.kind() != "variable_declarator" {
                 continue;
             }
+            // The name is a field: with a pattern for a name, the first `identifier`
+            // child is the initializer.
+            if let Some(pattern) = declarator
+                .child_by_field_name("name")
+                .filter(|n| matches!(n.kind(), "object_pattern" | "array_pattern"))
+            {
+                self.handle_destructuring(declarator, pattern, is_const)?;
+                continue;
+            }
             let Some(name_node) = ts::child_of_type(declarator, "identifier") else {
                 continue;
             };
@@ -775,6 +807,100 @@ impl<'a> TsVisitor<'a> {
             }
         }
         self.pop();
+        Ok(())
+    }
+
+    /// `const { m, n: k } = o`, `const [a, b] = l`: each name is a variable that holds
+    /// what the container holds under that key (or, for a rest element or a value
+    /// that is not a name, whatever it holds at all). A nested pattern is not read.
+    fn handle_destructuring(
+        &mut self,
+        declarator: TsNode<'_>,
+        pattern: TsNode<'_>,
+        is_const: bool,
+    ) -> PyResult<()> {
+        let enclosing = self.container();
+        let initializer = ts::children(declarator)
+            .into_iter()
+            .find(|c| c.is_named() && c.id() != pattern.id() && c.kind() != "type_annotation");
+        // (the bound name, the key it is read with)
+        let mut bound: Vec<(TsNode<'_>, Option<String>)> = Vec::new();
+        let mut index = 0usize;
+        for element in ts::children(pattern) {
+            match (pattern.kind(), element.kind()) {
+                ("object_pattern", "shorthand_property_identifier_pattern") => {
+                    bound.push((element, self.literal_key(element)));
+                }
+                ("object_pattern", "object_assignment_pattern") => {
+                    if let Some(left) = ts::named_children(element).first().copied() {
+                        bound.push((left, self.literal_key(left)));
+                    }
+                }
+                ("object_pattern", "pair_pattern") => {
+                    let named = ts::named_children(element);
+                    if let (Some(key), Some(value)) = (named.first().copied(), named.get(1).copied()) {
+                        let value = match value.kind() {
+                            "assignment_pattern" => ts::named_children(value).first().copied(),
+                            _ => Some(value),
+                        };
+                        if let Some(value) = value.filter(|v| v.kind() == "identifier") {
+                            bound.push((value, self.literal_key(key)));
+                        }
+                    }
+                }
+                ("array_pattern", "identifier") => {
+                    bound.push((element, Some(format!("i{index}"))));
+                    index += 1;
+                }
+                ("array_pattern", "assignment_pattern") => {
+                    if let Some(left) = ts::named_children(element).first().copied()
+                        && left.kind() == "identifier"
+                    {
+                        bound.push((left, Some(format!("i{index}"))));
+                    }
+                    index += 1;
+                }
+                ("array_pattern", "rest_pattern") => {
+                    if let Some(inner) = ts::named_children(element).first().copied().filter(|n| n.kind() == "identifier") {
+                        bound.push((inner, None));
+                    }
+                    index += 1;
+                }
+                ("array_pattern", "," | "[" | "]" | "comment") => {}
+                ("array_pattern", _) => index += 1,
+                _ => {}
+            }
+        }
+        for (name_node, key) in bound {
+            let name = self.text(name_node);
+            let qname = format!("{}.{name}", self.scope());
+            let kind = if self.in_class() { NodeKind::Attribute } else { NodeKind::Variable };
+            let metadata = PyDict::new(self.py);
+            metadata.set_item("is_constant", is_const)?;
+            let var = self.make_node(kind, &qname, &name, Some(declarator), metadata, Some(name_node))?;
+            let var_id = var.get().id.clone();
+            self.add_node_with_relation(var, RelationKind::Declares)?;
+            self.record_occurrence("write", name_node, &enclosing);
+            let Some(initializer) = initializer else {
+                continue;
+            };
+            match (Self::plain_name(initializer), key.as_deref()) {
+                (Some(source), Some(key)) => {
+                    self.record_occurrence_with("alias", source, &var_id, Some(format!("get:{key}")));
+                }
+                // `const [a, b] = [f, g]`: the element at that key, written out.
+                (None, Some(key)) if matches!(initializer.kind(), "array" | "object") => {
+                    match self.element_at(initializer, key) {
+                        Some(element) => self.record_aliases(element, &var_id, 0),
+                        None => self.record_aliases(initializer, &var_id, 0),
+                    }
+                }
+                _ => self.record_aliases(initializer, &var_id, 0),
+            }
+        }
+        if let Some(initializer) = initializer {
+            self.scan_value(initializer, &enclosing)?;
+        }
         Ok(())
     }
 
@@ -1093,7 +1219,17 @@ impl<'a> TsVisitor<'a> {
                 self.scan_value(default, function_id)?;
             }
 
-            let Some(name_node) = name_node else { continue };
+            let Some(name_node) = name_node else {
+                // `({ handler }: Props)`: a parameter of its own, so that the arguments
+                // keep their places, and a variable for each name it unpacks.
+                if let Some(pattern) = child
+                    .child_by_field_name("pattern")
+                    .filter(|p| matches!(p.kind(), "object_pattern"))
+                {
+                    self.declare_destructured_parameter(child, pattern, function_id, function_qname)?;
+                }
+                continue;
+            };
             let param_name = self.text(name_node);
             if param_name.is_empty() || param_name == "this" {
                 continue;
@@ -1116,11 +1252,76 @@ impl<'a> TsVisitor<'a> {
             )?;
             let param_id = param.get().id.clone();
             self.safe_add_node(param);
-            self.push_relation(function_id.to_string(), param_id, RelationKind::Declares)?;
+            self.push_relation(function_id.to_string(), param_id.clone(), RelationKind::Declares)?;
+            // `cb = fallback`: the parameter holds the default when nothing is passed.
+            if has_default
+                && let Some(default) = Self::default_value(child)
+                && let Some(name) = Self::plain_name(default)
+            {
+                self.record_occurrence_with("alias", name, &param_id, None);
+            }
 
             if let Some(type_node) = type_node {
                 self.record_annotation(type_node, function_id);
             }
+        }
+        Ok(())
+    }
+
+    /// A parameter that is an object pattern: a PARAMETER for the whole, in its place
+    /// among the parameters, and a VARIABLE for each name it unpacks, which holds what
+    /// the argument holds under that name.
+    fn declare_destructured_parameter(
+        &mut self,
+        parameter: TsNode<'_>,
+        pattern: TsNode<'_>,
+        function_id: &str,
+        function_qname: &str,
+    ) -> PyResult<()> {
+        let declared = self
+            .graph
+            .relation_slice()
+            .iter()
+            .filter(|r| {
+                let r = r.get();
+                r.source_id == function_id && r.kind == RelationKind::Declares && self.graph.node_kind(&r.target_id) == Some(NodeKind::Parameter)
+            })
+            .count();
+        let whole_name = format!("$param{declared}");
+        let whole_qname = format!("{function_qname}.{whole_name}");
+        let metadata = PyDict::new(self.py);
+        metadata.set_item("has_default", false)?;
+        metadata.set_item("is_variadic", false)?;
+        let whole = self.make_node(NodeKind::Parameter, &whole_qname, &whole_name, Some(parameter), metadata, None)?;
+        let whole_id = whole.get().id.clone();
+        self.safe_add_node(whole);
+        self.push_relation(function_id.to_string(), whole_id, RelationKind::Declares)?;
+        for element in ts::children(pattern) {
+            let (name, key) = match element.kind() {
+                "shorthand_property_identifier_pattern" => (Some(element), self.literal_key(element)),
+                "object_assignment_pattern" => {
+                    let left = ts::named_children(element).first().copied();
+                    (left, left.and_then(|l| self.literal_key(l)))
+                }
+                "pair_pattern" => {
+                    let named = ts::named_children(element);
+                    let value = named.get(1).copied().filter(|v| v.kind() == "identifier");
+                    (value, named.first().copied().and_then(|k| self.literal_key(k)))
+                }
+                _ => (None, None),
+            };
+            let (Some(name_node), Some(key)) = (name, key) else {
+                continue;
+            };
+            let name = self.text(name_node);
+            let qname = format!("{function_qname}.{name}");
+            let metadata = PyDict::new(self.py);
+            metadata.set_item("is_constant", false)?;
+            let var = self.make_node(NodeKind::Variable, &qname, &name, Some(element), metadata, Some(name_node))?;
+            let var_id = var.get().id.clone();
+            self.safe_add_node(var);
+            self.push_relation(function_id.to_string(), var_id.clone(), RelationKind::Declares)?;
+            self.record_occurrence_with("alias", name_node, &var_id, Some(format!("get:{key}|from:{whole_qname}")));
         }
         Ok(())
     }
@@ -1319,6 +1520,7 @@ impl<'a> TsVisitor<'a> {
     /// decorator, which the scope the decorated definition sits in applies.
     fn scan_call(&mut self, node: TsNode<'_>, enclosing_id: &str, caller_id: &str) -> PyResult<()> {
         let mut call_site = None;
+        let mut callee_text: Option<String> = None;
         if node.kind() == "new_expression" {
             // `new A(x)` instantiates A: a call, of the class.
             if let Some(constructor) = ts::named_children(node).first().copied() {
@@ -1353,6 +1555,16 @@ impl<'a> TsVisitor<'a> {
                     };
                     self.record_occurrence("call", name_node, caller_id);
                     call_site = Some(ts::span(name_node));
+                    callee_text = Some(self.text(name_node));
+                    // `f.call(x)`, `f.apply(x, [])`: a call of `f`.
+                    if callee.kind() == "member_expression"
+                        && matches!(self.text(name_node).as_str(), "call" | "apply")
+                        && let Some(object) = ts::children(callee).first().copied().and_then(Self::plain_name)
+                    {
+                        let at = ts::span(name_node);
+                        let detail = format!("c:{}:{}", at.start_line, at.start_col);
+                        self.record_occurrence_with("callarg", object, enclosing_id, Some(detail));
+                    }
                 }
                 // `f()()`: a call of whatever `f` returns.
                 "call_expression" => {
@@ -1365,7 +1577,9 @@ impl<'a> TsVisitor<'a> {
                 "subscript_expression" => {
                     self.scan_value(callee, enclosing_id)?;
                     if let Some(base) = ts::children(callee).first().copied().and_then(Self::plain_name) {
-                        self.record_occurrence("call", base, caller_id);
+                        // `table["k"]()`, `fns[1]()`: a call made through that key.
+                        let key = callee.child_by_field_name("index").and_then(|index| self.literal_key(index));
+                        self.record_occurrence_with("call", base, caller_id, key.map(|k| format!("keys:{k}")));
                     }
                 }
                 _ => self.scan_value(callee, enclosing_id)?,
@@ -1387,6 +1601,35 @@ impl<'a> TsVisitor<'a> {
                         // to the parameter that finally calls it.
                         let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
                         self.record_occurrence_with("read", name, enclosing_id, Some(detail));
+                        // `xs.map(f)`, `setTimeout(f)`: the library calls what it is given.
+                        if callee_text.as_deref().is_some_and(calls_its_arguments) {
+                            let detail = format!("c:{}:{}", site.start_line, site.start_col);
+                            self.record_occurrence_with("callarg", name, enclosing_id, Some(detail));
+                        }
+                    }
+                    (Some(site), None) if arg.kind() == "object" => {
+                        // `run({ handler: cb })`: each name in the object is handed to the
+                        // parameter under its key, for a parameter that unpacks them.
+                        for pair in ts::children(arg) {
+                            let (key, value) = match pair.kind() {
+                                "pair" => {
+                                    let named = ts::named_children(pair);
+                                    (named.first().copied(), named.get(1).copied())
+                                }
+                                "shorthand_property_identifier" => (Some(pair), Some(pair)),
+                                _ => continue,
+                            };
+                            let (Some(key), Some(value)) = (key, value) else {
+                                continue;
+                            };
+                            if let Some(written) = self.literal_key(key)
+                                && let Some(name) = Self::plain_name(value).or(Some(value).filter(|v| v.kind() == "shorthand_property_identifier"))
+                            {
+                                let detail = format!("arg:{}:{}:{index}|at:{written}", site.start_line, site.start_col);
+                                self.record_occurrence_with("alias", name, enclosing_id, Some(detail));
+                            }
+                        }
+                        self.scan_value(arg, enclosing_id)?;
                     }
                     _ => self.scan_value(arg, enclosing_id)?,
                 }
@@ -1426,45 +1669,152 @@ impl<'a> TsVisitor<'a> {
     }
 
     /// What `value` hands to the variable it initialises: a name holds what it
-    /// resolves to, a call what the callee returns, a container its elements.
+    /// resolves to, a call what the callee returns, a container its elements under
+    /// the keys they were written with (`{ m: g }` holds `g` under `m`).
     fn record_aliases(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize) {
+        self.record_aliases_at(value, variable_id, depth, &[]);
+    }
+
+    /// The element a literal writes at `key`: the value of the pair `{ key: v }`, the
+    /// `n`th element of `[a, b]` (when no spread comes before it).
+    fn element_at<'t>(&self, literal: TsNode<'t>, key: &str) -> Option<TsNode<'t>> {
+        let mut index = 0usize;
+        for element in ts::children(literal) {
+            match element.kind() {
+                "pair" => {
+                    let named = ts::named_children(element);
+                    let (written, value) = (named.first().copied()?, named.get(1).copied()?);
+                    if self.literal_key(written).as_deref() == Some(key) {
+                        return Some(value);
+                    }
+                }
+                "shorthand_property_identifier" => {
+                    if self.literal_key(element).as_deref() == Some(key) {
+                        return Some(element);
+                    }
+                }
+                "[" | "]" | "," | "{" | "}" | "comment" | "method_definition" => {}
+                "spread_element" => return None,
+                _ => {
+                    if literal.kind() == "array" {
+                        if key == format!("i{index}") {
+                            return Some(element);
+                        }
+                        index += 1;
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn alias_detail(path: &[String], kind: Option<&str>) -> Option<String> {
+        let mut parts: Vec<String> = Vec::new();
+        if !path.is_empty() {
+            parts.push(format!("at:{}", path.join(";")));
+        }
+        if let Some(kind) = kind {
+            parts.push(kind.to_owned());
+        }
+        if parts.is_empty() { None } else { Some(parts.join("|")) }
+    }
+
+    /// The key a property name or an index is, as the flow pass reads it.
+    fn literal_key(&self, node: TsNode<'_>) -> Option<String> {
+        match node.kind() {
+            "property_identifier" | "identifier" | "shorthand_property_identifier"
+            | "shorthand_property_identifier_pattern" => {
+                Some(format!("s{}", crate::flow::escape_key(&self.text(node))))
+            }
+            "string" => {
+                let text = self.text(node);
+                let inner = text.get(1..text.len().checked_sub(1)?)?;
+                Some(format!("s{}", crate::flow::escape_key(inner)))
+            }
+            "number" => {
+                let value: i64 = self.text(node).replace('_', "").parse().ok()?;
+                Some(format!("i{value}"))
+            }
+            _ => None,
+        }
+    }
+
+    fn record_aliases_at(&mut self, value: TsNode<'_>, variable_id: &str, depth: usize, path: &[String]) {
         if let Some(name) = Self::plain_name(value) {
-            self.record_occurrence_with("alias", name, variable_id, None);
+            self.record_occurrence_with("alias", name, variable_id, Self::alias_detail(path, None));
             return;
         }
         match value.kind() {
             "call_expression" => {
-                if let Some(name) = Self::callee_name(value) {
-                    self.record_occurrence_with("alias", name, variable_id, Some("result".into()));
+                // `f.bind(x)` is a function that calls `f`: the same as holding `f`.
+                let bound = ts::children(value).first().copied().filter(|c| c.kind() == "member_expression").and_then(|callee| {
+                    let parts = ts::children(callee);
+                    let property = parts.last().copied()?;
+                    (self.text(property) == "bind").then(|| parts.first().copied().and_then(Self::plain_name)).flatten()
+                });
+                if let Some(target) = bound {
+                    self.record_occurrence_with("alias", target, variable_id, Self::alias_detail(path, None));
+                } else if let Some(name) = Self::callee_name(value) {
+                    self.record_occurrence_with("alias", name, variable_id, Self::alias_detail(path, Some("result")));
                 }
             }
             "subscript_expression" => {
-                if let Some(base) = ts::children(value).first().copied().and_then(Self::plain_name) {
-                    self.record_occurrence_with("alias", base, variable_id, None);
+                let parts = ts::children(value);
+                if let Some(base) = parts.first().copied().and_then(Self::plain_name) {
+                    // `o["m"]`, `l[0]`: what the container holds under that key.
+                    let key = value
+                        .child_by_field_name("index")
+                        .and_then(|index| self.literal_key(index));
+                    let kind = key.map(|key| format!("get:{key}"));
+                    self.record_occurrence_with("alias", base, variable_id, Self::alias_detail(path, kind.as_deref()));
                 }
             }
             "parenthesized_expression" | "as_expression" | "non_null_expression" | "satisfies_expression"
                 if depth < 3 =>
             {
                 if let Some(inner) = ts::named_children(value).first().copied() {
-                    self.record_aliases(inner, variable_id, depth + 1);
+                    self.record_aliases_at(inner, variable_id, depth + 1, path);
                 }
             }
-            "object" | "array" if depth < 3 => {
+            "object" if depth < 3 => {
                 for element in ts::children(value) {
-                    let element = if element.kind() == "pair" {
-                        match ts::named_children(element).get(1).copied() {
-                            Some(v) => v,
-                            None => continue,
+                    match element.kind() {
+                        "pair" => {
+                            let named = ts::named_children(element);
+                            let (Some(key), Some(inner)) = (named.first().copied(), named.get(1).copied()) else {
+                                continue;
+                            };
+                            let mut deeper = path.to_vec();
+                            deeper.push(self.literal_key(key).unwrap_or_else(|| "*".to_owned()));
+                            self.record_aliases_at(inner, variable_id, depth + 1, &deeper);
                         }
-                    } else {
-                        element
-                    };
-                    self.record_aliases(element, variable_id, depth + 1);
+                        "shorthand_property_identifier" => {
+                            let mut deeper = path.to_vec();
+                            deeper.push(self.literal_key(element).unwrap_or_else(|| "*".to_owned()));
+                            self.record_occurrence_with("alias", element, variable_id, Self::alias_detail(&deeper, None));
+                        }
+                        "method_definition" | "," | "{" | "}" | "comment" => {}
+                        _ => {}
+                    }
+                }
+            }
+            "array" if depth < 3 => {
+                let mut index = 0usize;
+                for element in ts::children(value) {
+                    if matches!(element.kind(), "[" | "]" | "," | "comment") {
+                        continue;
+                    }
+                    let mut deeper = path.to_vec();
+                    deeper.push(if element.kind() == "spread_element" { "*".to_owned() } else { format!("i{index}") });
+                    index += 1;
+                    if element.kind() == "spread_element" {
+                        continue;
+                    }
+                    self.record_aliases_at(element, variable_id, depth + 1, &deeper);
                 }
             }
             "shorthand_property_identifier" => {
-                self.record_occurrence_with("alias", value, variable_id, None);
+                self.record_occurrence_with("alias", value, variable_id, Self::alias_detail(path, None));
             }
             _ => {}
         }
@@ -1543,6 +1893,30 @@ impl<'a> TsVisitor<'a> {
                 "assignment_expression" | "augmented_assignment_expression"
             ) {
                 if let Some(rhs) = ts::children(expr).last() {
+                    // `this.f = f`: the property holds what is assigned to it.
+                    if expr.kind() == "assignment_expression"
+                        && let Some(left) = ts::children(expr).first().copied()
+                        && left.kind() == "member_expression"
+                        && let parts = ts::children(left)
+                        && parts.first().is_some_and(|o| o.kind() == "this")
+                        && let Some(property) = parts.last().filter(|p| p.kind() == "property_identifier")
+                        && let Some(class) = self
+                            .kind_stack
+                            .iter()
+                            .zip(self.scope_stack.iter())
+                            .rev()
+                            .find(|(kind, _)| **kind == NodeKind::Class)
+                            .map(|(_, qname)| qname.clone())
+                    {
+                        let attribute = node_id(
+                            self.project_name,
+                            &format!("{class}.{}", self.text(*property)),
+                            NodeKind::Attribute.as_str(),
+                        );
+                        if self.graph.has_node(&attribute) {
+                            self.record_aliases(*rhs, &attribute, 0);
+                        }
+                    }
                     self.scan_value(*rhs, enclosing_id)?;
                 }
             } else {

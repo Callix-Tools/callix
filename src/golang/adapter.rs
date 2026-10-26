@@ -513,7 +513,7 @@ fn resolve_pass(
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
-            None if is_alias => RelationKind::References,
+            None if is_alias || occurrence.role == "callarg" => RelationKind::References,
             None => continue,
         };
 
@@ -525,6 +525,23 @@ fn resolve_pass(
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
         }
 
+        // `sort.Slice(x, less)`: the library calls what it is given, unless the
+        // callee is a function of the project; the flow pass knows which.
+        if occurrence.role == "callarg" {
+            if let Some(held) = target_id.as_deref()
+                && matches!(
+                    graph.node_kind(held),
+                    Some(NodeKind::Function | NodeKind::Method | NodeKind::Variable | NodeKind::Parameter | NodeKind::Attribute)
+                )
+                && let Some((line, col)) = occurrence.detail.as_deref().and_then(|d| {
+                    let mut parts = d.strip_prefix("c:")?.split(':');
+                    Some((parts.next()?.parse::<u32>().ok()?, parts.next()?.parse::<u32>().ok()?))
+                })
+            {
+                flow.library_callback(&occurrence.enclosing_id, path, line, col, held, occurrence.span);
+            }
+            continue;
+        }
         // What a call points at, and what a variable or a parameter holds, is
         // what the flow pass follows. An `alias` is not an edge of its own.
         if is_alias {

@@ -1,6 +1,6 @@
 [package]
 name = "callix-compat"
-version = "1.3.0"
+version = "1.4.0"
 edition = "2024"
 description = "No-op stand-ins for the PyO3 attribute macros, so the core builds without Python"
 license = "MIT"

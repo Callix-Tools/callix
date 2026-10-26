@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-10-26
+### Features
+
+- **resolution**: Measure resolution per language and say truthfully how each edge was found by @Neko1313 in [#6](https://github.com/Callix-Tools/callix/pull/6)
+- **flow**: feat: follow the iteration protocol, calls through parameters and C/C++ callbacks by @Neko1313 in [#7](https://github.com/Callix-Tools/callix/pull/7)
+- **python**: feat(python): a lambda is a function node by @Neko1313 in [#8](https://github.com/Callix-Tools/callix/pull/8)
+- **python**: feat(python): follow what a loop hands out by @Neko1313 in [#9](https://github.com/Callix-Tools/callix/pull/9)
+
+
+### New Contributors
+
+- @Neko1313 made their first contribution in [#9](https://github.com/Callix-Tools/callix/pull/9)
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.3.0...v1.4.0
 ## [1.3.0] - 2026-10-26
 ### CI/CD
 

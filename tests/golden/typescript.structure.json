@@ -22,13 +22,27 @@
       "span": null
     },
     {
-      "file_path": null,
+      "file_path": "src/service.ts",
       "id": "2c6568370f08cc8f",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
       "name": "service",
       "qualified_name": "service",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "src/service.ts",
@@ -346,13 +360,27 @@
       ]
     },
     {
-      "file_path": null,
+      "file_path": "src/store.ts",
       "id": "ec720ad133a23056",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
       "name": "store",
       "qualified_name": "store",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "src/store.ts",

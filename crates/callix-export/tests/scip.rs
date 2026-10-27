@@ -3,7 +3,7 @@ mod common;
 use callix_export::model::Graph;
 use callix_export::scip::Scip as Exporter;
 use callix_export::{Exporter as _, Options};
-use common::{SAMPLE, decode_scip};
+use common::{MODULE_GRAPH, SAMPLE, decode_scip};
 
 fn export(graph: &Graph) -> (Vec<u8>, Vec<callix_export::Warning>) {
     let mut out = Vec::new();
@@ -186,4 +186,32 @@ fn symbol_documentation_carries_what_the_author_wrote() {
     assert_eq!(docs("`a.g`"), ["function a.g"]);
     // Something in the graph is documented, so there is nothing to warn about.
     assert!(warnings.iter().all(|w| w.code != "no-documentation"), "{warnings:?}");
+}
+
+#[test]
+fn a_placed_module_is_a_definition_and_a_reference_target() {
+    let (bytes, warnings) = export(&Graph::from_json(MODULE_GRAPH).unwrap());
+    let index = decode_scip(&bytes);
+    let util = index.documents.iter().find(|d| d.path == "pkg/util.py").unwrap();
+    let defs: Vec<_> = util.occurrences.iter().filter(|o| o.roles & 1 == 1).collect();
+    assert_eq!(defs.len(), 1, "{defs:?}");
+    assert_eq!(defs[0].range, vec![0, 0, 0]);
+    assert!(defs[0].symbol.contains("pkg.util"), "{}", defs[0].symbol);
+    assert!(
+        util.symbols.iter().any(|(s, kind, _)| s.contains("pkg.util") && *kind == 29),
+        "{:?}",
+        util.symbols
+    );
+    let main = index.documents.iter().find(|d| d.path == "pkg/main.py").unwrap();
+    let mut ranges: Vec<_> = main
+        .occurrences
+        .iter()
+        .filter(|o| o.roles & 1 == 0 && o.symbol.contains("pkg.util"))
+        .map(|o| o.range.clone())
+        .collect();
+    ranges.sort();
+    assert_eq!(ranges, vec![vec![0, 16, 20], vec![3, 11, 15]]);
+    for code in ["unnamed-external", "no-name-span", "unsupported-reference"] {
+        assert!(!warnings.iter().any(|w| w.code == code), "unexpected warning {code}");
+    }
 }

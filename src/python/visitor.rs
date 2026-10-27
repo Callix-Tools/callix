@@ -261,6 +261,7 @@ impl<'a> PythonVisitor<'a> {
                 "dotted_name" => {
                     let name = self.dotted_name(child);
                     self.emit_import(&name, &name, false, 0, None, false, None)?;
+                    self.record_internal_module_reads(&name, false, child);
                 }
                 "aliased_import" => {
                     let Some(name_node) = ts::child_of_type(child, "dotted_name") else {
@@ -274,6 +275,7 @@ impl<'a> PythonVisitor<'a> {
                     };
                     let alias = alias_node.map(|_| local.clone());
                     self.emit_import(&local, &name, false, 0, alias.as_deref(), false, None)?;
+                    self.record_internal_module_reads(&name, false, name_node);
                 }
                 _ => {}
             }
@@ -287,6 +289,7 @@ impl<'a> PythonVisitor<'a> {
         // The source module and relative level come only before `import`.
         let mut level = 0usize;
         let mut source_module = String::new();
+        let mut source_dotted = None;
         for child in &children {
             if child.kind() == "import" {
                 break;
@@ -298,18 +301,26 @@ impl<'a> PythonVisitor<'a> {
                     }
                     let mod_name = ts::child_of_type(*child, "dotted_name")
                         .map(|n| self.dotted_name(n));
+                    source_dotted = ts::child_of_type(*child, "dotted_name");
                     source_module = resolve_relative_import(
                         self.module_qname,
                         level,
                         mod_name.as_deref(),
                     );
                 }
-                "dotted_name" => source_module = self.dotted_name(*child),
+                "dotted_name" => {
+                    source_module = self.dotted_name(*child);
+                    source_dotted = Some(*child);
+                }
                 _ => {}
             }
         }
 
         let is_relative = level > 0;
+        if let Some(dotted) = source_dotted {
+            let source_name = source_module.clone();
+            self.record_internal_module_reads(&source_name, is_relative, dotted);
+        }
         let qualify = |imported: &str| {
             if source_module.is_empty() {
                 imported.to_string()
@@ -368,6 +379,23 @@ impl<'a> PythonVisitor<'a> {
             }
         }
         Ok(())
+    }
+
+    /// The segments of an internal import's module name (`a`, `b`, `c` of
+    /// `import a.b.c`) are reads of those modules; the resolver answers each with
+    /// the module's file. They are `read`, not `import`: an `import` occurrence
+    /// becomes a RESOLVES_TO from the import node, and `import pkg.util` does not
+    /// resolve to `pkg`. External modules get nothing, or every `import os.path`
+    /// would add a site-keyed external symbol.
+    fn record_internal_module_reads(&mut self, module_name: &str, is_relative: bool, dotted: TsNode<'_>) {
+        let top = module_name.split('.').next().unwrap_or(module_name);
+        if !is_relative && self.classifier.classify(top) != "internal" {
+            return;
+        }
+        let enclosing = self.container();
+        for segment in ts::children(dotted).into_iter().filter(|c| c.kind() == "identifier") {
+            self.record_occurrence("read", segment, &enclosing);
+        }
     }
 
     #[allow(clippy::too_many_arguments)]

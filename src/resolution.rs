@@ -20,6 +20,9 @@
 //! * `unlocated` - the backend answered, but the answer is not a place callix could
 //!   bind to a node (a position inside an import statement, a file it does not
 //!   know). The edge points at a synthetic external symbol keyed by the call site.
+//!   The start of a Python or TypeScript file it does know is bound to that file's
+//!   MODULE instead; a reference to it is a `definition`, while a call that lands on a
+//!   MODULE stays `unlocated` (a module is not a callee) and points at the MODULE.
 //! * `name` - matched by name in a symbol table, with no type information. Only
 //!   the adapters whose backend is a table (PHP's own, the C family's) write it,
 //!   and `ambiguous` accompanies it when several declarations carried the name.
@@ -160,6 +163,14 @@ mod tests {
     fn a_call_of_a_function_is_a_definition() {
         let r = Resolution::classify(RelationKind::Calls, Some(NodeKind::Function), "internal");
         assert_eq!(r, Resolution::Definition);
+    }
+
+    #[test]
+    fn a_module_is_a_definition_to_read_and_unlocated_to_call() {
+        for kind in [RelationKind::References, RelationKind::ResolvesTo] {
+            assert_eq!(Resolution::classify(kind, Some(NodeKind::Module), "internal"), Resolution::Definition);
+        }
+        assert_eq!(Resolution::classify(RelationKind::Calls, Some(NodeKind::Module), "internal"), Resolution::Unlocated);
     }
 
     #[test]

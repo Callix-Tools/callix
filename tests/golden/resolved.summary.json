@@ -169,14 +169,14 @@
       "has_type": 10,
       "imports": 4,
       "inherits_from": 1,
-      "references": 18,
+      "references": 20,
       "resolves_to": 9
     },
     "resolver": {
       "external": 11,
-      "internal": 25,
-      "queries": 53,
-      "resolved": 46,
+      "internal": 27,
+      "queries": 55,
+      "resolved": 48,
       "unresolved": 4
     },
     "resolver_status": "ok"

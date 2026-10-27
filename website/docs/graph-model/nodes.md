@@ -40,7 +40,7 @@ node.metadata        # dict[str, object]
 
 | Language | A `MODULE` is |
 |---|---|
-| Python, TypeScript | a dotted name — `app.services.billing` |
+| Python, TypeScript | a dotted name — `app.services.billing`. One with a file of its own (`.py`, `__init__.py`, `index.ts`) carries that `file_path` and a zero-width `1:1` span; a namespace package or a directory without an index file has no position |
 | Go | a package directory, whose `qualified_name` **is** the import path |
 | Rust | a module path — `crate::net::http` |
 | PHP | a namespace — `App\Service` |

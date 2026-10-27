@@ -3,7 +3,7 @@ mod common;
 use callix_export::lsif::Lsif;
 use callix_export::model::Graph;
 use callix_export::{Exporter, Options};
-use common::{SAMPLE, check_lsif, edges, labelled};
+use common::{MODULE_GRAPH, SAMPLE, check_lsif, edges, labelled};
 
 fn export(options: &Options) -> (String, Vec<callix_export::Warning>) {
     let graph = Graph::from_json(SAMPLE).unwrap();
@@ -217,4 +217,13 @@ fn a_hover_carries_what_the_author_wrote() {
     );
     // Undocumented: the kind and name alone.
     assert!(contents.iter().any(|c| c[0]["value"] == "function a.g" && c.as_array().unwrap().len() == 1));
+}
+
+#[test]
+fn a_module_exports_as_a_zero_width_range() {
+    let mut out = Vec::new();
+    let graph = Graph::from_json(MODULE_GRAPH).unwrap();
+    let warnings = Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    check_lsif(&String::from_utf8(out).unwrap());
+    assert!(!warnings.iter().any(|w| w.code == "no-name-span"));
 }

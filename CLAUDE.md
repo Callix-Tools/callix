@@ -201,6 +201,14 @@ import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
 be declared below its `impl`.
 
+In Python and TypeScript a MODULE that has a file of its own (the `.py` file or
+`__init__.py`; the `.ts` file or `index.*`) is placed at a zero-width `1:1` span in
+that file, and `metadata["name_span"]` is the same span. A namespace package and a
+directory without an index file have no file, so they stay unplaced. The placement is
+decided in a pre-pass over the files (`ensure_module_chain` takes it), because an
+ancestor package is created while its children are handled, before its own
+`__init__.py` is reached.
+
 ### Resolvers: what is linked in and what is not
 
 | Language | Backend | External requirement |
@@ -267,6 +275,13 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **`declared_at`** on a node lists extra name spans the type checker may answer
   with (overload signatures, a function-valued field); `SpanIndex::from_graph`
   reads it.
+- **A resolver answer at 1:1 of a project file with no name there binds to that
+  file's MODULE** (`SpanIndex::lookup_module`, tried after `lookup_name`; Python and
+  TypeScript only, the other adapters do not call it). A real name at 1:1 wins: the
+  placed MODULE is kept out of the name table, because a zero-width span would beat
+  `x = 1` on the smallest-area tie-break. Module-name segments of an internal import
+  statement are `read` occurrences (not `import`, which would make a RESOLVES_TO from
+  the import to the package); a call that lands on a MODULE is still `unlocated`.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language

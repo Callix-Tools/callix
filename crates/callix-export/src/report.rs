@@ -205,14 +205,16 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              container, an argument or a return value is followed by a flow pass and marked `flow`; \
              decorators, receivers, keyed containers and the library's own callbacks (`map`, \
              `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
-             `getattr` and `eval` are not followed",
+             `getattr` and `eval` are not followed; a module named in code binds to its MODULE, \
+             and a namespace package has no file, so references to it stay `unlocated`",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
             "calls through a name or a member whose type is known; function values are followed by \
              a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
              closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
-             not followed",
+             not followed; a namespace import binds to the imported file's MODULE, and a \
+             directory without an index file has none",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",

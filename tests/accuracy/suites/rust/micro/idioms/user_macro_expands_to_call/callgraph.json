@@ -1,1 +1,1 @@
-{"m::main": ["m::f"], "m::f": []}
+{"m::main": ["m::f", "m::call_it"], "m::f": [], "m::call_it": []}

@@ -82,6 +82,10 @@ const OPAQUE_MACROS: [&str; 17] = [
 /// A macro the project defines is left alone - its arguments are not expressions
 /// until the macro says so - and so is one whose arguments are known not to be.
 /// None when there is nothing to blank.
+///
+/// This is ONE round: a macro nested in another macro's arguments is opaque token
+/// text until the outer name is blanked and the file parsed again, so callers use
+/// `blank_std_macros_until_stable`.
 pub fn blank_std_macros(source: &[u8], tree: &Tree, project_macros: &std::collections::HashSet<String>) -> Option<Vec<u8>> {
     let mut blanked: Option<Vec<u8>> = None;
     let mut stack = vec![tree.root_node()];
@@ -141,4 +145,69 @@ pub fn blank_std_macros(source: &[u8], tree: &Tree, project_macros: &std::collec
         }
     }
     blanked
+}
+
+/// How many rounds of blanking `blank_std_macros_until_stable` runs at most. Every
+/// productive round strictly reduces the non-space bytes, so this is only a safety net.
+const BLANK_ROUNDS: usize = 8;
+
+/// `blank_std_macros` repeated, re-parsing after each round, until nothing is left to
+/// blank: `assert_eq!(w, vec!(f(1)))` needs two rounds, because `vec!(..)` only reads
+/// as an expression once `assert_eq!` is gone. Length, lines and columns never change.
+pub fn blank_std_macros_until_stable(
+    source: Vec<u8>,
+    tree: Tree,
+    project_macros: &std::collections::HashSet<String>,
+) -> Result<(Vec<u8>, Tree), PyErr> {
+    let mut source = source;
+    let mut tree = tree;
+    for _ in 0..BLANK_ROUNDS {
+        let Some(blanked) = blank_std_macros(&source, &tree, project_macros) else {
+            break;
+        };
+        source = blanked;
+        tree = parse_tree(&source)?;
+    }
+    Ok((source, tree))
+}
+
+#[cfg(test)]
+mod blank_tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    fn count_calls(tree: &Tree, source: &[u8], text: &str) -> usize {
+        let mut stack = vec![tree.root_node()];
+        let mut n = 0;
+        while let Some(node) = stack.pop() {
+            let mut cursor = node.walk();
+            stack.extend(node.children(&mut cursor));
+            if node.kind() == "call_expression" && &source[node.start_byte()..node.end_byte()] == text.as_bytes() {
+                n += 1;
+            }
+        }
+        n
+    }
+
+    #[test]
+    fn nested_std_macros_are_blanked_until_stable() {
+        let src = "fn f() {\n    let w = vec![1];\n    assert_eq!(w, vec!(h(1)));\n}\n";
+        let tree = parse_tree(src.as_bytes()).unwrap();
+        let (out, tree) =
+            blank_std_macros_until_stable(src.as_bytes().to_vec(), tree, &HashSet::new()).unwrap();
+        let expected = src.replace("assert_eq!", &" ".repeat(10)).replace("vec!", "    ");
+        assert_eq!(String::from_utf8(out.clone()).unwrap(), expected);
+        assert_eq!(out.len(), src.len());
+        assert_eq!(count_calls(&tree, &out, "h(1)"), 1);
+    }
+
+    #[test]
+    fn project_and_opaque_macros_are_never_blanked() {
+        let src = "fn f() {\n    let a = twice!(h(1));\n    let b = matches!(x, Some(_));\n}\n";
+        let tree = parse_tree(src.as_bytes()).unwrap();
+        let mut project = HashSet::new();
+        project.insert("twice".to_string());
+        let (out, _) = blank_std_macros_until_stable(src.as_bytes().to_vec(), tree, &project).unwrap();
+        assert_eq!(out, src.as_bytes());
+    }
 }

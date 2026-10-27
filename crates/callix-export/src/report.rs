@@ -225,8 +225,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
             "static calls and concrete methods; a function value is followed by a flow pass and \
              marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
-             the calls in macro arguments are found and a `macro_rules!` of the same file is \
-             expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
+             the calls in macro arguments are found, nested std macros included; a `macro_rules!` \
+             is a function and every invocation of a macro the project defines is a call to it (an item-level one from its file; invocations inside `impl` and `trait` bodies are not recorded); \
+             a `macro_rules!` of the same file is expanded, one of another file and procedural \
+             macros are not; a call through a trait lands on the trait's method, not on an impl; implicit \
              calls (`Drop`, operators, `for` over an iterator) are not edges; every type name in a \
              signature, field, bound or `where` clause, `let`, alias, cast, closure or `impl` header \
              is a type annotation, and the self type and trait of an `impl` (and the trait of an \

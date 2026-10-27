@@ -218,6 +218,7 @@ fn is_body_item(kind: &str) -> bool {
             | "trait_item"
             | "impl_item"
             | "type_item"
+            | "macro_definition"
     )
 }
 
@@ -336,6 +337,9 @@ pub struct RustExtractor<'a> {
     inline_modules: Vec<(String, crate::span::Span)>,
     /// Every name a `use` brings in and every bodyless `mod x;`, in source order.
     use_sites: Vec<UseSite>,
+    /// The names of every `macro_rules!` of the crate (all files), so an invocation of a
+    /// macro written in another file is still named.
+    project_macros: HashSet<String>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -367,7 +371,14 @@ impl<'a> RustExtractor<'a> {
             recorded: HashSet::new(),
             inline_modules: Vec::new(),
             use_sites: Vec::new(),
+            project_macros: HashSet::new(),
         }
+    }
+
+    /// The `macro_rules!` names of the whole crate.
+    pub fn with_project_macros(mut self, names: &HashSet<String>) -> Self {
+        self.project_macros = names.clone();
+        self
     }
 
     pub fn into_parts(self) -> ExtractorParts {
@@ -432,6 +443,20 @@ impl<'a> RustExtractor<'a> {
                     }
                 }
                 "use_declaration" => self.on_use_declaration(child)?,
+                "macro_definition" => self.on_macro_definition(child)?,
+                "macro_invocation" => {
+                    // Enclosed by the FILE: a Rust MODULE has no file_path.
+                    let file_id = self.file_id;
+                    self.on_project_macro(child, file_id);
+                }
+                // `make!();` at item level is an `expression_statement` wrapping the
+                // `macro_invocation` (the `;` belongs to the statement).
+                "expression_statement" => {
+                    if let Some(invocation) = ts::child_of_type(child, "macro_invocation") {
+                        let file_id = self.file_id;
+                        self.on_project_macro(invocation, file_id);
+                    }
+                }
                 _ => {}
             }
         }
@@ -738,25 +763,10 @@ impl<'a> RustExtractor<'a> {
     /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in owned_descendants(scope) {
-            // `call_all!(a, b)` where the project defines the macro: what it expands to
-            // is what is called.
-            if node.kind() == "macro_invocation"
-                && let Some(name) = node.child_by_field_name("macro")
-                && let Some(arguments) = ts::child_of_type(node, "token_tree")
-            {
-                let text = self.text(name);
-                let name = text.rsplit("::").next().unwrap_or(&text).to_string();
-                if self.macros.contains_key(&name) {
-                    let mut tokens = Vec::new();
-                    super::macros::flatten(arguments, self.source, true, &mut tokens);
-                    // The outer delimiters are not arguments.
-                    if tokens.len() >= 2 {
-                        tokens.remove(0);
-                        tokens.pop();
-                    }
-                    let mut seen = HashSet::new();
-                    self.expand_invocation(&name, &tokens, enclosing_id, 0, &mut seen);
-                }
+            // `call_all!(a, b)` where the project defines the macro: the name is a call,
+            // and what it expands to is what is called.
+            if node.kind() == "macro_invocation" {
+                self.on_project_macro(node, enclosing_id);
                 continue;
             }
             if node.kind() != "call_expression" {
@@ -803,6 +813,63 @@ impl<'a> RustExtractor<'a> {
         }
     }
 
+    /// `macro_rules! name { .. }` is a FUNCTION `module::name` with `metadata["macro"] =
+    /// "macro_rules"`, declared like a free function (name span, doc, DECLARES from the
+    /// FILE; no CONTAINS, as for functions). The expansion table is built in `extract`.
+    fn on_macro_definition(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        let Some(name_node) = node
+            .child_by_field_name("name")
+            .or_else(|| ts::child_of_type(node, "identifier"))
+        else {
+            return Ok(());
+        };
+        let name = self.text(name_node);
+        let qname = format!("{}::{name}", self.module_qname);
+        let id = node_id(self.project_name, &qname, NodeKind::Function.as_str());
+        let existed = self.graph.has_node(&id);
+        self.declare(&qname, &name, NodeKind::Function, node, name_node)?;
+        if !existed && let Some(created) = self.graph.node_map().get(&id) {
+            created.get().metadata.bind(self.py).set_item("macro", "macro_rules")?;
+        }
+        Ok(())
+    }
+
+    /// An invocation `name!(..)`: when `name` is a macro of the project (any file) a
+    /// `call` occurrence sits on the name (the last path segment of `crate::name!`), and
+    /// when the macro is of this file its expansion's calls are recorded too.
+    fn on_project_macro(&mut self, node: TsNode<'_>, enclosing_id: &str) {
+        let Some(name) = node.child_by_field_name("macro") else {
+            return;
+        };
+        let text = self.text(name);
+        let last = text.rsplit("::").next().unwrap_or(&text).trim().to_string();
+        if self.project_macros.contains(&last) {
+            let segment = match name.kind() {
+                "identifier" => Some(name),
+                "scoped_identifier" => name.child_by_field_name("name"),
+                _ => None,
+            };
+            if let Some(segment) = segment
+                && self.recorded.insert(segment.start_byte())
+            {
+                self.add_occurrence("call", segment, enclosing_id);
+            }
+        }
+        if self.macros.contains_key(&last)
+            && let Some(arguments) = ts::child_of_type(node, "token_tree")
+        {
+            let mut tokens = Vec::new();
+            super::macros::flatten(arguments, self.source, true, &mut tokens);
+            // The outer delimiters are not arguments.
+            if tokens.len() >= 2 {
+                tokens.remove(0);
+                tokens.pop();
+            }
+            let mut seen = HashSet::new();
+            self.expand_invocation(&last, &tokens, enclosing_id, 0, &mut seen);
+        }
+    }
+
     /// The calls a project macro makes where it is invoked. A callee an argument
     /// supplied is placed where the invocation wrote it, where the resolver can
     /// answer for it; one the macro's body wrote is found by its name.
@@ -829,6 +896,10 @@ impl<'a> RustExtractor<'a> {
             match found {
                 super::macros::Found::Call(token) => calls.push((token.clone(), token.from_args)),
                 super::macros::Found::Macro(token, inner) => {
+                    // A macro the invocation's own arguments name has a real position.
+                    if token.from_args && self.project_macros.contains(&token.text) {
+                        calls.push((token.clone(), true));
+                    }
                     if self.macros.contains_key(&token.text) {
                         nested.push((token.text.clone(), inner.to_vec()));
                     }

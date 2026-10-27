@@ -341,13 +341,10 @@ fn build_crate_structure(
         let Ok(source) = std::fs::read(file) else {
             continue;
         };
-        let mut tree = super::parse_tree(&source)?;
-        // The calls in a macro's arguments are read as the expressions they are.
-        let mut source = source;
-        if let Some(blanked) = super::blank_std_macros(&source, &tree, &project_macros) {
-            source = blanked;
-            tree = super::parse_tree(&source)?;
-        }
+        let tree = super::parse_tree(&source)?;
+        // The calls in a macro's arguments are read as the expressions they are, nested
+        // std macros included (the blanking repeats until nothing changes).
+        let (source, tree) = super::blank_std_macros_until_stable(source, tree, &project_macros)?;
 
         let mut extractor = RustExtractor::new(
             py,
@@ -359,7 +356,8 @@ fn build_crate_structure(
             &file_rel,
             Some(&project),
             &deps,
-        );
+        )
+        .with_project_macros(&project_macros);
         extractor.extract(tree.root_node())?;
         let (file_occurrences, file_imports, inline_modules, file_sites) = extractor.into_parts();
         // `mod foo { .. }` is a MODULE too; the resolver answers with the start of its name.
@@ -692,7 +690,9 @@ fn resolve_pass(
     let mut by_name: HashMap<String, Vec<String>> = HashMap::new();
     for (id, node) in graph.node_map().iter() {
         let node = node.get();
-        if matches!(node.kind, NodeKind::Function | NodeKind::Method) {
+        // A call token in a macro body names a function, never a macro.
+        let is_macro = node.metadata.bind(py).get_item("macro").ok().flatten().is_some();
+        if matches!(node.kind, NodeKind::Function | NodeKind::Method) && !is_macro {
             by_name.entry(node.name.clone()).or_default().push(id.clone());
         }
     }

@@ -337,8 +337,54 @@
       "span": [
         7,
         1,
-        9,
+        11,
         2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "ffabd4ee167e823c",
+      "kind": "type_alias",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            8,
+            10,
+            8,
+            13
+          ]
+        }
+      },
+      "name": "Tag",
+      "qualified_name": "fixture::store::Labeled.Tag",
+      "span": [
+        8,
+        5,
+        8,
+        14
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "9383836e6011aa69",
+      "kind": "variable",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            9,
+            11,
+            9,
+            15
+          ]
+        }
+      },
+      "name": "KIND",
+      "qualified_name": "fixture::store::Labeled.KIND",
+      "span": [
+        9,
+        5,
+        9,
+        25
       ]
     },
     {
@@ -348,9 +394,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
+            10,
             8,
-            8,
-            8,
+            10,
             16
           ]
         }
@@ -358,9 +404,9 @@
       "name": "describe",
       "qualified_name": "fixture::store::Labeled.describe",
       "span": [
-        8,
+        10,
         5,
-        8,
+        10,
         34
       ]
     },
@@ -372,9 +418,9 @@
         "doc": "Carries a field.",
         "name_span": {
           "__span__": [
+            14,
             12,
-            12,
-            12,
+            14,
             16
           ]
         }
@@ -382,9 +428,9 @@
       "name": "Base",
       "qualified_name": "fixture::store::Base",
       "span": [
-        12,
-        1,
         14,
+        1,
+        16,
         2
       ]
     },
@@ -395,9 +441,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            13,
+            15,
             9,
-            13,
+            15,
             14
           ]
         }
@@ -405,9 +451,9 @@
       "name": "label",
       "qualified_name": "fixture::store::Base.label",
       "span": [
-        13,
+        15,
         5,
-        13,
+        15,
         22
       ]
     },
@@ -419,9 +465,9 @@
         "doc": "Embeds a base and adds a field.",
         "name_span": {
           "__span__": [
-            23,
+            27,
             12,
-            23,
+            27,
             18
           ]
         }
@@ -429,9 +475,9 @@
       "name": "Engine",
       "qualified_name": "fixture::store::Engine",
       "span": [
-        23,
+        27,
         1,
-        26,
+        30,
         2
       ]
     },
@@ -442,9 +488,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            24,
+            28,
             9,
-            24,
+            28,
             13
           ]
         }
@@ -452,9 +498,9 @@
       "name": "base",
       "qualified_name": "fixture::store::Engine.base",
       "span": [
-        24,
+        28,
         5,
-        24,
+        28,
         19
       ]
     },
@@ -465,9 +511,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            25,
+            29,
             9,
-            25,
+            29,
             15
           ]
         }
@@ -475,9 +521,383 @@
       "name": "region",
       "qualified_name": "fixture::store::Engine.region",
       "span": [
-        25,
+        29,
         5,
-        25,
+        29,
+        23
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "929510221677165c",
+      "kind": "function",
+      "metadata": {
+        "doc": "A const fn used by an initializer.",
+        "name_span": {
+          "__span__": [
+            45,
+            14,
+            45,
+            22
+          ]
+        }
+      },
+      "name": "limit_of",
+      "qualified_name": "fixture::store::limit_of",
+      "span": [
+        45,
+        1,
+        47,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "ae0c8b0ef9b92374",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "u32",
+        "name_span": {
+          "__span__": [
+            45,
+            23,
+            45,
+            24
+          ]
+        }
+      },
+      "name": "n",
+      "qualified_name": "fixture::store::limit_of.n",
+      "span": [
+        45,
+        23,
+        45,
+        29
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "d40971a175de6217",
+      "kind": "class",
+      "metadata": {
+        "doc": "Reading modes.",
+        "name_span": {
+          "__span__": [
+            50,
+            10,
+            50,
+            14
+          ]
+        }
+      },
+      "name": "Mode",
+      "qualified_name": "fixture::store::Mode",
+      "span": [
+        50,
+        1,
+        54,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "0d50edfa3f2b2d3a",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            51,
+            5,
+            51,
+            8
+          ]
+        }
+      },
+      "name": "Off",
+      "qualified_name": "fixture::store::Mode.Off",
+      "span": [
+        51,
+        5,
+        51,
+        8
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "3b25aea071d1723d",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            52,
+            5,
+            52,
+            10
+          ]
+        }
+      },
+      "name": "Level",
+      "qualified_name": "fixture::store::Mode.Level",
+      "span": [
+        52,
+        5,
+        52,
+        15
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "d36652fce125a01a",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            53,
+            5,
+            53,
+            11
+          ]
+        }
+      },
+      "name": "Custom",
+      "qualified_name": "fixture::store::Mode.Custom",
+      "span": [
+        53,
+        5,
+        53,
+        28
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "ee7d06c7d6926d21",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            53,
+            14,
+            53,
+            18
+          ]
+        }
+      },
+      "name": "name",
+      "qualified_name": "fixture::store::Mode.Custom.name",
+      "span": [
+        53,
+        14,
+        53,
+        26
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "fbbb74ab7f3d1ffe",
+      "kind": "class",
+      "metadata": {
+        "doc": "Numeric codes.",
+        "name_span": {
+          "__span__": [
+            57,
+            10,
+            57,
+            14
+          ]
+        }
+      },
+      "name": "Code",
+      "qualified_name": "fixture::store::Code",
+      "span": [
+        57,
+        1,
+        60,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "51845da7c38413e7",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            58,
+            5,
+            58,
+            7
+          ]
+        }
+      },
+      "name": "Ok",
+      "qualified_name": "fixture::store::Code.Ok",
+      "span": [
+        58,
+        5,
+        58,
+        11
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "921596ac12dddefa",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            59,
+            5,
+            59,
+            11
+          ]
+        }
+      },
+      "name": "Failed",
+      "qualified_name": "fixture::store::Code.Failed",
+      "span": [
+        59,
+        5,
+        59,
+        15
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "9f56791d06b4ad6e",
+      "kind": "function",
+      "metadata": {
+        "doc": "Declares items in its body.",
+        "name_span": {
+          "__span__": [
+            63,
+            8,
+            63,
+            14
+          ]
+        }
+      },
+      "name": "scaled",
+      "qualified_name": "fixture::store::scaled",
+      "span": [
+        63,
+        1,
+        69,
+        2
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "25a8fad8449a24c2",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "u32",
+        "name_span": {
+          "__span__": [
+            63,
+            15,
+            63,
+            16
+          ]
+        }
+      },
+      "name": "n",
+      "qualified_name": "fixture::store::scaled.n",
+      "span": [
+        63,
+        15,
+        63,
+        21
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "221d5e124f1fa419",
+      "kind": "class",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            64,
+            12,
+            64,
+            17
+          ]
+        }
+      },
+      "name": "Local",
+      "qualified_name": "fixture::store::scaled::Local",
+      "span": [
+        64,
+        5,
+        66,
+        6
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "2fcbe9963b04db26",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            65,
+            9,
+            65,
+            10
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::store::scaled::Local.v",
+      "span": [
+        65,
+        9,
+        65,
+        15
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "0664d5af012cf61d",
+      "kind": "variable",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            67,
+            11,
+            67,
+            17
+          ]
+        }
+      },
+      "name": "FACTOR",
+      "qualified_name": "fixture::store::scaled::FACTOR",
+      "span": [
+        67,
+        5,
+        67,
+        37
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "0e94e2f16cea19c5",
+      "kind": "type_alias",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            19,
+            10,
+            19,
+            13
+          ]
+        }
+      },
+      "name": "Tag",
+      "qualified_name": "fixture::store::Base.Tag",
+      "span": [
+        19,
+        5,
+        19,
         23
       ]
     },
@@ -488,9 +908,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            17,
+            21,
             8,
-            17,
+            21,
             16
           ]
         }
@@ -498,10 +918,33 @@
       "name": "describe",
       "qualified_name": "fixture::store::Base.describe",
       "span": [
-        17,
+        21,
         5,
-        19,
+        23,
         6
+      ]
+    },
+    {
+      "file_path": "src/store.rs",
+      "id": "cb3d174984f55c12",
+      "kind": "variable",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            33,
+            15,
+            33,
+            20
+          ]
+        }
+      },
+      "name": "LIMIT",
+      "qualified_name": "fixture::store::Engine.LIMIT",
+      "span": [
+        33,
+        5,
+        33,
+        40
       ]
     },
     {
@@ -511,9 +954,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            29,
+            35,
             12,
-            29,
+            35,
             15
           ]
         }
@@ -521,9 +964,9 @@
       "name": "new",
       "qualified_name": "fixture::store::Engine.new",
       "span": [
-        29,
+        35,
         5,
-        31,
+        37,
         6
       ]
     },
@@ -535,9 +978,9 @@
         "annotation": "String",
         "name_span": {
           "__span__": [
-            29,
+            35,
             16,
-            29,
+            35,
             22
           ]
         }
@@ -545,9 +988,9 @@
       "name": "region",
       "qualified_name": "fixture::store::Engine.new.region",
       "span": [
-        29,
+        35,
         16,
-        29,
+        35,
         30
       ]
     },
@@ -558,9 +1001,9 @@
       "metadata": {
         "name_span": {
           "__span__": [
-            33,
+            39,
             12,
-            33,
+            39,
             16
           ]
         }
@@ -568,9 +1011,9 @@
       "name": "ping",
       "qualified_name": "fixture::store::Engine.ping",
       "span": [
-        33,
+        39,
         5,
-        35,
+        41,
         6
       ]
     }
@@ -694,6 +1137,30 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ee7380c1341919d6",
+      "target_id": "ffabd4ee167e823c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f9fee88ace817fbc",
+      "target_id": "ffabd4ee167e823c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "9383836e6011aa69"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "f9fee88ace817fbc",
+      "target_id": "9383836e6011aa69"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
       "target_id": "1b0c585b5271b8b4"
     },
     {
@@ -754,7 +1221,151 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ee7380c1341919d6",
+      "target_id": "929510221677165c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "929510221677165c",
+      "target_id": "ae0c8b0ef9b92374"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "d40971a175de6217"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "0d50edfa3f2b2d3a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "d40971a175de6217",
+      "target_id": "0d50edfa3f2b2d3a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "3b25aea071d1723d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "d40971a175de6217",
+      "target_id": "3b25aea071d1723d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "d36652fce125a01a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "d40971a175de6217",
+      "target_id": "d36652fce125a01a"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "ee7d06c7d6926d21"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "d36652fce125a01a",
+      "target_id": "ee7d06c7d6926d21"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "fbbb74ab7f3d1ffe"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "51845da7c38413e7"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fbbb74ab7f3d1ffe",
+      "target_id": "51845da7c38413e7"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "921596ac12dddefa"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "fbbb74ab7f3d1ffe",
+      "target_id": "921596ac12dddefa"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "9f56791d06b4ad6e"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "9f56791d06b4ad6e",
+      "target_id": "25a8fad8449a24c2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "221d5e124f1fa419"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "2fcbe9963b04db26"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "221d5e124f1fa419",
+      "target_id": "2fcbe9963b04db26"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "0664d5af012cf61d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "0e94e2f16cea19c5"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
       "target_id": "8163c43e3017a009"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ee7380c1341919d6",
+      "target_id": "cb3d174984f55c12"
     },
     {
       "kind": "declares",

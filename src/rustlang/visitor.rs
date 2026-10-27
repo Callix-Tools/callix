@@ -22,6 +22,12 @@
 //! lowercase identifier in a pattern is a binding and is not recorded. Callees and
 //! plain-name arguments keep their own occurrence: `collect_calls` marks them in
 //! `recorded`.
+//!
+//! Enum variants (a CLASS `Enum.Variant`, called like a tuple struct; the fields of a
+//! struct variant are ATTRIBUTEs), the associated types (TYPE_ALIAS) and consts
+//! (VARIABLE) of impls and traits, and every item written inside a function body
+//! (qualified under the function, `m::f::Local`) are declared. A const or static
+//! initializer is scanned like a body: its calls and reads are enclosed by the const.
 
 use std::collections::{HashMap, HashSet};
 
@@ -127,6 +133,8 @@ fn skips_values(kind: &str) -> bool {
                 | "type_item"
                 | "extern_crate_declaration"
                 | "foreign_mod_item"
+                | "const_item"
+                | "static_item"
         )
 }
 
@@ -175,10 +183,11 @@ fn path_prefix_segments<'tree>(node: TsNode<'tree>, source: &[u8]) -> Vec<TsNode
     let mut stack = vec![node];
     while let Some(current) = stack.pop() {
         if current != node
-            && matches!(
-                current.kind(),
-                "function_item" | "use_declaration" | "visibility_modifier" | "macro_definition"
-            )
+            && (is_body_item(current.kind())
+                || matches!(
+                    current.kind(),
+                    "use_declaration" | "visibility_modifier" | "macro_definition"
+                ))
         {
             continue;
         }
@@ -195,9 +204,43 @@ fn path_prefix_segments<'tree>(node: TsNode<'tree>, source: &[u8]) -> Vec<TsNode
     out
 }
 
-/// A scope's descendants, not entering the functions declared inside it: those
+/// Items that become nodes of their own wherever they are written, so a scope that
+/// contains one does not own what the item calls or reads.
+fn is_body_item(kind: &str) -> bool {
+    matches!(
+        kind,
+        "function_item"
+            | "const_item"
+            | "static_item"
+            | "struct_item"
+            | "enum_item"
+            | "union_item"
+            | "trait_item"
+            | "impl_item"
+            | "type_item"
+    )
+}
+
+/// A scope's descendants, not entering the items declared inside it: those
 /// are nodes of their own and own what they call.
 fn owned_descendants<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = vec![scope];
+    while let Some(current) = stack.pop() {
+        out.push(current);
+        for child in ts::children(current) {
+            if !is_body_item(child.kind()) {
+                stack.push(child);
+            }
+        }
+    }
+    out
+}
+
+/// A node's descendants, not entering the functions inside it. Wider than
+/// `owned_descendants`: `extract` uses it to find every `macro_rules!`, which may sit
+/// inside a `const _: () = { ... }` block.
+fn descendants_outside_functions<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = vec![scope];
     while let Some(current) = stack.pop() {
@@ -211,12 +254,13 @@ fn owned_descendants<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// The functions declared directly in a scope, not those inside them.
-fn nested_functions<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+/// The items declared directly in a scope (a function body), not those inside them.
+/// The walk passes through everything else, a `mod` included.
+fn body_items<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = ts::children(scope);
     while let Some(current) = stack.pop() {
-        if current.kind() == "function_item" {
+        if is_body_item(current.kind()) {
             out.push(current);
         } else {
             stack.extend(ts::children(current));
@@ -339,7 +383,7 @@ impl<'a> RustExtractor<'a> {
     }
 
     pub fn extract(&mut self, root: TsNode<'_>) -> PyResult<()> {
-        for node in owned_descendants(root) {
+        for node in descendants_outside_functions(root) {
             if node.kind() == "macro_definition"
                 && let Some((name, rules)) = super::macros::parse_definition(node, self.source)
             {
@@ -351,8 +395,13 @@ impl<'a> RustExtractor<'a> {
 
     /// Dispatches direct children to their handlers; `impl` in a second pass.
     fn dispatch(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        self.dispatch_items(ts::children(node))
+    }
+
+    /// Dispatches a list of items; `impl` in a second pass.
+    fn dispatch_items(&mut self, items: Vec<TsNode<'_>>) -> PyResult<()> {
         let mut deferred_impls = Vec::new();
-        for child in ts::children(node) {
+        for child in items {
             match child.kind() {
                 "impl_item" => deferred_impls.push(child),
                 "mod_item" => self.on_mod_item(child)?,
@@ -378,10 +427,8 @@ impl<'a> RustExtractor<'a> {
                     }
                 }
                 "const_item" | "static_item" => {
-                    if let Some(id) = self.declare_named(child, NodeKind::Variable)?
-                        && let Some(type_node) = child.child_by_field_name("type")
-                    {
-                        self.record_annotation(type_node, &id);
+                    if let Some(id) = self.declare_named(child, NodeKind::Variable)? {
+                        self.scan_value(child, &id);
                     }
                 }
                 "use_declaration" => self.on_use_declaration(child)?,
@@ -651,12 +698,6 @@ impl<'a> RustExtractor<'a> {
             "parameter" => {
                 if let Some(inner) = node.child_by_field_name("pattern") {
                     self.walk_values(inner, true, enclosing_id);
-                }
-            }
-            // A const or static declared in a body: the name and the type are not uses.
-            "const_item" | "static_item" => {
-                if let Some(value) = node.child_by_field_name("value") {
-                    self.walk_values(value, false, enclosing_id);
                 }
             }
             "tuple_struct_pattern" => {
@@ -944,30 +985,19 @@ impl<'a> RustExtractor<'a> {
         }
     }
 
-    /// The payload types of every variant of an enum, under the enum's node.
-    fn record_enum_payload_types(&mut self, variants: TsNode<'_>, enclosing_id: &str) {
-        for variant in ts::children(variants) {
-            if variant.kind() != "enum_variant" {
-                continue;
-            }
-            let Some(body) = variant.child_by_field_name("body") else {
-                continue;
-            };
-            match body.kind() {
-                "ordered_field_declaration_list" => {
-                    self.record_tuple_field_types(body, enclosing_id);
-                }
-                "field_declaration_list" => {
-                    for field in ts::children(body) {
-                        if field.kind() == "field_declaration"
-                            && let Some(type_node) = field.child_by_field_name("type")
-                        {
-                            self.record_annotation(type_node, enclosing_id);
-                        }
-                    }
-                }
-                _ => {}
-            }
+    /// The uses inside a const, a static, an associated const or an enum discriminant:
+    /// the type is an annotation and the `value` is scanned like a body, all enclosed
+    /// by `id`. The order is `on_callable`'s, so `recorded` keeps one occurrence per site.
+    fn scan_value(&mut self, item: TsNode<'_>, id: &str) {
+        if let Some(type_node) = item.child_by_field_name("type") {
+            self.record_annotation(type_node, id);
+        }
+        if let Some(value) = item.child_by_field_name("value") {
+            self.collect_body_types(value, id);
+            self.collect_calls(value, id);
+            self.collect_references(value, id);
+            self.record_path_prefixes(value, id);
+            self.walk_values(value, false, id);
         }
     }
 
@@ -1035,8 +1065,7 @@ impl<'a> RustExtractor<'a> {
             return Ok(());
         };
         if type_node.kind() == "enum_item" {
-            self.record_enum_payload_types(body, type_id);
-            return Ok(());
+            return self.collect_variants(body, type_qname, type_id);
         }
         if body.kind() == "ordered_field_declaration_list" {
             self.record_tuple_field_types(body, type_id);
@@ -1045,6 +1074,17 @@ impl<'a> RustExtractor<'a> {
         if body.kind() != "field_declaration_list" {
             return Ok(());
         }
+        self.collect_named_fields(body, type_qname, type_id)
+    }
+
+    /// ATTRIBUTE nodes for the named fields of a struct, a union or a struct variant,
+    /// plus their annotations.
+    fn collect_named_fields(
+        &mut self,
+        body: TsNode<'_>,
+        owner_qname: &str,
+        owner_id: &str,
+    ) -> PyResult<()> {
         for field in ts::children(body) {
             if field.kind() != "field_declaration" {
                 continue;
@@ -1056,9 +1096,9 @@ impl<'a> RustExtractor<'a> {
                 continue;
             };
             let name = self.text(name_node);
-            let qname = format!("{type_qname}.{name}");
+            let qname = format!("{owner_qname}.{name}");
             let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
-            self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+            self.push_relation(owner_id.to_string(), id.clone(), RelationKind::Declares)?;
             if let Some(field_type) = field_type {
                 self.record_annotation(field_type, &id);
             }
@@ -1066,9 +1106,42 @@ impl<'a> RustExtractor<'a> {
         Ok(())
     }
 
+    /// One CLASS `Enum.Variant` per variant (it is called like a tuple struct), declared
+    /// by the enum. Payload types are enclosed by the variant, the named fields of a
+    /// struct variant are ATTRIBUTEs of it, and an explicit discriminant is scanned.
+    fn collect_variants(
+        &mut self,
+        list: TsNode<'_>,
+        enum_qname: &str,
+        enum_id: &str,
+    ) -> PyResult<()> {
+        for variant in ts::children(list) {
+            if variant.kind() != "enum_variant" {
+                continue;
+            }
+            let Some(name_node) = variant.child_by_field_name("name") else {
+                continue;
+            };
+            let name = self.text(name_node);
+            let qname = format!("{enum_qname}.{name}");
+            let id = self.declare(&qname, &name, NodeKind::Class, variant, name_node)?;
+            self.push_relation(enum_id.to_string(), id.clone(), RelationKind::Declares)?;
+            if let Some(body) = variant.child_by_field_name("body") {
+                match body.kind() {
+                    "ordered_field_declaration_list" => self.record_tuple_field_types(body, &id),
+                    "field_declaration_list" => self.collect_named_fields(body, &qname, &id)?,
+                    _ => {}
+                }
+            }
+            self.scan_value(variant, &id);
+        }
+        Ok(())
+    }
+
     /// METHOD nodes for the methods a trait declares, with or without a default
     /// body: a call through a bound or a trait object lands on the trait's
-    /// method, and without a node for it the call went nowhere.
+    /// method, and without a node for it the call went nowhere. Its associated types
+    /// are TYPE_ALIASes and its associated consts VARIABLEs, `Trait.Name`.
     fn collect_trait_methods(
         &mut self,
         trait_node: TsNode<'_>,
@@ -1079,21 +1152,24 @@ impl<'a> RustExtractor<'a> {
             return Ok(());
         };
         for item in ts::children(body) {
-            if item.kind() == "associated_type" {
-                self.record_generics(item, trait_id);
-                continue;
-            }
-            if !matches!(item.kind(), "function_item" | "function_signature_item") {
-                continue;
-            }
+            let kind = match item.kind() {
+                "associated_type" => NodeKind::TypeAlias,
+                "const_item" => NodeKind::Variable,
+                "function_item" | "function_signature_item" => NodeKind::Method,
+                _ => continue,
+            };
             let Some(name_node) = item.child_by_field_name("name") else {
                 continue;
             };
             let name = self.text(name_node);
             let qname = format!("{trait_qname}.{name}");
-            let id = self.declare(&qname, &name, NodeKind::Method, item, name_node)?;
+            let id = self.declare(&qname, &name, kind, item, name_node)?;
             self.push_relation(trait_id.to_string(), id.clone(), RelationKind::Declares)?;
-            self.on_callable(item, &qname, &id)?;
+            match item.kind() {
+                "associated_type" => self.record_generics(item, &id),
+                "const_item" => self.scan_value(item, &id),
+                _ => self.on_callable(item, &qname, &id)?,
+            }
         }
         Ok(())
     }
@@ -1130,16 +1206,16 @@ impl<'a> RustExtractor<'a> {
         self.record_path_prefixes(node, id);
         self.collect_values(node, id);
         self.collect_flow(node, qname, id)?;
-        // Functions declared inside this one are nodes of their own.
+        // Items declared inside this one (functions, structs, enums, consts, impls, ...)
+        // are nodes of their own, qualified under the function: `module_qname` is the
+        // function's qname while they are dispatched, and restored on every path.
         if let Some(body) = node.child_by_field_name("body") {
-            for inner in nested_functions(body) {
-                let Some(name_node) = inner.child_by_field_name("name") else {
-                    continue;
-                };
-                let name = self.text(name_node);
-                let inner_qname = format!("{qname}::{name}");
-                let inner_id = self.declare(&inner_qname, &name, NodeKind::Function, inner, name_node)?;
-                self.on_callable(inner, &inner_qname, &inner_id)?;
+            let items = body_items(body);
+            if !items.is_empty() {
+                let outer = std::mem::replace(&mut self.module_qname, qname.to_string());
+                let result = self.dispatch_items(items);
+                self.module_qname = outer;
+                result?;
             }
         }
         Ok(())
@@ -1342,29 +1418,34 @@ impl<'a> RustExtractor<'a> {
         let Some(body) = node.child_by_field_name("body") else {
             return Ok(());
         };
+        let prefix = if type_name.is_empty() {
+            String::new()
+        } else {
+            format!("{type_name}.")
+        };
         for item in ts::children(body) {
-            if item.kind() == "type_item" {
-                self.record_generics(item, file_id);
-                if let Some(type_node) = item.child_by_field_name("type") {
-                    self.record_annotation(type_node, file_id);
-                }
-                continue;
-            }
-            if item.kind() != "function_item" {
-                continue;
-            }
+            let kind = match item.kind() {
+                "type_item" => NodeKind::TypeAlias,
+                "const_item" => NodeKind::Variable,
+                "function_item" => NodeKind::Method,
+                _ => continue,
+            };
             let Some(name_node) = item.child_by_field_name("name") else {
                 continue;
             };
             let name = self.text(name_node);
-            let prefix = if type_name.is_empty() {
-                String::new()
-            } else {
-                format!("{type_name}.")
-            };
             let qname = format!("{}::{prefix}{name}", self.module_qname);
-            let id = self.declare(&qname, &name, NodeKind::Method, item, name_node)?;
-            self.on_callable(item, &qname, &id)?;
+            let id = self.declare(&qname, &name, kind, item, name_node)?;
+            match item.kind() {
+                "type_item" => {
+                    self.record_generics(item, &id);
+                    if let Some(type_node) = item.child_by_field_name("type") {
+                        self.record_annotation(type_node, &id);
+                    }
+                }
+                "const_item" => self.scan_value(item, &id),
+                _ => self.on_callable(item, &qname, &id)?,
+            }
         }
         Ok(())
     }

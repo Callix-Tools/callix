@@ -200,7 +200,11 @@ TypeScript, a **package directory** in Go (its `qualified_name` equals the
 import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`; an inline `mod foo { ... }` is a MODULE too (without a `file_path`
 or span, like the file modules). Rust dispatches `impl` blocks in a second pass
-because a type may be declared below its `impl`.
+because a type may be declared below its `impl`. In `rustlang` an enum variant is a
+CLASS `Enum.Variant` (called like a tuple struct), an associated type a TYPE_ALIAS and
+an associated const a VARIABLE `Type.NAME`, an item in a function body is qualified
+under the function (`m::f::Local`), and a const or static initializer's uses are
+enclosed by the const.
 
 ### Resolvers: what is linked in and what is not
 

@@ -41,6 +41,8 @@ visitor is inside it.
 Functions, structs, enums, traits and unions, type aliases, constants and
 statics, `impl` blocks with their methods, and `use` declarations.
 
+An enum variant is a `CLASS` named `Enum.Variant` (it is called like a tuple struct), and the named fields of a struct variant are `ATTRIBUTE` nodes under it; positional fields get no node. The associated types of an `impl` or a trait are `TYPE_ALIAS` nodes and their associated consts `VARIABLE` nodes, named `Type.Name` (`Trait.Name` in a trait). Two `impl` blocks on one type that declare the same associated name share one node, as their methods do. An item written inside a function body (a struct, enum, const, static, trait, impl, type alias or function) is a node qualified under the function, `module::f::Local`, and a method of an `impl` in a body is a `METHOD`. The calls and reads in a `const` or `static` initializer, an associated const or an enum discriminant are edges from that const, not from the function that happens to read it.
+
 `impl` blocks are dispatched in a **second pass**. Rust does not require a type
 to be declared above its `impl`, so an `impl Trait for Type` written before
 `struct Type` would otherwise find no type node and lose the `base`
@@ -58,7 +60,7 @@ The qualifiers of a path are references: `Foo` in `Foo::new()` becomes a `REFERE
 
 Each name a `use` brings in is an edge of its own: `Circle` and `Square` in `use crate::shapes::{Circle, Square};` become `RESOLVES_TO` edges from the `IMPORT`, with the position of the name, to the type. Groups can nest, `as` points at the original name (not the alias), and `*`, `self`, `crate` and `super` are skipped. A path of the crate is bound by path in the structure pass and marked `name` (2018 relative paths like `use store::X` too); the rest (the standard library, dependencies, re-exports) is left to rust-analyzer. A `mod x;` is a `REFERENCES` edge from the file to the `MODULE`. Prefix segments of a use path, a `use` inside a function body and a `#[path]` module are not covered, and an edge to a `MODULE` is not exported.
 
-Names in expression and pattern position are references too: a `const` or `static` read, a struct literal's type and its fields (`Cfg { n: 1 }`, and the shorthand `Cfg { n }`), the last segment of a path such as `Mode::A` or `u32::MAX`, and the paths and fields of match and `let` patterns. Each is a `REFERENCES` edge with `access: read` (`write` for an assignment target). A lowercase identifier in a pattern is a binding and a read of a local or a parameter is not an edge. An enum variant is not a node yet, so a reference to one is an `unlocated` external symbol. The arguments of a macro the project defines, and the bare receiver of a field access (`x` in `x.f`), are not covered.
+Names in expression and pattern position are references too: a `const` or `static` read, a struct literal's type and its fields (`Cfg { n: 1 }`, and the shorthand `Cfg { n }`), the last segment of a path such as `Mode::A` or `u32::MAX`, and the paths and fields of match and `let` patterns. Each is a `REFERENCES` edge with `access: read` (`write` for an assignment target). A lowercase identifier in a pattern is a binding and a read of a local or a parameter is not an edge. The arguments of a macro the project defines, and the bare receiver of a field access (`x` in `x.f`), are not covered.
 
 ## Dependency classification
 

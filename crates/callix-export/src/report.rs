@@ -237,7 +237,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              SCIP (a MODULE has no file to define it in); a const or static read, a struct \
              literal's type and fields (shorthand included) and the paths and fields of match and \
              `let` patterns are references, while a read of a local or a parameter is not an edge; \
-             enum variants are not nodes, so a reference to one is `unlocated`; names inside the \
+             enum variants, the associated types and consts of impls and traits and the items of \
+             a function body are nodes, and the calls and reads in a const or static initializer \
+             belong to the const; names inside the \
              arguments of a macro the project defines and the bare receiver of a field access \
              are not recorded; each name a `use` brings in (through groups and `as`, not `*` or \
              `self`) resolves from its IMPORT to its definition, by path for a path of the crate \

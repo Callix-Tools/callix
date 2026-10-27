@@ -164,12 +164,19 @@ def test_variant_paths_in_a_pattern_have_an_edge_with_a_span(tmp_path):
     write_crate(tmp_path, "demo", {"lib.rs": SRC})
     graph = callix.RustAdapter().analyze(str(tmp_path))
 
-    # Variants are not nodes yet (RUST-06): the target kind is deliberately not pinned.
-    for hint, ident in (("Mode::B(x)", "B"), ("Mode::A =>", "A")):
+    # A variant is a CLASS `Enum.Variant` (RUST-06).
+    for hint, ident, target in (
+        ("Mode::B(x)", "B", "demo::Mode.B"),
+        ("Mode::A =>", "A", "demo::Mode.A"),
+    ):
         line, col = pos(SRC, hint, ident)
         found = refs_at(graph, "demo::pick", line, col)
         assert found, (hint, line, col)
         assert all("span" in r.metadata for r in found)
+        for r in found:
+            assert graph.nodes[r.target_id].qualified_name == target
+            assert graph.nodes[r.target_id].kind is NodeKind.CLASS
+            assert r.metadata["resolution"] == "definition"
 
 
 @needs_rust

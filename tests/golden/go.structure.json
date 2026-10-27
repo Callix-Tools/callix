@@ -32,23 +32,6 @@
     },
     {
       "file_path": "service.go",
-      "id": "4d591b833e73aaa0",
-      "kind": "import",
-      "metadata": {
-        "import_path": "example.com/fixture/store",
-        "origin": "internal"
-      },
-      "name": "example.com/fixture/store",
-      "qualified_name": "service.go::example.com/fixture/store",
-      "span": [
-        6,
-        2,
-        6,
-        29
-      ]
-    },
-    {
-      "file_path": "service.go",
       "id": "33cc48716b1f4a0d",
       "kind": "import",
       "metadata": {
@@ -74,6 +57,23 @@
       "name": "fmt",
       "qualified_name": "fmt",
       "span": null
+    },
+    {
+      "file_path": "service.go",
+      "id": "4d591b833e73aaa0",
+      "kind": "import",
+      "metadata": {
+        "import_path": "example.com/fixture/store",
+        "origin": "internal"
+      },
+      "name": "example.com/fixture/store",
+      "qualified_name": "service.go::example.com/fixture/store",
+      "span": [
+        6,
+        2,
+        6,
+        29
+      ]
     },
     {
       "file_path": "service.go",
@@ -484,12 +484,6 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "cec9e10a50622ace",
-      "target_id": "4d591b833e73aaa0"
-    },
-    {
-      "kind": "declares",
-      "metadata": {},
-      "source_id": "cec9e10a50622ace",
       "target_id": "33cc48716b1f4a0d"
     },
     {
@@ -503,6 +497,12 @@
       "metadata": {},
       "source_id": "33cc48716b1f4a0d",
       "target_id": "13dc1513e51a2e31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "4d591b833e73aaa0"
     },
     {
       "kind": "declares",

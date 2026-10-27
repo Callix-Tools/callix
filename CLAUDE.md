@@ -367,6 +367,14 @@ Things that are easy to get wrong:
   have been written elsewhere; `Graph::note_site_file` records the file then and
   only then. Placing a reference by the source node's file alone put eight gin
   references in an eleven-line file.
+- **Go annotations cover every `type_identifier` of a type, root included.**
+  `src/golang/visitor.rs::walk_type` seeds its stack with the node itself and
+  reads in source order; `record_annotation` emits one `annotation` per named
+  type (`map[K]V` depends on both) and skips predeclared names and type
+  parameters in scope in the visitor, because neither is a node and a type
+  parameter would become a per-site `annotation@` external. Interface method
+  results are annotated too. `src/rustlang/visitor.rs::walk_type` has the same
+  root-skip, tracked separately (RUST-01).
 - **Decorators, parameter defaults and a call's receiver are values the definition
   depends on, and `scan_value` must reach them.** The Python and TypeScript
   visitors once skipped all three — a bare `@deco` recorded nothing, a default was

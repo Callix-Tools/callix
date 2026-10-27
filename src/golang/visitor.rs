@@ -17,7 +17,8 @@ use crate::relation::{Relation, RelationKind};
 use crate::ts;
 
 /// A node's descendants in the order the Python version walks them: a stack
-/// popped from the end, i.e. depth-first and right to left.
+/// popped from the end, i.e. depth-first and right to left. Unlike `walk_type`,
+/// which reads in source order, this keeps its order.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
     let mut stack = vec![node];
@@ -28,18 +29,73 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
-/// Every descendant of the given kind, in the same traversal order.
+/// The node itself and every descendant of the given kind, depth-first and
+/// left to right (source order). A match is not descended into. The root is
+/// included, so a type that is itself a `type_identifier` is found.
 fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
-    let mut stack = ts::children(node);
+    let mut stack = vec![node];
     while let Some(current) = stack.pop() {
         if current.kind() == kind {
             out.push(current);
         } else {
-            stack.extend(ts::children(current));
+            let mut kids = ts::children(current);
+            kids.reverse();
+            stack.extend(kids);
         }
     }
     out
+}
+
+/// A predeclared Go type or constraint. None of them is a node of the graph:
+/// the resolver answers with a position in builtin.go.
+fn is_predeclared_type(name: &str) -> bool {
+    matches!(
+        name,
+        "bool" | "string" | "error" | "any" | "comparable" | "int" | "int8" | "int16"
+            | "int32" | "int64" | "uint" | "uint8" | "uint16" | "uint32" | "uint64"
+            | "uintptr" | "float32" | "float64" | "complex64" | "complex128" | "byte"
+            | "rune"
+    )
+}
+
+/// The type parameters in scope at `node`: those declared by the enclosing
+/// function, method, type spec or type alias (and, for a method, the names the
+/// receiver binds, `T` in `func (b *Box[T]) Put(v T)`).
+fn type_parameter_names(src: &[u8], node: TsNode<'_>) -> HashSet<String> {
+    let mut names = HashSet::new();
+    let mut current = node.parent();
+    while let Some(n) = current {
+        if matches!(
+            n.kind(),
+            "function_declaration" | "method_declaration" | "type_spec" | "type_alias"
+        ) {
+            if let Some(params) = n.child_by_field_name("type_parameters") {
+                for decl in walk_type(params, "type_parameter_declaration") {
+                    for child in ts::children(decl) {
+                        if child.kind() == "identifier"
+                            && let Ok(text) = child.utf8_text(src)
+                        {
+                            names.insert(text.to_string());
+                        }
+                    }
+                }
+            }
+            if n.kind() == "method_declaration"
+                && let Some(receiver) = n.child_by_field_name("receiver")
+            {
+                for args in walk_type(receiver, "type_arguments") {
+                    for id in walk_type(args, "type_identifier") {
+                        if let Ok(text) = id.utf8_text(src) {
+                            names.insert(text.to_string());
+                        }
+                    }
+                }
+            }
+        }
+        current = n.parent();
+    }
+    names
 }
 
 /// The callee's name token; None when an expression result is called.
@@ -342,13 +398,23 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
-    /// An `annotation` for the leading identifier of a type.
+    /// An `annotation` for every named type a type mentions.
     ///
-    /// `*S`, `[]S` and `pkg.S` all reduce to the `type_identifier` the
-    /// resolver can bind; a built-in like `string` has none and is skipped.
+    /// `*S`, `[]S`, `map[K]V`, `func(S) R`, `pkg.S` and `G[S]` each depend on
+    /// all the names inside them, so each `type_identifier` (the name of a
+    /// `qualified_type`, a generic's base and its arguments included) gets one.
+    /// Predeclared names (`string`, `error`, `any`...) and type parameters in
+    /// scope are skipped: neither is a node, one resolves into builtin.go and
+    /// the other to a position with nothing behind it. A project that declares
+    /// its own `error` or `any` loses that annotation; that is accepted.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
-        if let Some(name_node) = walk_type(type_node, "type_identifier").first() {
-            self.add_occurrence("annotation", *name_node, enclosing_id);
+        let params = type_parameter_names(self.source, type_node);
+        for name_node in walk_type(type_node, "type_identifier") {
+            let text = self.text(name_node);
+            if is_predeclared_type(&text) || params.contains(&text) {
+                continue;
+            }
+            self.add_occurrence("annotation", name_node, enclosing_id);
         }
     }
 
@@ -730,6 +796,9 @@ impl<'a> GoExtractor<'a> {
             let id = self.declare(&qname, &name, NodeKind::Method, element, name_node)?;
             self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
             self.collect_parameters(element, &qname, &id)?;
+            if let Some(result) = element.child_by_field_name("result") {
+                self.record_annotation(result, &id);
+            }
         }
         Ok(())
     }

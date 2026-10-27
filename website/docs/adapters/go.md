@@ -41,6 +41,13 @@ Embedding is distinguished from generic constraints by term count: a type-set
 union like `A | B` or `~int` has several terms in one element, real embedding
 has exactly one.
 
+Type uses become `annotation` occurrences and resolve to `HAS_TYPE`: in
+signatures, receivers, fields, type declarations (right-hand side and
+constraints), `var` and `const` types, and function bodies (composite literals,
+closures, assertions, type switches, `make`/`new`, type arguments). Predeclared
+types, type parameters, types declared inside a function and the generic of an
+explicitly instantiated call `F[T](x)` get no edge.
+
 ## Dependency classification
 
 Go's own rule applies — a standard-library import path has no dot in its first

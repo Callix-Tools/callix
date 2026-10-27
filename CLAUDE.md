@@ -375,6 +375,15 @@ Things that are easy to get wrong:
   parameter would become a per-site `annotation@` external. Interface method
   results are annotated too. `src/rustlang/visitor.rs::walk_type` has the same
   root-skip, tracked separately (RUST-01).
+  Annotations are recorded at: receivers (enclosed by the method), the
+  right-hand side and the constraints of type specs and aliases (enclosed by the
+  TYPE_ALIAS or CLASS), `var`/`const` types (enclosed by the VARIABLE, one per
+  name), and every `type_identifier` in a function body (enclosed by the
+  callable, closures included; `collect_body_types`). Two exclusions: a type
+  declared inside a function is not a node and would become an unlocated
+  external, so its name is skipped (scope-insensitively); and `F[T](x)` parses
+  as `type_conversion_expression{generic_type}`, so the base `F` would become a
+  HAS_TYPE edge to a function — only its type arguments are annotated.
 - **Decorators, parameter defaults and a call's receiver are values the definition
   depends on, and `scan_value` must reach them.** The Python and TypeScript
   visitors once skipped all three — a bare `@deco` recorded nothing, a default was

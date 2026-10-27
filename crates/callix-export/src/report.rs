@@ -219,9 +219,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "static calls and concrete methods; a function value is followed by a flow pass and \
              marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
              standard-library callbacks); a call through an interface lands on the interface's \
-             method, never on an implementation; every named type in a parameter, result \
-             (functions and interface methods) or field is a `has_type`, but predeclared types \
-             and type parameters are not",
+             method, never on an implementation; every named type in a receiver, parameter, \
+             result, field, type declaration (right-hand side and constraints), var or const \
+             type, or anywhere in a function body (literals, closures, assertions, type \
+             switches, make and new, type arguments) is a `has_type`, except predeclared \
+             types, type parameters, types declared inside a function, and the generic in an \
+             explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

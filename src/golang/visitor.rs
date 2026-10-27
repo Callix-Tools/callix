@@ -409,13 +409,84 @@ impl<'a> GoExtractor<'a> {
     /// its own `error` or `any` loses that annotation; that is accepted.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         let params = type_parameter_names(self.source, type_node);
-        for name_node in walk_type(type_node, "type_identifier") {
+        self.annotate_names(walk_type(type_node, "type_identifier"), enclosing_id, &params);
+    }
+
+    /// One `annotation` occurrence per name, minus the predeclared ones and the
+    /// names in `skip` (type parameters in scope, local types). The filter lives
+    /// here so a type position and a whole function body share it.
+    fn annotate_names(
+        &mut self,
+        names: Vec<TsNode<'_>>,
+        enclosing_id: &str,
+        skip: &HashSet<String>,
+    ) {
+        for name_node in names {
             let text = self.text(name_node);
-            if is_predeclared_type(&text) || params.contains(&text) {
+            if is_predeclared_type(&text) || skip.contains(&text) {
                 continue;
             }
             self.add_occurrence("annotation", name_node, enclosing_id);
         }
+    }
+
+    /// The constraints of a declaration's type parameters (`Stringer` in
+    /// `func F[T Stringer]()` or `type G[T Stringer] []T`), enclosed by the
+    /// declared node. The parameters themselves are skipped by
+    /// `type_parameter_names`.
+    fn record_constraints(&mut self, decl: TsNode<'_>, enclosing_id: &str) {
+        let Some(params) = decl.child_by_field_name("type_parameters") else {
+            return;
+        };
+        for declaration in walk_type(params, "type_parameter_declaration") {
+            if let Some(constraint) = declaration.child_by_field_name("type") {
+                self.record_annotation(constraint, enclosing_id);
+            }
+        }
+    }
+
+    /// Every type name inside a function body: composite-literal types, func
+    /// literal parameters and results, local `var` types, `make`/`new`
+    /// arguments, assertions, type switches, generic arguments. Enclosed by the
+    /// callable, closures included (a closure's uses belong to the function that
+    /// contains it, as calls do).
+    ///
+    /// Skipped, besides predeclared names: type parameters in scope; types
+    /// declared inside the body (not nodes, they would become unlocated
+    /// externals; scope-insensitive on purpose); and the base of `F[T](x)`,
+    /// which tree-sitter reads as a `type_conversion_expression` over a
+    /// `generic_type` although `F` is a function. Its type arguments stay.
+    fn collect_body_types(&mut self, callable: TsNode<'_>, enclosing_id: &str) {
+        let Some(body) = callable.child_by_field_name("body") else {
+            return;
+        };
+        let mut skip = type_parameter_names(self.source, body);
+        let mut excluded: Vec<(usize, usize)> = Vec::new();
+        for node in descendants(body) {
+            match node.kind() {
+                "type_spec" | "type_alias" => {
+                    if let Some(name) = node.child_by_field_name("name") {
+                        skip.insert(self.text(name));
+                    }
+                }
+                "type_conversion_expression" => {
+                    if let Some(generic) = node.child_by_field_name("type")
+                        && generic.kind() == "generic_type"
+                        && let Some(base) = generic.child_by_field_name("type")
+                    {
+                        for id in walk_type(base, "type_identifier") {
+                            excluded.push((id.start_byte(), id.end_byte()));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        let names: Vec<TsNode<'_>> = walk_type(body, "type_identifier")
+            .into_iter()
+            .filter(|n| !excluded.contains(&(n.start_byte(), n.end_byte())))
+            .collect();
+        self.annotate_names(names, enclosing_id, &skip);
     }
 
     /// PARAMETER nodes for a declaration's parameters, plus their annotations.
@@ -485,6 +556,7 @@ impl<'a> GoExtractor<'a> {
         if let Some(result) = node.child_by_field_name("result") {
             self.record_annotation(result, id);
         }
+        self.collect_body_types(node, id);
         self.collect_calls(node, id);
         self.collect_references(node, id);
         self.collect_flow(node, qname, id)?;
@@ -810,6 +882,7 @@ impl<'a> GoExtractor<'a> {
         let name = self.text(name_node);
         let qname = format!("{}.{name}", self.package_qname);
         let id = self.declare(&qname, &name, NodeKind::Function, node, name_node)?;
+        self.record_constraints(node, &id);
         self.on_callable(node, &qname, &id)
     }
 
@@ -826,6 +899,17 @@ impl<'a> GoExtractor<'a> {
         };
         let qname = format!("{}.{prefix}{name}", self.package_qname);
         let id = self.declare(&qname, &name, NodeKind::Method, node, name_node)?;
+        // The receiver type is a use of the type; the method is the enclosing node
+        // (collect_parameters reads only `parameters`, so no PARAMETER exists).
+        if let Some(receiver_list) = node.child_by_field_name("receiver") {
+            for declaration in ts::children(receiver_list) {
+                if declaration.kind() == "parameter_declaration"
+                    && let Some(receiver_type) = declaration.child_by_field_name("type")
+                {
+                    self.record_annotation(receiver_type, &id);
+                }
+            }
+        }
         self.on_callable(node, &qname, &id)
     }
 
@@ -845,6 +929,7 @@ impl<'a> GoExtractor<'a> {
             let name = self.text(name_node);
             let qname = format!("{}.{name}", self.package_qname);
             let id = self.declare(&qname, &name, kind, spec, name_node)?;
+            self.record_constraints(spec, &id);
 
             if is_struct_like
                 && let Some(type_node) = type_node
@@ -852,6 +937,10 @@ impl<'a> GoExtractor<'a> {
                 self.collect_bases(type_node, &id);
                 self.collect_fields(type_node, &qname, &id)?;
                 self.collect_interface_methods(type_node, &qname, &id)?;
+            } else if let Some(type_node) = type_node {
+                // `type Items []Item`, `type H func(*Item)`, any alias: the right-hand
+                // side is a use of the types it names.
+                self.record_annotation(type_node, &id);
             }
         }
         Ok(())
@@ -871,6 +960,10 @@ impl<'a> GoExtractor<'a> {
                 let name = self.text(*name_node);
                 let qname = format!("{}.{name}", self.package_qname);
                 let id = self.declare(&qname, &name, NodeKind::Variable, spec, *name_node)?;
+                // `var Global Item`, `const K Kind = 1`: one annotation per name.
+                if let Some(declared) = spec.child_by_field_name("type") {
+                    self.record_annotation(declared, &id);
+                }
                 // `var handler = g`: the variable holds what it is initialised with.
                 if spec_kind == "var_spec"
                     && values.len() == names.len()

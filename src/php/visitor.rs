@@ -468,11 +468,18 @@ impl<'a> PhpVisitor<'a> {
     /// identity available — but it has to have one: without a CLASS node its
     /// methods would be qualified into the enclosing scope, where they could
     /// collide with a real member of it.
+    ///
+    /// The `class` keyword stands in for the name token, so the node carries a
+    /// `name_span`: the resolver answers `new static` or a `self` type inside
+    /// the class with that position, and `SpanIndex::lookup_name` needs it to
+    /// find the node. The resolver (`declare_anonymous_class`) mirrors the
+    /// `class@L:C` naming used here; the two must change together.
     fn handle_anonymous_class(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let span = ts::span(node);
         let name = format!("class@{}:{}", span.start_line, span.start_col);
         let qname = self.qualify(&name);
-        self.declare_class(node, &qname, &name, None, ClassFlavour::Anonymous)?;
+        let keyword = ts::child_of_type(node, "class");
+        self.declare_class(node, &qname, &name, keyword, ClassFlavour::Anonymous)?;
 
         // The constructor arguments belong to the code that wrote `new`, not
         // to the class body, so they are scanned once the class scope is

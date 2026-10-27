@@ -474,6 +474,10 @@ struct DeclScope {
     namespace: String,
     /// The declared FQN of the class whose body is being walked.
     class: Option<String>,
+    /// Mirrors the top of the visitor's `scope_stack` (never lowercased): the
+    /// prefix the visitor gives an anonymous class's name. Namespaces, named
+    /// classes, methods and functions extend it; closures do not.
+    prefix: String,
 }
 
 /// The use-site walk's state.
@@ -567,6 +571,10 @@ pub struct PhpResolver {
     /// (document, lowercased short name) → the class it declares — the other
     /// half of the PSR-4 fallback.
     short_names: HashMap<(u32, String), String>,
+    /// (document, line, column) of an `anonymous_class` node → its table key.
+    /// The declaration pass is the only place that computes the name the
+    /// visitor gives it (`<scope>\class@L:C`); the use pass looks it up here.
+    anonymous: HashMap<(u32, u32, u32), String>,
     /// Names held over until every file has been indexed.
     pending: Vec<Pending>,
     /// PSR-4 prefix → directory relative to the project root, longest prefix
@@ -600,6 +608,7 @@ impl Default for PhpResolver {
             self_returning: HashSet::new(),
             enums: HashSet::new(),
             short_names: HashMap::new(),
+            anonymous: HashMap::new(),
             pending: Vec::new(),
             psr4: Vec::new(),
             internal: HashSet::new(),
@@ -1029,23 +1038,32 @@ impl PhpResolver {
                 match node.child_by_field_name("body") {
                     // The braces bound the namespace.
                     Some(body) => {
-                        let mut inner = DeclScope { namespace: name, class: scope.class.clone() };
+                        let mut inner = DeclScope {
+                            namespace: name.clone(),
+                            class: scope.class.clone(),
+                            prefix: name,
+                        };
                         self.walk_decl_children(doc, source, body, &mut inner);
                     }
                     // The statement form runs to the next one or to the end of
                     // the file, so it rewrites what its siblings see.
-                    None => scope.namespace = name,
+                    None => {
+                        scope.prefix = name.clone();
+                        scope.namespace = name;
+                    }
                 }
             }
             "namespace_use_declaration" => self.index_use_declaration(doc, source, node),
             "class_declaration" | "interface_declaration" | "trait_declaration"
             | "enum_declaration" => self.declare_class(doc, source, node, scope),
+            "anonymous_class" => self.declare_anonymous_class(doc, source, node, scope),
             "method_declaration" => {
                 if let Some(class) = scope.class.clone() {
                     let namespace = scope.namespace.clone();
                     self.declare_method(doc, source, node, &class, &namespace);
                 }
-                self.walk_decl_children(doc, source, node, scope);
+                let mut inner = Self::callable_decl_scope(scope, source, node);
+                self.walk_decl_children(doc, source, node, &mut inner);
             }
             // A function declared inside a class body is a `method_declaration`
             // in this grammar, so a `function_definition` always belongs to its
@@ -1057,7 +1075,8 @@ impl PhpResolver {
                         qualify(&scope.namespace, &ts::text(name_node, source)).to_lowercase();
                     self.functions.entry(qname).or_insert(Self::site(doc, name_node));
                 }
-                self.walk_decl_children(doc, source, node, scope);
+                let mut inner = Self::callable_decl_scope(scope, source, node);
+                self.walk_decl_children(doc, source, node, &mut inner);
             }
             "property_declaration" => self.declare_properties(doc, source, node, scope),
             "const_declaration" => self.declare_constants(doc, source, node, scope),
@@ -1112,8 +1131,8 @@ impl PhpResolver {
     }
 
     fn declare_class(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &DeclScope) {
-        // An anonymous class is deliberately not indexed: nothing outside the
-        // expression that creates it can name it.
+        // A nameless node is skipped here: an anonymous class is declared by
+        // `declare_anonymous_class`, under the visitor's synthetic name.
         let Some(name_node) = node.child_by_field_name("name") else {
             return;
         };
@@ -1131,9 +1150,29 @@ impl PhpResolver {
             self.enums.insert(key.clone());
         }
 
-        // `extends` and `implements` only: an enum's backing type is a
-        // positional `primitive_type` sharing the child list with them, and a
-        // scan of the whole list would report `string` as an interface.
+        self.declare_bases(doc, source, node, &fqn, &scope.namespace);
+
+        if let Some(body) = node.child_by_field_name("body") {
+            let mut inner = DeclScope {
+                namespace: scope.namespace.clone(),
+                prefix: qualify(&scope.prefix, &name),
+                class: Some(fqn),
+            };
+            self.walk_decl_children(doc, source, body, &mut inner);
+        }
+    }
+
+    /// `extends` and `implements` only: an enum's backing type is a positional
+    /// `primitive_type` sharing the child list with them, and a scan of the
+    /// whole list would report `string` as an interface.
+    fn declare_bases(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        class_fqn: &str,
+        namespace: &str,
+    ) {
         for clause in ts::children(node) {
             if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
                 continue;
@@ -1142,21 +1181,61 @@ impl PhpResolver {
                 self.push_pending(
                     doc,
                     source,
-                    &fqn,
+                    class_fqn,
                     None,
                     reference,
-                    &scope.namespace,
+                    namespace,
                     clause.kind() == "base_clause",
                 );
             }
         }
+    }
 
-        if let Some(body) = node.child_by_field_name("body") {
-            let mut inner = DeclScope {
-                namespace: scope.namespace.clone(),
-                class: Some(fqn),
-            };
-            self.walk_decl_children(doc, source, body, &mut inner);
+    /// The scope a method or function body is walked in: the visitor pushes the
+    /// callable's name, so an anonymous class inside it is named under it.
+    fn callable_decl_scope(scope: &DeclScope, source: &[u8], node: TsNode<'_>) -> DeclScope {
+        let prefix = match node.child_by_field_name("name") {
+            Some(name_node) => qualify(&scope.prefix, &ts::text(name_node, source)),
+            None => scope.prefix.clone(),
+        };
+        DeclScope { namespace: scope.namespace.clone(), class: scope.class.clone(), prefix }
+    }
+
+    /// `new class(…) extends Base { … }`. The visitor names the CLASS node
+    /// `<scope>\class@L:C` from the node's own start; this pass computes the same
+    /// name, keys the class by it and remembers the key by position. The name
+    /// cannot be written in PHP (`@`), so it is kept out of `short_names`.
+    fn declare_anonymous_class(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        scope: &mut DeclScope,
+    ) {
+        let span = ts::span(node);
+        let name = format!("class@{}:{}", span.start_line, span.start_col);
+        let fqn = qualify(&scope.prefix, &name);
+        let key = fqn.to_lowercase();
+        let site = Self::site(doc, ts::child_of_type(node, "class").unwrap_or(node));
+        self.classes
+            .entry(key.clone())
+            .or_insert_with(|| ClassEntry { fqn: fqn.clone(), site });
+        self.anonymous.insert((doc, span.start_line, span.start_col), key);
+        self.declare_bases(doc, source, node, &fqn, &scope.namespace);
+
+        // The constructor arguments belong to the code that wrote `new`.
+        if let Some(arguments) = ts::child_of_type(node, "arguments") {
+            self.walk_decl_children(doc, source, arguments, scope);
+        }
+        let mut inner = DeclScope {
+            namespace: scope.namespace.clone(),
+            class: Some(fqn.clone()),
+            prefix: fqn,
+        };
+        for field in ["attributes", "body"] {
+            if let Some(child) = node.child_by_field_name(field) {
+                self.walk_decl_children(doc, source, child, &mut inner);
+            }
         }
     }
 
@@ -1420,6 +1499,14 @@ impl PhpResolver {
                 self.scoped_class_ref(&ts::text(node, source), doc, scope)
             }
             "object_creation_expression" => {
+                if let Some(anonymous) = ts::child_of_type(node, "anonymous_class") {
+                    let span = ts::span(anonymous);
+                    return self
+                        .anonymous
+                        .get(&(doc, span.start_line, span.start_col))
+                        .cloned()
+                        .map(ClassRef::Declared);
+                }
                 let class =
                     ts::child_of_types(node, &["name", "qualified_name", "relative_name"])?;
                 self.scoped_class_ref(&ts::text(class, source), doc, scope)
@@ -1672,6 +1759,7 @@ impl PhpResolver {
 
             "class_declaration" | "interface_declaration" | "trait_declaration"
             | "enum_declaration" => self.walk_class(doc, source, node, scope),
+            "anonymous_class" => self.walk_anonymous_class(doc, source, node, scope),
 
             "method_declaration" => self.walk_callable(doc, source, node, scope, true),
             "function_definition" => self.walk_callable(doc, source, node, scope, false),
@@ -1957,8 +2045,27 @@ impl PhpResolver {
             }
         });
 
-        // Only the first `extends` is what `parent::` means; an interface is
-        // not, and neither is a trait.
+        let parent = self.walk_bases(doc, source, node, &namespace);
+
+        let mut inner = UseScope { namespace, class, parent, ..UseScope::default() };
+        if let Some(attributes) = node.child_by_field_name("attributes") {
+            self.walk_use_children(doc, source, attributes, &mut inner);
+        }
+        if let Some(body) = node.child_by_field_name("body") {
+            self.walk_use_children(doc, source, body, &mut inner);
+        }
+    }
+
+    /// Records every name in the `extends`/`implements` clauses and returns the
+    /// first `extends` — the only thing `parent::` means; an interface is not,
+    /// and neither is a trait.
+    fn walk_bases(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        namespace: &str,
+    ) -> Option<ClassRef> {
         let mut parent = None;
         for clause in ts::children(node) {
             if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
@@ -1966,13 +2073,41 @@ impl PhpResolver {
             }
             for reference in class_refs(clause) {
                 if clause.kind() == "base_clause" && parent.is_none() {
-                    parent = Some(self.class_ref(&ts::text(reference, source), doc, &namespace));
+                    parent = Some(self.class_ref(&ts::text(reference, source), doc, namespace));
                 }
-                self.record_name(doc, source, reference, &namespace, NameKind::Class);
+                self.record_name(doc, source, reference, namespace, NameKind::Class);
             }
         }
+        parent
+    }
 
-        let mut inner = UseScope { namespace, class, parent, ..UseScope::default() };
+    /// `new class(…) extends Base { … }`: the arguments are the creator's, the
+    /// body is a scope of its own whose `$this`, `self` and `static` are the
+    /// anonymous class and whose `parent` is its base. It captures nothing, so
+    /// it starts with no local variables.
+    fn walk_anonymous_class(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        scope: &mut UseScope,
+    ) {
+        let span = ts::span(node);
+        let Some(key) = self.anonymous.get(&(doc, span.start_line, span.start_col)).cloned() else {
+            self.walk_use_children(doc, source, node, scope);
+            return;
+        };
+        let namespace = scope.namespace.clone();
+        if let Some(arguments) = ts::child_of_type(node, "arguments") {
+            self.walk_uses(doc, source, arguments, scope);
+        }
+        let parent = self.walk_bases(doc, source, node, &namespace);
+        let mut inner = UseScope {
+            namespace,
+            class: Some(ClassRef::Declared(key)),
+            parent,
+            ..UseScope::default()
+        };
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, &mut inner);
         }
@@ -2214,7 +2349,7 @@ impl PhpResolver {
             }
             let relative = self.relative(file);
             let doc = self.intern_doc(&relative);
-            let mut scope = DeclScope { namespace: String::new(), class: None };
+            let mut scope = DeclScope { namespace: String::new(), class: None, prefix: String::new() };
             self.walk_decl_children(doc, &source, tree.root_node(), &mut scope);
             sources.push((doc, source));
         }

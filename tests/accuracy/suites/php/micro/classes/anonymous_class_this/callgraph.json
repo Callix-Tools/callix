@@ -1,0 +1,1 @@
+{"App\\Base\\run": [], "App\\Base\\passes": [], "App\\Host\\make": ["App\\Host\\make\\class@13:18\\go", "App\\Host\\passes"], "App\\Host\\make\\class@13:18\\passes": ["App\\Base\\passes"], "App\\Host\\make\\class@13:18\\go": ["App\\Base\\run", "App\\Host\\make\\class@13:18\\passes"], "App\\Host\\passes": []}

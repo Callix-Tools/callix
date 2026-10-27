@@ -18,10 +18,10 @@
     "sound": 58
   },
   "php/micro": {
-    "complete": 64,
-    "precision": 0.9912,
+    "complete": 65,
+    "precision": 0.9915,
     "recall": 1.0,
-    "sound": 65
+    "sound": 66
   },
   "python/pycg": {
     "complete": 112,

@@ -116,7 +116,6 @@ def test_prototype_only_in_two_headers(tmp_path: Path) -> None:
 
 
 def test_cpp_forward_declaration_and_prototype_parameter_type(tmp_path: Path) -> None:
-    # .hpp, not .h: a C++-only .h is still probed as C (Callix-Tools/callix#49).
     graph = build(
         tmp_path,
         {

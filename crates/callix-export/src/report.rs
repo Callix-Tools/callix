@@ -255,8 +255,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              declaration is the same node as its definition and its name position is in \
              `declared_at` (exported as a forward definition); an `#include` path is the \
              span of the IMPORT's RESOLVES_TO to the header's FILE or to an external \
-             symbol (a computed include is not positioned); a `.h` that parses as C in a \
-             tree with no C sources is not analysed (#49)",
+             symbol (a computed include is not positioned); a `.h` with no C++ syntax \
+             belongs to C where a C root reads it, and a C++ `#include` of it then \
+             resolves to an external symbol",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

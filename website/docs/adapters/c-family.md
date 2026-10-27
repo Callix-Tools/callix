@@ -18,7 +18,11 @@ the first one with the `namespace` and `class` arms deleted, and would drift.
 
 Analyse a mixed repository twice and merge. Every file, including every
 ambiguous `.h`, is claimed by exactly one of the two adapters, so the merge
-cannot collide.
+cannot collide. A `.h` is assigned by a parse probe: it goes to C when it parses
+cleanly as C and the C tree does not look like C++ read as C (a `namespace` or
+`class` head read as a K&R function, or `class` as a type name). A `.h` that probes
+as C still goes to C++ when no C root reads it, for example in a tree with no `.c`
+file; both adapters decide that from the same file discovery.
 
 ## The header problem
 
@@ -200,7 +204,7 @@ What it will not do:
   followed), a macro invoked where a declaration goes declares what it expands to,
   and the macro's own name is not a call. A macro of the project that expands to nothing, an attribute or a storage keyword (`class API Foo`, `int x GUARDED_BY(m)`, `API int (*hook)(int)`) is erased before parsing, so the declaration is read as written; this includes
   macros defined in a header the other dialect reads (a macro-only `.h`, which probes
-  as C). A storage-keyword macro whose name is shorter than its keyword, or one defined
+  as C and belongs to C where a C root reads it). A storage-keyword macro whose name is shorter than its keyword, or one defined
   differently in another `#if` arm, is not erased, and neither is a macro from another
   root or a system header. Macros from system headers are not known,
   conditionals are not evaluated (every definition of a macro is followed), and a body

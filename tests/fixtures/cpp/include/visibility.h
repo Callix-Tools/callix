@@ -1,4 +1,4 @@
-// Macro-only header: the probe gives it to C, so the C++ graph reads it for erasure only.
+// Macro-only header: the probe gives it to C, but the tree has no C source, so the C++ adapter owns it.
 #pragma once
 
 #ifdef FIXTURE_NO_VISIBILITY

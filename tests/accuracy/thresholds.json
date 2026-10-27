@@ -6,10 +6,10 @@
     "sound": 43
   },
   "cpp/micro": {
-    "complete": 52,
+    "complete": 53,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 52
+    "sound": 53
   },
   "go/micro": {
     "complete": 58,

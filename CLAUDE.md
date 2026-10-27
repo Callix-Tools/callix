@@ -192,11 +192,17 @@ arm) with same-length spaces, so `class API Foo {}`, `int x GUARDED_BY(m);` and
 `API int (*f)(int);` parse as written and every span stays a position in the original
 file. Header ownership (`claims`) is decided on the RAW bytes, because the blanked text
 of a C++ class can parse cleanly as K&R C; user boundary extractors get the raw source.
+The probe rule: a `.h` goes to C++ when its clean C parse has a K&R definition without a
+function declarator (`namespace a {`, `class C {`) or a C++ keyword as a type name, and
+also when no C root reads it (a tree with no `.c`, or a header outside every C root).
+Both adapters decide the latter from the same discovery (`detector::family_root_files`,
+`adapter::CReach`), so ownership stays one-adapter.
 A header the OTHER dialect claims still contributes its macros to the erasable set,
 though never to expansion: a header of nothing but `#define`s parses cleanly as C, so
-leveldb's `export.h` belongs to C while `class LEVELDB_EXPORT DB` is C++. Ownership is
-unchanged (no FILE node, no facts from that header). Macros defined outside the
-analysed root, or in another root, are not erased (each root builds its own table).
+leveldb's `export.h` belongs to C (in a tree with a C source: leveldb's `c_test.c`)
+while `class LEVELDB_EXPORT DB` is C++. Ownership is unchanged (no FILE node, no
+facts from that header). Macros defined outside the analysed root, or in another
+root, are not erased (each root builds its own table).
 
 **`src/yaml/` has no visitor and no resolver at all**: it
 declares no symbols, emits no occurrences, and contributes only FILE nodes,

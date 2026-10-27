@@ -100,3 +100,5 @@ callix now says more about the same code. The alignment is described in
 What this record is for: if a future change makes Python or TypeScript diverge
 from graphlens beyond the DEPENDENCY nodes, that is a regression, and this
 table is the evidence of what the state was before it.
+
+Pins re-recorded after namespace-wrapped `.h` headers and `.h` files outside every C root went to C++ (issue #49).

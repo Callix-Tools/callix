@@ -3,7 +3,8 @@
 //! Two `#[pyclass]`es over one implementation, each pinning a [`Dialect`]. A
 //! mixed repository is analysed twice and the graphs merged; `headers::claims`
 //! guarantees each file, including each ambiguous `.h`, is claimed by exactly
-//! one of them, so the merge cannot collide.
+//! one of them, so the merge cannot collide. A `.h` that probes as C is C's only
+//! where a C root reads it ([`CReach`]); otherwise it is C++'s.
 //!
 //! `analyze` runs FOUR passes rather than the family's usual three, and the
 //! extra one is the point of the file:
@@ -21,6 +22,7 @@
 //!    resolver edges.
 
 use std::borrow::Cow;
+use std::cell::OnceCell;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -44,7 +46,6 @@ use crate::occurrence::OccurrenceRef;
 use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
-use crate::roots::filter_nested_root_files;
 use crate::span_index::SpanIndex;
 use crate::status::ResolverStatus;
 
@@ -52,7 +53,7 @@ use super::boundary::extract_boundaries;
 use super::deps::dependencies;
 use super::erase;
 use super::detector::{
-    C_EXTENSIONS, CPP_EXTENSIONS, c_roots, collect_c_files, collect_cpp_files, cpp_roots, is_c,
+    C_EXTENSIONS, CPP_EXTENSIONS, collect_c_files, collect_cpp_files, family_root_files, is_c,
     is_cpp, project_name,
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
@@ -84,16 +85,63 @@ struct Analysed {
     included: Vec<String>,
 }
 
+/// Which files the C adapter reads, as the C++ adapter needs to know it.
+///
+/// A `.h` that probes as C belongs to C only if a C root reads it; otherwise the
+/// C++ adapter takes it. Both adapters decide from the same discovery
+/// ([`family_root_files`] for C), so a header is still claimed by exactly one.
+enum CReach {
+    /// This IS the C adapter walking its own discovered files: it reads them all.
+    Itself,
+    /// Ask the C discovery, lazily (a walk of the tree), once per analysis.
+    Discovered {
+        project_root: PathBuf,
+        files: OnceCell<HashSet<PathBuf>>,
+    },
+}
+
+impl CReach {
+    fn new(dialect: Dialect, project_root: &Path, explicit_files: bool) -> Self {
+        if dialect == Dialect::C && !explicit_files {
+            Self::Itself
+        } else {
+            Self::Discovered { project_root: project_root.to_path_buf(), files: OnceCell::new() }
+        }
+    }
+
+    fn reads(&self, path: &Path) -> bool {
+        match self {
+            Self::Itself => true,
+            Self::Discovered { project_root, files } => {
+                let set = files.get_or_init(|| {
+                    family_root_files(project_root, Dialect::C)
+                        .into_iter()
+                        .flat_map(|(_, found)| found)
+                        .map(|file| file.canonicalize().unwrap_or(file))
+                        .collect()
+                });
+                let key = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+                set.contains(&key)
+            }
+        }
+    }
+}
+
 /// Reads a file and decides whether this dialect owns it.
 ///
 /// Returns `None` for an unreadable file. The flag is false for a file the
 /// other adapter claims, which is how an ambiguous `.h` ends up in exactly one
-/// graph; such a file is still read, for its macros only.
-fn read_source(dialect: Dialect, path: &Path) -> PyResult<Option<(Vec<u8>, bool)>> {
+/// graph; such a file is still read, for its macros only. A `.h` the probe gives
+/// to C is owned by C++ when `reach` says no C root reads it.
+fn read_source(
+    dialect: Dialect,
+    path: &Path,
+    reach: &CReach,
+) -> PyResult<Option<(Vec<u8>, bool)>> {
     let Ok(source) = std::fs::read(path) else {
         return Ok(None);
     };
-    let owned = claims(dialect, path, &source)?;
+    let owned = claims(dialect, path, &source, || reach.reads(path))?;
     Ok(Some((source, owned)))
 }
 
@@ -250,6 +298,7 @@ fn build_root(
     files: &[PathBuf],
     declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
+    reach: &CReach,
 ) -> PyResult<(String, Vec<Analysed>)> {
     let project = project_name(lang_root);
 
@@ -264,7 +313,7 @@ fn build_root(
     let mut foreign = MacroTable::new();
     let mut raw_sources: Vec<(PathBuf, String, Vec<u8>, Vec<String>)> = Vec::new();
     for file in files {
-        let Some((source, owned)) = read_source(dialect, file)? else {
+        let Some((source, owned)) = read_source(dialect, file, reach)? else {
             continue;
         };
         if !owned {
@@ -898,24 +947,10 @@ fn analyze_family(
 ) -> PyResult<Graph> {
     let project_root = project_root.canonicalize().unwrap_or(project_root);
 
+    let reach = CReach::new(dialect, &project_root, files.is_some());
     let root_files: Vec<(PathBuf, Vec<PathBuf>)> = match files {
         Some(files) => vec![(project_root.clone(), files)],
-        None => {
-            let roots = match dialect {
-                Dialect::C => c_roots(&project_root),
-                Dialect::Cpp => cpp_roots(&project_root),
-            };
-            roots
-                .iter()
-                .map(|root| {
-                    let collected = match dialect {
-                        Dialect::C => collect_c_files(root),
-                        Dialect::Cpp => collect_cpp_files(root),
-                    };
-                    (root.clone(), filter_nested_root_files(collected, root, &roots))
-                })
-                .collect()
-        }
+        None => family_root_files(&project_root, dialect),
     };
 
     let mut graph = Graph::empty(py);
@@ -931,6 +966,7 @@ fn analyze_family(
             root_files,
             custom_declared(py, dep_parsers, lang_root)?,
             extractors,
+            &reach,
         )?);
     }
 

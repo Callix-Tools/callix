@@ -22,12 +22,12 @@
       "span": null
     },
     {
-      "file_path": "include/engine.hpp",
-      "id": "64e96181de5fbdf2",
+      "file_path": "include/clamp.h",
+      "id": "8778f13c05bd4028",
       "kind": "file",
       "metadata": {},
-      "name": "engine.hpp",
-      "qualified_name": "include/engine.hpp",
+      "name": "clamp.h",
+      "qualified_name": "include/clamp.h",
       "span": null
     },
     {
@@ -40,6 +40,15 @@
       "span": null
     },
     {
+      "file_path": "include/engine.hpp",
+      "id": "64e96181de5fbdf2",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.hpp",
+      "qualified_name": "include/engine.hpp",
+      "span": null
+    },
+    {
       "file_path": "include/export.hpp",
       "id": "0a115c9b823654ad",
       "kind": "file",
@@ -49,12 +58,21 @@
       "span": null
     },
     {
-      "file_path": "src/engine.cpp",
-      "id": "f701dbf6f3d7f1ac",
+      "file_path": "include/visibility.h",
+      "id": "881faa32238b4356",
       "kind": "file",
       "metadata": {},
-      "name": "engine.cpp",
-      "qualified_name": "src/engine.cpp",
+      "name": "visibility.h",
+      "qualified_name": "include/visibility.h",
+      "span": null
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "7ae9f4431f656f64",
+      "kind": "file",
+      "metadata": {},
+      "name": "clamp.cpp",
+      "qualified_name": "src/clamp.cpp",
       "span": null
     },
     {
@@ -67,6 +85,15 @@
       "span": null
     },
     {
+      "file_path": "src/engine.cpp",
+      "id": "f701dbf6f3d7f1ac",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.cpp",
+      "qualified_name": "src/engine.cpp",
+      "span": null
+    },
+    {
       "file_path": "src/main.cpp",
       "id": "76a741d010b73d4f",
       "kind": "file",
@@ -74,6 +101,62 @@
       "name": "main.cpp",
       "qualified_name": "src/main.cpp",
       "span": null
+    },
+    {
+      "file_path": "include/clamp.h",
+      "id": "081767f040948df3",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            3,
+            12,
+            3,
+            17
+          ]
+        },
+        "return_type": "int",
+        "signature": "(int)"
+      },
+      "name": "clamp",
+      "qualified_name": "fixture::clamp(int)",
+      "span": [
+        3,
+        1,
+        3,
+        50
+      ]
+    },
+    {
+      "file_path": "include/clamp.h",
+      "id": "f395a863c9be4c9b",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "int",
+        "name_span": {
+          "__span__": [
+            3,
+            22,
+            3,
+            23
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::clamp(int).v",
+      "span": [
+        3,
+        18,
+        3,
+        23
+      ]
     },
     {
       "file_path": "include/engine.hpp",
@@ -808,8 +891,8 @@
             24
           ]
         },
-        "origin": "unknown",
-        "resolved_path": null
+        "origin": "internal",
+        "resolved_path": "include/visibility.h"
       },
       "name": "visibility.h",
       "qualified_name": "include/export.hpp::visibility.h",
@@ -821,15 +904,87 @@
       ]
     },
     {
-      "file_path": null,
-      "id": "520e5491656077b2",
-      "kind": "external_symbol",
+      "file_path": "src/clamp.cpp",
+      "id": "c90db5fcbf97b687",
+      "kind": "function",
       "metadata": {
-        "origin": "unknown"
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            4,
+            5,
+            4,
+            16
+          ]
+        },
+        "return_type": "int",
+        "signature": "(int)"
       },
-      "name": "visibility.h",
-      "qualified_name": "visibility.h",
-      "span": null
+      "name": "clamp_twice",
+      "qualified_name": "fixture::clamp_twice(int)",
+      "span": [
+        4,
+        1,
+        4,
+        51
+      ]
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "b4b4e5c80daa3bfb",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "int",
+        "name_span": {
+          "__span__": [
+            4,
+            21,
+            4,
+            22
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::clamp_twice(int).v",
+      "span": [
+        4,
+        17,
+        4,
+        22
+      ]
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "70e0f431b3f68d8d",
+      "kind": "import",
+      "metadata": {
+        "include_path": "clamp.h",
+        "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            19
+          ]
+        },
+        "origin": "internal",
+        "resolved_path": "include/clamp.h"
+      },
+      "name": "clamp.h",
+      "qualified_name": "src/clamp.cpp::clamp.h",
+      "span": [
+        1,
+        1,
+        2,
+        1
+      ]
     },
     {
       "file_path": "src/engine.cpp",
@@ -1502,6 +1657,12 @@
       "kind": "contains",
       "metadata": {},
       "source_id": "ab20b7f46e68ccfd",
+      "target_id": "8778f13c05bd4028"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
       "target_id": "64e96181de5fbdf2"
     },
     {
@@ -1513,8 +1674,20 @@
     {
       "kind": "contains",
       "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
+      "target_id": "881faa32238b4356"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
       "source_id": "0f867cb0416ba557",
       "target_id": "468d1a6442363500"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
+      "target_id": "7ae9f4431f656f64"
     },
     {
       "kind": "contains",
@@ -1527,6 +1700,18 @@
       "metadata": {},
       "source_id": "468d1a6442363500",
       "target_id": "76a741d010b73d4f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "8778f13c05bd4028",
+      "target_id": "081767f040948df3"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "081767f040948df3",
+      "target_id": "f395a863c9be4c9b"
     },
     {
       "kind": "declares",
@@ -1880,7 +2065,7 @@
       "kind": "imports",
       "metadata": {},
       "source_id": "0a115c9b823654ad",
-      "target_id": "520e5491656077b2"
+      "target_id": "881faa32238b4356"
     },
     {
       "kind": "resolves_to",
@@ -1895,7 +2080,46 @@
         }
       },
       "source_id": "0844248b71c6614c",
-      "target_id": "520e5491656077b2"
+      "target_id": "881faa32238b4356"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "c90db5fcbf97b687"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c90db5fcbf97b687",
+      "target_id": "b4b4e5c80daa3bfb"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "70e0f431b3f68d8d"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "8778f13c05bd4028"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            19
+          ]
+        }
+      },
+      "source_id": "70e0f431b3f68d8d",
+      "target_id": "8778f13c05bd4028"
     },
     {
       "kind": "declares",

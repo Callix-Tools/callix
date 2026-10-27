@@ -159,15 +159,21 @@ def test_macro_from_macro_only_header(tmp_path: Path) -> None:
     targets = calls_from(graph, "leveldb::u(")
     assert targets and all(t.kind is not NodeKind.EXTERNAL_SYMBOL for t in targets)
     assert any(t.qualified_name.endswith("DB::Get()") for t in targets)
-    # Ownership is unchanged: the macro-only header is C's file, not C++'s.
+    # No C adapter reads this tree (no `.c` file), so the macro-only header is C++'s.
     cpp_files = {n.file_path for n in graph.nodes.values() if n.kind is NodeKind.FILE}
-    assert "export.h" not in cpp_files
-    # The C adapter only runs on a root that holds a C source, so add one.
+    assert "export.h" in cpp_files
+    # Once a C source exists, the macro-only header is C's again and C++ reads it
+    # for erasure only (the foreign-macro path).
     (tmp_path / "c_side.c").write_text("int c_side(void) { return 0; }\n")
     c_graph = callix.CAdapter().analyze(str(tmp_path))
     c_files = {n.file_path for n in c_graph.nodes.values() if n.kind is NodeKind.FILE}
     assert "export.h" in c_files
     assert "db.h" not in c_files
+    graph2 = callix.CppAdapter().analyze(str(tmp_path))
+    cpp_files2 = {n.file_path for n in graph2.nodes.values() if n.kind is NodeKind.FILE}
+    assert "export.h" not in cpp_files2
+    assert len(named(graph2, NodeKind.CLASS, "leveldb::DB")) == 1
+    assert not named(graph2, NodeKind.FUNCTION, "leveldb::DB")
 
 
 def test_c_macro_from_header_cpp_claims(tmp_path: Path) -> None:

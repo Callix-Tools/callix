@@ -185,6 +185,11 @@
       "nodes": 54,
       "relations": 97
     },
+    "db/blob/blob_constants.h": {
+      "hash": "247e4c146b24b199",
+      "nodes": 4,
+      "relations": 7
+    },
     "db/blob/blob_contents.cc": {
       "hash": "24f3777abe080302",
       "nodes": 7,
@@ -713,7 +718,7 @@
     "db/db_impl/db_impl.cc": {
       "hash": "a0dfa5469298dc15",
       "nodes": 701,
-      "relations": 951
+      "relations": 952
     },
     "db/db_impl/db_impl.h": {
       "hash": "0847e1d5e3944b73",
@@ -1145,6 +1150,11 @@
       "nodes": 223,
       "relations": 396
     },
+    "db/log_format.h": {
+      "hash": "be600c3f169143f6",
+      "nodes": 23,
+      "relations": 40
+    },
     "db/log_reader.cc": {
       "hash": "c64097fba6afeb0f",
       "nodes": 67,
@@ -1428,7 +1438,7 @@
     "db/table_cache.cc": {
       "hash": "e49dfc015e23a15a",
       "nodes": 178,
-      "relations": 234
+      "relations": 235
     },
     "db/table_cache.h": {
       "hash": "5883bb76d6955da0",
@@ -1518,7 +1528,7 @@
     "db/version_set.cc": {
       "hash": "6c3ced78cc276c4c",
       "nodes": 830,
-      "relations": 1132
+      "relations": 1133
     },
     "db/version_set.h": {
       "hash": "549b080b1ce39444",
@@ -1734,6 +1744,11 @@
       "hash": "82cdc7d414248ad0",
       "nodes": 10,
       "relations": 15
+    },
+    "db_stress_tool/db_stress_driver.h": {
+      "hash": "c2b31904f400a99d",
+      "nodes": 3,
+      "relations": 8
     },
     "db_stress_tool/db_stress_env_wrapper.h": {
       "hash": "e3f40ddb4522f3d5",
@@ -2210,6 +2225,11 @@
       "nodes": 142,
       "relations": 241
     },
+    "include/rocksdb/cache_bench_tool.h": {
+      "hash": "df15893d809d0b8d",
+      "nodes": 4,
+      "relations": 10
+    },
     "include/rocksdb/cleanable.h": {
       "hash": "08e6de573d81d650",
       "nodes": 21,
@@ -2274,6 +2294,11 @@
       "hash": "7538076a07773627",
       "nodes": 19,
       "relations": 30
+    },
+    "include/rocksdb/db_stress_tool.h": {
+      "hash": "57c6fe82dad16a9a",
+      "nodes": 5,
+      "relations": 6
     },
     "include/rocksdb/env.h": {
       "hash": "d82e9179e06b267f",
@@ -2400,6 +2425,11 @@
       "nodes": 23,
       "relations": 45
     },
+    "include/rocksdb/point_lock_bench_tool.h": {
+      "hash": "7e3e16309ef2bec8",
+      "nodes": 2,
+      "relations": 4
+    },
     "include/rocksdb/port_defs.h": {
       "hash": "dec96a5baabddfc7",
       "nodes": 7,
@@ -2484,6 +2514,11 @@
       "hash": "e0eda5a227b6579d",
       "nodes": 139,
       "relations": 289
+    },
+    "include/rocksdb/table_reader_caller.h": {
+      "hash": "14a94c0aa62ad802",
+      "nodes": 18,
+      "relations": 34
     },
     "include/rocksdb/thread_status.h": {
       "hash": "56f8cc8cdc4b921c",
@@ -3485,6 +3520,11 @@
       "nodes": 10,
       "relations": 15
     },
+    "monitoring/iostats_context_imp.h": {
+      "hash": "2de383abf705f40c",
+      "nodes": 3,
+      "relations": 7
+    },
     "monitoring/iostats_context_test.cc": {
       "hash": "6a6d2b211e74a1e6",
       "nodes": 4,
@@ -3495,10 +3535,20 @@
       "nodes": 25,
       "relations": 30
     },
+    "monitoring/perf_context_imp.h": {
+      "hash": "eadfac6b30d3faf2",
+      "nodes": 5,
+      "relations": 11
+    },
     "monitoring/perf_level.cc": {
       "hash": "3af385cd4019fa7c",
       "nodes": 7,
       "relations": 10
+    },
+    "monitoring/perf_level_imp.h": {
+      "hash": "1f1c29c95b8f9138",
+      "nodes": 3,
+      "relations": 7
     },
     "monitoring/perf_step_timer.h": {
       "hash": "68e50386198fd594",
@@ -3693,12 +3743,12 @@
     "port/port_posix.h": {
       "hash": "81f9d9f35f5e72d3",
       "nodes": 38,
-      "relations": 107
+      "relations": 109
     },
     "port/stack_trace.cc": {
       "hash": "bb3f52b431b5ae9c",
       "nodes": 49,
-      "relations": 83
+      "relations": 86
     },
     "port/stack_trace.h": {
       "hash": "b35d20d4a90a13e5",
@@ -3708,7 +3758,7 @@
     "port/sys_time.h": {
       "hash": "b26743050d7e537b",
       "nodes": 14,
-      "relations": 21
+      "relations": 22
     },
     "port/win/env_default.cc": {
       "hash": "9452855d5e928082",
@@ -3843,7 +3893,7 @@
     "table/block_based/block_based_table_reader.cc": {
       "hash": "0fd0c52de8e9abb8",
       "nodes": 419,
-      "relations": 568
+      "relations": 569
     },
     "table/block_based/block_based_table_reader.h": {
       "hash": "cc2e866c61dca7fa",
@@ -4395,6 +4445,11 @@
       "nodes": 45,
       "relations": 111
     },
+    "table/table_properties_internal.h": {
+      "hash": "db0fc88a7ff2cbf1",
+      "nodes": 2,
+      "relations": 4
+    },
     "table/table_reader.h": {
       "hash": "e83ee862925571ab",
       "nodes": 65,
@@ -4478,7 +4533,7 @@
     "test_util/testharness.h": {
       "hash": "2403d4767962aeff",
       "nodes": 8,
-      "relations": 32
+      "relations": 33
     },
     "test_util/testutil.cc": {
       "hash": "2588b142b6c6f96f",
@@ -4508,12 +4563,12 @@
     "third-party/gtest-1.8.1/fused-src/gtest/gtest-all.cc": {
       "hash": "9c6a29519d0ebb33",
       "nodes": 1730,
-      "relations": 2258
+      "relations": 2299
     },
     "third-party/gtest-1.8.1/fused-src/gtest/gtest.h": {
       "hash": "ef0ae135654649e9",
       "nodes": 7685,
-      "relations": 11103
+      "relations": 11134
     },
     "third-party/gtest-1.8.1/fused-src/gtest/gtest_main.cc": {
       "hash": "6873d32d0809416d",
@@ -4553,7 +4608,7 @@
     "tools/db_bench_tool.cc": {
       "hash": "fcccb75e690f99b0",
       "nodes": 725,
-      "relations": 1233
+      "relations": 1234
     },
     "tools/db_bench_tool_test.cc": {
       "hash": "4336ad0686485410",
@@ -4563,7 +4618,7 @@
     "tools/db_repl_stress.cc": {
       "hash": "3efa1bb9f97ed493",
       "nodes": 15,
-      "relations": 30
+      "relations": 31
     },
     "tools/db_sanity_test.cc": {
       "hash": "847a6c921b67560d",
@@ -4673,7 +4728,7 @@
     "tools/trace_analyzer_test.cc": {
       "hash": "c2693b3e86f8bc87",
       "nodes": 49,
-      "relations": 95
+      "relations": 96
     },
     "tools/trace_analyzer_tool.cc": {
       "hash": "81704efb5b97c45a",
@@ -4895,10 +4950,15 @@
       "nodes": 19,
       "relations": 43
     },
+    "util/coro_utils.h": {
+      "hash": "897e50552675c0ea",
+      "nodes": 5,
+      "relations": 10
+    },
     "util/crc32c.cc": {
       "hash": "828d2421c40e6c33",
       "nodes": 107,
-      "relations": 145
+      "relations": 146
     },
     "util/crc32c.h": {
       "hash": "9b56915bc7b95d82",
@@ -4908,7 +4968,7 @@
     "util/crc32c_arm64.cc": {
       "hash": "62f0f790a34bb4a5",
       "nodes": 14,
-      "relations": 28
+      "relations": 29
     },
     "util/crc32c_test.cc": {
       "hash": "0c897fe5dab4a1cb",
@@ -4978,7 +5038,7 @@
     "util/filelock_test.cc": {
       "hash": "27e93f4c9bb88a9f",
       "nodes": 25,
-      "relations": 53
+      "relations": 54
     },
     "util/filter_bench.cc": {
       "hash": "75f86395ee2ba9ca",
@@ -6188,7 +6248,7 @@
     "utilities/transactions/lock/range/range_tree/lib/portability/toku_pthread.h": {
       "hash": "bc8f4ff337cf213e",
       "nodes": 120,
-      "relations": 140
+      "relations": 141
     },
     "utilities/transactions/lock/range/range_tree/lib/portability/toku_race_tools.h": {
       "hash": "cbb97e16d48d02d2",
@@ -6518,54 +6578,54 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 14665,
-      "class": 3847,
+      "attribute": 14694,
+      "class": 3849,
       "dependency": 17,
-      "external_symbol": 807,
-      "file": 1303,
-      "function": 9349,
-      "import": 11346,
+      "external_symbol": 796,
+      "file": 1315,
+      "function": 9351,
+      "import": 11369,
       "method": 21710,
       "module": 66,
-      "parameter": 41805,
+      "parameter": 41807,
       "project": 8,
       "type_alias": 843,
-      "variable": 1256
+      "variable": 1263
     },
     "relations": {
-      "contains": 1369,
-      "declares": 149628,
+      "contains": 1381,
+      "declares": 149730,
       "depends_on": 17,
-      "imports": 11346,
-      "resolves_to": 11346
+      "imports": 11369,
+      "resolves_to": 11459
     }
   },
   "project": "facebook/rocksdb",
   "ref": "v11.1.2",
   "resolution": {
     "metrics": {
-      "external": 248931,
-      "internal": 358476,
-      "queries": 607407,
-      "resolved": 607407,
+      "external": 248004,
+      "internal": 359136,
+      "queries": 607140,
+      "resolved": 607140,
       "unresolved": 0
     },
     "relations": {
-      "calls": 344543,
-      "contains": 1369,
-      "declares": 149628,
+      "calls": 344133,
+      "contains": 1381,
+      "declares": 149730,
       "depends_on": 17,
-      "has_type": 93120,
-      "imports": 11346,
+      "has_type": 93127,
+      "imports": 11369,
       "inherits_from": 2003,
-      "references": 139596,
-      "resolves_to": 11346
+      "references": 139749,
+      "resolves_to": 11459
     },
     "status": "degraded"
   },
   "totals": {
-    "files": 1303,
-    "nodes": 107022,
-    "relations": 173706
+    "files": 1315,
+    "nodes": 107088,
+    "relations": 173956
   }
 }

@@ -26,8 +26,8 @@
       "relations": 31
     },
     "db/builder.h": {
-      "hash": "a2b1818a0fb46887",
-      "nodes": 3,
+      "hash": "c61b1e33fd278f6b",
+      "nodes": 2,
       "relations": 10
     },
     "db/c.cc": {
@@ -54,6 +54,11 @@
       "hash": "faa5da9c99bfa103",
       "nodes": 65,
       "relations": 117
+    },
+    "db/db_iter.h": {
+      "hash": "b23887ccecad6579",
+      "nodes": 4,
+      "relations": 11
     },
     "db/db_test.cc": {
       "hash": "3a539856555525f4",
@@ -104,6 +109,11 @@
       "hash": "b1f7db66538122c8",
       "nodes": 16,
       "relations": 28
+    },
+    "db/log_format.h": {
+      "hash": "709516ed86203b64",
+      "nodes": 10,
+      "relations": 14
     },
     "db/log_reader.cc": {
       "hash": "71c4e302c60705ac",
@@ -241,8 +251,8 @@
       "relations": 19
     },
     "include/leveldb/db.h": {
-      "hash": "1bde4b386c8231c3",
-      "nodes": 48,
+      "hash": "2615235a7b12f31d",
+      "nodes": 46,
       "relations": 82
     },
     "include/leveldb/dumpfile.h": {
@@ -264,6 +274,11 @@
       "hash": "099e8cf69df19b6e",
       "nodes": 27,
       "relations": 59
+    },
+    "include/leveldb/options.h": {
+      "hash": "fd462e8bbc7ba000",
+      "nodes": 30,
+      "relations": 64
     },
     "include/leveldb/slice.h": {
       "hash": "c73ca07db03f1bc0",
@@ -313,7 +328,7 @@
     "port/port_stdcxx.h": {
       "hash": "a88406d19bb11679",
       "nodes": 48,
-      "relations": 72
+      "relations": 73
     },
     "table/block.cc": {
       "hash": "6fa90ce38398c066",
@@ -374,6 +389,11 @@
       "hash": "07cf9208eda7fe06",
       "nodes": 35,
       "relations": 63
+    },
+    "table/merger.h": {
+      "hash": "a63dbed3bb5c55a5",
+      "nodes": 1,
+      "relations": 3
     },
     "table/table.cc": {
       "hash": "19f37fd9224b3301",
@@ -458,7 +478,12 @@
     "util/crc32c.cc": {
       "hash": "dc87202fb69d7263",
       "nodes": 21,
-      "relations": 30
+      "relations": 31
+    },
+    "util/crc32c.h": {
+      "hash": "6725f93076eea215",
+      "nodes": 12,
+      "relations": 15
     },
     "util/crc32c_test.cc": {
       "hash": "2a48ae8fabae775d",
@@ -514,6 +539,11 @@
       "hash": "52dc36869e8ac835",
       "nodes": 8,
       "relations": 13
+    },
+    "util/hash.h": {
+      "hash": "efd28c14cd1ee1fe",
+      "nodes": 3,
+      "relations": 7
     },
     "util/hash_test.cc": {
       "hash": "ca29689aa3ba07c7",
@@ -603,54 +633,54 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 674,
-      "class": 215,
+      "attribute": 700,
+      "class": 217,
       "dependency": 10,
-      "external_symbol": 61,
-      "file": 120,
-      "function": 483,
-      "import": 740,
-      "method": 1275,
+      "external_symbol": 55,
+      "file": 126,
+      "function": 486,
+      "import": 749,
+      "method": 1277,
       "module": 8,
-      "parameter": 1616,
+      "parameter": 1621,
       "project": 1,
       "type_alias": 12,
-      "variable": 103
+      "variable": 107
     },
     "relations": {
-      "contains": 128,
-      "declares": 7514,
+      "contains": 134,
+      "declares": 7611,
       "depends_on": 10,
-      "imports": 740,
-      "resolves_to": 740
+      "imports": 749,
+      "resolves_to": 750
     }
   },
   "project": "google/leveldb",
   "ref": "1.23",
   "resolution": {
     "metrics": {
-      "external": 5299,
-      "internal": 12731,
-      "queries": 18030,
-      "resolved": 18030,
+      "external": 4973,
+      "internal": 13077,
+      "queries": 18050,
+      "resolved": 18050,
       "unresolved": 0
     },
     "relations": {
-      "calls": 10278,
-      "contains": 128,
-      "declares": 7514,
+      "calls": 10280,
+      "contains": 134,
+      "declares": 7611,
       "depends_on": 10,
-      "has_type": 3041,
-      "imports": 740,
+      "has_type": 3056,
+      "imports": 749,
       "inherits_from": 77,
-      "references": 3682,
-      "resolves_to": 740
+      "references": 3683,
+      "resolves_to": 750
     },
     "status": "degraded"
   },
   "totals": {
-    "files": 120,
-    "nodes": 5318,
-    "relations": 9132
+    "files": 126,
+    "nodes": 5369,
+    "relations": 9254
   }
 }

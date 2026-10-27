@@ -180,11 +180,62 @@ fn is_assignment_target(node: TsNode<'_>) -> bool {
     }
     if parent.kind() == "expression_list" {
         return parent.parent().is_some_and(|grandparent| {
-            grandparent.kind() == "assignment_statement"
-                && grandparent.child_by_field_name("left") == Some(parent)
+            let is_left = grandparent.child_by_field_name("left") == Some(parent);
+            // `for k, v = range m` assigns; `for k, v := range m` declares.
+            (grandparent.kind() == "assignment_statement" && is_left)
+                || (grandparent.kind() == "range_clause"
+                    && is_left
+                    && !has_token(grandparent, ":="))
         });
     }
     false
+}
+
+/// Whether the node has an anonymous token child with this text (`:=`, `=`).
+fn has_token(node: TsNode<'_>, token: &str) -> bool {
+    ts::children(node)
+        .into_iter()
+        .any(|child| !child.is_named() && child.kind() == token)
+}
+
+/// Whether an identifier is a name being declared (a function, var, const,
+/// parameter or type-parameter name, the left side of `:=`, a type switch alias)
+/// rather than a use of something declared elsewhere.
+fn is_declaration_name(node: TsNode<'_>) -> bool {
+    let Some(parent) = node.parent() else {
+        return false;
+    };
+    if matches!(
+        parent.kind(),
+        "function_declaration"
+            | "var_spec"
+            | "const_spec"
+            | "parameter_declaration"
+            | "variadic_parameter_declaration"
+            | "type_parameter_declaration"
+    ) {
+        let mut cursor = parent.walk();
+        let named = parent
+            .children_by_field_name("name", &mut cursor)
+            .any(|name| name == node);
+        return named;
+    }
+    let (holder, side) = if parent.kind() == "expression_list" {
+        match parent.parent() {
+            Some(holder) => (holder, parent),
+            None => return false,
+        }
+    } else {
+        (parent, node)
+    };
+    match holder.kind() {
+        "short_var_declaration" => holder.child_by_field_name("left") == Some(side),
+        "range_clause" | "receive_statement" => {
+            holder.child_by_field_name("left") == Some(side) && has_token(holder, ":=")
+        }
+        "type_switch_statement" => holder.child_by_field_name("alias") == Some(side),
+        _ => false,
+    }
 }
 
 /// The `type_identifier` naming a (possibly qualified) type.
@@ -248,6 +299,10 @@ pub struct GoExtractor<'a> {
     /// of the path). Dot and blank imports are not in it.
     package_names: HashSet<String>,
     import_sites: Vec<ImportSite>,
+    /// Start positions that already carry a `call`, `read` or `write` occurrence
+    /// (a callee, a direct argument, a package qualifier, a literal key, a selector
+    /// field). A bare identifier at one of them is not recorded a second time.
+    sites: HashSet<(u32, u32)>,
 }
 
 impl<'a> GoExtractor<'a> {
@@ -277,6 +332,7 @@ impl<'a> GoExtractor<'a> {
             internal_imports: Vec::new(),
             package_names: HashSet::new(),
             import_sites: Vec::new(),
+            sites: HashSet::new(),
         }
     }
 
@@ -353,6 +409,9 @@ impl<'a> GoExtractor<'a> {
         detail: Option<String>,
     ) {
         let span = ts::span(name_node);
+        if matches!(role, "call" | "read" | "write") {
+            self.sites.insert((span.start_line, span.start_col));
+        }
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
             line: span.start_line,
@@ -471,10 +530,20 @@ impl<'a> GoExtractor<'a> {
     /// identifier naming one of the file's imports, the operand gets a `read`
     /// with detail `package`. A local that shadows the package passes this test
     /// and is rejected later, because the resolver answers with the local.
+    ///
+    /// Every other bare identifier is a `read`/`write` with detail `name:<ident>`
+    /// (see `record_identifier`); the adapter drops the ones that are not a
+    /// package-level name.
     fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
             if node.kind() == "keyed_element" {
                 self.record_literal_key(node, enclosing_id);
+                continue;
+            }
+            if node.kind() == "identifier" {
+                // Runs after collect_calls and after the enclosing selector or keyed
+                // element (descendants lists parents first), so `sites` is complete.
+                self.record_identifier(node, enclosing_id);
                 continue;
             }
             if node.kind() != "selector_expression" {
@@ -511,6 +580,25 @@ impl<'a> GoExtractor<'a> {
                 self.add_occurrence(role, field, enclosing_id);
             }
         }
+    }
+
+    /// A bare identifier in expression position: a `read`, or a `write` on the
+    /// left of an assignment, with detail `name:<ident>`. Nothing here knows what
+    /// the name denotes; the adapter keeps the occurrence only when it is a
+    /// package-level VARIABLE or FUNCTION of the file's package and go/types binds
+    /// it there. Declaration names, `_` and sites that already have an occurrence
+    /// are skipped.
+    fn record_identifier(&mut self, node: TsNode<'_>, enclosing_id: &str) {
+        let name = self.text(node);
+        if name == "_" || is_declaration_name(node) {
+            return;
+        }
+        let span = ts::span(node);
+        if self.sites.contains(&(span.start_line, span.start_col)) {
+            return;
+        }
+        let role = if is_assignment_target(node) { "write" } else { "read" };
+        self.add_occurrence_with(role, node, enclosing_id, Some(format!("name:{name}")));
     }
 
     /// The key of a keyed struct literal (`T{Name: v}`, `&T{..}`, the elided

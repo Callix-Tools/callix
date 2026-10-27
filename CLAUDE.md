@@ -273,6 +273,16 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   first name owns the call, so no site gets two occurrences.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
+- **A Go bare identifier** (`limit` in `n := limit`, `counter = n + limit`, a return
+  value, a case, a composite element, a range operand, a selector operand such as
+  `quoteEscaper` in `quoteEscaper.Replace(s)`) is a `read`/`write` occurrence with
+  detail `name:<ident>` (`GoExtractor::record_identifier`). `build_root_structure`
+  keeps it only when `{package}.{name}` is a package-level VARIABLE or FUNCTION of
+  the file's package and rewrites the detail to `name:<node id>`; `resolve_pass`
+  writes the `REFERENCES` edge only when go/types binds the use to exactly that
+  node. Locals, parameters, predeclared names and dot-imported names are dropped
+  without an EXTERNAL_SYMBOL. One site, one edge occurrence: `GoExtractor::sites`
+  holds the positions that already have a call/read/write.
 - **A Go package qualifier** (`pkg.X` operand, `pkg.T` in a type) is a `read`
   occurrence with detail `package`. The pass binds it only when go/types answers
   with the declaring position of one of the file's import specs (the alias, else

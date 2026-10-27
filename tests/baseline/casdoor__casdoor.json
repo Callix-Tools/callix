@@ -2322,11 +2322,11 @@
   "ref": "v3.98.0",
   "resolution": {
     "metrics": {
-      "external": 24492,
-      "internal": 28572,
-      "queries": 67239,
-      "resolved": 67098,
-      "unresolved": 141
+      "external": 25185,
+      "internal": 32957,
+      "queries": 72406,
+      "resolved": 72263,
+      "unresolved": 143
     },
     "relations": {
       "calls": 19413,
@@ -2338,7 +2338,7 @@
       "has_type": 6506,
       "imports": 2394,
       "inherits_from": 28,
-      "references": 27121,
+      "references": 32199,
       "resolves_to": 2394
     },
     "status": "ok"

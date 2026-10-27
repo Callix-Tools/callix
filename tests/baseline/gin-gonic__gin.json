@@ -516,11 +516,11 @@
   "ref": "v1.12.0",
   "resolution": {
     "metrics": {
-      "external": 13434,
-      "internal": 11107,
-      "queries": 29000,
-      "resolved": 28875,
-      "unresolved": 125
+      "external": 13551,
+      "internal": 12115,
+      "queries": 30535,
+      "resolved": 30375,
+      "unresolved": 160
     },
     "relations": {
       "calls": 8871,
@@ -531,7 +531,7 @@
       "has_type": 3191,
       "imports": 511,
       "inherits_from": 26,
-      "references": 12454,
+      "references": 13579,
       "resolves_to": 511
     },
     "status": "ok"

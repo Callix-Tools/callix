@@ -4517,11 +4517,11 @@
   "ref": "v0.163.3",
   "resolution": {
     "metrics": {
-      "external": 58341,
-      "internal": 75246,
-      "queries": 168225,
-      "resolved": 165577,
-      "unresolved": 2648
+      "external": 58811,
+      "internal": 85573,
+      "queries": 181333,
+      "resolved": 178317,
+      "unresolved": 3016
     },
     "relations": {
       "calls": 49010,
@@ -4533,7 +4533,7 @@
       "has_type": 22682,
       "imports": 5947,
       "inherits_from": 457,
-      "references": 61563,
+      "references": 72360,
       "resolves_to": 5947
     },
     "status": "ok"

@@ -232,7 +232,11 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              not found in expressions; a field selector, and the key of a keyed struct literal \
              (`T{F: v}`, `&T{..}` and the elided `[]T{{F: v}}` included), is a `references` \
              edge with access read or write to the field, while the keys of map, slice and \
-             array literals and fields of types declared inside a function get none",
+             array literals and fields of types declared inside a function get none; a bare \
+             use of a package-level const, var or function (an assignment side, an operand, a \
+             return value, a case, a composite element, a range operand, `v` in `v.M`) is a \
+             `references` edge with access read or write, while locals, parameters, predeclared \
+             names and dot-imported names get none",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

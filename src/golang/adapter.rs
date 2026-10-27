@@ -383,6 +383,32 @@ fn build_root_structure(
         import_sites.insert((file_rel, site.line, site.col), (target_id, site.origin.to_string()));
     }
 
+    // A bare identifier can only denote a package-level object of its own package
+    // (dot imports are out of scope), a predeclared name or a local. Keep only the
+    // `name:` occurrences whose name is a VARIABLE or FUNCTION node of the file's
+    // package, and remember that node's id: resolve_pass keeps the occurrence only
+    // when go/types binds it there. The rest (locals, `nil`, `len`, ...) never
+    // reach the resolver.
+    occurrences.retain_mut(|(path, occurrence)| {
+        let Some(name) = occurrence
+            .detail
+            .as_deref()
+            .and_then(|detail| detail.strip_prefix("name:"))
+            .map(str::to_string)
+        else {
+            return true;
+        };
+        let qname = format!("{}.{name}", package_qname(Path::new(path.as_str()), go_root, &module));
+        for kind in [NodeKind::Variable, NodeKind::Function] {
+            let id = node_id(&project, &qname, kind.as_str());
+            if graph.has_node(&id) {
+                occurrence.detail = Some(format!("name:{id}"));
+                return true;
+            }
+        }
+        false
+    });
+
     Ok((project, occurrences, boundaries, import_sites))
 }
 
@@ -708,7 +734,15 @@ fn resolve_pass(
         // or field without a node (map key, function-local type) is dropped.
         let is_literal_key =
             occurrence.role == "write" && occurrence.detail.as_deref() == Some("key");
-        if is_literal_key {
+        // A bare identifier (`name:<id of the package-level node it may denote>`):
+        // kept only when go/types binds it to exactly that declaration. A local, a
+        // parameter, a builtin or no answer is dropped, with no EXTERNAL_SYMBOL.
+        let name_use = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("name:"));
+        if let Some(expected) = name_use {
+            if target_id.as_deref() != Some(expected) {
+                continue;
+            }
+        } else if is_literal_key {
             let keep = match target_id.as_deref() {
                 Some(id) => graph.node_kind(id) == Some(NodeKind::Attribute),
                 None => reference.origin != "internal",

@@ -74,6 +74,14 @@ Fields are references too. `x.f` is a `REFERENCES` edge with `access` `read` or
 in a package-level `var`, by the variable. Keys of map, slice and array literals,
 and fields of types declared inside a function, get no edge.
 
+So is a bare use of a package-level name. A `const`, `var` or function of the
+file's own package used as a plain identifier (an assignment side, an operand, a
+return value, a `case` value, a composite-literal element, a `range` operand, the
+operand of `v.M`, or `h := helper` for a function value) is a `REFERENCES` edge with
+`access` `read` or `write` (`x++` and `x += 1` are writes). Locals, parameters,
+predeclared names (`nil`, `true`, `len`) and names brought in by a dot import get
+no edge and no external symbol.
+
 ## Dependency classification
 
 Go's own rule applies — a standard-library import path has no dot in its first

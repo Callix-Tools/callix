@@ -226,6 +226,48 @@ fn nested_functions<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
+/// A name a `use` declaration brings in (one per leaf of the use tree), or a bodyless
+/// `mod x;`. The visitor only reports it; the adapter binds it by path in its structure
+/// pass and sends what it could not bind to the resolver.
+pub struct UseSite {
+    /// Role `import` enclosed by the IMPORT node (a leaf), or role `read` enclosed by the
+    /// FILE (a `mod x;`).
+    pub occurrence: OccurrenceRef,
+    /// The leaf's full path (`crate::shapes::Circle`, whitespace removed), or the module's name.
+    pub path: String,
+    /// The module the declaration sits in.
+    pub module_qname: String,
+    /// `classify_import` of `path`.
+    pub origin: &'static str,
+    /// True for `mod x;`.
+    pub mod_decl: bool,
+}
+
+/// What `RustExtractor::into_parts` hands over: occurrences, internal imports, inline
+/// modules and use sites.
+pub type ExtractorParts = (
+    Vec<OccurrenceRef>,
+    Vec<(String, String, String, String)>,
+    Vec<(String, crate::span::Span)>,
+    Vec<UseSite>,
+);
+
+/// The text with every whitespace character removed.
+fn compact(text: &str) -> String {
+    text.chars().filter(|c| !c.is_whitespace()).collect()
+}
+
+/// `prefix::tail`, without a leading `::` when the prefix is empty.
+fn join_use_path(prefix: &str, tail: &str) -> String {
+    if prefix.is_empty() {
+        tail.to_string()
+    } else if tail.is_empty() {
+        prefix.to_string()
+    } else {
+        format!("{prefix}::{tail}")
+    }
+}
+
 pub struct RustExtractor<'a> {
     py: Python<'a>,
     graph: &'a mut Graph,
@@ -248,6 +290,8 @@ pub struct RustExtractor<'a> {
     recorded: HashSet<usize>,
     /// `(qualified name, name span)` of every inline `mod foo { ... }` with a body.
     inline_modules: Vec<(String, crate::span::Span)>,
+    /// Every name a `use` brings in and every bodyless `mod x;`, in source order.
+    use_sites: Vec<UseSite>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -278,18 +322,12 @@ impl<'a> RustExtractor<'a> {
             macros: HashMap::new(),
             recorded: HashSet::new(),
             inline_modules: Vec::new(),
+            use_sites: Vec::new(),
         }
     }
 
-    #[allow(clippy::type_complexity)]
-    pub fn into_parts(
-        self,
-    ) -> (
-        Vec<OccurrenceRef>,
-        Vec<(String, String, String, String)>,
-        Vec<(String, crate::span::Span)>,
-    ) {
-        (self.occurrences, self.internal_imports, self.inline_modules)
+    pub fn into_parts(self) -> ExtractorParts {
+        (self.occurrences, self.internal_imports, self.inline_modules, self.use_sites)
     }
 
     fn text(&self, node: TsNode<'_>) -> String {
@@ -366,10 +404,27 @@ impl<'a> RustExtractor<'a> {
         // A Rust MODULE has no file_path: the visibility is enclosed by the FILE.
         let file_id = self.file_id;
         self.record_visibility(node, file_id);
-        let (Some(name_node), Some(body)) = (
-            node.child_by_field_name("name"),
-            node.child_by_field_name("body"),
-        ) else {
+        let Some(name_node) = node.child_by_field_name("name") else {
+            return Ok(());
+        };
+        let Some(body) = node.child_by_field_name("body") else {
+            // `mod x;`: a read of the module at its name, enclosed by the FILE like the
+            // visibility above (a Rust MODULE has no file). The adapter binds it.
+            let span = ts::span(name_node);
+            self.use_sites.push(UseSite {
+                occurrence: OccurrenceRef {
+                    role: "read".to_string(),
+                    line: span.start_line,
+                    col: span.start_col,
+                    enclosing_id: file_id.to_string(),
+                    span,
+                    detail: None,
+                },
+                path: self.text(name_node),
+                module_qname: self.module_qname.clone(),
+                origin: "internal",
+                mod_decl: true,
+            });
             return Ok(());
         };
         let inner = format!("{}::{}", self.module_qname, self.text(name_node));
@@ -1366,7 +1421,76 @@ impl<'a> RustExtractor<'a> {
             return Ok(());
         }
         let origin = super::deps::classify_import(&import_path, self.crate_name, self.deps);
+        // The leaves are recorded BEFORE `declare_import`, which returns early when an
+        // identical `use` text already made the IMPORT node: each site still has its own.
+        let import_qname = format!("{}::{import_path}", self.file_rel);
+        let import_id = node_id(self.project_name, &import_qname, NodeKind::Import.as_str());
+        if let Some(argument) = node.child_by_field_name("argument") {
+            self.collect_use_leaves(argument, "", &import_id);
+        }
         self.declare_import(node, &import_path, origin)
+    }
+
+    /// One site per name a use tree imports. `*`, `self`, `crate`, `super` and the `as`
+    /// alias are not sites: for `use a::b as c` the leaf is `b`.
+    fn collect_use_leaves(&mut self, node: TsNode<'_>, prefix: &str, import_id: &str) {
+        match node.kind() {
+            "identifier" => {
+                let path = join_use_path(prefix, &self.text(node));
+                self.record_use_leaf(node, path, import_id);
+            }
+            "scoped_identifier" => {
+                let Some(name) = node.child_by_field_name("name") else {
+                    return;
+                };
+                if name.kind() != "identifier" {
+                    return;
+                }
+                let path = join_use_path(prefix, &compact(&self.text(node)));
+                self.record_use_leaf(name, path, import_id);
+            }
+            "use_as_clause" => {
+                if let Some(original) = node.child_by_field_name("path") {
+                    self.collect_use_leaves(original, prefix, import_id);
+                }
+            }
+            "scoped_use_list" => {
+                let inner = match node.child_by_field_name("path") {
+                    Some(path) => join_use_path(prefix, &compact(&self.text(path))),
+                    None => prefix.to_string(),
+                };
+                if let Some(list) = node.child_by_field_name("list") {
+                    self.collect_use_leaves(list, &inner, import_id);
+                }
+            }
+            "use_list" => {
+                for child in ts::children(node) {
+                    if child.is_named() {
+                        self.collect_use_leaves(child, prefix, import_id);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn record_use_leaf(&mut self, name_node: TsNode<'_>, path: String, import_id: &str) {
+        let origin = super::deps::classify_import(&path, self.crate_name, self.deps);
+        let span = ts::span(name_node);
+        self.use_sites.push(UseSite {
+            occurrence: OccurrenceRef {
+                role: "import".to_string(),
+                line: span.start_line,
+                col: span.start_col,
+                enclosing_id: import_id.to_string(),
+                span,
+                detail: None,
+            },
+            path,
+            module_qname: self.module_qname.clone(),
+            origin,
+            mod_decl: false,
+        });
     }
 
     fn declare_import(

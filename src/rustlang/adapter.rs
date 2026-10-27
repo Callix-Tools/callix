@@ -34,7 +34,7 @@ use crate::status::ResolverStatus;
 use super::boundary::extract_boundaries;
 use super::deps::{crate_name, dependencies, is_rust, rust_roots};
 use super::resolver::RustResolver;
-use super::visitor::RustExtractor;
+use super::visitor::{RustExtractor, UseSite};
 
 const RUST_EXTENSIONS: [&str; 1] = [".rs"];
 
@@ -84,21 +84,17 @@ fn module_qname(file: &Path, crate_root: &Path, crate_name: &str) -> String {
     format!("{crate_name}::{}", parts.join("::"))
 }
 
-/// The MODULE names an internal `use` path may lead to.
-///
-/// The path root is translated into the crate's namespace (`crate` → the
-/// crate name, `self` → the current module, `super` → the parent), after
-/// which the full path is offered (the path is the module) along with its
-/// parent (the final segment is an imported item, not a module).
-fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) -> Vec<String> {
+/// The absolute path of an internal `use` path: the root is translated into the
+/// crate's namespace (`crate` -> the crate name, `self` -> the current module,
+/// `super` -> the parent, the crate's own name -> itself). `None` for a relative path
+/// or a `super` that climbs past the crate root.
+fn absolute_use_path(import_path: &str, crate_name: &str, module_qname: &str) -> Option<String> {
     let segments: Vec<&str> = import_path
         .split("::")
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .collect();
-    let Some(head) = segments.first().copied() else {
-        return Vec::new();
-    };
+    let head = segments.first().copied()?;
     let own_parts: Vec<&str> = module_qname.split("::").collect();
 
     let (base, rest): (Vec<&str>, &[&str]) = match head {
@@ -107,7 +103,7 @@ fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) ->
         "super" => {
             let supers = segments.iter().take_while(|s| **s == "super").count();
             if supers >= own_parts.len() {
-                return Vec::new();
+                return None;
             }
             (
                 own_parts[..own_parts.len() - supers].to_vec(),
@@ -118,18 +114,68 @@ fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) ->
             (vec![crate_name], &segments[1..])
         }
         // The classifier only marks the cases above as internal.
-        _ => return Vec::new(),
+        _ => return None,
     };
 
     let full: Vec<&str> = base.into_iter().chain(rest.iter().copied()).collect();
     if full.is_empty() {
-        return Vec::new();
+        return None;
     }
-    let mut candidates = vec![full.join("::")];
-    if full.len() > 1 {
-        candidates.push(full[..full.len() - 1].join("::"));
+    Some(full.join("::"))
+}
+
+/// The MODULE names an internal `use` path may lead to: the full path (the path is
+/// the module) and its parent (the final segment is an imported item, not a module).
+fn module_candidates(import_path: &str, crate_name: &str, module_qname: &str) -> Vec<String> {
+    let Some(full) = absolute_use_path(import_path, crate_name, module_qname) else {
+        return Vec::new();
+    };
+    let mut candidates = vec![full.clone()];
+    if let Some((parent, _)) = full.rsplit_once("::") {
+        candidates.push(parent.to_string());
     }
     candidates
+}
+
+/// The node a qualified name stands for: a type, an alias, a function or a constant of
+/// the crate (tried in that fixed order), else a MODULE.
+fn item_for_qname(
+    graph: &Graph,
+    project: &str,
+    modules: &IndexMap<String, String>,
+    qname: &str,
+) -> Option<String> {
+    for kind in [NodeKind::Class, NodeKind::TypeAlias, NodeKind::Function, NodeKind::Variable] {
+        let id = node_id(project, qname, kind.as_str());
+        if graph.has_node(&id) {
+            return Some(id);
+        }
+    }
+    modules.get(qname).cloned()
+}
+
+/// An edge that records where it was written. `name`: the binding is a lookup by path,
+/// with no type checker behind it.
+fn push_site_relation(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    span: crate::span::Span,
+    access: Option<&str>,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    metadata.set_item(resolution::KEY, Resolution::Name.as_str())?;
+    if let Some(access) = access {
+        metadata.set_item("access", access)?;
+    }
+    graph.push_relation(Py::new(
+        py,
+        Relation { source_id, target_id, kind, metadata: metadata.unbind() },
+    )?);
+    Ok(())
 }
 
 fn ensure_module(
@@ -275,6 +321,7 @@ fn build_crate_structure(
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
     let mut internal_imports: Vec<(String, String, String, String)> = Vec::new();
     let mut module_sites: ModuleSites = HashMap::new();
+    let mut use_sites: Vec<(String, UseSite)> = Vec::new();
 
     let mut project_macros: std::collections::HashSet<String> = std::collections::HashSet::new();
     for file in files {
@@ -314,7 +361,7 @@ fn build_crate_structure(
             &deps,
         );
         extractor.extract(tree.root_node())?;
-        let (file_occurrences, file_imports, inline_modules) = extractor.into_parts();
+        let (file_occurrences, file_imports, inline_modules, file_sites) = extractor.into_parts();
         // `mod foo { .. }` is a MODULE too; the resolver answers with the start of its name.
         for (inline_qname, name_span) in inline_modules {
             let inline_id =
@@ -327,6 +374,9 @@ fn build_crate_structure(
             occurrences.push((abs_path.clone(), occurrence));
         }
         internal_imports.extend(file_imports);
+        for site in file_sites {
+            use_sites.push((abs_path.clone(), site));
+        }
 
         let mut found = extract_boundaries(tree.root_node(), &source);
         found.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
@@ -348,6 +398,48 @@ fn build_crate_structure(
         };
         push_relation(py, graph, importer_file, target_id.clone(), RelationKind::Imports)?;
         push_relation(py, graph, import_id, target_id, RelationKind::ResolvesTo)?;
+    }
+
+    // Names a `use` brings in and `mod x;`, bound by path once every file of the crate
+    // has been read (`mod util;` in lib.rs is met before util.rs). What binds here is
+    // never queried, so a resolver cannot answer the same site twice; the rest goes to
+    // the resolver as `import` occurrences.
+    for (abs_path, site) in use_sites {
+        let span = site.occurrence.span;
+        if site.mod_decl {
+            let qname = format!("{}::{}", site.module_qname, site.path);
+            if let Some(target) = modules.get(&qname) {
+                push_site_relation(
+                    py,
+                    graph,
+                    site.occurrence.enclosing_id.clone(),
+                    target.clone(),
+                    RelationKind::References,
+                    span,
+                    Some("read"),
+                )?;
+            }
+            continue;
+        }
+        let qname = match site.origin {
+            "internal" => absolute_use_path(&site.path, &project, &site.module_qname),
+            // A 2018 uniform path, relative to the importing module (`use store::X`).
+            "unknown" => Some(format!("{}::{}", site.module_qname, site.path)),
+            _ => None,
+        };
+        let target = qname.and_then(|q| item_for_qname(graph, &project, &modules, &q));
+        match target {
+            Some(target_id) => push_site_relation(
+                py,
+                graph,
+                site.occurrence.enclosing_id.clone(),
+                target_id,
+                RelationKind::ResolvesTo,
+                span,
+                None,
+            )?,
+            None => occurrences.push((abs_path, site.occurrence)),
+        }
     }
 
     Ok((project, occurrences, boundaries, module_sites))
@@ -383,6 +475,7 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
         "read" | "write" => RelationKind::References,
+        "import" => RelationKind::ResolvesTo,
         _ => return None,
     })
 }
@@ -652,6 +745,14 @@ fn resolve_pass(
             }
         }
 
+        // A name a `use` brings in: an unbound answer with no name would only become a
+        // site-keyed external symbol, which is noise. Dropped and counted unresolved.
+        if occurrence.role == "import" && target_id.is_none() && reference.full_name.is_empty() {
+            metrics.resolved -= 1;
+            metrics.unresolved += 1;
+            continue;
+        }
+
         // `iter.map(f)`: the library calls what it is given, unless the callee is a
         // function of the project; the flow pass knows which.
         if occurrence.role == "callarg" {
@@ -701,8 +802,8 @@ fn resolve_pass(
         }
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
-        } else if is_value {
-            // A value read is not an argument: nothing for the flow pass. It must not
+        } else if is_value || occurrence.role == "import" {
+            // A value read or an import is not an argument: nothing for the flow pass. It must not
             // reach the `detail.is_some()` branch below, which would drop it.
         } else if let Some(held) = target_id.as_deref() {
             flow.arg(path, occurrence, held);
@@ -791,4 +892,31 @@ fn apply_boundaries(py: Python<'_>, graph: &mut Graph, files: &[FileBoundaries])
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::absolute_use_path;
+
+    #[test]
+    fn crate_self_and_super_are_translated() {
+        assert_eq!(absolute_use_path("crate::a::B", "demo", "demo::x").as_deref(), Some("demo::a::B"));
+        assert_eq!(absolute_use_path("crate", "demo", "demo::x").as_deref(), Some("demo"));
+        assert_eq!(absolute_use_path("self::B", "demo", "demo::x").as_deref(), Some("demo::x::B"));
+        assert_eq!(absolute_use_path("super::f", "demo", "demo::x::y").as_deref(), Some("demo::x::f"));
+        assert_eq!(absolute_use_path("super::f", "demo", "demo::x").as_deref(), Some("demo::f"));
+    }
+
+    #[test]
+    fn super_past_the_root_and_relative_paths_have_no_absolute_form() {
+        assert_eq!(absolute_use_path("super::super::f", "demo", "demo::x"), None);
+        assert_eq!(absolute_use_path("super::f", "demo", "demo"), None);
+        assert_eq!(absolute_use_path("store::X", "demo", "demo"), None);
+        assert_eq!(absolute_use_path("", "demo", "demo"), None);
+    }
+
+    #[test]
+    fn the_crates_own_name_is_the_root() {
+        assert_eq!(absolute_use_path("demo::a", "demo", "demo::x").as_deref(), Some("demo::a"));
+    }
 }

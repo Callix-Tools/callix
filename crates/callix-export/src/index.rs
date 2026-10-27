@@ -174,7 +174,7 @@ impl<'g> Index<'g> {
 
         let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for relation in &graph.relations {
-            if !relation.kind.is_reference() {
+            if !relation.is_placed_reference() {
                 continue;
             }
             self.ref_edges += 1;

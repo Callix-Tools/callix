@@ -20,7 +20,7 @@ relation.metadata    # dict[str, object]
 | `CONTAINS` | project → module, module → file | structure |
 | `DECLARES` | file → declaration | structure |
 | `IMPORTS` | file → import | structure |
-| `RESOLVES_TO` | import → module or external symbol | structure |
+| `RESOLVES_TO` | import → module or external symbol; also, with a span and a `resolution`, import → the definition of a name it brings in | structure (Rust: the name, by path) and resolution |
 | `DEPENDS_ON` | project → dependency | structure |
 | `CALLS` | function → callee | resolution |
 | `REFERENCES` | declaration → symbol read or written | resolution |
@@ -63,7 +63,7 @@ relation.metadata["ambiguous"]  # on a 'name' edge: several declarations carried
 | `flow` | A `value` call followed through assignments, arguments and returns to a callable it can be shown to hold; `via` names the holder. Flow-insensitive: a holder assigned two callables gets an edge to each. |
 | `external` | The definition is outside the project (standard library, a dependency). |
 | `unlocated` | The backend answered with a place callix could not bind to a node. |
-| `name` | Matched by name in a symbol table (PHP, C, C++), with no type information. |
+| `name` | Matched by name in a symbol table (PHP, C, C++), or by path (Rust `use` paths and `mod x;`), with no type information. |
 
 An edge written by a visitor rather than by resolution (`DECLARES`, `CONTAINS`,
 `IMPORTS`) carries none of these. [How accurate resolution is](../project/accuracy.md)

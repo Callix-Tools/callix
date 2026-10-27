@@ -203,8 +203,8 @@
       "has_type": 15,
       "imports": 2,
       "inherits_from": 1,
-      "references": 11,
-      "resolves_to": 2
+      "references": 12,
+      "resolves_to": 6
     },
     "resolver": {
       "external": 16,

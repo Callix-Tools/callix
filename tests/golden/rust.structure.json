@@ -785,6 +785,87 @@
       "metadata": {},
       "source_id": "041253d3f9395658",
       "target_id": "18a7edcf8f6b3257"
+    },
+    {
+      "kind": "references",
+      "metadata": {
+        "access": "read",
+        "resolution": "name",
+        "span": {
+          "__span__": [
+            3,
+            9,
+            3,
+            14
+          ]
+        }
+      },
+      "source_id": "92461134c7015dc1",
+      "target_id": "49e63763261229a2"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "resolution": "name",
+        "span": {
+          "__span__": [
+            5,
+            13,
+            5,
+            19
+          ]
+        }
+      },
+      "source_id": "5f4a81d0976df3f0",
+      "target_id": "fb8aa0c2bfb33c58"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "resolution": "name",
+        "span": {
+          "__span__": [
+            5,
+            21,
+            5,
+            31
+          ]
+        }
+      },
+      "source_id": "5f4a81d0976df3f0",
+      "target_id": "25f5b0d083e79fbe"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "resolution": "name",
+        "span": {
+          "__span__": [
+            5,
+            33,
+            5,
+            40
+          ]
+        }
+      },
+      "source_id": "5f4a81d0976df3f0",
+      "target_id": "f9fee88ace817fbc"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "resolution": "name",
+        "span": {
+          "__span__": [
+            29,
+            16,
+            29,
+            21
+          ]
+        }
+      },
+      "source_id": "041253d3f9395658",
+      "target_id": "7d403562af6794af"
     }
   ],
   "schema_version": 1

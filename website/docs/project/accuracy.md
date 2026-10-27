@@ -35,7 +35,7 @@ pass writes has `metadata["resolution"]`:
 | `flow` | A `value` call followed, through assignments, arguments and returns, to a callable it can be shown to hold. `via` names the holder. |
 | `external` | The definition is outside the project: the standard library, a dependency. |
 | `unlocated` | The backend answered, but with a place callix could not bind to a node (a local it does not model, a position inside an import). The edge points at a synthetic external symbol keyed by the call site. |
-| `name` | Matched by name in a symbol table, with no type information. `ambiguous: true` when several declarations carried the name and the first was taken. |
+| `name` | Matched by name in a symbol table, or by path (Rust `use` paths and `mod x;`, in the structure pass), with no type information. `ambiguous: true` when several declarations carried the name and the first was taken. |
 
 `callix report <graph> -t status` counts the edges by these values, and
 `callix analyze` prints where a language's calls went:

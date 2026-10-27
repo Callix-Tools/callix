@@ -311,7 +311,11 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
-  structural checker the tests use.
+  structural checker the tests use. `index.rs` places an edge by
+  `Relation::is_placed_reference()`: a `CALLS`/`REFERENCES`/`HAS_TYPE`/`INHERITS_FROM`, or a
+  `RESOLVES_TO` that carries `metadata["span"]` (the name an import brings in). The
+  structural, unspanned `RESOLVES_TO` of an import is not a reference, and a file that
+  only re-exports still gets a document. `RelationKind::is_reference` is unchanged, for reports and counts.
 - **`crates/callix-cli`** is the `callix` binary. It depends on `callix` with the
   default features, i.e. **without** `python`: the native engine, with nothing
   linked to libpython (`cargo tree -p callix-cli` has no pyo3, `ldd` no python).
@@ -398,6 +402,18 @@ Things that are easy to get wrong:
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
   resolver adds a `RESOLVES_TO` from the import to the definition.
+- **A Rust `use` leaf resolves from its IMPORT, and `mod x;` is a reference from the
+  FILE.** The IMPORT stays one node per declaration; the visitor reports one `UseSite`
+  per name the tree brings in (`src/rustlang/visitor.rs`). The structure pass
+  (`build_crate_structure`) binds each by path once every file of the crate is read
+  (`mod util;` in lib.rs is met before util.rs): an `internal` leaf by its absolute path,
+  an `unknown` one as a 2018 path relative to the importing module, and writes a
+  `RESOLVES_TO` with `span` and `resolution: name` (a `mod x;` is a `REFERENCES` FILE ->
+  MODULE with `access: read`). Only leaves it could not bind (std, dependencies, re-exports)
+  go to the resolver as `import` occurrences, so no site is answered twice; an unbound
+  answer with no name is dropped. `*`, `self`, `crate`, `super`, the `as` alias, a `use` inside a
+  function body and a `#[path]` module are not sites. Edges into a MODULE are not exported
+  (a Rust MODULE has no file).
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

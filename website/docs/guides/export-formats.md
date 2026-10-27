@@ -81,6 +81,8 @@ Positions are 0-based lines and **UTF-8 byte offsets** from the start of the lin
 which are callix's own columns, so no source files are needed and every column
 is exact.
 
+A `RESOLVES_TO` edge that records a position (the name an import brings in) is exported as a reference, so a file that only re-exports still gets a document. The structural `RESOLVES_TO` of an import has no position and yields nothing.
+
 A symbol reads `callix . <project> . . <descriptor>`: the qualified name as one
 backtick-escaped descriptor, suffixed by what it is — `#` for a type, `().` for a
 callable, `.` for a term, `(…)` for a parameter. rust-analyzer's own symbols,

@@ -22,6 +22,7 @@
 //!   know). The edge points at a synthetic external symbol keyed by the call site.
 //! * `name` - matched by name in a symbol table, with no type information. Only
 //!   the adapters whose backend is a table (PHP's own, the C family's) write it,
+//!   and Rust's structure pass, for a `use` path or a `mod x;` it binds by path,
 //!   and `ambiguous` accompanies it when several declarations carried the name.
 
 use crate::py::prelude::*;

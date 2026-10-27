@@ -239,7 +239,11 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              `let` patterns are references, while a read of a local or a parameter is not an edge; \
              enum variants are not nodes, so a reference to one is `unlocated`; names inside the \
              arguments of a macro the project defines and the bare receiver of a field access \
-             are not recorded",
+             are not recorded; each name a `use` brings in (through groups and `as`, not `*` or \
+             `self`) resolves from its IMPORT to its definition, by path for a path of the crate \
+             (`name`, relative 2018 paths included) and through rust-analyzer otherwise, and \
+             `mod x;` is a reference to the MODULE (not exported); a `use` inside a function \
+             body, the prefix segments of a use path and a `#[path]` module are not recorded",
         ),
         "php" => (
             "symbol table, by names",

@@ -32,6 +32,48 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
+/// A type with pointers and parentheses removed: `*T` and `(T)` give `T`.
+fn strip_type<'tree>(mut ty: TsNode<'tree>) -> TsNode<'tree> {
+    while matches!(ty.kind(), "pointer_type" | "parenthesized_type") {
+        match ts::named_children(ty).first().copied() {
+            Some(inner) => ty = inner,
+            None => break,
+        }
+    }
+    ty
+}
+
+/// The syntactic type of a `literal_value`. For `T{..}` it is the composite
+/// literal's type; for an elided inner literal (`[]T{{..}}`, `map[K]V{k: {..}}`)
+/// it is the element, key or value type of the enclosing literal. `None` when
+/// the syntax does not say (a named type such as `type Ts []T`).
+fn literal_type<'tree>(literal: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let parent = literal.parent()?;
+    match parent.kind() {
+        "composite_literal" => parent.child_by_field_name("type").map(strip_type),
+        "literal_element" => {
+            let holder = parent.parent()?;
+            let (outer, is_key) = if holder.kind() == "keyed_element" {
+                let is_key = ts::named_children(holder).first().copied() == Some(parent);
+                (holder.parent()?, is_key)
+            } else {
+                (holder, false)
+            };
+            let outer_ty = literal_type(outer)?;
+            match outer_ty.kind() {
+                "slice_type" | "array_type" | "implicit_length_array_type" => {
+                    outer_ty.child_by_field_name("element").map(strip_type)
+                }
+                "map_type" => outer_ty
+                    .child_by_field_name(if is_key { "key" } else { "value" })
+                    .map(strip_type),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
 /// The node itself and every descendant of the given kind, depth-first and
 /// left to right (source order). A match is not descended into. The root is
 /// included, so a type that is itself a `type_identifier` is found.
@@ -431,6 +473,10 @@ impl<'a> GoExtractor<'a> {
     /// and is rejected later, because the resolver answers with the local.
     fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
+            if node.kind() == "keyed_element" {
+                self.record_literal_key(node, enclosing_id);
+                continue;
+            }
             if node.kind() != "selector_expression" {
                 continue;
             }
@@ -465,6 +511,48 @@ impl<'a> GoExtractor<'a> {
                 self.add_occurrence(role, field, enclosing_id);
             }
         }
+    }
+
+    /// The key of a keyed struct literal (`T{Name: v}`, `&T{..}`, the elided
+    /// `[]T{{Name: v}}`) names a field of T, so it is a `write` of that field by
+    /// the enclosing definition, with detail `key`.
+    ///
+    /// Only an identifier key counts. Keys of a map, slice or array literal are
+    /// values or indices, not fields, and are skipped when the literal's type is
+    /// syntactically one of those (see `literal_type`). A type that cannot be read
+    /// off the syntax (a named map type) is emitted; the adapter drops the keys
+    /// that do not bind to a field. The predeclared `true`, `false`, `nil` and
+    /// `iota` are never keys here (a field with one of those names is ignored).
+    fn record_literal_key(&mut self, element: TsNode<'_>, enclosing_id: &str) {
+        let Some(key) = ts::named_children(element).first().copied() else {
+            return;
+        };
+        let key = if key.kind() == "literal_element" {
+            match ts::named_children(key).first().copied() {
+                Some(inner) => inner,
+                None => return,
+            }
+        } else {
+            key
+        };
+        if key.kind() != "identifier" {
+            return;
+        }
+        if matches!(self.text(key).as_str(), "true" | "false" | "nil" | "iota") {
+            return;
+        }
+        let Some(literal) = element.parent() else {
+            return;
+        };
+        if let Some(literal_ty) = literal_type(literal)
+            && matches!(
+                literal_ty.kind(),
+                "map_type" | "slice_type" | "array_type" | "implicit_length_array_type"
+            )
+        {
+            return;
+        }
+        self.add_occurrence_with("write", key, enclosing_id, Some("key".to_string()));
     }
 
     /// A `base` for every embedded type.

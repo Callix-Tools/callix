@@ -68,6 +68,12 @@ In expressions the candidate names are the import aliases and the name Go assume
 from the path (`gopkg.in/yaml.v3` is `yaml`); an unaliased package that declares a
 different name is missed there. Dot and blank imports bind no qualifier.
 
+Fields are references too. `x.f` is a `REFERENCES` edge with `access` `read` or
+`write` to the field, and the key of a keyed struct literal (`T{Name: v}`,
+`&T{...}`, the elided `[]T{{Name: v}}`) is a `write` by the enclosing function or,
+in a package-level `var`, by the variable. Keys of map, slice and array literals,
+and fields of types declared inside a function, get no edge.
+
 ## Dependency classification
 
 Go's own rule applies — a standard-library import path has no dot in its first

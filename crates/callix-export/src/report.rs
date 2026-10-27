@@ -229,7 +229,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              `MODULE`, placed at the package clause of its first non-test file, or to the \
              import's external symbol; a local that shadows a package gets no edge, and an \
              unaliased package whose name differs from the last element of its import path is \
-             not found in expressions",
+             not found in expressions; a field selector, and the key of a keyed struct literal \
+             (`T{F: v}`, `&T{..}` and the elided `[]T{{F: v}}` included), is a `references` \
+             edge with access read or write to the field, while the keys of map, slice and \
+             array literals and fields of types declared inside a function get none",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

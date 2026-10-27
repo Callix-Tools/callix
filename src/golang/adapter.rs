@@ -702,7 +702,21 @@ fn resolve_pass(
             }
             continue;
         }
-        if occurrence.role == "call" {
+        // The key of a keyed struct literal: kept when it names a field of the
+        // project (an ATTRIBUTE) or a field of an external struct (positional
+        // external symbol, like a selector write). A local, parameter, constant
+        // or field without a node (map key, function-local type) is dropped.
+        let is_literal_key =
+            occurrence.role == "write" && occurrence.detail.as_deref() == Some("key");
+        if is_literal_key {
+            let keep = match target_id.as_deref() {
+                Some(id) => graph.node_kind(id) == Some(NodeKind::Attribute),
+                None => reference.origin != "internal",
+            };
+            if !keep {
+                continue;
+            }
+        } else if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
         } else if let Some(held) = target_id.as_deref() {
             flow.arg(path, occurrence, held);

@@ -95,14 +95,14 @@
       "has_type": 5,
       "imports": 3,
       "inherits_from": 1,
-      "references": 8,
+      "references": 9,
       "resolves_to": 3
     },
     "resolver": {
       "external": 4,
-      "internal": 16,
-      "queries": 23,
-      "resolved": 23,
+      "internal": 17,
+      "queries": 24,
+      "resolved": 24,
       "unresolved": 0
     },
     "resolver_status": "ok"

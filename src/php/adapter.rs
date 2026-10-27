@@ -51,7 +51,8 @@ type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 ///
 /// `vendor/` is matched at the root only, where Composer writes it: a project
 /// may legitimately hold `src/Vendor/`, and dropping the third-party tree must
-/// not take first-party code with it.
+/// not take first-party code with it. `php_roots` keeps vendor packages from
+/// becoming sub-roots of their own.
 pub fn collect_php_files(root: &Path) -> Vec<PathBuf> {
     let excluded: Vec<&str> = EXCLUDED_DIRS
         .iter()

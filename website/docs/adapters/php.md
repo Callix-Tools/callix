@@ -28,9 +28,12 @@ A great deal of PHP ships without a manifest, so detection falls back to "any
 `.php` file exists". A project found that way still produces a full structural
 graph; only the namespace-to-directory mapping is missing.
 
-`vendor/` is excluded, and only at the project root — that is where Composer
-writes it, and a mid-sized Symfony application vendors more PHP than it
-contains. `var/`, `cache/` and `.phpunit.cache/` are excluded at any depth.
+`vendor/` is excluded at the project root and in the tree of any nested
+Composer project — that is where Composer writes it, and a mid-sized Symfony
+application vendors more PHP than it contains. A `composer.json` inside an
+installed package is not a project root, so the graph does not depend on
+whether `composer install` has run. `var/`, `cache/` and `.phpunit.cache/` are
+excluded at any depth.
 
 ## The node scheme
 

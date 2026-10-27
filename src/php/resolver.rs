@@ -1972,6 +1972,9 @@ impl PhpResolver {
     /// Directories are made relative to the project root, so a PSR-4 path can
     /// be compared with a document path even when the composer package sits in
     /// a subdirectory of a monorepo.
+    ///
+    /// Installed `vendor/` packages are not roots (see `php_roots`), so their
+    /// PSR-4 prefixes never become internal.
     fn load_manifests(&mut self, project_root: &Path) {
         for root in php_roots(project_root) {
             let base = root

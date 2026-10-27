@@ -15,6 +15,10 @@
 //! are used as they are; ones the resolver could not name — a node keyed by the
 //! site it was met at — have no identity to index and are left out.
 //!
+//! A header's prototype or forward declaration (`declared_at`) is an occurrence
+//! with the ForwardDefinition role (0x40); an `#include` is a plain reference to
+//! the included header's file symbol, which is defined at 1:1 of its document.
+//!
 //! The encoder is hand-written protobuf (varints and length-delimited fields),
 //! checked against an index rust-analyzer produced; field numbers are those of
 //! `scip.proto`.
@@ -224,6 +228,8 @@ const TEXT_ENCODING_UTF8: u64 = 1;
 /// `PositionEncoding.UTF8CodeUnitOffsetFromLineStart`.
 const POSITION_UTF8: u64 = 1;
 const ROLE_DEFINITION: u64 = 0x1;
+/// `SymbolRole.ForwardDefinition`: SCIP's role for a C or C++ header declaration.
+const ROLE_FORWARD_DEFINITION: u64 = 0x40;
 const ROLE_WRITE: u64 = 0x4;
 const ROLE_READ: u64 = 0x8;
 
@@ -245,6 +251,8 @@ fn occurrence(range: &Range, symbol: &str, is_definition: bool) -> Vec<u8> {
     put_str(&mut out, 2, symbol);
     let roles = if is_definition {
         ROLE_DEFINITION
+    } else if range.forward {
+        ROLE_FORWARD_DEFINITION
     } else {
         match range.access {
             Access::Write => ROLE_WRITE,

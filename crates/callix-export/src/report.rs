@@ -251,7 +251,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              a callback handed to a library function is followed only for a closed list of \
              them; a type name is bound by name to a class or typedef only, and a scope \
              qualifier or `sizeof(name)` binds only when such a type is visible \
-             (namespaces are not nodes)",
+             (namespaces are not nodes); a prototype, forward declaration or in-class \
+             declaration is the same node as its definition and its name position is in \
+             `declared_at` (exported as a forward definition); an `#include` path is the \
+             span of the IMPORT's RESOLVES_TO to the header's FILE or to an external \
+             symbol (a computed include is not positioned); a `.h` that parses as C in a \
+             tree with no C sources is not analysed (#49)",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

@@ -607,6 +607,14 @@
       "metadata": {
         "include_path": "string",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -637,6 +645,14 @@
       "metadata": {
         "include_path": "vector",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -784,6 +800,14 @@
       "metadata": {
         "include_path": "visibility.h",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            24
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -813,6 +837,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                33,
+                17,
+                33,
+                25
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -847,6 +884,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                41,
+                14,
+                41,
+                20
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -905,6 +955,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                44,
+                10,
+                44,
+                14
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -940,6 +1003,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                45,
+                10,
+                45,
+                14
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -998,6 +1074,19 @@
       "kind": "function",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                54,
+                13,
+                54,
+                22
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -1057,6 +1146,14 @@
       "metadata": {
         "include_path": "engine.hpp",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            22
+          ]
+        },
         "origin": "internal",
         "resolved_path": "include/engine.hpp"
       },
@@ -1225,6 +1322,14 @@
       "metadata": {
         "include_path": "curl/curl.h",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            23
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1255,6 +1360,14 @@
       "metadata": {
         "include_path": "iostream",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            3,
+            10,
+            3,
+            20
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1285,6 +1398,14 @@
       "metadata": {
         "include_path": "string",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1304,6 +1425,14 @@
       "metadata": {
         "include_path": "engine.hpp",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            6,
+            10,
+            6,
+            22
+          ]
+        },
         "origin": "internal",
         "resolved_path": "include/engine.hpp"
       },
@@ -1323,6 +1452,14 @@
       "metadata": {
         "include_path": "export.hpp",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            38,
+            10,
+            38,
+            22
+          ]
+        },
         "origin": "internal",
         "resolved_path": "include/export.hpp"
       },
@@ -1651,7 +1788,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        }
+      },
       "source_id": "3206543f2c859376",
       "target_id": "1fc5f2603f27d122"
     },
@@ -1669,7 +1815,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            18
+          ]
+        }
+      },
       "source_id": "86e5d23f084d37ae",
       "target_id": "e0604723efa962fe"
     },
@@ -1729,7 +1884,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            24
+          ]
+        }
+      },
       "source_id": "0844248b71c6614c",
       "target_id": "520e5491656077b2"
     },
@@ -1777,7 +1941,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            22
+          ]
+        }
+      },
       "source_id": "0b34ed338f27e9dd",
       "target_id": "64e96181de5fbdf2"
     },
@@ -1825,7 +1998,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            23
+          ]
+        }
+      },
       "source_id": "91f6f63bd07d6dc4",
       "target_id": "d5b24bcb704d333f"
     },
@@ -1843,7 +2025,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            3,
+            10,
+            3,
+            20
+          ]
+        }
+      },
       "source_id": "eb1153ae14e4f102",
       "target_id": "320ec0f3825e34f0"
     },
@@ -1861,7 +2052,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        }
+      },
       "source_id": "760d52779cbdb268",
       "target_id": "1fc5f2603f27d122"
     },
@@ -1879,7 +2079,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            6,
+            10,
+            6,
+            22
+          ]
+        }
+      },
       "source_id": "8b3ea77fd98c5353",
       "target_id": "64e96181de5fbdf2"
     },
@@ -1897,7 +2106,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            38,
+            10,
+            38,
+            22
+          ]
+        }
+      },
       "source_id": "1316ed65e2c723d3",
       "target_id": "0a115c9b823654ad"
     },

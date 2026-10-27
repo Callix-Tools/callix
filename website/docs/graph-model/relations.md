@@ -51,6 +51,8 @@ relation.metadata["via"]        # on a 'flow' edge: the holder the callee was fo
 relation.metadata["ambiguous"]  # on a 'name' edge: several declarations carried the name
 ```
 
+A structural `RESOLVES_TO` may carry `span` too: the C family writes the path literal of an `#include` there.
+
 ### How the edge was found
 
 `resolution` is one of `definition`, `value`, `flow`, `external`, `unlocated` or

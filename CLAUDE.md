@@ -179,7 +179,11 @@ usually declared in a different file from the definition. A survey pass then
 reads every file into `FileFacts` and records declaring sites in a `DeclLedger`
 before any node is written — a prototype in a header and its definition in a
 source file are ONE node, and whichever file was read first would otherwise
-decide its span.
+decide its span. The ledger keeps (file, name_span) per site, which is what
+`declared_at` is made of. An `#include` path literal (delimiters included) is
+the IMPORT's `name_span` and the span of its RESOLVES_TO; the FILE-to-header
+IMPORTS edge stays unpositioned. An exporter defines a FILE at 1:1 only when a
+placed edge targets it.
 
 **Before the scope pass, the adapter blanks the project's erasable macros**
 (`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,
@@ -279,9 +283,14 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
-- **`declared_at`** on a node lists extra name spans the type checker may answer
-  with (overload signatures, a function-valued field); `SpanIndex::from_graph`
-  reads it.
+- **`declared_at`** on a node lists extra name spans. An entry is a bare `Span` in
+  the node's own file (Python and TypeScript: positions the type checker may
+  answer with - overload signatures, a function-valued field; exporters do not
+  place them), or `{file, span}` naming its file (C and C++: a prototype, forward
+  declaration or in-class declaration is the SAME node as its definition, and the
+  name span of every other declaring site is listed here, own-file prototypes
+  included; exporters write each as a SCIP ForwardDefinition). `SpanIndex::from_graph`
+  reads both shapes.
 - **C/C++ type uses are `read` occurrences with `CallSite.type_use`**, giving a
   REFERENCES from the enclosing callable; a type in a declared position stays
   `annotation` (HAS_TYPE). They resolve only to CLASS/TYPE_ALIAS through

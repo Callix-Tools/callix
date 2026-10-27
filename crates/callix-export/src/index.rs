@@ -4,6 +4,12 @@
 //! LSIF and SCIP are two encodings of the same thing, so the reading of the
 //! graph — which nodes are definitions, which edges are placed references, what
 //! is skipped and why — lives here once.
+//!
+//! Two things beyond resolver edges are placed: the `{file, span}` entries of a
+//! node's `declared_at` (a header's prototype or forward declaration, as a
+//! forward reference in its own file), and a `RESOLVES_TO` that carries a span
+//! (an `#include` operand, pointing at the header's FILE, which is then defined
+//! at 1:1 of its document).
 
 use std::collections::{HashMap, HashSet};
 
@@ -52,6 +58,10 @@ pub(crate) struct Range {
     pub extent: Option<Span>,
     /// How a reference touches its target: `read` or `write`, when recorded.
     pub access: Access,
+    /// A reference that is a declaration of the symbol written elsewhere than
+    /// its definition: a prototype or forward declaration. SCIP calls it a
+    /// forward definition.
+    pub forward: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -155,11 +165,32 @@ impl<'g> Index<'g> {
             }
         }
 
+        // A FILE that a placed edge points at (an `#include` operand) is a
+        // symbol too, defined at the very start of its own document. Only
+        // referenced files are defined, so no other graph's export changes.
+        let mut targeted_files: HashSet<&str> = HashSet::new();
+        for relation in &graph.relations {
+            if relation.is_placed_reference()
+                && let Some(target) = graph.node(&relation.target_id)
+                && target.kind == NodeKind::File
+            {
+                targeted_files.insert(target.id.as_str());
+            }
+        }
+
+        let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for node in &graph.nodes {
-            if !DEFINITION_KINDS.contains(&node.kind) {
+            let file_target =
+                node.kind == NodeKind::File && targeted_files.contains(node.id.as_str());
+            if !DEFINITION_KINDS.contains(&node.kind) && !file_target {
                 continue;
             }
-            let (Some(path), Some(name_span)) = (&node.file_path, node.name_span()) else {
+            let name_span = if file_target {
+                Some(Span { start_line: 1, start_col: 1, end_line: 1, end_col: 1 })
+            } else {
+                node.name_span()
+            };
+            let (Some(path), Some(name_span)) = (&node.file_path, name_span) else {
                 if node.file_path.is_some() {
                     self.skipped_definitions += 1;
                 }
@@ -168,13 +199,25 @@ impl<'g> Index<'g> {
             let symbol = self.symbol(node, false);
             let doc = self.doc(path);
             let mut range = range_of(name_span, symbol);
-            range.extent = node.span;
+            if !file_target {
+                range.extent = node.span;
+            }
             self.docs[doc].definitions.push(range);
+            // The other places the definition is written down (a header's
+            // prototype) are forward-definition references in their own file.
+            for (file, site) in node.declaration_sites() {
+                let site_doc = self.doc(file);
+                if !seen.insert((site_doc, site, symbol)) {
+                    continue;
+                }
+                let mut forward = range_of(site, symbol);
+                forward.forward = true;
+                self.docs[site_doc].references.push(forward);
+            }
         }
 
-        let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for relation in &graph.relations {
-            if !relation.kind.is_reference() {
+            if !relation.is_placed_reference() {
                 continue;
             }
             self.ref_edges += 1;
@@ -197,7 +240,7 @@ impl<'g> Index<'g> {
             };
             let symbol = match target.kind {
                 NodeKind::ExternalSymbol => self.symbol(target, true),
-                kind if DEFINITION_KINDS.contains(&kind) => {
+                kind if DEFINITION_KINDS.contains(&kind) || kind == NodeKind::File => {
                     match self.symbol_index.get(target.id.as_str()) {
                         Some(&i) => i,
                         None => {
@@ -245,6 +288,7 @@ pub(crate) fn range_of(span: Span, symbol: usize) -> Range {
         symbol,
         extent: None,
         access: Access::Unknown,
+        forward: false,
     }
 }
 

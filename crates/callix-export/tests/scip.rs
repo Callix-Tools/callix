@@ -3,7 +3,7 @@ mod common;
 use callix_export::model::Graph;
 use callix_export::scip::Scip as Exporter;
 use callix_export::{Exporter as _, Options};
-use common::{SAMPLE, decode_scip};
+use common::{C_DECL_SITES, SAMPLE, decode_scip};
 
 fn export(graph: &Graph) -> (Vec<u8>, Vec<callix_export::Warning>) {
     let mut out = Vec::new();
@@ -186,4 +186,39 @@ fn symbol_documentation_carries_what_the_author_wrote() {
     assert_eq!(docs("`a.g`"), ["function a.g"]);
     // Something in the graph is documented, so there is nothing to warn about.
     assert!(warnings.iter().all(|w| w.code != "no-documentation"), "{warnings:?}");
+}
+
+#[test]
+fn declaration_sites_and_includes_are_placed() {
+    let (bytes, _) = export(&Graph::from_json(C_DECL_SITES).unwrap());
+    let index = decode_scip(&bytes);
+    let doc = |path: &str| index.documents.iter().find(|d| d.path == path).unwrap_or_else(|| panic!("no document {path}"));
+
+    // The header has a document: the prototype is a forward definition, and the
+    // file itself is defined at 1:1 because an include points at it.
+    let header = doc("a.h");
+    let proto = header.occurrences.iter().find(|o| o.symbol == "callix . c . . add().").expect("prototype");
+    assert_eq!(proto.range, [2, 4, 7]);
+    assert_eq!(proto.roles, 0x40, "ForwardDefinition");
+    let file_def = header.occurrences.iter().find(|o| o.symbol == "callix . c . . `a.h`/").expect("file symbol");
+    assert_eq!(file_def.range, [0, 0, 0]);
+    assert_eq!(file_def.roles, 1, "Definition");
+
+    // The include operands are plain references.
+    let source = doc("a.c");
+    let to_header = source.occurrences.iter().find(|o| o.symbol == "callix . c . . `a.h`/").expect("include of a.h");
+    assert_eq!(to_header.range, [0, 9, 14]);
+    assert_eq!(to_header.roles, 0);
+    let to_stdio = source.occurrences.iter().find(|o| o.symbol.contains("stdio.h")).expect("include of stdio.h");
+    assert_eq!(to_stdio.range, [1, 9, 18]);
+    assert_eq!(to_stdio.roles, 0);
+
+    // A bare-span declared_at entry is a position, not a declaration site.
+    for d in &index.documents {
+        assert!(d.occurrences.iter().all(|o| o.range != [8, 0, 4]), "{}: {:?}", d.path, d.occurrences);
+        let mut sorted: Vec<_> = d.occurrences.iter().map(|o| o.range.clone()).collect();
+        let before = sorted.clone();
+        sorted.sort();
+        assert_eq!(before, sorted, "{} is not sorted", d.path);
+    }
 }

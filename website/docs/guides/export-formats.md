@@ -42,6 +42,8 @@ GitLab reads it as a code-navigation report.
 | an external symbol | `hoverResult` named after the text at the site, `(external, stdlib)` |
 | a named external symbol | `moniker`, kind `import` |
 
+Declaration sites and includes (C and C++) are placed too. Each `{file, span}` entry of a node's `metadata["declared_at"]` becomes a reference range in its own file (in SCIP, an occurrence with the ForwardDefinition role, 0x40). A RESOLVES_TO that carries a `span` is placed like a reference, and a FILE it points at is defined at the first position of its document, so an `#include` operand navigates to the header.
+
 Positions are converted properly: callix counts bytes from 1, LSIF wants UTF-16
 units from 0. Give the exporter the sources (the directory you analysed, or
 `--source-root` for a saved graph) and every column is exact; without them

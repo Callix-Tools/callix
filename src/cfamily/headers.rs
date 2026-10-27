@@ -121,6 +121,11 @@ struct DeclEntry {
     owner: DeclSite,
     /// Every file that declared the name, in the order the files were walked.
     declared_in: Vec<String>,
+    /// Every recorded (file, name span), in record order, exact duplicates
+    /// skipped. Record order is the adapter's `sort_paths` walk order, so the
+    /// list is deterministic. The value of `metadata["declared_at"]` is this list
+    /// minus the owner's own site.
+    sites: Vec<(String, Span)>,
     /// The documentation: the definition's if it has one, else the first
     /// declaration's.
     doc: Option<String>,
@@ -154,6 +159,10 @@ impl DeclLedger {
             if !entry.declared_in.iter().any(|file| file == &site.file_rel) {
                 entry.declared_in.push(site.file_rel.clone());
             }
+            let at = (site.file_rel.clone(), site.name_span);
+            if !entry.sites.contains(&at) {
+                entry.sites.push(at);
+            }
             if site.doc.is_some()
                 && (entry.doc.is_none() || (site.defines && !entry.doc_is_the_definitions))
             {
@@ -171,6 +180,7 @@ impl DeclLedger {
             key,
             DeclEntry {
                 declared_in: vec![site.file_rel.clone()],
+                sites: vec![(site.file_rel.clone(), site.name_span)],
                 owner: site,
                 doc,
                 doc_is_the_definitions,
@@ -207,6 +217,29 @@ impl DeclLedger {
                     .declared_in
                     .iter()
                     .filter(|file| file.as_str() != entry.owner.file_rel.as_str())
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Every declaring site other than the one the node was built from, as
+    /// (project-relative file, name span) in record order - the value of
+    /// `metadata["declared_at"]`.
+    ///
+    /// Unlike `declared_elsewhere` this keeps a prototype that sits in the SAME
+    /// file as its definition (it has a position of its own). It is computed when
+    /// asked, so an owner that a later definition replaced is excluded correctly.
+    pub fn declared_at(&self, key: &DeclKey) -> Vec<(String, Span)> {
+        self.entries
+            .get(key)
+            .map(|entry| {
+                entry
+                    .sites
+                    .iter()
+                    .filter(|(file, span)| {
+                        !(file == &entry.owner.file_rel && *span == entry.owner.name_span)
+                    })
                     .cloned()
                     .collect()
             })
@@ -357,4 +390,75 @@ pub fn claims(dialect: Dialect, path: &Path, source: &[u8]) -> Result<bool, PyEr
         return Ok(false);
     }
     Ok(probe_dialect(source)? == dialect)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sp(line: u32, c0: u32, c1: u32) -> Span {
+        Span { start_line: line, start_col: c0, end_line: line, end_col: c1 }
+    }
+
+    fn site(file: &str, name_span: Span, defines: bool) -> DeclSite {
+        DeclSite {
+            file_rel: file.to_string(),
+            span: Span { start_line: name_span.start_line, start_col: 1, end_line: name_span.start_line + 1, end_col: 1 },
+            name_span,
+            defines,
+            doc: None,
+        }
+    }
+
+    fn key() -> DeclKey {
+        (NodeKind::Function, "add".to_string())
+    }
+
+    #[test]
+    fn a_prototype_recorded_before_the_definition_is_listed() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        ledger.record(key(), site("a.c", sp(3, 5, 8), true));
+        assert_eq!(ledger.declared_at(&key()), vec![("a.h".to_string(), sp(3, 5, 8))]);
+        assert_eq!(ledger.declared_elsewhere(&key()), vec!["a.h".to_string()]);
+    }
+
+    #[test]
+    fn a_definition_recorded_first_gives_the_same_answer() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.c", sp(3, 5, 8), true));
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        assert_eq!(ledger.declared_at(&key()), vec![("a.h".to_string(), sp(3, 5, 8))]);
+    }
+
+    #[test]
+    fn a_prototype_in_the_owners_own_file_is_listed_but_not_declared_in() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("x.c", sp(1, 5, 6), false));
+        ledger.record(key(), site("x.c", sp(2, 5, 6), true));
+        assert_eq!(ledger.declared_at(&key()), vec![("x.c".to_string(), sp(1, 5, 6))]);
+        assert!(ledger.declared_elsewhere(&key()).is_empty());
+    }
+
+    #[test]
+    fn with_no_definition_the_first_declaration_owns_and_the_rest_are_listed() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("h1.h", sp(1, 5, 6), false));
+        ledger.record(key(), site("h2.h", sp(4, 5, 6), false));
+        assert_eq!(ledger.declared_at(&key()), vec![("h2.h".to_string(), sp(4, 5, 6))]);
+    }
+
+    #[test]
+    fn order_is_record_order_and_duplicates_are_recorded_once() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.c", sp(9, 5, 8), true));
+        ledger.record(key(), site("b.h", sp(2, 5, 8), false));
+        ledger.record(key(), site("b.h", sp(2, 5, 8), false));
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        assert_eq!(
+            ledger.declared_at(&key()),
+            vec![("b.h".to_string(), sp(2, 5, 8)), ("a.h".to_string(), sp(3, 5, 8))]
+        );
+        assert!(ledger.declared_at(&(NodeKind::Function, "nope".to_string())).is_empty());
+    }
 }

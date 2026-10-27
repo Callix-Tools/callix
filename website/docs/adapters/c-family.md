@@ -40,11 +40,20 @@ that split them would answer "who calls this?" twice.
 survey pass over every file *before* the first node is written. Otherwise
 whichever file happened to be read first would set the node's span — a
 determinism bug, not a cosmetic one. The other declaring sites are recorded in
-`metadata["declared_in"]`, and every one of them emits a DECLARES edge:
+`metadata["declared_in"]`, and every one of them emits a DECLARES edge. Where
+each one writes the name is `metadata["declared_at"]`, one `{file, span}` entry
+per site (a prototype in the same file as the definition is listed there, not in
+`declared_in`):
 
 ```
 engine_build   file_path=src/engine.c:12   declared_in=['include/engine.h']
+               declared_at=[{'file': 'include/engine.h', 'span': 12:5-12:17}]
 ```
+
+An `#include` is positioned too: the path literal, quotes or angle brackets
+included, is the IMPORT's `name_span` and the `span` of its RESOLVES_TO to the
+header's FILE node (or to an external symbol). A computed `#include MACRO`
+names no file and is not positioned.
 
 **File-local names are prefixed with their file.** A `static` function in C, and
 anything in a C++ anonymous namespace, is visible only inside its translation

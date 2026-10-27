@@ -81,6 +81,8 @@ just the identifier, and that is the one resolution uses: a resolver answers
 with the position of a definition's *name*, so the lookup has to be against
 name spans.
 
+`node.metadata["declared_at"]` lists the other places a definition is written down. An entry is either a bare span in the node's own file (Python and TypeScript overload signatures) or `{"file": ..., "span": ...}` (C and C++ prototypes, forward declarations and in-class declarations, which are one node with their definition).
+
 ## Documentation
 
 `node.metadata["doc"]` holds what the author wrote about a definition, as plain

@@ -656,6 +656,10 @@ pub struct FoundInclude {
     /// `system` for `<…>`, `quoted` for `"…"`, `computed` for a macro.
     pub style: &'static str,
     pub span: Span,
+    /// The path literal including its `""` or `<>` delimiters (or the macro's
+    /// text when computed). It is the IMPORT's `name_span` and the span of the
+    /// RESOLVES_TO to the header.
+    pub path_span: Span,
 }
 
 /// Everything one file contributes, as plain data.
@@ -1389,6 +1393,7 @@ impl<'a> Reader<'a> {
     /// same header. A macro path — an `identifier` or a `call_expression` — is
     /// recorded verbatim and never resolved: expanding it is a preprocessor's
     /// job, and an unresolved include still becomes an EXTERNAL_SYMBOL.
+    /// The path literal (delimiters included) is kept as `path_span`.
     fn on_include(&mut self, node: TsNode<'_>) {
         let Some(path_node) = node.child_by_field_name("path") else {
             return;
@@ -1418,6 +1423,7 @@ impl<'a> Reader<'a> {
             path,
             style,
             span: ts::span(node),
+            path_span: ts::span(path_node),
         });
     }
 
@@ -3451,7 +3457,8 @@ impl<'a> CFamilyEmitter<'a> {
         // definition's rather than whichever file happened to be walked first.
         if self.ledger.owns(&key, &site) && !graph.has_node(&id) {
             let declared_in = self.ledger.declared_elsewhere(&key);
-            let metadata = self.metadata_for(decl, &declared_in)?;
+            let declared_at = self.ledger.declared_at(&key);
+            let metadata = self.metadata_for(decl, &declared_in, &declared_at)?;
             // The definition's comment wins; failing that, the first one a
             // declaration carries (C keeps its documentation in the header).
             if let Some(doc) = self.ledger.doc(&key) {
@@ -3489,6 +3496,7 @@ impl<'a> CFamilyEmitter<'a> {
         &self,
         decl: &FoundDecl,
         declared_in: &[String],
+        declared_at: &[(String, Span)],
     ) -> PyResult<Bound<'a, PyDict>> {
         let metadata = PyDict::new(self.py);
         // SpanIndex maps a definition's position back to the node through the
@@ -3539,11 +3547,28 @@ impl<'a> CFamilyEmitter<'a> {
         // so the key would always be an empty list.
         if decl.kind != NodeKind::Parameter {
             metadata.set_item("declared_in", PyList::new(self.py, declared_in)?)?;
+            // Where the other declaring sites write the name: a prototype, a
+            // forward declaration, an in-class declaration. Each entry names its
+            // file - even when it is the node's own - so a reader never has to
+            // guess which file a bare span belongs to.
+            if !declared_at.is_empty() {
+                let mut sites = Vec::with_capacity(declared_at.len());
+                for (file, span) in declared_at {
+                    let entry = PyDict::new(self.py);
+                    entry.set_item("file", file.as_str())?;
+                    entry.set_item("span", *span)?;
+                    sites.push(entry);
+                }
+                metadata.set_item("declared_at", PyList::new(self.py, sites)?)?;
+            }
         }
         Ok(metadata)
     }
 
     /// An IMPORT node for one `#include`, bound to the header it names.
+    ///
+    /// The IMPORT's `name_span` is the path literal, and so is the span of its
+    /// RESOLVES_TO; the FILE -> header IMPORTS edge is deliberately unpositioned.
     ///
     /// The header's FILE node id is COMPUTED rather than looked up. Ids are
     /// deterministic and the adapter creates a FILE node for every path in
@@ -3587,6 +3612,7 @@ impl<'a> CFamilyEmitter<'a> {
             metadata.set_item("include_path", &include.path)?;
             metadata.set_item("include_style", include.style)?;
             metadata.set_item("resolved_path", resolved.as_deref())?;
+            metadata.set_item("name_span", include.path_span)?;
             let node = Node {
                 id: import_id.clone(),
                 kind: NodeKind::Import,
@@ -3617,7 +3643,24 @@ impl<'a> CFamilyEmitter<'a> {
             target_id.clone(),
             RelationKind::Imports,
         )?;
-        push_relation(self.py, graph, import_id, target_id, RelationKind::ResolvesTo)
+        // The path literal is where this edge was written. IMPORTS (file -> file)
+        // stays unpositioned and deduplicated: it is a summary, and positioning
+        // it would repeat every site. A computed `#include MACRO` names no file,
+        // so its edge carries no position. An edge with metadata is exempt from
+        // `dedupe_structural_relations`, so a header included twice in a file
+        // (both arms of an `#ifdef`) keeps both sites.
+        if include.style == "computed" {
+            push_relation(self.py, graph, import_id, target_id, RelationKind::ResolvesTo)
+        } else {
+            push_relation_with_span(
+                self.py,
+                graph,
+                import_id,
+                target_id,
+                RelationKind::ResolvesTo,
+                include.path_span,
+            )
+        }
     }
 
     fn ensure_external_symbol(
@@ -3657,6 +3700,27 @@ fn push_relation(
         target_id,
         kind,
         metadata: PyDict::new(py).unbind(),
+    };
+    graph.push_relation(Py::new(py, relation)?);
+    Ok(())
+}
+
+/// A structural edge that records where it was written (`metadata["span"]`).
+fn push_relation_with_span(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    span: Span,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    let relation = Relation {
+        source_id,
+        target_id,
+        kind,
+        metadata: metadata.unbind(),
     };
     graph.push_relation(Py::new(py, relation)?);
     Ok(())

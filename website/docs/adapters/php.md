@@ -28,9 +28,12 @@ A great deal of PHP ships without a manifest, so detection falls back to "any
 `.php` file exists". A project found that way still produces a full structural
 graph; only the namespace-to-directory mapping is missing.
 
-`vendor/` is excluded, and only at the project root — that is where Composer
-writes it, and a mid-sized Symfony application vendors more PHP than it
-contains. `var/`, `cache/` and `.phpunit.cache/` are excluded at any depth.
+`vendor/` is excluded at the project root and in the tree of any nested
+Composer project — that is where Composer writes it, and a mid-sized Symfony
+application vendors more PHP than it contains. A `composer.json` inside an
+installed package is not a project root, so the graph does not depend on
+whether `composer install` has run. `var/`, `cache/` and `.phpunit.cache/` are
+excluded at any depth.
 
 ## The node scheme
 
@@ -69,14 +72,30 @@ A promoted constructor parameter produces **both** a `parameter` and an
 
 The symbol table resolves a use-site through, in order: the file's `use` alias
 map, the enclosing namespace, the global namespace, then a PSR-4 prefix lookup.
+The alias map is per kind, as in PHP: an unqualified function call goes through
+`use function` aliases only and an unqualified constant through `use const`
+only. A class alias (`use Lib\Once;`) applies to class positions and to the
+head of a qualified name (`Models\User`), so it does not capture `once()`, and
+an unqualified call never binds to a class.
 Receiver types are inferred for the cases that are syntactically recoverable and
 overwhelmingly common — `$x = new Foo()` followed by `$x->m()`, promoted
 constructor properties, `$this->`, and `self::` / `static::` / `parent::`.
+The keywords themselves resolve too, in every position they can be written - a
+type, `new`, `instanceof`, `::` and `::class`: `self` and `static` to the
+enclosing class, `parent` to its first base class (a `HAS_TYPE` or `REFERENCES`
+edge to it). Outside a class they resolve to nothing.
 
 Trait methods resolve through the class that uses them. In the fixture,
 `inspect(Base $item)` calling `$item->describe()` binds to
 `Fixture\Models\Describes\describe` — the trait's method, which is where the
 implementation actually is.
+
+A member is looked up in PHP's order: the class itself, then its traits, then its base class (recursively, with the base's own traits). An interface's declaration is the target only when none of those declares the method.
+
+Every `use` clause - plain, aliased, grouped, `use function` and `use const` - gets
+a `RESOLVES_TO` with a position to the class, function or constant it names. The
+`IMPORTS` edge to the namespace MODULE stays. A namespace alias resolves to its
+MODULE, and a vendor name to an EXTERNAL_SYMBOL marked `external`.
 
 Using a trait produces an `INHERITS_FROM` edge, the same as `extends` and
 `implements`. PHP traits are mixed in rather than inherited, so this is a
@@ -91,6 +110,8 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   return, an array element, a parameter with no type declaration.
 - **Dynamic class names** — `new $cls` and `$cls::method()` are followed only
   while `$cls` is assigned one `Foo::class` and nothing else.
+- **Late static binding** — `static` is taken to be the class it is written in, so
+  `static::m()` in a base class lands on the base's `m`, not on a subclass override.
 - **`__get`** — nothing declares what it accepts. `__call` and `__callStatic` are
   followed: a method no class of the hierarchy declares is a call of the one that
   does, unless a base class or trait outside the project may declare it.
@@ -98,15 +119,20 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   pass follows to the parameter it is handed to, through locals and `$this->name`
   properties, and it is a call where one of those is called (`$f()`,
   `($this->f)()`, `call_user_func($f)`). The pass ignores order: a parameter
-  reassigned before the call holds both values.
+  reassigned before the call holds both values. Where it is written, `g(...)`,
+  `A::m(...)` or `$o->m(...)` is also a `REFERENCES` edge (access `read`) from the
+  enclosing scope to the function or method, and never a `CALLS` edge at that site.
 - **Anything in `vendor/`** — deliberately not collected, so a call into a
   framework becomes an `EXTERNAL_SYMBOL`. That is the right answer for a call
   graph of *your* code, but it means callix cannot tell you what
   `$container->get('service')` returns.
 
 Everything unresolved still produces an edge to an `EXTERNAL_SYMBOL`, so a
-reference is never silently dropped. What the edge says about itself is its
-`resolution`: `definition` for a declaration of the project, `external` for a
+reference is never silently dropped. The exception is syntax: language
+constructs that look like calls (`isset`, `empty`, `eval`, `die`/`exit`, ...)
+and magic constants (`__DIR__`, `__CLASS__`, ...) are not symbols, so they
+produce no edge, while the calls inside their arguments still do. What the
+edge says about itself is its `resolution`: `definition` for a declaration of the project, `external` for a
 name no analysed source declares (a built-in such as `explode`, a library), and
 `unlocated` for a member of a class the project does declare that the table
 could not find on it (inherited from `vendor/`, declared only on an

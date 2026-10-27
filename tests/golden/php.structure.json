@@ -488,13 +488,26 @@
       "kind": "import",
       "metadata": {
         "alias": null,
+        "name_span": {
+          "__span__": [
+            7,
+            20,
+            7,
+            24
+          ]
+        },
         "origin": "internal",
         "original_name": "Fixture\\Models\\Base",
         "use_kind": "class"
       },
       "name": "Base",
       "qualified_name": "Fixture\\Base",
-      "span": null
+      "span": [
+        7,
+        5,
+        7,
+        24
+      ]
     },
     {
       "file_path": "src/Service.php",
@@ -502,13 +515,26 @@
       "kind": "import",
       "metadata": {
         "alias": null,
+        "name_span": {
+          "__span__": [
+            8,
+            20,
+            8,
+            26
+          ]
+        },
         "origin": "internal",
         "original_name": "Fixture\\Models\\Engine",
         "use_kind": "class"
       },
       "name": "Engine",
       "qualified_name": "Fixture\\Engine",
-      "span": null
+      "span": [
+        8,
+        5,
+        8,
+        26
+      ]
     },
     {
       "file_path": "src/Service.php",
@@ -516,13 +542,26 @@
       "kind": "import",
       "metadata": {
         "alias": null,
+        "name_span": {
+          "__span__": [
+            9,
+            20,
+            9,
+            26
+          ]
+        },
         "origin": "internal",
         "original_name": "Fixture\\Models\\Region",
         "use_kind": "class"
       },
       "name": "Region",
       "qualified_name": "Fixture\\Region",
-      "span": null
+      "span": [
+        9,
+        5,
+        9,
+        26
+      ]
     },
     {
       "file_path": "src/Service.php",
@@ -530,13 +569,26 @@
       "kind": "import",
       "metadata": {
         "alias": null,
+        "name_span": {
+          "__span__": [
+            10,
+            16,
+            10,
+            22
+          ]
+        },
         "origin": "third_party",
         "original_name": "GuzzleHttp\\Client",
         "use_kind": "class"
       },
       "name": "Client",
       "qualified_name": "Fixture\\Client",
-      "span": null
+      "span": [
+        10,
+        5,
+        10,
+        22
+      ]
     },
     {
       "file_path": null,

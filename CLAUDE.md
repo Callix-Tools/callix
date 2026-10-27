@@ -353,6 +353,12 @@ Things that are easy to get wrong:
   finds the repo's workspace from inside the fixture, refuses it, and
   rust-analyzer resolves nothing — as a quiet `unavailable`, which the golden run
   reports as a mismatch only when rust-analyzer is installed.
+- **Installed Composer packages are never PHP sub-roots.** `php_roots` drops a
+  `composer.json` below a `vendor/` that is the first component of its path, or
+  sits directly in a directory holding a `composer.json`. `PHP_EXCLUDED_AT_ROOT`
+  in `collect_php_files` applies only relative to a sub-root, so a vendor package
+  made a root of its own was walked in full and its namespaces became "internal"
+  to the resolver.
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.
@@ -393,7 +399,12 @@ Things that are easy to get wrong:
   of a module whose file comes later in the walk still lands on it. It once fell
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
-  resolver adds a `RESOLVES_TO` from the import to the definition.
+  resolver adds a `RESOLVES_TO` from the import to the definition. A PHP `use`
+  clause does the same at the last segment of the ORIGINAL name (never the
+  alias): the symbol table answers it by fully-qualified name and use kind
+  (class, function or const) without going through the file's alias map, a
+  namespace alias (`use App\Contracts;`) binds to its MODULE, and the IMPORT
+  node carries the clause's span.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

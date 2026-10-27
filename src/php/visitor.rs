@@ -378,6 +378,19 @@ impl<'a> PhpVisitor<'a> {
             "binary_expression" => self.visit_binary_expression(node),
             "catch_clause" => self.visit_catch_clause(node),
             "name" => {
+                // `__DIR__`, `__CLASS__`, ...: the engine's, not a symbol.
+                if super::builtins::is_magic_constant(&ts::text(node, self.source)) {
+                    return Ok(());
+                }
+                let container = self.container();
+                self.record_occurrence("read", node, &container);
+                Ok(())
+            }
+            // `self::`, `static::`, `parent::` in a scoped call, a scoped property, a
+            // class constant or `::class`: the keyword is a named node whose only
+            // child is an anonymous token, so it needs its own occurrence. The
+            // resolver answers it with the class the keyword stands for.
+            "relative_scope" => {
                 let container = self.container();
                 self.record_occurrence("read", node, &container);
                 Ok(())
@@ -455,11 +468,18 @@ impl<'a> PhpVisitor<'a> {
     /// identity available — but it has to have one: without a CLASS node its
     /// methods would be qualified into the enclosing scope, where they could
     /// collide with a real member of it.
+    ///
+    /// The `class` keyword stands in for the name token, so the node carries a
+    /// `name_span`: the resolver answers `new static` or a `self` type inside
+    /// the class with that position, and `SpanIndex::lookup_name` needs it to
+    /// find the node. The resolver (`declare_anonymous_class`) mirrors the
+    /// `class@L:C` naming used here; the two must change together.
     fn handle_anonymous_class(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let span = ts::span(node);
         let name = format!("class@{}:{}", span.start_line, span.start_col);
         let qname = self.qualify(&name);
-        self.declare_class(node, &qname, &name, None, ClassFlavour::Anonymous)?;
+        let keyword = ts::child_of_type(node, "class");
+        self.declare_class(node, &qname, &name, keyword, ClassFlavour::Anonymous)?;
 
         // The constructor arguments belong to the code that wrote `new`, not
         // to the class body, so they are scanned once the class scope is
@@ -1046,11 +1066,16 @@ impl<'a> PhpVisitor<'a> {
             "class" => declared_kind,
             own => own,
         };
-        self.emit_import(&local, &ext_qname, &last_segment, kind)
+        let Some(last) = last_name(path_node) else {
+            return Ok(());
+        };
+        self.emit_import(clause, last, &local, &ext_qname, &last_segment, kind)
     }
 
     fn emit_import(
         &mut self,
+        clause: TsNode<'_>,
+        last: TsNode<'_>,
         local_name: &str,
         ext_qname: &str,
         last_segment: &str,
@@ -1072,9 +1097,9 @@ impl<'a> PhpVisitor<'a> {
             NodeKind::Import,
             &import_qname,
             local_name,
-            None,
+            Some(clause),
             metadata,
-            None,
+            Some(last),
         )?;
         let import_id = import_node.get().id.clone();
         self.add_node_with_relation(import_node, RelationKind::Declares)?;
@@ -1095,6 +1120,9 @@ impl<'a> PhpVisitor<'a> {
 
         let file_id = self.file_node_id.to_string();
         self.push_relation(file_id, target_id.clone(), RelationKind::Imports)?;
+        // The resolution pass turns this into a RESOLVES_TO with a position, to the
+        // class, function or constant the clause names.
+        self.record_occurrence("import", last, &import_id);
         self.push_relation(import_id, target_id, RelationKind::ResolvesTo)
     }
 
@@ -1114,10 +1142,23 @@ impl<'a> PhpVisitor<'a> {
 
     fn visit_function_call(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let first_class = super::resolver::is_first_class_callable(node);
+        let construct = node
+            .child_by_field_name("function")
+            .is_some_and(|f| f.kind() == "name" && super::builtins::is_language_construct(&ts::text(f, self.source)));
         if let Some(function) = node.child_by_field_name("function") {
             match function.kind() {
-                // `g(...)` makes a callable of `g`; it is not a call of it.
-                "name" | "qualified_name" | "relative_name" if first_class => {}
+                // `g(...)` makes a callable of `g`: a reference to `g`, not a call of it.
+                // `isset(...)` and the other language constructs stay syntax.
+                "name" | "qualified_name" | "relative_name" if first_class => {
+                    if !construct
+                        && let Some(name_node) = last_name(function)
+                    {
+                        let container = self.container();
+                        self.record_occurrence("read_callable", name_node, &container);
+                    }
+                }
+                // `isset(...)`, `empty(...)`, `eval(...)`: syntax, not a call of a symbol.
+                "name" if construct => {}
                 "name" | "qualified_name" | "relative_name" => {
                     if let Some(name_node) = last_name(function) {
                         let container = self.container();
@@ -1171,6 +1212,7 @@ impl<'a> PhpVisitor<'a> {
                 }
             }
         } else if !first_class
+            && !construct
             && let Some(function) = node.child_by_field_name("function")
             && let Some(site) = last_name(function)
             && let Some(arguments) = node.child_by_field_name("arguments")

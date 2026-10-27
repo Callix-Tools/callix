@@ -235,7 +235,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              receiver (or a `new` assigned to it) when there is one and otherwise by name; an \
              undeclared method goes to `__call` when the class declares it; a callable named by \
              a string, an array or `g(...)` is followed to the parameter, local or property that \
-             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it",
+             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it; \
+             `static` is the class it is written in, not the one it is called on (no late static \
+             binding)",
         ),
         "c" | "cpp" => (
             "symbol table, by names",

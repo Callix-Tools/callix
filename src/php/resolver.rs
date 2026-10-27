@@ -11,7 +11,10 @@
 //!
 //! * a name, through the file's `use` aliases, then the enclosing namespace,
 //!   then the global namespace, then the file PSR-4 would load it from;
-//! * `$this->m()`, `self::m()`, `static::m()` and `parent::m()`;
+//! * `$this->m()`, `self::m()`, `static::m()` and `parent::m()`, and the keywords
+//!   themselves wherever they are written (a type, `new`, `instanceof`, `::`):
+//!   `self` and `static` are the class they are written in (no late static
+//!   binding), `parent` is its first base class;
 //! * `$x = new Foo(); $x->m()`, and the same receiver from a typed parameter, a
 //!   typed property, a promoted constructor property and a `catch` variable;
 //! * a member inherited from a base class, an interface or a trait.
@@ -113,15 +116,37 @@ struct Uses {
 struct Pending {
     /// The owning class, as a table key.
     class: String,
-    /// The property this types, or None when the name is a base class, an
-    /// interface or a trait.
-    property: Option<String>,
+    /// What the name is: a property's type, or a parent link of some kind.
+    role: PendingRole,
     name: String,
     doc: u32,
     namespace: String,
-    /// Whether this is a base class or a trait, which contribute members; an
-    /// interface contributes none.
-    inherits: bool,
+}
+
+/// Which kind of parent link a name is.
+#[derive(Clone, Copy)]
+enum ParentKind {
+    Base,
+    Trait,
+    Interface,
+}
+
+/// What a pending name stands for.
+enum PendingRole {
+    /// The type of this property (a method return type is `()name`).
+    Property(String),
+    /// A base class, a trait or an interface of the owning class.
+    Parent(ParentKind),
+}
+
+/// A class's parents, by kind, each in declared order. PHP searches them in a
+/// fixed order (traits, then base, then interfaces), so the kind matters.
+#[derive(Default)]
+struct Parents {
+    traits: Vec<String>,
+    /// A Vec only because half-written code can carry more than one `extends`.
+    bases: Vec<String>,
+    interfaces: Vec<String>,
 }
 
 /// The fully-qualified names a written name may mean, most specific first.
@@ -406,6 +431,59 @@ fn use_kind(node: TsNode<'_>) -> &'static str {
     }
 }
 
+/// One import of a `use` statement, group clauses already joined to their prefix.
+pub(super) struct UseClause<'tree> {
+    /// The fully-qualified name imported, without a leading `\`.
+    pub target: String,
+    /// The final `name` token of the ORIGINAL path (never the alias): this is
+    /// where the visitor records the `import` occurrence and where the answer is keyed.
+    pub last: TsNode<'tree>,
+    /// `class`, `function` or `const`.
+    pub kind: &'static str,
+}
+
+/// Every clause of a `namespace_use_declaration`, the group form included.
+pub(super) fn use_clauses<'tree>(decl: TsNode<'tree>, source: &[u8]) -> Vec<UseClause<'tree>> {
+    let declared = use_kind(decl);
+    let (prefix, clauses) = match decl.child_by_field_name("body") {
+        Some(group) => (
+            ts::child_of_type(decl, "namespace_name")
+                .map(|n| ts::text(n, source).into_owned())
+                .unwrap_or_default(),
+            ts::children(group),
+        ),
+        None => (String::new(), ts::children(decl)),
+    };
+    let mut out = Vec::new();
+    for clause in clauses {
+        if clause.kind() != "namespace_use_clause" {
+            continue;
+        }
+        let Some(path_node) = ts::child_of_types(clause, &["qualified_name", "name"]) else {
+            continue;
+        };
+        let Some(last) = last_name(path_node) else {
+            continue;
+        };
+        let path = ts::text(path_node, source);
+        let path = path.trim_matches('\\');
+        let target = if prefix.is_empty() {
+            path.to_string()
+        } else {
+            format!("{}\\{path}", prefix.trim_matches('\\'))
+        };
+        if target.is_empty() {
+            continue;
+        }
+        let kind = match use_kind(clause) {
+            "class" => declared,
+            own => own,
+        };
+        out.push(UseClause { target, last, kind });
+    }
+    out
+}
+
 /// The namespace a `namespace` statement or block names.
 fn namespace_of(node: TsNode<'_>, source: &[u8]) -> String {
     node.child_by_field_name("name")
@@ -418,6 +496,10 @@ struct DeclScope {
     namespace: String,
     /// The declared FQN of the class whose body is being walked.
     class: Option<String>,
+    /// Mirrors the top of the visitor's `scope_stack` (never lowercased): the
+    /// prefix the visitor gives an anonymous class's name. Namespaces, named
+    /// classes, methods and functions extend it; closures do not.
+    prefix: String,
 }
 
 /// The use-site walk's state.
@@ -436,6 +518,34 @@ struct UseScope {
     /// Local variable name → the one class name it is assigned (`Foo::class`),
     /// `None` once it is assigned anything else: `new $class()`, `$class::m()`.
     class_strings: HashMap<String, Option<ClassRef>>,
+}
+
+/// Which class a `self`, `static` or `parent` keyword stands for.
+#[derive(Clone, Copy)]
+enum Relative {
+    /// `self` and `static`: the class the keyword is written in.
+    Enclosing,
+    /// `parent`: its first base class.
+    Parent,
+}
+
+/// The keyword a written name is, matched the way PHP does: ASCII case-insensitively.
+fn relative_keyword(text: &str) -> Option<Relative> {
+    if text.eq_ignore_ascii_case("self") || text.eq_ignore_ascii_case("static") {
+        Some(Relative::Enclosing)
+    } else if text.eq_ignore_ascii_case("parent") {
+        Some(Relative::Parent)
+    } else {
+        None
+    }
+}
+
+/// The class a keyword names in this scope, or None when the scope has none.
+fn relative_class(scope: &UseScope, which: Relative) -> Option<ClassRef> {
+    match which {
+        Relative::Enclosing => scope.class.clone(),
+        Relative::Parent => scope.parent.clone(),
+    }
 }
 
 type MemberKey = (String, String);
@@ -464,10 +574,9 @@ pub struct PhpResolver {
     methods: MemberTable,
     properties: MemberTable,
     class_constants: MemberTable,
-    /// A class → its base class, its interfaces and its traits. All three
-    /// contribute members, so all three are walked when a member is not
-    /// declared on the class itself.
-    parents: HashMap<String, Vec<String>>,
+    /// A class → its traits, its base class and its interfaces, kept apart.
+    /// All three contribute members; `in_hierarchy` walks them in PHP's order.
+    parents: HashMap<String, Parents>,
     /// Classes with a base class or a trait outside the workspace: what they
     /// inherit is not known, so a method they do not declare may be there.
     foreign_parents: HashSet<String>,
@@ -483,6 +592,10 @@ pub struct PhpResolver {
     /// (document, lowercased short name) → the class it declares — the other
     /// half of the PSR-4 fallback.
     short_names: HashMap<(u32, String), String>,
+    /// (document, line, column) of an `anonymous_class` node → its table key.
+    /// The declaration pass is the only place that computes the name the
+    /// visitor gives it (`<scope>\class@L:C`); the use pass looks it up here.
+    anonymous: HashMap<(u32, u32, u32), String>,
     /// Names held over until every file has been indexed.
     pending: Vec<Pending>,
     /// PSR-4 prefix → directory relative to the project root, longest prefix
@@ -516,6 +629,7 @@ impl Default for PhpResolver {
             self_returning: HashSet::new(),
             enums: HashSet::new(),
             short_names: HashMap::new(),
+            anonymous: HashMap::new(),
             pending: Vec::new(),
             psr4: Vec::new(),
             internal: HashSet::new(),
@@ -558,17 +672,19 @@ impl PhpResolver {
             return Candidates { names, bound: true };
         }
 
-        // Only the FIRST segment can be an alias. A `use function` alias names
-        // a function and nothing else, but the head of a qualified name is
-        // always a class-or-namespace alias — `use App\Models; … Models\User`.
+        // Only the FIRST segment can be an alias. An unqualified function name
+        // goes through `use function` aliases only, an unqualified constant
+        // through `use const` only: PHP keeps classes in a separate table, so
+        // a `use Lib\Once;` says nothing about `once()`. The head of a
+        // qualified name is always a class-or-namespace alias —
+        // `use App\Models; … Models\User` — whatever the name is used as.
         let uses = &self.uses[doc as usize];
         let head = head.to_lowercase();
-        let alias = match kind {
-            NameKind::Function if rest.is_none() => uses.functions.get(&head),
-            NameKind::Value if rest.is_none() => uses.constants.get(&head),
-            _ => None,
-        }
-        .or_else(|| uses.classes.get(&head));
+        let alias = match (kind, rest) {
+            (NameKind::Function, None) => uses.functions.get(&head),
+            (NameKind::Value, None) => uses.constants.get(&head),
+            _ => uses.classes.get(&head),
+        };
         if let Some(target) = alias {
             let names = match rest {
                 Some(rest) => vec![format!("{target}\\{rest}")],
@@ -625,6 +741,27 @@ impl PhpResolver {
             return ClassRef::Foreign(bare.to_string());
         }
         ClassRef::Foreign(Self::reportable(&candidates, NameKind::Class))
+    }
+
+    /// What a use-site of a class answers with: the declaration, or the real name of
+    /// a class the workspace does not declare (a vendor base class).
+    fn class_answer(&self, class: &ClassRef) -> Answer {
+        match class {
+            ClassRef::Declared(key) => match self.classes.get(key) {
+                Some(entry) => Answer::Internal(entry.site),
+                None => self.external(key.clone()),
+            },
+            ClassRef::Foreign(fqn) => self.external(fqn.clone()),
+        }
+    }
+
+    /// Like `class_ref`, but `self`, `static` and `parent` are the scope's classes
+    /// and never a name to qualify. None when the scope has no such class.
+    fn scoped_class_ref(&self, name: &str, doc: u32, scope: &UseScope) -> Option<ClassRef> {
+        match relative_keyword(name) {
+            Some(which) => relative_class(scope, which),
+            None => Some(self.class_ref(name, doc, &scope.namespace)),
+        }
     }
 
     /// The class declared by the file PSR-4 maps the name to.
@@ -695,12 +832,18 @@ impl PhpResolver {
         }
     }
 
-    /// Walks a class, its base class, its interfaces and its traits.
+    /// Walks a class in the order PHP finds a member: the class itself, its
+    /// traits (a trait may `use` others), then its base class and the base's own
+    /// traits and base. Interfaces are searched in a second pass, only when no
+    /// class or trait in the chain has the member: an interface method is the
+    /// target only when nothing implements it on the way.
     ///
     /// The visited set is not an optimization: PHP rejects a cycle, but a
     /// half-written file can still describe one and this must not hang.
     fn in_hierarchy<T>(&self, class: &str, probe: impl Fn(&str) -> Option<T>) -> Option<T> {
         let mut seen: HashSet<String> = HashSet::new();
+        // Interfaces met in the first pass, in visit order: the roots of the second.
+        let mut interfaces: Vec<String> = Vec::new();
         let mut stack = vec![class.to_string()];
         while let Some(current) = stack.pop() {
             if !seen.insert(current.clone()) {
@@ -710,7 +853,24 @@ impl PhpResolver {
                 return Some(found);
             }
             if let Some(parents) = self.parents.get(&current) {
-                stack.extend(parents.iter().cloned());
+                interfaces.extend(parents.interfaces.iter().cloned());
+                // Pushed last, popped first: traits before the base class.
+                stack.extend(parents.bases.iter().rev().cloned());
+                stack.extend(parents.traits.iter().rev().cloned());
+            }
+        }
+        let mut stack: Vec<String> = interfaces.into_iter().rev().collect();
+        while let Some(current) = stack.pop() {
+            if !seen.insert(current.clone()) {
+                continue;
+            }
+            if let Some(found) = probe(&current) {
+                return Some(found);
+            }
+            if let Some(parents) = self.parents.get(&current) {
+                stack.extend(parents.traits.iter().rev().cloned());
+                stack.extend(parents.bases.iter().rev().cloned());
+                stack.extend(parents.interfaces.iter().rev().cloned());
             }
         }
         None
@@ -775,6 +935,29 @@ impl PhpResolver {
         self.constants.get(fqn).copied()
     }
 
+    /// The answer for the name a `use` clause imports. A use path is always fully
+    /// qualified, so it never goes through `candidates()`: the file's own aliases
+    /// would otherwise rewrite it.
+    fn use_answer(&self, doc: u32, fqn: &str, kind: &str) -> Answer {
+        match kind {
+            "function" => match self.declared_function(fqn) {
+                Some(site) => Answer::Internal(site),
+                None => self.external(fqn.to_string()),
+            },
+            "const" => match self.declared_constant(fqn) {
+                Some(site) => Answer::Internal(site),
+                None => self.external(fqn.to_string()),
+            },
+            _ => match self.class_ref(&format!("\\{fqn}"), doc, "") {
+                ClassRef::Declared(key) => match self.classes.get(&key) {
+                    Some(entry) => Answer::Internal(entry.site),
+                    None => self.external(fqn.to_string()),
+                },
+                ClassRef::Foreign(_) => self.external(fqn.to_string()),
+            },
+        }
+    }
+
     /// The answer for a name written in an expression or a type.
     ///
     /// Never None: a name that can be read is a name that can be reported, and
@@ -782,13 +965,12 @@ impl PhpResolver {
     fn name_answer(&self, name: &str, doc: u32, namespace: &str, kind: NameKind) -> Answer {
         let candidates = self.candidates(name, doc, namespace, kind);
         for candidate in &candidates.names {
-            // The order is the one the syntax implies: a call names a function
-            // first, a type a class, a bare read anything at all.
+            // The order is the one the syntax implies: a call names only a
+            // function (PHP never calls a class by `f()`), a type a class, a
+            // bare read anything at all.
             let found = match kind {
                 NameKind::Class => self.declared_class(candidate),
-                NameKind::Function => self
-                    .declared_function(candidate)
-                    .or_else(|| self.declared_class(candidate)),
+                NameKind::Function => self.declared_function(candidate),
                 NameKind::Value => self
                     .declared_class(candidate)
                     .or_else(|| self.declared_constant(candidate))
@@ -900,23 +1082,32 @@ impl PhpResolver {
                 match node.child_by_field_name("body") {
                     // The braces bound the namespace.
                     Some(body) => {
-                        let mut inner = DeclScope { namespace: name, class: scope.class.clone() };
+                        let mut inner = DeclScope {
+                            namespace: name.clone(),
+                            class: scope.class.clone(),
+                            prefix: name,
+                        };
                         self.walk_decl_children(doc, source, body, &mut inner);
                     }
                     // The statement form runs to the next one or to the end of
                     // the file, so it rewrites what its siblings see.
-                    None => scope.namespace = name,
+                    None => {
+                        scope.prefix = name.clone();
+                        scope.namespace = name;
+                    }
                 }
             }
             "namespace_use_declaration" => self.index_use_declaration(doc, source, node),
             "class_declaration" | "interface_declaration" | "trait_declaration"
             | "enum_declaration" => self.declare_class(doc, source, node, scope),
+            "anonymous_class" => self.declare_anonymous_class(doc, source, node, scope),
             "method_declaration" => {
                 if let Some(class) = scope.class.clone() {
                     let namespace = scope.namespace.clone();
                     self.declare_method(doc, source, node, &class, &namespace);
                 }
-                self.walk_decl_children(doc, source, node, scope);
+                let mut inner = Self::callable_decl_scope(scope, source, node);
+                self.walk_decl_children(doc, source, node, &mut inner);
             }
             // A function declared inside a class body is a `method_declaration`
             // in this grammar, so a `function_definition` always belongs to its
@@ -928,7 +1119,8 @@ impl PhpResolver {
                         qualify(&scope.namespace, &ts::text(name_node, source)).to_lowercase();
                     self.functions.entry(qname).or_insert(Self::site(doc, name_node));
                 }
-                self.walk_decl_children(doc, source, node, scope);
+                let mut inner = Self::callable_decl_scope(scope, source, node);
+                self.walk_decl_children(doc, source, node, &mut inner);
             }
             "property_declaration" => self.declare_properties(doc, source, node, scope),
             "const_declaration" => self.declare_constants(doc, source, node, scope),
@@ -952,7 +1144,7 @@ impl PhpResolver {
                     let namespace = scope.namespace.clone();
                     for child in ts::children(node) {
                         if matches!(child.kind(), "name" | "qualified_name" | "relative_name") {
-                            self.push_pending(doc, source, &class, None, child, &namespace, true);
+                            self.push_pending(doc, source, &class, PendingRole::Parent(ParentKind::Trait), child, &namespace);
                         }
                     }
                 }
@@ -967,15 +1159,13 @@ impl PhpResolver {
         doc: u32,
         source: &[u8],
         class: &str,
-        property: Option<&str>,
+        role: PendingRole,
         reference: TsNode<'_>,
         namespace: &str,
-        inherits: bool,
     ) {
         self.pending.push(Pending {
-            inherits,
             class: class.to_lowercase(),
-            property: property.map(str::to_string),
+            role,
             name: ts::text(reference, source).into_owned(),
             doc,
             namespace: namespace.to_string(),
@@ -983,8 +1173,8 @@ impl PhpResolver {
     }
 
     fn declare_class(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &DeclScope) {
-        // An anonymous class is deliberately not indexed: nothing outside the
-        // expression that creates it can name it.
+        // A nameless node is skipped here: an anonymous class is declared by
+        // `declare_anonymous_class`, under the visitor's synthetic name.
         let Some(name_node) = node.child_by_field_name("name") else {
             return;
         };
@@ -1002,32 +1192,97 @@ impl PhpResolver {
             self.enums.insert(key.clone());
         }
 
-        // `extends` and `implements` only: an enum's backing type is a
-        // positional `primitive_type` sharing the child list with them, and a
-        // scan of the whole list would report `string` as an interface.
-        for clause in ts::children(node) {
-            if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
-                continue;
-            }
-            for reference in class_refs(clause) {
-                self.push_pending(
-                    doc,
-                    source,
-                    &fqn,
-                    None,
-                    reference,
-                    &scope.namespace,
-                    clause.kind() == "base_clause",
-                );
-            }
-        }
+        self.declare_bases(doc, source, node, &fqn, &scope.namespace);
 
         if let Some(body) = node.child_by_field_name("body") {
             let mut inner = DeclScope {
                 namespace: scope.namespace.clone(),
+                prefix: qualify(&scope.prefix, &name),
                 class: Some(fqn),
             };
             self.walk_decl_children(doc, source, body, &mut inner);
+        }
+    }
+
+    /// `extends` and `implements` only: an enum's backing type is a positional
+    /// `primitive_type` sharing the child list with them, and a scan of the
+    /// whole list would report `string` as an interface.
+    fn declare_bases(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        class_fqn: &str,
+        namespace: &str,
+    ) {
+        for clause in ts::children(node) {
+            if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
+                continue;
+            }
+            // `interface I extends J` lists interfaces; a class's `extends` is a base.
+            let kind = if clause.kind() == "base_clause" && node.kind() != "interface_declaration" {
+                ParentKind::Base
+            } else {
+                ParentKind::Interface
+            };
+            for reference in class_refs(clause) {
+                self.push_pending(
+                    doc,
+                    source,
+                    class_fqn,
+                    PendingRole::Parent(kind),
+                    reference,
+                    namespace,
+                );
+            }
+        }
+    }
+
+    /// The scope a method or function body is walked in: the visitor pushes the
+    /// callable's name, so an anonymous class inside it is named under it.
+    fn callable_decl_scope(scope: &DeclScope, source: &[u8], node: TsNode<'_>) -> DeclScope {
+        let prefix = match node.child_by_field_name("name") {
+            Some(name_node) => qualify(&scope.prefix, &ts::text(name_node, source)),
+            None => scope.prefix.clone(),
+        };
+        DeclScope { namespace: scope.namespace.clone(), class: scope.class.clone(), prefix }
+    }
+
+    /// `new class(…) extends Base { … }`. The visitor names the CLASS node
+    /// `<scope>\class@L:C` from the node's own start; this pass computes the same
+    /// name, keys the class by it and remembers the key by position. The name
+    /// cannot be written in PHP (`@`), so it is kept out of `short_names`.
+    fn declare_anonymous_class(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        scope: &mut DeclScope,
+    ) {
+        let span = ts::span(node);
+        let name = format!("class@{}:{}", span.start_line, span.start_col);
+        let fqn = qualify(&scope.prefix, &name);
+        let key = fqn.to_lowercase();
+        let site = Self::site(doc, ts::child_of_type(node, "class").unwrap_or(node));
+        self.classes
+            .entry(key.clone())
+            .or_insert_with(|| ClassEntry { fqn: fqn.clone(), site });
+        self.anonymous.insert((doc, span.start_line, span.start_col), key);
+        self.declare_bases(doc, source, node, &fqn, &scope.namespace);
+
+        // The constructor arguments belong to the code that wrote `new`.
+        if let Some(arguments) = ts::child_of_type(node, "arguments") {
+            self.walk_decl_children(doc, source, arguments, scope);
+        }
+        let mut inner = DeclScope {
+            namespace: scope.namespace.clone(),
+            class: Some(fqn.clone()),
+            prefix: fqn,
+        };
+        for field in ["attributes", "body"] {
+            if let Some(child) = node.child_by_field_name(field) {
+                self.walk_decl_children(doc, source, child, &mut inner);
+            }
         }
     }
 
@@ -1055,7 +1310,7 @@ impl PhpResolver {
             if text == "self" || text == "static" {
                 self.self_returning.insert((class.to_lowercase(), name.clone()));
             } else if let [only] = class_refs(return_type)[..] {
-                self.push_pending(doc, source, class, Some(&format!("(){name}")), only, namespace, false);
+                self.push_pending(doc, source, class, PendingRole::Property(format!("(){name}")), only, namespace);
             }
         }
 
@@ -1123,7 +1378,7 @@ impl PhpResolver {
         if let Some(type_node) = type_node {
             let references = class_refs(type_node);
             if let [only] = references[..] {
-                self.push_pending(doc, source, class, Some(&name), only, namespace, false);
+                self.push_pending(doc, source, class, PendingRole::Property(name.clone()), only, namespace);
             }
         }
     }
@@ -1165,17 +1420,33 @@ impl PhpResolver {
     fn link(&mut self) {
         let pending = std::mem::take(&mut self.pending);
         for item in pending {
-            let class = self.class_ref(&item.name, item.doc, &item.namespace);
-            match item.property {
-                Some(property) => {
+            // A property typed `self` or `static` holds the class it is declared in.
+            // `parent` cannot be told here (the base link is being built in this very
+            // loop), so that property stays untyped rather than guessed.
+            let is_property = matches!(item.role, PendingRole::Property(_));
+            let keyword = relative_keyword(&item.name).filter(|_| is_property);
+            let class = match keyword {
+                Some(Relative::Enclosing) => ClassRef::Declared(item.class.clone()),
+                Some(Relative::Parent) => continue,
+                None => self.class_ref(&item.name, item.doc, &item.namespace),
+            };
+            match item.role {
+                PendingRole::Property(property) => {
                     self.property_types.insert((item.class, property), class);
                 }
-                // A base class outside the workspace contributes no members
-                // this index could find, so the link is not worth keeping.
-                None => {
+                // A parent outside the workspace contributes no members this
+                // index could find, so the link is not worth keeping. An
+                // undeclared base class or trait makes the class foreign; an
+                // interface contributes no members, so it does not.
+                PendingRole::Parent(kind) => {
                     if let ClassRef::Declared(parent) = class {
-                        self.parents.entry(item.class).or_default().push(parent);
-                    } else if item.inherits {
+                        let parents = self.parents.entry(item.class).or_default();
+                        match kind {
+                            ParentKind::Base => parents.bases.push(parent),
+                            ParentKind::Trait => parents.traits.push(parent),
+                            ParentKind::Interface => parents.interfaces.push(parent),
+                        }
+                    } else if matches!(kind, ParentKind::Base | ParentKind::Trait) {
                         self.foreign_parents.insert(item.class);
                     }
                 }
@@ -1204,6 +1475,16 @@ impl PhpResolver {
             return;
         };
         let name = ts::text(node, source).into_owned();
+        // Syntax, not symbols: the visitor records no query here either.
+        if node.kind() == "name"
+            && match kind {
+                NameKind::Function => super::builtins::is_language_construct(&name),
+                NameKind::Value => super::builtins::is_magic_constant(&name),
+                NameKind::Class => false,
+            }
+        {
+            return;
+        }
         let answer = self.name_answer(&name, doc, namespace, kind);
         self.record(doc, position, answer);
     }
@@ -1222,10 +1503,26 @@ impl PhpResolver {
 
     /// Every class name a type declaration mentions, so a union type binds to
     /// each member of it rather than to its first.
-    fn record_type(&mut self, doc: u32, source: &[u8], type_node: TsNode<'_>, namespace: &str) {
+    fn record_type(&mut self, doc: u32, source: &[u8], type_node: TsNode<'_>, scope: &UseScope) {
         for reference in class_refs(type_node) {
-            self.record_name(doc, source, reference, namespace, NameKind::Class);
+            self.record_class_name(doc, source, reference, scope);
         }
+    }
+
+    /// A class named in a type, `instanceof` or similar position. `self`, `static`
+    /// and `parent` answer with the scope's class; with no such class they answer
+    /// nothing (counted unresolved) instead of a made-up `App\self`.
+    fn record_class_name(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &UseScope) {
+        if node.kind() == "name"
+            && let Some(which) = relative_keyword(&ts::text(node, source))
+        {
+            if let Some(class) = relative_class(scope, which) {
+                let answer = self.class_answer(&class);
+                self.record(doc, node, answer);
+            }
+            return;
+        }
+        self.record_name(doc, source, node, &scope.namespace, NameKind::Class);
     }
 
     /// The class an expression evaluates to, as far as a symbol table can tell.
@@ -1254,12 +1551,20 @@ impl PhpResolver {
                 _ => scope.class.clone(),
             },
             "name" | "qualified_name" | "relative_name" => {
-                Some(self.class_ref(&ts::text(node, source), doc, &scope.namespace))
+                self.scoped_class_ref(&ts::text(node, source), doc, scope)
             }
             "object_creation_expression" => {
+                if let Some(anonymous) = ts::child_of_type(node, "anonymous_class") {
+                    let span = ts::span(anonymous);
+                    return self
+                        .anonymous
+                        .get(&(doc, span.start_line, span.start_col))
+                        .cloned()
+                        .map(ClassRef::Declared);
+                }
                 let class =
                     ts::child_of_types(node, &["name", "qualified_name", "relative_name"])?;
-                Some(self.class_ref(&ts::text(class, source), doc, &scope.namespace))
+                self.scoped_class_ref(&ts::text(class, source), doc, scope)
             }
             "member_access_expression" | "nullsafe_member_access_expression" => {
                 let object = node.child_by_field_name("object")?;
@@ -1358,7 +1663,6 @@ impl PhpResolver {
         parameters: TsNode<'_>,
         scope: &mut UseScope,
     ) {
-        let namespace = scope.namespace.clone();
         for parameter in ts::children(parameters) {
             if !matches!(
                 parameter.kind(),
@@ -1373,15 +1677,15 @@ impl PhpResolver {
                 scope.class_strings.insert(name, None);
             }
             if let Some(type_node) = parameter.child_by_field_name("type") {
-                self.record_type(doc, source, type_node, &namespace);
+                self.record_type(doc, source, type_node, scope);
                 let references = class_refs(type_node);
                 // One class names a receiver; a union names none.
                 if let [only] = references[..]
                     && let Some(ident) = parameter
                         .child_by_field_name("name")
                         .and_then(variable_identifier)
+                    && let Some(class) = self.scoped_class_ref(&ts::text(only, source), doc, scope)
                 {
-                    let class = self.class_ref(&ts::text(only, source), doc, &namespace);
                     scope
                         .vars
                         .insert(ts::text(ident, source).into_owned(), class);
@@ -1405,7 +1709,6 @@ impl PhpResolver {
         inherits: bool,
     ) {
         let mut inner = Self::callable_scope(scope, inherits);
-        let namespace = inner.namespace.clone();
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, &mut inner);
         }
@@ -1413,7 +1716,7 @@ impl PhpResolver {
             self.bind_parameters(doc, source, parameters, &mut inner);
         }
         if let Some(return_type) = node.child_by_field_name("return_type") {
-            self.record_type(doc, source, return_type, &namespace);
+            self.record_type(doc, source, return_type, &inner);
         }
         // Absent on an abstract method and on an interface's members.
         if let Some(body) = node.child_by_field_name("body") {
@@ -1462,12 +1765,9 @@ impl PhpResolver {
             None => self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function),
             Some(class) => {
                 let receiver = match class {
-                    CallableClass::Named(name) => Some(self.class_ref(name, doc, &scope.namespace)),
+                    CallableClass::Named(name) => self.scoped_class_ref(name, doc, scope),
                     CallableClass::Expression(class) if class.kind() == "class_constant_access_expression" => {
-                        ts::children(*class)
-                            .into_iter()
-                            .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
-                            .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
+                        self.class_constant_name(doc, source, *class, scope)
                     }
                     CallableClass::Expression(class) => self.infer(doc, source, *class, scope),
                 };
@@ -1503,12 +1803,18 @@ impl PhpResolver {
                     None => scope.namespace = name,
                 }
             }
-            // The imported paths are not use-sites: the visitor turns them into
-            // IMPORT nodes itself and records no occurrence for them.
-            "namespace_use_declaration" => {}
+            // Each clause is answered at the last name of the original path, which
+            // is where the visitor records its `import` occurrence.
+            "namespace_use_declaration" => {
+                for clause in use_clauses(node, source) {
+                    let answer = self.use_answer(doc, &clause.target, clause.kind);
+                    self.record(doc, clause.last, answer);
+                }
+            }
 
             "class_declaration" | "interface_declaration" | "trait_declaration"
             | "enum_declaration" => self.walk_class(doc, source, node, scope),
+            "anonymous_class" => self.walk_anonymous_class(doc, source, node, scope),
 
             "method_declaration" => self.walk_callable(doc, source, node, scope, true),
             "function_definition" => self.walk_callable(doc, source, node, scope, false),
@@ -1576,24 +1882,11 @@ impl PhpResolver {
                         }
                         // `new static()`: the class the keyword stands for.
                         "relative_scope" | "name" => {
-                            let class = if child.kind() == "name"
-                                && ts::text(child, source).eq_ignore_ascii_case("parent")
+                            if let Some(which) = relative_keyword(&ts::text(child, source))
+                                && let Some(class) = relative_class(scope, which)
                             {
-                                scope.parent.clone()
-                            } else if child.kind() == "name" {
-                                scope.class.clone()
-                            } else {
-                                self.infer(doc, source, child, scope)
-                            };
-                            if let Some(ClassRef::Declared(key)) = class
-                                && let Some(entry) = self.classes.get(&key)
-                            {
-                                let site = entry.site;
-                                self.record(
-                                    doc,
-                                    child,
-                                    Answer::Internal(site),
-                                );
+                                let answer = self.class_answer(&class);
+                                self.record(doc, child, answer);
                             }
                         }
                         // `new $class()`: the class the variable is known to name.
@@ -1664,8 +1957,7 @@ impl PhpResolver {
                 if is_instanceof
                     && let Some(operand) = operand
                 {
-                    let namespace = scope.namespace.clone();
-                    self.record_name(doc, source, operand, &namespace, NameKind::Class);
+                    self.record_class_name(doc, source, operand, scope);
                     if let Some(left) = node.child_by_field_name("left") {
                         self.walk_uses(doc, source, left, scope);
                     }
@@ -1732,6 +2024,15 @@ impl PhpResolver {
                 let namespace = scope.namespace.clone();
                 self.record_name(doc, source, node, &namespace, NameKind::Value);
             }
+            // `self`, `static`, `parent` before `::`: the class the keyword stands for.
+            "relative_scope" => {
+                if let Some(which) = relative_keyword(&ts::text(node, source))
+                    && let Some(class) = relative_class(scope, which)
+                {
+                    let answer = self.class_answer(&class);
+                    self.record(doc, node, answer);
+                }
+            }
             // A local variable, `$this` included: nothing outside the function
             // can name it, so there is nothing to resolve.
             "variable_name" => {}
@@ -1749,9 +2050,8 @@ impl PhpResolver {
         node: TsNode<'_>,
         scope: &mut UseScope,
     ) {
-        let namespace = scope.namespace.clone();
         if let Some(type_node) = node.child_by_field_name("type") {
-            self.record_type(doc, source, type_node, &namespace);
+            self.record_type(doc, source, type_node, scope);
         }
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, scope);
@@ -1800,8 +2100,27 @@ impl PhpResolver {
             }
         });
 
-        // Only the first `extends` is what `parent::` means; an interface is
-        // not, and neither is a trait.
+        let parent = self.walk_bases(doc, source, node, &namespace);
+
+        let mut inner = UseScope { namespace, class, parent, ..UseScope::default() };
+        if let Some(attributes) = node.child_by_field_name("attributes") {
+            self.walk_use_children(doc, source, attributes, &mut inner);
+        }
+        if let Some(body) = node.child_by_field_name("body") {
+            self.walk_use_children(doc, source, body, &mut inner);
+        }
+    }
+
+    /// Records every name in the `extends`/`implements` clauses and returns the
+    /// first `extends` — the only thing `parent::` means; an interface is not,
+    /// and neither is a trait.
+    fn walk_bases(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        namespace: &str,
+    ) -> Option<ClassRef> {
         let mut parent = None;
         for clause in ts::children(node) {
             if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
@@ -1809,13 +2128,41 @@ impl PhpResolver {
             }
             for reference in class_refs(clause) {
                 if clause.kind() == "base_clause" && parent.is_none() {
-                    parent = Some(self.class_ref(&ts::text(reference, source), doc, &namespace));
+                    parent = Some(self.class_ref(&ts::text(reference, source), doc, namespace));
                 }
-                self.record_name(doc, source, reference, &namespace, NameKind::Class);
+                self.record_name(doc, source, reference, namespace, NameKind::Class);
             }
         }
+        parent
+    }
 
-        let mut inner = UseScope { namespace, class, parent, ..UseScope::default() };
+    /// `new class(…) extends Base { … }`: the arguments are the creator's, the
+    /// body is a scope of its own whose `$this`, `self` and `static` are the
+    /// anonymous class and whose `parent` is its base. It captures nothing, so
+    /// it starts with no local variables.
+    fn walk_anonymous_class(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        scope: &mut UseScope,
+    ) {
+        let span = ts::span(node);
+        let Some(key) = self.anonymous.get(&(doc, span.start_line, span.start_col)).cloned() else {
+            self.walk_use_children(doc, source, node, scope);
+            return;
+        };
+        let namespace = scope.namespace.clone();
+        if let Some(arguments) = ts::child_of_type(node, "arguments") {
+            self.walk_uses(doc, source, arguments, scope);
+        }
+        let parent = self.walk_bases(doc, source, node, &namespace);
+        let mut inner = UseScope {
+            namespace,
+            class: Some(ClassRef::Declared(key)),
+            parent,
+            ..UseScope::default()
+        };
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, &mut inner);
         }
@@ -1932,17 +2279,16 @@ impl PhpResolver {
     /// `catch (FooError | BarError $e) { … }` — a type position, and one that
     /// types the variable it binds.
     fn walk_catch(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &mut UseScope) {
-        let namespace = scope.namespace.clone();
         if let Some(type_node) = node.child_by_field_name("type") {
-            self.record_type(doc, source, type_node, &namespace);
+            self.record_type(doc, source, type_node, scope);
             let references = class_refs(type_node);
             // A union of exception types names no single class.
             if let [only] = references[..]
                 && let Some(ident) = node
                     .child_by_field_name("name")
                     .and_then(variable_identifier)
+                && let Some(class) = self.scoped_class_ref(&ts::text(only, source), doc, scope)
             {
-                let class = self.class_ref(&ts::text(only, source), doc, &namespace);
                 scope
                     .vars
                     .insert(ts::text(ident, source).into_owned(), class);
@@ -1972,6 +2318,9 @@ impl PhpResolver {
     /// Directories are made relative to the project root, so a PSR-4 path can
     /// be compared with a document path even when the composer package sits in
     /// a subdirectory of a monorepo.
+    ///
+    /// Installed `vendor/` packages are not roots (see `php_roots`), so their
+    /// PSR-4 prefixes never become internal.
     fn load_manifests(&mut self, project_root: &Path) {
         for root in php_roots(project_root) {
             let base = root
@@ -2055,7 +2404,7 @@ impl PhpResolver {
             }
             let relative = self.relative(file);
             let doc = self.intern_doc(&relative);
-            let mut scope = DeclScope { namespace: String::new(), class: None };
+            let mut scope = DeclScope { namespace: String::new(), class: None, prefix: String::new() };
             self.walk_decl_children(doc, &source, tree.root_node(), &mut scope);
             sources.push((doc, source));
         }

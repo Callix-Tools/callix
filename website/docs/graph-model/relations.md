@@ -20,7 +20,7 @@ relation.metadata    # dict[str, object]
 | `CONTAINS` | project → module, module → file | structure |
 | `DECLARES` | file → declaration | structure |
 | `IMPORTS` | file → import | structure |
-| `RESOLVES_TO` | import → module or external symbol | structure |
+| `RESOLVES_TO` | import → module or external symbol; import → the imported definition | structure; resolution |
 | `DEPENDS_ON` | project → dependency | structure |
 | `CALLS` | function → callee | resolution |
 | `REFERENCES` | declaration → symbol read or written | resolution |

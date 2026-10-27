@@ -39,13 +39,22 @@ jobs:
           python-version: "3.13"
       - uses: arduino/setup-task@v3
 
+      - name: Install
+        run: task install
+
+      - name: Python version for the cache key
+        id: py
+        run: echo "version=$(.venv/bin/python -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
+
       # Without the cache every run would rebuild all of ty from scratch.
+      # The Python patch version is part of the key: pyo3's build script
+      # records the interpreter's lib directory and is not re-run when only
+      # the version behind `.venv/bin/python` changes, so a cache from
+      # 3.13.17 linked stub_gen against a directory 3.13.18 no longer has.
       - uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
-
-      - name: Install
-        run: task install
+          key: py${{ steps.py.outputs.version }}
 
       - name: Lint
         run: task lint

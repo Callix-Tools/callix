@@ -73,6 +73,22 @@ task bench:run [BENCH_LANG=go]
 task bench:render VERSION=1.0.0   # splices the table into README.md
 ```
 
+## Dynamic workflows: which model does what
+
+When work is orchestrated as a multi-agent workflow, the stages run on
+different models, and the split is a rule, not a suggestion:
+
+| Stage | Model | What it produces |
+|---|---|---|
+| **Design** | Opus | the approach: architecture, invariants at stake, which layers of the regression net must prove it |
+| **Decomposition** | Sonnet | a list of tasks, each compact and self-explanatory — **5 to 10 file changes**, with the files named, the expected result stated and the check to run |
+| **Execution** | Haiku | the changes themselves, one task per agent |
+
+A task a Haiku agent cannot finish from its brief alone is a decomposition
+defect: split it further or make it more explicit, rather than moving it up
+to a larger model. A task over 10 file changes is split; one under 5 is merged
+with a neighbour unless it stands alone.
+
 ## Architecture
 
 callix is a Rust rewrite of [graphlens](https://github.com/Neko1313/graphlens).

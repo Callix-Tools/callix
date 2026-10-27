@@ -1,36 +1,36 @@
 {
   "c": {
     "nodes": {
-      "attribute": 4,
+      "attribute": 8,
       "boundary": 1,
-      "class": 2,
+      "class": 4,
       "dependency": 1,
       "external_symbol": 10,
-      "file": 4,
-      "function": 9,
-      "import": 7,
+      "file": 6,
+      "function": 11,
+      "import": 9,
       "module": 2,
-      "parameter": 6,
+      "parameter": 8,
       "project": 1,
-      "type_alias": 1,
+      "type_alias": 3,
       "variable": 2
     },
     "relations": {
       "calls": 13,
       "consumes": 1,
-      "contains": 6,
-      "declares": 39,
+      "contains": 8,
+      "declares": 58,
       "depends_on": 1,
-      "has_type": 12,
-      "imports": 7,
-      "references": 8,
-      "resolves_to": 7
+      "has_type": 15,
+      "imports": 9,
+      "references": 10,
+      "resolves_to": 9
     },
     "resolver": {
       "external": 7,
-      "internal": 28,
-      "queries": 35,
-      "resolved": 35,
+      "internal": 33,
+      "queries": 40,
+      "resolved": 40,
       "unresolved": 0
     },
     "resolver_status": "degraded"

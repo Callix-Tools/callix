@@ -271,6 +271,39 @@ fn terminal_declarator<'tree>(declarator: TsNode<'tree>) -> Option<Declared<'tre
     None
 }
 
+/// The identifier a `typedef` gives an ANONYMOUS struct, union or class.
+///
+/// `typedef struct { .. } T, *PT;` declares two names; the record is named after
+/// the first declarator that is directly a `type_identifier` (`T`), else after the
+/// first declarator that has any name. None unless the typedef's type is a
+/// record specifier with a body and no name of its own.
+fn anonymous_typedef_name<'tree>(typedef: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let type_node = typedef.child_by_field_name("type")?;
+    if !matches!(type_node.kind(), "struct_specifier" | "union_specifier" | "class_specifier")
+        || type_node.child_by_field_name("body").is_none()
+        || type_node.child_by_field_name("name").is_some()
+    {
+        return None;
+    }
+    let mut cursor = typedef.walk();
+    let declarators: Vec<TsNode<'tree>> =
+        typedef.children_by_field_name("declarator", &mut cursor).collect();
+    let mut first_named = None;
+    for declarator in declarators {
+        let Some(found) = terminal_declarator(declarator) else {
+            continue;
+        };
+        let leaf = bare_name(found.name);
+        if declarator.kind() == "type_identifier" {
+            return Some(leaf);
+        }
+        if first_named.is_none() {
+            first_named = Some(leaf);
+        }
+    }
+    first_named
+}
+
 /// The scope a declarator spells, and the bare name at the end of it.
 ///
 /// `qualified_identifier` NESTS: `n::C<int>::f` is
@@ -818,6 +851,15 @@ fn collect_scopes(
                 {
                     collect_record_scope(inner, source, namespace, found);
                 }
+                // `typedef struct { .. } T;` is a class named `T`.
+                if node.kind() == "type_definition"
+                    && let Some(leaf) = anonymous_typedef_name(node)
+                {
+                    let text = ts::text(leaf, source).into_owned();
+                    if !text.is_empty() && !found.records.contains(&text) {
+                        found.records.push(text);
+                    }
+                }
             }
             _ => {}
         }
@@ -1207,7 +1249,7 @@ impl<'a> Reader<'a> {
             "declaration" | "field_declaration" => self.on_declaration(node),
             "type_definition" => self.on_typedef(node),
             "struct_specifier" | "union_specifier" | "class_specifier" => {
-                self.on_record(node);
+                self.on_record(node, None);
             }
             "enum_specifier" => self.on_enum(node),
             "alias_declaration" => self.on_alias(node),
@@ -1424,11 +1466,17 @@ impl<'a> Reader<'a> {
     /// body — a declaration — while `struct S { … };` has both, and that is the
     /// whole test for `defines`.
     ///
-    /// An ANONYMOUS record inside another record's body is C's anonymous member:
-    /// its fields are reached through the enclosing record, so no scope is
-    /// pushed and its members land in the enclosing one. An anonymous record at
-    /// file scope names nothing anything could refer to and is skipped whole.
-    fn on_record(&mut self, node: TsNode<'_>) {
+    /// `typedef` is Some((alias identifier, the `type_definition`)) when the
+    /// record is the type of a typedef (`typedef struct { .. } T;`). An
+    /// anonymous record with a body is then a class NAMED BY THE ALIAS: its name
+    /// span is the alias identifier and its span and doc are the typedef's, so
+    /// the span contains the name span.
+    ///
+    /// An ANONYMOUS record with no such name inside another record's body is C's
+    /// anonymous member: its fields are reached through the enclosing record, so
+    /// no scope is pushed and its members land in the enclosing one. Any other
+    /// anonymous record (`struct { int x; } g;`) names nothing and is skipped.
+    fn on_record(&mut self, node: TsNode<'_>, typedef: Option<(TsNode<'_>, TsNode<'_>)>) {
         let record_kind = match node.kind() {
             "union_specifier" => "union",
             "class_specifier" => "class",
@@ -1436,17 +1484,24 @@ impl<'a> Reader<'a> {
         };
         let body = node.child_by_field_name("body");
 
-        let Some(name_node) = node.child_by_field_name("name") else {
-            if let Some(body) = body
-                && self.in_member_scope()
-            {
-                self.walk(body);
+        let (simple, name_span, span, doc) = match (node.child_by_field_name("name"), typedef) {
+            (Some(name_node), _) => {
+                (self.text(name_node), ts::span(name_node), ts::span(node), self.doc_for(node))
             }
-            return;
+            (None, Some((leaf, definition))) if body.is_some() => {
+                (self.text(leaf), ts::span(leaf), ts::span(definition), self.doc_for(definition))
+            }
+            _ => {
+                if let Some(body) = body
+                    && self.in_member_scope()
+                {
+                    self.walk(body);
+                }
+                return;
+            }
         };
 
         let linkage = self.frame_linkage();
-        let simple = self.text(name_node);
         let qname = self.qualify_in(&[], &simple, linkage);
         let modifiers = Modifiers::read(node, self.source);
         let owner = self.owner();
@@ -1455,9 +1510,9 @@ impl<'a> Reader<'a> {
             kind: NodeKind::Class,
             qualified_name: qname.clone(),
             name: simple.clone(),
-            span: ts::span(node),
-            doc: self.doc_for(node),
-            name_span: ts::span(name_node),
+            span,
+            doc,
+            name_span,
             defines: body.is_some(),
             linkage,
             owner,
@@ -1614,7 +1669,8 @@ impl<'a> Reader<'a> {
     fn on_typedef(&mut self, node: TsNode<'_>) {
         let type_node = node.child_by_field_name("type");
         if let Some(type_node) = type_node {
-            self.declare_inline_type(type_node);
+            let fallback = anonymous_typedef_name(node).map(|leaf| (leaf, node));
+            self.declare_inline_type(type_node, fallback);
         }
         let type_text = type_node.map(|n| self.text(n)).unwrap_or_default();
         let linkage = self.frame_linkage();
@@ -1768,13 +1824,18 @@ impl<'a> Reader<'a> {
     /// another class both reach the walk as the `type` of a declaration rather
     /// than as a declaration of their own. Only a definition is declared here:
     /// `enum region region;` has a name and no body and is a use of the type.
-    fn declare_inline_type(&mut self, type_node: TsNode<'_>) {
+    /// `typedef` names an anonymous record; see `on_record`.
+    fn declare_inline_type(
+        &mut self,
+        type_node: TsNode<'_>,
+        typedef: Option<(TsNode<'_>, TsNode<'_>)>,
+    ) {
         if type_node.child_by_field_name("body").is_none() {
             return;
         }
         match type_node.kind() {
             "struct_specifier" | "union_specifier" | "class_specifier" => {
-                self.on_record(type_node);
+                self.on_record(type_node, typedef);
             }
             "enum_specifier" => self.on_enum(type_node),
             _ => {}
@@ -2138,7 +2199,7 @@ impl<'a> Reader<'a> {
     fn on_declaration(&mut self, node: TsNode<'_>) {
         let type_node = node.child_by_field_name("type");
         if let Some(type_node) = type_node {
-            self.declare_inline_type(type_node);
+            self.declare_inline_type(type_node, None);
         }
 
         let mut cursor = node.walk();

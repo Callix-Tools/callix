@@ -68,6 +68,12 @@ C has no namespaces, so an external-linkage name is bare: `engine_build`.
 Struct, union and enum tags live in their own namespace in C, which is why the
 node kind is part of the id — `struct stat` and `stat()` coexist in every libc.
 
+A struct or union named only by a typedef (`typedef struct { .. } T;`) is a
+CLASS `T` beside the TYPE_ALIAS `T` — the kind is part of the id, so both
+exist — and its fields are `T::field`. An anonymous struct or union MEMBER of a
+named record lends its fields to that record (C11), so `s.a` in
+`struct s { union { int a; float f; }; };` binds to `s::a`.
+
 C++ joins namespaces and classes with `::`, and **a callable carries its
 normalized parameter list**, because two overloads would otherwise collide on
 one id:
@@ -144,6 +150,8 @@ about which function it means, and the table reads it in the order C++ does:
   `fp->_flags`) is an external symbol, not a guess. An unqualified name never binds
   to a field, so `mstime()` is the function even when a struct has a field
   `mstime`.
+  A typedef of an inline-defined tagged struct (`typedef struct tag { .. } T`)
+  leads to `tag`.
 - `A::f()` / `n::f()`: a written scope names a class's member or a namespace's
   function.
 - `f()` inside a method means the enclosing class's `f` first.

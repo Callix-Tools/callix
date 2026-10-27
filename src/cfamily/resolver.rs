@@ -696,10 +696,9 @@ impl CFamilyResolver {
 /// The class-like name a declared type spells: qualifiers, pointers, references
 /// and template arguments removed; None for a built-in.
 pub fn type_key(text: &str) -> Option<String> {
-    // `struct { int x; }`: an anonymous definition names no class.
-    if text.contains('{') {
-        return None;
-    }
+    // `struct tag { int x; }` is the class `tag`: key what precedes the body.
+    // `struct { int x; }` leaves only `struct`, which names no class.
+    let text = text.split('{').next().unwrap_or(text);
     let mut cleaned = String::new();
     let mut depth = 0usize;
     for c in text.chars() {
@@ -1056,5 +1055,20 @@ mod tests {
     #[test]
     fn an_anonymous_definition_names_no_class() {
         assert_eq!(type_key("struct { int x; }"), None);
+    }
+
+    #[test]
+    fn an_inline_named_definition_names_its_tag() {
+        assert_eq!(type_key("struct tag { int x; }").as_deref(), Some("tag"));
+    }
+
+    #[test]
+    fn a_class_named_like_a_typedef_answers_a_member_read() {
+        let mut index = CFamilyIndex::new();
+        index.declare_class("buf_t");
+        index.declare("len", "buf_t::len", NodeKind::Attribute, "a.h", false);
+        index.declare_field("buf_t", "len", "buf_t::len", "int");
+        let got = found(index.resolve("len", "read", &member(Some("buf_t"), &[]), "a.h"));
+        assert_eq!(got, Some(("buf_t::len".into(), NodeKind::Attribute, false)));
     }
 }

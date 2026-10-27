@@ -46,9 +46,9 @@
       "relations": 47
     },
     "deps/hiredis/adapters/glib.h": {
-      "hash": "25a201595c7b2c9e",
-      "nodes": 28,
-      "relations": 33
+      "hash": "f969b4782addc694",
+      "nodes": 32,
+      "relations": 40
     },
     "deps/hiredis/adapters/ivykis.h": {
       "hash": "5da1c1a63dc83d27",
@@ -81,9 +81,9 @@
       "relations": 0
     },
     "deps/hiredis/adapters/macosx.h": {
-      "hash": "bd1168ac69c4b09d",
-      "nodes": 25,
-      "relations": 30
+      "hash": "8a3e86a58b3b7e8a",
+      "nodes": 29,
+      "relations": 37
     },
     "deps/hiredis/adapters/poll.h": {
       "hash": "b19935a6d9e9eedd",
@@ -221,14 +221,14 @@
       "relations": 195
     },
     "deps/hiredis/hiredis.h": {
-      "hash": "6f743898800e861c",
-      "nodes": 59,
-      "relations": 147
+      "hash": "9be867280635aafd",
+      "nodes": 75,
+      "relations": 178
     },
     "deps/hiredis/hiredis_ssl.h": {
-      "hash": "6de1ae9a29bbfcd1",
-      "nodes": 15,
-      "relations": 20
+      "hash": "da7db890342afeef",
+      "nodes": 22,
+      "relations": 33
     },
     "deps/hiredis/net.c": {
       "hash": "0a8f63e94d165b68",
@@ -401,9 +401,9 @@
       "relations": 61
     },
     "deps/jemalloc/include/jemalloc/internal/buf_writer.h": {
-      "hash": "2d65e8e6e360539b",
-      "nodes": 4,
-      "relations": 7
+      "hash": "66604b208e2b4a0b",
+      "nodes": 11,
+      "relations": 20
     },
     "deps/jemalloc/include/jemalloc/internal/cache_bin.h": {
       "hash": "7651493d28955792",
@@ -411,9 +411,9 @@
       "relations": 152
     },
     "deps/jemalloc/include/jemalloc/internal/ckh.h": {
-      "hash": "9b9f63630a5bc7b0",
-      "nodes": 7,
-      "relations": 18
+      "hash": "8c6923e4263b026d",
+      "nodes": 23,
+      "relations": 48
     },
     "deps/jemalloc/include/jemalloc/internal/counter.h": {
       "hash": "f0e68658ad2188c4",
@@ -441,9 +441,9 @@
       "relations": 37
     },
     "deps/jemalloc/include/jemalloc/internal/edata.h": {
-      "hash": "d48e37d31ef235e0",
-      "nodes": 280,
-      "relations": 332
+      "hash": "6391a570b07121ae",
+      "nodes": 292,
+      "relations": 350
     },
     "deps/jemalloc/include/jemalloc/internal/edata_cache.h": {
       "hash": "b056563e8ca52121",
@@ -526,9 +526,9 @@
       "relations": 17
     },
     "deps/jemalloc/include/jemalloc/internal/hpdata.h": {
-      "hash": "b5bfef669e01dfa5",
-      "nodes": 199,
-      "relations": 239
+      "hash": "0f1ed1c75f3e0e94",
+      "nodes": 209,
+      "relations": 254
     },
     "deps/jemalloc/include/jemalloc/internal/inspect.h": {
       "hash": "ab1b8bd5888402ff",
@@ -606,9 +606,9 @@
       "relations": 78
     },
     "deps/jemalloc/include/jemalloc/internal/nstime.h": {
-      "hash": "88e98ff2149a9c51",
-      "nodes": 15,
-      "relations": 36
+      "hash": "6b221af9eb99e9bf",
+      "nodes": 18,
+      "relations": 41
     },
     "deps/jemalloc/include/jemalloc/internal/pa.h": {
       "hash": "e949d4b9592df245",
@@ -686,9 +686,9 @@
       "relations": 11
     },
     "deps/jemalloc/include/jemalloc/internal/prof_structs.h": {
-      "hash": "86c4209b56a612ca",
-      "nodes": 77,
-      "relations": 141
+      "hash": "e2c6d2aa9142e8e6",
+      "nodes": 81,
+      "relations": 148
     },
     "deps/jemalloc/include/jemalloc/internal/prof_sys.h": {
       "hash": "b09b13db7199ec1d",
@@ -781,9 +781,9 @@
       "relations": 0
     },
     "deps/jemalloc/include/jemalloc/internal/spin.h": {
-      "hash": "f44f873e68ddea42",
-      "nodes": 5,
-      "relations": 4
+      "hash": "e5d345b3e03fc473",
+      "nodes": 7,
+      "relations": 7
     },
     "deps/jemalloc/include/jemalloc/internal/stats.h": {
       "hash": "dd7fe79ba882277b",
@@ -836,9 +836,9 @@
       "relations": 115
     },
     "deps/jemalloc/include/jemalloc/internal/tsd_generic.h": {
-      "hash": "b2c09db9faf3f8d6",
-      "nodes": 23,
-      "relations": 31
+      "hash": "35eaebcf2fd73735",
+      "nodes": 26,
+      "relations": 36
     },
     "deps/jemalloc/include/jemalloc/internal/tsd_malloc_thread_cleanup.h": {
       "hash": "89c239655f644656",
@@ -858,7 +858,7 @@
     "deps/jemalloc/include/jemalloc/internal/tsd_win.h": {
       "hash": "c96ae7c8d0330a1c",
       "nodes": 1,
-      "relations": 14
+      "relations": 17
     },
     "deps/jemalloc/include/jemalloc/internal/typed_list.h": {
       "hash": "b07dfc3c0eb7948c",
@@ -1016,9 +1016,9 @@
       "relations": 20
     },
     "deps/jemalloc/src/hook.c": {
-      "hash": "efca0617f90b71e2",
-      "nodes": 45,
-      "relations": 57
+      "hash": "c0310027522aaf80",
+      "nodes": 48,
+      "relations": 62
     },
     "deps/jemalloc/src/hpa.c": {
       "hash": "a55f90ca168ca5ba",
@@ -1206,9 +1206,9 @@
       "relations": 42
     },
     "deps/jemalloc/src/zone.c": {
-      "hash": "183fee89c1fb347c",
-      "nodes": 136,
-      "relations": 177
+      "hash": "39fc56fa75fbb9d8",
+      "nodes": 139,
+      "relations": 182
     },
     "deps/jemalloc/test/analyze/prof_bias.c": {
       "hash": "a6b20c356a6e70fe",
@@ -1331,9 +1331,9 @@
       "relations": 3
     },
     "deps/jemalloc/test/include/test/mtx.h": {
-      "hash": "ca649b226fe977f2",
-      "nodes": 2,
-      "relations": 5
+      "hash": "5c70af52fc822c2f",
+      "nodes": 4,
+      "relations": 8
     },
     "deps/jemalloc/test/include/test/nbits.h": {
       "hash": "2f0ac7dabf7199a1",
@@ -1361,9 +1361,9 @@
       "relations": 3
     },
     "deps/jemalloc/test/include/test/timer.h": {
-      "hash": "688198d541ece92e",
-      "nodes": 2,
-      "relations": 5
+      "hash": "32863bfc47a181ec",
+      "nodes": 5,
+      "relations": 10
     },
     "deps/jemalloc/test/integration/MALLOCX_ARENA.c": {
       "hash": "a6c2a6d0662ebeb1",
@@ -1421,9 +1421,9 @@
       "relations": 5
     },
     "deps/jemalloc/test/integration/smallocx.c": {
-      "hash": "5b90d05937088f90",
-      "nodes": 18,
-      "relations": 28
+      "hash": "1ca747abed956a6e",
+      "nodes": 21,
+      "relations": 33
     },
     "deps/jemalloc/test/integration/thread_arena.c": {
       "hash": "332af7380331a757",
@@ -1546,9 +1546,9 @@
       "relations": 6
     },
     "deps/jemalloc/test/unit/atomic.c": {
-      "hash": "eb54edd25db1d886",
-      "nodes": 10,
-      "relations": 12
+      "hash": "6b750d86773f0988",
+      "nodes": 14,
+      "relations": 19
     },
     "deps/jemalloc/test/unit/background_thread.c": {
       "hash": "129f3180825686aa",
@@ -1781,9 +1781,9 @@
       "relations": 8
     },
     "deps/jemalloc/test/unit/ph.c": {
-      "hash": "2cf6d959380ca513",
-      "nodes": 41,
-      "relations": 56
+      "hash": "a0cc562c5dbb14b4",
+      "nodes": 45,
+      "relations": 62
     },
     "deps/jemalloc/test/unit/prng.c": {
       "hash": "cf483cbb1af1dcb3",
@@ -1826,9 +1826,9 @@
       "relations": 33
     },
     "deps/jemalloc/test/unit/prof_recent.c": {
-      "hash": "bc3e470cddc69b70",
-      "nodes": 36,
-      "relations": 41
+      "hash": "e36d629a56565178",
+      "nodes": 45,
+      "relations": 57
     },
     "deps/jemalloc/test/unit/prof_reset.c": {
       "hash": "fdf776dfca781b50",
@@ -1911,9 +1911,9 @@
       "relations": 90
     },
     "deps/jemalloc/test/unit/seq.c": {
-      "hash": "0a9711f8ac24faac",
-      "nodes": 19,
-      "relations": 27
+      "hash": "07e4d85401012810",
+      "nodes": 22,
+      "relations": 32
     },
     "deps/jemalloc/test/unit/size_check.c": {
       "hash": "e87a76f3b1e7192d",
@@ -1946,9 +1946,9 @@
       "relations": 17
     },
     "deps/jemalloc/test/unit/stats_print.c": {
-      "hash": "c881b1f2cac521fb",
-      "nodes": 67,
-      "relations": 78
+      "hash": "8af90df9e4dd048f",
+      "nodes": 74,
+      "relations": 91
     },
     "deps/jemalloc/test/unit/sz.c": {
       "hash": "3811db114361c638",
@@ -2021,9 +2021,9 @@
       "relations": 22
     },
     "deps/linenoise/linenoise.c": {
-      "hash": "0c29e8589e986c05",
-      "nodes": 192,
-      "relations": 253
+      "hash": "a9b5ae75e371e1e8",
+      "nodes": 197,
+      "relations": 262
     },
     "deps/linenoise/linenoise.h": {
       "hash": "befeaef4fdcb9a23",
@@ -2116,9 +2116,9 @@
       "relations": 22
     },
     "deps/lua/src/ldump.c": {
-      "hash": "4260295ddbde322e",
-      "nodes": 46,
-      "relations": 55
+      "hash": "45bf05d27484ccba",
+      "nodes": 52,
+      "relations": 66
     },
     "deps/lua/src/lfunc.c": {
       "hash": "1551a8868f963b09",
@@ -2156,9 +2156,9 @@
       "relations": 97
     },
     "deps/lua/src/llex.h": {
-      "hash": "30ec6ad5b417aea3",
-      "nodes": 54,
-      "relations": 109
+      "hash": "1c55cc5ccdecf129",
+      "nodes": 57,
+      "relations": 114
     },
     "deps/lua/src/llimits.h": {
       "hash": "0c5052a99023e289",
@@ -2191,9 +2191,9 @@
       "relations": 64
     },
     "deps/lua/src/lobject.h": {
-      "hash": "45559bb1a088bf8b",
-      "nodes": 93,
-      "relations": 165
+      "hash": "53e8f378f42fa07e",
+      "nodes": 98,
+      "relations": 174
     },
     "deps/lua/src/lopcodes.c": {
       "hash": "a2018ecb928177ac",
@@ -2281,14 +2281,14 @@
       "relations": 75
     },
     "deps/lua/src/lua_bit.c": {
-      "hash": "072126d3b3fbec1e",
-      "nodes": 14,
-      "relations": 19
+      "hash": "b6c4f13fac93d4e3",
+      "nodes": 17,
+      "relations": 24
     },
     "deps/lua/src/lua_cjson.c": {
-      "hash": "d3fa586bf271dacf",
-      "nodes": 174,
-      "relations": 193
+      "hash": "76899c1f93c49e82",
+      "nodes": 202,
+      "relations": 246
     },
     "deps/lua/src/lua_cmsgpack.c": {
       "hash": "7d171620371f15fd",
@@ -2316,9 +2316,9 @@
       "relations": 5
     },
     "deps/lua/src/lundump.c": {
-      "hash": "06c033081f631ef6",
-      "nodes": 45,
-      "relations": 64
+      "hash": "5ecac390577870bc",
+      "nodes": 50,
+      "relations": 73
     },
     "deps/lua/src/lundump.h": {
       "hash": "ca840f6a12a45be2",
@@ -2356,9 +2356,9 @@
       "relations": 41
     },
     "deps/lua/src/strbuf.h": {
-      "hash": "f4832a8cdd7df0da",
-      "nodes": 39,
-      "relations": 48
+      "hash": "b6e73a7ea93cbf6d",
+      "nodes": 46,
+      "relations": 61
     },
     "deps/tre/lib/regcomp.c": {
       "hash": "1f56e98b509896b9",
@@ -2381,19 +2381,19 @@
       "relations": 48
     },
     "deps/tre/lib/tre-ast.h": {
-      "hash": "d95fcb48fc5e85e2",
-      "nodes": 14,
-      "relations": 26
+      "hash": "3876912621e5b86d",
+      "nodes": 43,
+      "relations": 79
     },
     "deps/tre/lib/tre-compile.c": {
-      "hash": "87bf0ab350b563a6",
-      "nodes": 157,
-      "relations": 178
+      "hash": "35e9a1ce5560537a",
+      "nodes": 168,
+      "relations": 197
     },
     "deps/tre/lib/tre-compile.h": {
-      "hash": "f7a674d7f876da18",
-      "nodes": 2,
-      "relations": 1
+      "hash": "8003f101996c1f5d",
+      "nodes": 12,
+      "relations": 20
     },
     "deps/tre/lib/tre-filter.c": {
       "hash": "d033d33cd8ae1acf",
@@ -2401,24 +2401,24 @@
       "relations": 16
     },
     "deps/tre/lib/tre-filter.h": {
-      "hash": "0a239b5575ac74f1",
-      "nodes": 3,
-      "relations": 3
+      "hash": "4c443a5855e0d8b1",
+      "nodes": 9,
+      "relations": 13
     },
     "deps/tre/lib/tre-internal.h": {
-      "hash": "7e946184482ddaa1",
-      "nodes": 91,
-      "relations": 142
+      "hash": "11799cb6ba5bd067",
+      "nodes": 101,
+      "relations": 160
     },
     "deps/tre/lib/tre-match-backtrack.c": {
-      "hash": "6a1417cd397e78f5",
-      "nodes": 28,
-      "relations": 57
+      "hash": "8a2ec68a8202db49",
+      "nodes": 37,
+      "relations": 74
     },
     "deps/tre/lib/tre-match-parallel.c": {
-      "hash": "fbf7a8629bc0df3b",
-      "nodes": 27,
-      "relations": 53
+      "hash": "2c43ae6f0f6477ca",
+      "nodes": 33,
+      "relations": 63
     },
     "deps/tre/lib/tre-match-utils.h": {
       "hash": "d33d24eea91a8b5c",
@@ -2441,9 +2441,9 @@
       "relations": 121
     },
     "deps/tre/lib/tre-parse.h": {
-      "hash": "6d6c70591e89ffde",
-      "nodes": 4,
-      "relations": 3
+      "hash": "90b1ab5ef5306b90",
+      "nodes": 20,
+      "relations": 34
     },
     "deps/tre/lib/tre-stack.c": {
       "hash": "286cb1427b143a98",
@@ -2456,9 +2456,9 @@
       "relations": 7
     },
     "deps/tre/lib/xmalloc.c": {
-      "hash": "ec3c885b49ddaa3b",
-      "nodes": 58,
-      "relations": 75
+      "hash": "4c2a5a9dbd1bca83",
+      "nodes": 60,
+      "relations": 78
     },
     "deps/tre/lib/xmalloc.h": {
       "hash": "29583dbecf4464f5",
@@ -2476,9 +2476,9 @@
       "relations": 0
     },
     "deps/tre/local_includes/tre.h": {
-      "hash": "735ae60e13fffeec",
-      "nodes": 48,
-      "relations": 70
+      "hash": "7cbfe5cc8e5539ee",
+      "nodes": 75,
+      "relations": 119
     },
     "deps/tre/tests/retest.c": {
       "hash": "13ce7e18ae24e20e",
@@ -2486,19 +2486,19 @@
       "relations": 100
     },
     "deps/tre/tests/test-literal-opt.c": {
-      "hash": "dbc970940b2beec7",
-      "nodes": 19,
-      "relations": 29
+      "hash": "bb273b9503126b2b",
+      "nodes": 29,
+      "relations": 48
     },
     "deps/tre/tests/test-malformed-regn.c": {
-      "hash": "ca52e2ee54db0a9f",
-      "nodes": 9,
-      "relations": 17
+      "hash": "98005c78d11a81e3",
+      "nodes": 13,
+      "relations": 24
     },
     "deps/tre/tests/test-str-source.c": {
-      "hash": "76ef63cb3549c7dd",
-      "nodes": 29,
-      "relations": 43
+      "hash": "efd07bb9fcf4923c",
+      "nodes": 32,
+      "relations": 48
     },
     "deps/xxhash/xxhash.c": {
       "hash": "56b9f3cb4f61f581",
@@ -2506,9 +2506,9 @@
       "relations": 3
     },
     "deps/xxhash/xxhash.h": {
-      "hash": "2838514178b44035",
-      "nodes": 648,
-      "relations": 704
+      "hash": "0f3d3f11b118d962",
+      "nodes": 662,
+      "relations": 726
     },
     "modules/vector-sets/expr.c": {
       "hash": "45b9b1493af1c040",
@@ -2521,19 +2521,19 @@
       "relations": 57
     },
     "modules/vector-sets/fastjson_test.c": {
-      "hash": "675e89be1b4ccdc0",
-      "nodes": 52,
-      "relations": 73
+      "hash": "2dc3c20ef16d4fd5",
+      "nodes": 58,
+      "relations": 84
     },
     "modules/vector-sets/hnsw.c": {
-      "hash": "596eb68a61062e66",
-      "nodes": 312,
-      "relations": 335
+      "hash": "a192e3c6175d90f4",
+      "nodes": 319,
+      "relations": 347
     },
     "modules/vector-sets/hnsw.h": {
-      "hash": "9338c3760ccbb97a",
-      "nodes": 45,
-      "relations": 108
+      "hash": "399fb81ab495687f",
+      "nodes": 51,
+      "relations": 119
     },
     "modules/vector-sets/mixer.h": {
       "hash": "14242380cb48fe3c",
@@ -2551,9 +2551,9 @@
       "relations": 14
     },
     "modules/vector-sets/vset_config.h": {
-      "hash": "72b15998c7809276",
-      "nodes": 3,
-      "relations": 6
+      "hash": "61c0c4fcd68ad0da",
+      "nodes": 5,
+      "relations": 9
     },
     "modules/vector-sets/w2v.c": {
       "hash": "ca04be29c8c18ef8",
@@ -2561,9 +2561,9 @@
       "relations": 69
     },
     "src/acl.c": {
-      "hash": "e2051c7de2d4786a",
-      "nodes": 334,
-      "relations": 359
+      "hash": "fa6c47fecc331116",
+      "nodes": 347,
+      "relations": 382
     },
     "src/adlist.c": {
       "hash": "e9d8b65b83373064",
@@ -2661,19 +2661,19 @@
       "relations": 26
     },
     "src/childinfo.c": {
-      "hash": "b17adf8fc4d17772",
-      "nodes": 25,
-      "relations": 30
+      "hash": "8f4273b077199be0",
+      "nodes": 31,
+      "relations": 41
     },
     "src/chk.c": {
-      "hash": "12696ccab1f66289",
-      "nodes": 101,
-      "relations": 118
+      "hash": "e732c3cff0eb5d08",
+      "nodes": 107,
+      "relations": 128
     },
     "src/chk.h": {
-      "hash": "5cc8e533bd578e49",
-      "nodes": 24,
-      "relations": 46
+      "hash": "85890bbc1cb1274c",
+      "nodes": 37,
+      "relations": 68
     },
     "src/cli_commands.c": {
       "hash": "c22fcef44e3ff194",
@@ -2696,9 +2696,9 @@
       "relations": 48
     },
     "src/client_comp.c": {
-      "hash": "a0cbece5a3f495ce",
-      "nodes": 95,
-      "relations": 120
+      "hash": "a4d419671ece1a83",
+      "nodes": 100,
+      "relations": 129
     },
     "src/client_comp.h": {
       "hash": "26258a2af27d702b",
@@ -2726,19 +2726,19 @@
       "relations": 47
     },
     "src/cluster_legacy.c": {
-      "hash": "35691095ebdc9330",
-      "nodes": 513,
-      "relations": 546
+      "hash": "bbd87fe168baf5e9",
+      "nodes": 522,
+      "relations": 562
     },
     "src/cluster_legacy.h": {
-      "hash": "e8fd16e7dad94482",
-      "nodes": 106,
-      "relations": 185
+      "hash": "214b63560d113646",
+      "nodes": 174,
+      "relations": 309
     },
     "src/cluster_slot_stats.c": {
-      "hash": "7f87770de35bdbff",
-      "nodes": 79,
-      "relations": 82
+      "hash": "6a46902e2c623d7d",
+      "nodes": 82,
+      "relations": 87
     },
     "src/cluster_slot_stats.h": {
       "hash": "19890baeca8fbe16",
@@ -2821,14 +2821,14 @@
       "relations": 21
     },
     "src/db.c": {
-      "hash": "6665ed8924b06ddf",
-      "nodes": 541,
-      "relations": 578
+      "hash": "601e3281640a6c1a",
+      "nodes": 550,
+      "relations": 595
     },
     "src/debug.c": {
-      "hash": "431e0abf8c5070d8",
-      "nodes": 183,
-      "relations": 239
+      "hash": "0af30161bb66f95c",
+      "nodes": 188,
+      "relations": 248
     },
     "src/debugmacro.h": {
       "hash": "6f26862191fbd091",
@@ -2836,9 +2836,9 @@
       "relations": 3
     },
     "src/defrag.c": {
-      "hash": "efc0df57af0d1b2e",
-      "nodes": 276,
-      "relations": 291
+      "hash": "3c3bf4e41adecfcd",
+      "nodes": 302,
+      "relations": 336
     },
     "src/dict.c": {
       "hash": "09dbd62f2a1ad78e",
@@ -2846,9 +2846,9 @@
       "relations": 417
     },
     "src/dict.h": {
-      "hash": "a8fe998539a8c60f",
-      "nodes": 74,
-      "relations": 191
+      "hash": "1118379603c8c18c",
+      "nodes": 78,
+      "relations": 198
     },
     "src/ebuckets.c": {
       "hash": "c2c72a06afb27a81",
@@ -2856,9 +2856,9 @@
       "relations": 285
     },
     "src/ebuckets.h": {
-      "hash": "3398c5e58bc1311a",
-      "nodes": 58,
-      "relations": 111
+      "hash": "dd7840079ecd76e5",
+      "nodes": 61,
+      "relations": 116
     },
     "src/endianconv.c": {
       "hash": "cb7bf0d80f18e282",
@@ -2911,14 +2911,14 @@
       "relations": 69
     },
     "src/expire.c": {
-      "hash": "629b03acfca31141",
-      "nodes": 73,
-      "relations": 81
+      "hash": "177761b67ccac301",
+      "nodes": 80,
+      "relations": 94
     },
     "src/fast_float_strtod.c": {
-      "hash": "8f5d4c8ea77f78fb",
-      "nodes": 91,
-      "relations": 112
+      "hash": "e5088fd91a122996",
+      "nodes": 100,
+      "relations": 127
     },
     "src/fast_float_strtod.h": {
       "hash": "6bb6c23bbf217787",
@@ -2981,9 +2981,9 @@
       "relations": 57
     },
     "src/geohash.h": {
-      "hash": "f1b6f8d8814de49d",
-      "nodes": 17,
-      "relations": 31
+      "hash": "2b2fd11dba138c16",
+      "nodes": 46,
+      "relations": 84
     },
     "src/geohash_helper.c": {
       "hash": "7d50126661dc4958",
@@ -2991,9 +2991,9 @@
       "relations": 60
     },
     "src/geohash_helper.h": {
-      "hash": "47df17e93c7993de",
-      "nodes": 5,
-      "relations": 14
+      "hash": "0f1804b51679d558",
+      "nodes": 9,
+      "relations": 21
     },
     "src/hotkeys.c": {
       "hash": "e7d1b2d571341868",
@@ -3041,9 +3041,9 @@
       "relations": 291
     },
     "src/kvstore.h": {
-      "hash": "bd7afaacf7748fc4",
-      "nodes": 28,
-      "relations": 95
+      "hash": "a94c034613adc1ab",
+      "nodes": 30,
+      "relations": 98
     },
     "src/latency.c": {
       "hash": "c40e287d173f5378",
@@ -3066,9 +3066,9 @@
       "relations": 367
     },
     "src/listpack.h": {
-      "hash": "16b4dcf4a2a2bee1",
-      "nodes": 8,
-      "relations": 58
+      "hash": "914166b348fb1788",
+      "nodes": 12,
+      "relations": 65
     },
     "src/listpack_malloc.h": {
       "hash": "7bad7d810c49f42b",
@@ -3106,9 +3106,9 @@
       "relations": 26
     },
     "src/lolwut8.c": {
-      "hash": "d9ccfb3a7c3cf6b3",
-      "nodes": 9,
-      "relations": 12
+      "hash": "c80b9d1bba91f5a2",
+      "nodes": 15,
+      "relations": 23
     },
     "src/lzf.h": {
       "hash": "c222c3f8df4af6ec",
@@ -3141,9 +3141,9 @@
       "relations": 84
     },
     "src/module.c": {
-      "hash": "882ff9ae751d0847",
-      "nodes": 2126,
-      "relations": 2317
+      "hash": "d4e0ba34d7a03b73",
+      "nodes": 2134,
+      "relations": 2331
     },
     "src/modules/helloacl.c": {
       "hash": "73262ef0b2f331f2",
@@ -3291,9 +3291,9 @@
       "relations": 3
     },
     "src/rdb.c": {
-      "hash": "f8b12fe700bf0601",
-      "nodes": 393,
-      "relations": 436
+      "hash": "e932b5497b81064e",
+      "nodes": 398,
+      "relations": 445
     },
     "src/rdb.h": {
       "hash": "7d74c6f110a886ce",
@@ -3316,9 +3316,9 @@
       "relations": 46
     },
     "src/redis-cli.c": {
-      "hash": "2b189d4f0867169c",
-      "nodes": 920,
-      "relations": 1072
+      "hash": "e9318e2d427f9ba0",
+      "nodes": 934,
+      "relations": 1098
     },
     "src/redisassert.c": {
       "hash": "a219a692bf3680ca",
@@ -3331,9 +3331,9 @@
       "relations": 5
     },
     "src/redismodule.h": {
-      "hash": "80a9b7e28595d256",
-      "nodes": 618,
-      "relations": 757
+      "hash": "45c3bb036f94ba8a",
+      "nodes": 654,
+      "relations": 825
     },
     "src/release.c": {
       "hash": "0925cc8c30ecde1e",
@@ -3406,14 +3406,14 @@
       "relations": 562
     },
     "src/server.c": {
-      "hash": "053c49e85a4d13a7",
-      "nodes": 645,
-      "relations": 755
+      "hash": "a7f732c7558536e0",
+      "nodes": 653,
+      "relations": 770
     },
     "src/server.h": {
-      "hash": "2490ba61b550602f",
-      "nodes": 1576,
-      "relations": 4070
+      "hash": "15c7404bfda652be",
+      "nodes": 1702,
+      "relations": 4303
     },
     "src/setcpuaffinity.c": {
       "hash": "39148d14ea858e6b",
@@ -3431,9 +3431,9 @@
       "relations": 34
     },
     "src/sha1.h": {
-      "hash": "a6256becfe728d59",
-      "nodes": 2,
-      "relations": 6
+      "hash": "64c457193092aa86",
+      "nodes": 6,
+      "relations": 13
     },
     "src/sha256.c": {
       "hash": "a5e0be077c47fc17",
@@ -3441,9 +3441,9 @@
       "relations": 22
     },
     "src/sha256.h": {
-      "hash": "6058eb45c8db002b",
-      "nodes": 6,
-      "relations": 12
+      "hash": "a33ccda67b88aa26",
+      "nodes": 11,
+      "relations": 21
     },
     "src/siphash.c": {
       "hash": "01fbe19c28116d89",
@@ -3511,9 +3511,9 @@
       "relations": 18
     },
     "src/syscheck.c": {
-      "hash": "1b0874941dd10479",
-      "nodes": 30,
-      "relations": 57
+      "hash": "15d5514d8da0ce89",
+      "nodes": 33,
+      "relations": 62
     },
     "src/syscheck.h": {
       "hash": "18adb08d81846f88",
@@ -3521,14 +3521,14 @@
       "relations": 11
     },
     "src/t_array.c": {
-      "hash": "d27955f97d3cb747",
-      "nodes": 132,
-      "relations": 137
+      "hash": "ff767bae5cbe6323",
+      "nodes": 184,
+      "relations": 236
     },
     "src/t_hash.c": {
-      "hash": "619992eb5cc164f7",
-      "nodes": 678,
-      "relations": 749
+      "hash": "b2313193238090a5",
+      "nodes": 695,
+      "relations": 780
     },
     "src/t_list.c": {
       "hash": "4dc1707c39c569f8",
@@ -3541,19 +3541,19 @@
       "relations": 153
     },
     "src/t_stream.c": {
-      "hash": "3464608111898aa5",
-      "nodes": 453,
-      "relations": 468
+      "hash": "a0321728e09916fa",
+      "nodes": 475,
+      "relations": 509
     },
     "src/t_string.c": {
-      "hash": "c3a3c2da91d6630d",
-      "nodes": 103,
-      "relations": 112
+      "hash": "1c495f0d88247d07",
+      "nodes": 119,
+      "relations": 142
     },
     "src/t_zset.c": {
-      "hash": "477511daee975bd4",
-      "nodes": 559,
-      "relations": 583
+      "hash": "86c9fbac99e0c955",
+      "nodes": 592,
+      "relations": 647
     },
     "src/testhelp.h": {
       "hash": "9e1bfc443f8c8d90",
@@ -3621,9 +3621,9 @@
       "relations": 246
     },
     "src/ziplist.h": {
-      "hash": "907ffccaf04601c0",
-      "nodes": 5,
-      "relations": 24
+      "hash": "62d31490ef518045",
+      "nodes": 9,
+      "relations": 31
     },
     "src/zipmap.c": {
       "hash": "e930788f5cef6ef1",
@@ -3666,19 +3666,19 @@
       "relations": 131
     },
     "tests/modules/blockedclient.c": {
-      "hash": "15591c42639adf3c",
-      "nodes": 112,
-      "relations": 129
+      "hash": "86a420ecc394b9f6",
+      "nodes": 116,
+      "relations": 136
     },
     "tests/modules/blockonbackground.c": {
-      "hash": "24b8253652ef7873",
-      "nodes": 44,
-      "relations": 59
+      "hash": "dd5ccc66a1832378",
+      "nodes": 48,
+      "relations": 66
     },
     "tests/modules/blockonkeys.c": {
-      "hash": "69541ccf6e57e8b9",
-      "nodes": 120,
-      "relations": 130
+      "hash": "cf15abe771e900d4",
+      "nodes": 126,
+      "relations": 140
     },
     "tests/modules/cluster_topology.c": {
       "hash": "e5b5b30bb8a42f1d",
@@ -3706,9 +3706,9 @@
       "relations": 20
     },
     "tests/modules/datatype.c": {
-      "hash": "751cff18713a6847",
-      "nodes": 52,
-      "relations": 57
+      "hash": "88d97f810f0edb64",
+      "nodes": 55,
+      "relations": 62
     },
     "tests/modules/datatype2.c": {
       "hash": "3005717a026d94ef",
@@ -3781,9 +3781,9 @@
       "relations": 39
     },
     "tests/modules/mallocsize.c": {
-      "hash": "7308fe013bfbb6b5",
-      "nodes": 36,
-      "relations": 44
+      "hash": "577b1d487924751c",
+      "nodes": 45,
+      "relations": 60
     },
     "tests/modules/misc.c": {
       "hash": "739ee3ed9fc7a4fe",
@@ -3836,9 +3836,9 @@
       "relations": 71
     },
     "tests/modules/scan.c": {
-      "hash": "2da9cd4f0ce49392",
-      "nodes": 25,
-      "relations": 33
+      "hash": "c6247952e6826754",
+      "nodes": 30,
+      "relations": 41
     },
     "tests/modules/stream.c": {
       "hash": "407d521eafad71ab",
@@ -3851,9 +3851,9 @@
       "relations": 16
     },
     "tests/modules/test_keymeta.c": {
-      "hash": "fdd641eac11b7d9f",
-      "nodes": 95,
-      "relations": 104
+      "hash": "b4662a9d25eed8b7",
+      "nodes": 98,
+      "relations": 109
     },
     "tests/modules/test_lazyfree.c": {
       "hash": "9c9e5d167cb861bf",
@@ -3873,12 +3873,12 @@
     "tests/modules/usercall.c": {
       "hash": "37dcecd1d78b3e4d",
       "nodes": 37,
-      "relations": 45
+      "relations": 49
     },
     "tests/modules/zset.c": {
-      "hash": "e5c3070eb5bb0d69",
-      "nodes": 26,
-      "relations": 32
+      "hash": "37fa2b863b17970b",
+      "nodes": 31,
+      "relations": 41
     },
     "utils/corrupt_rdb.c": {
       "hash": "ce24cad83dc6aa60",
@@ -3898,8 +3898,8 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 5018,
-      "class": 641,
+      "attribute": 5818,
+      "class": 833,
       "dependency": 21,
       "external_symbol": 518,
       "file": 779,
@@ -3913,7 +3913,7 @@
     },
     "relations": {
       "contains": 809,
-      "declares": 53458,
+      "declares": 55259,
       "depends_on": 21,
       "imports": 3127,
       "resolves_to": 3128
@@ -3923,18 +3923,18 @@
   "ref": "8.10.0",
   "resolution": {
     "metrics": {
-      "external": 58142,
-      "internal": 144867,
-      "queries": 203009,
-      "resolved": 203009,
+      "external": 53064,
+      "internal": 150229,
+      "queries": 203293,
+      "resolved": 203293,
       "unresolved": 0
     },
     "relations": {
-      "calls": 77357,
+      "calls": 77378,
       "contains": 809,
-      "declares": 53458,
+      "declares": 55259,
       "depends_on": 21,
-      "has_type": 23405,
+      "has_type": 23689,
       "imports": 3127,
       "references": 73434,
       "resolves_to": 3128
@@ -3943,7 +3943,7 @@
   },
   "totals": {
     "files": 779,
-    "nodes": 46160,
-    "relations": 60543
+    "nodes": 47152,
+    "relations": 62344
   }
 }

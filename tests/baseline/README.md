@@ -39,6 +39,8 @@ slow part — ruff alone spends four minutes in `rust-analyzer scip`.
 
 Pins re-recorded after member accesses became bound by the receiver's declared type (issue #18); redis, leveldb and rocksdb moved because field edges were re-targeted or made external.
 
+Pins re-recorded after a struct or union named only by a typedef (`typedef struct { .. } T;`) became a CLASS `T` with `T::field` members, and after a typedef of an inline tagged struct (`typedef struct tag { .. } T;`) began to lead to `tag` (issue #26); redis moved because the new CLASS and ATTRIBUTE nodes enter the fingerprint; rocksdb moved only in its resolution counts (four more external, four fewer internal), and leveldb did not move.
+
 PHP and the C family resolve through a symbol table, so their fingerprints
 record `degraded` and — more usefully — the internal/external split. The C
 family's `unresolved` is always 0 by construction: every miss becomes an

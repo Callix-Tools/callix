@@ -40,6 +40,15 @@
       "span": null
     },
     {
+      "file_path": "include/buffer.h",
+      "id": "b951096a05a8bccd",
+      "kind": "file",
+      "metadata": {},
+      "name": "buffer.h",
+      "qualified_name": "include/buffer.h",
+      "span": null
+    },
+    {
       "file_path": "include/engine.h",
       "id": "7895d4d2b6bada0a",
       "kind": "file",
@@ -49,12 +58,12 @@
       "span": null
     },
     {
-      "file_path": "src/engine.c",
-      "id": "c0615b6b76de2075",
+      "file_path": "src/buffer.c",
+      "id": "a498365bddc23246",
       "kind": "file",
       "metadata": {},
-      "name": "engine.c",
-      "qualified_name": "src/engine.c",
+      "name": "buffer.c",
+      "qualified_name": "src/buffer.c",
       "span": null
     },
     {
@@ -64,6 +73,15 @@
       "metadata": {},
       "name": "src",
       "qualified_name": "src",
+      "span": null
+    },
+    {
+      "file_path": "src/engine.c",
+      "id": "c0615b6b76de2075",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.c",
+      "qualified_name": "src/engine.c",
       "span": null
     },
     {
@@ -103,6 +121,262 @@
         8,
         37
       ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "abb45019de35c66f",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "doc": "A byte buffer.",
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            11,
+            3,
+            11,
+            11
+          ]
+        },
+        "record_kind": "struct"
+      },
+      "name": "buffer_t",
+      "qualified_name": "buffer_t",
+      "span": [
+        8,
+        1,
+        11,
+        12
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "cf1ecbf62e14ab85",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "size_t",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            9,
+            12,
+            9,
+            15
+          ]
+        }
+      },
+      "name": "len",
+      "qualified_name": "buffer_t::len",
+      "span": [
+        9,
+        5,
+        9,
+        16
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "0e1589d0ae526569",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "char",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            10,
+            11,
+            10,
+            15
+          ]
+        }
+      },
+      "name": "data",
+      "qualified_name": "buffer_t::data",
+      "span": [
+        10,
+        5,
+        10,
+        16
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "fccc92e8768c07b0",
+      "kind": "type_alias",
+      "metadata": {
+        "declared_in": [],
+        "doc": "A byte buffer.",
+        "is_concept": false,
+        "is_template": false,
+        "name_span": {
+          "__span__": [
+            11,
+            3,
+            11,
+            11
+          ]
+        },
+        "underlying": "struct {\n    size_t len;\n    char *data;\n}"
+      },
+      "name": "buffer_t",
+      "qualified_name": "buffer_t",
+      "span": [
+        8,
+        1,
+        11,
+        12
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "5f58a32771b97f32",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            16,
+            3,
+            16,
+            11
+          ]
+        },
+        "record_kind": "union"
+      },
+      "name": "number_t",
+      "qualified_name": "number_t",
+      "span": [
+        13,
+        1,
+        16,
+        12
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "62b18882d0def35c",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            14,
+            9,
+            14,
+            10
+          ]
+        }
+      },
+      "name": "i",
+      "qualified_name": "number_t::i",
+      "span": [
+        14,
+        5,
+        14,
+        11
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "b30e12db98eff640",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "float",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            15,
+            11,
+            15,
+            12
+          ]
+        }
+      },
+      "name": "f",
+      "qualified_name": "number_t::f",
+      "span": [
+        15,
+        5,
+        15,
+        13
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "1227506bf03fb697",
+      "kind": "type_alias",
+      "metadata": {
+        "declared_in": [],
+        "is_concept": false,
+        "is_template": false,
+        "name_span": {
+          "__span__": [
+            16,
+            3,
+            16,
+            11
+          ]
+        },
+        "underlying": "union {\n    int i;\n    float f;\n}"
+      },
+      "name": "number_t",
+      "qualified_name": "number_t",
+      "span": [
+        13,
+        1,
+        16,
+        12
+      ]
+    },
+    {
+      "file_path": "include/buffer.h",
+      "id": "3e6ddfa959a8028f",
+      "kind": "import",
+      "metadata": {
+        "include_path": "stddef.h",
+        "include_style": "system",
+        "origin": "unknown",
+        "resolved_path": null
+      },
+      "name": "stddef.h",
+      "qualified_name": "include/buffer.h::stddef.h",
+      "span": [
+        5,
+        1,
+        6,
+        1
+      ]
+    },
+    {
+      "file_path": null,
+      "id": "915444dcbcd67080",
+      "kind": "external_symbol",
+      "metadata": {
+        "origin": "unknown"
+      },
+      "name": "stddef.h",
+      "qualified_name": "stddef.h",
+      "span": null
     },
     {
       "file_path": "include/engine.h",
@@ -321,15 +595,137 @@
       ]
     },
     {
-      "file_path": null,
-      "id": "915444dcbcd67080",
-      "kind": "external_symbol",
+      "file_path": "src/buffer.c",
+      "id": "d94d0e3c322f5d83",
+      "kind": "function",
       "metadata": {
-        "origin": "unknown"
+        "access": "",
+        "declared_in": [
+          "include/buffer.h"
+        ],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            3,
+            8,
+            3,
+            21
+          ]
+        },
+        "return_type": "size_t",
+        "signature": ""
       },
-      "name": "stddef.h",
-      "qualified_name": "stddef.h",
-      "span": null
+      "name": "buffer_length",
+      "qualified_name": "buffer_length",
+      "span": [
+        3,
+        1,
+        6,
+        2
+      ]
+    },
+    {
+      "file_path": "src/buffer.c",
+      "id": "7c7fd05159c71209",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "buffer_t",
+        "name_span": {
+          "__span__": [
+            3,
+            38,
+            3,
+            39
+          ]
+        }
+      },
+      "name": "b",
+      "qualified_name": "buffer_length.b",
+      "span": [
+        3,
+        22,
+        3,
+        39
+      ]
+    },
+    {
+      "file_path": "src/buffer.c",
+      "id": "b9a833ace4613325",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            8,
+            5,
+            8,
+            18
+          ]
+        },
+        "return_type": "int",
+        "signature": ""
+      },
+      "name": "number_as_int",
+      "qualified_name": "number_as_int",
+      "span": [
+        8,
+        1,
+        11,
+        2
+      ]
+    },
+    {
+      "file_path": "src/buffer.c",
+      "id": "bc9fab45fd95f090",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "number_t",
+        "name_span": {
+          "__span__": [
+            8,
+            28,
+            8,
+            29
+          ]
+        }
+      },
+      "name": "n",
+      "qualified_name": "number_as_int.n",
+      "span": [
+        8,
+        19,
+        8,
+        29
+      ]
+    },
+    {
+      "file_path": "src/buffer.c",
+      "id": "d737f34dfbdac553",
+      "kind": "import",
+      "metadata": {
+        "include_path": "buffer.h",
+        "include_style": "quoted",
+        "origin": "internal",
+        "resolved_path": "include/buffer.h"
+      },
+      "name": "buffer.h",
+      "qualified_name": "src/buffer.c::buffer.h",
+      "span": [
+        1,
+        1,
+        2,
+        1
+      ]
     },
     {
       "file_path": "src/engine.c",
@@ -975,6 +1371,12 @@
       "kind": "contains",
       "metadata": {},
       "source_id": "ab20b7f46e68ccfd",
+      "target_id": "b951096a05a8bccd"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
       "target_id": "7895d4d2b6bada0a"
     },
     {
@@ -982,6 +1384,12 @@
       "metadata": {},
       "source_id": "0f867cb0416ba557",
       "target_id": "468d1a6442363500"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
+      "target_id": "a498365bddc23246"
     },
     {
       "kind": "contains",
@@ -1006,6 +1414,108 @@
       "metadata": {},
       "source_id": "254f8187f38c520a",
       "target_id": "18348000cc7708f6"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "abb45019de35c66f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "cf1ecbf62e14ab85"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "abb45019de35c66f",
+      "target_id": "cf1ecbf62e14ab85"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "0e1589d0ae526569"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "abb45019de35c66f",
+      "target_id": "0e1589d0ae526569"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "fccc92e8768c07b0"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "5f58a32771b97f32"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "62b18882d0def35c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "5f58a32771b97f32",
+      "target_id": "62b18882d0def35c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "b30e12db98eff640"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "5f58a32771b97f32",
+      "target_id": "b30e12db98eff640"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "1227506bf03fb697"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "d94d0e3c322f5d83"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "d94d0e3c322f5d83",
+      "target_id": "7c7fd05159c71209"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "3e6ddfa959a8028f"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "b951096a05a8bccd",
+      "target_id": "915444dcbcd67080"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "3e6ddfa959a8028f",
+      "target_id": "915444dcbcd67080"
     },
     {
       "kind": "declares",
@@ -1126,6 +1636,42 @@
       "metadata": {},
       "source_id": "06c7d3e09b952e23",
       "target_id": "915444dcbcd67080"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a498365bddc23246",
+      "target_id": "d94d0e3c322f5d83"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a498365bddc23246",
+      "target_id": "b9a833ace4613325"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "b9a833ace4613325",
+      "target_id": "bc9fab45fd95f090"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "a498365bddc23246",
+      "target_id": "d737f34dfbdac553"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "a498365bddc23246",
+      "target_id": "b951096a05a8bccd"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {},
+      "source_id": "d737f34dfbdac553",
+      "target_id": "b951096a05a8bccd"
     },
     {
       "kind": "declares",

@@ -496,19 +496,19 @@
       "attribute": 687,
       "class": 369,
       "dependency": 68,
-      "external_symbol": 180,
+      "external_symbol": 179,
       "file": 98,
       "function": 681,
       "import": 259,
       "method": 2016,
-      "module": 98,
+      "module": 137,
       "parameter": 1488,
       "project": 10,
       "type_alias": 7,
       "variable": 91
     },
     "relations": {
-      "contains": 196,
+      "contains": 235,
       "declares": 6337,
       "depends_on": 68,
       "imports": 255,
@@ -519,28 +519,28 @@
   "ref": "14.1.1",
   "resolution": {
     "metrics": {
-      "external": 8214,
-      "internal": 11925,
-      "queries": 22891,
-      "resolved": 22620,
-      "unresolved": 230
+      "external": 13849,
+      "internal": 17567,
+      "queries": 36841,
+      "resolved": 36342,
+      "unresolved": 458
     },
     "relations": {
       "calls": 13743,
-      "contains": 196,
+      "contains": 235,
       "declares": 6337,
       "depends_on": 68,
-      "has_type": 1963,
+      "has_type": 5122,
       "imports": 255,
-      "inherits_from": 231,
-      "references": 4235,
+      "inherits_from": 244,
+      "references": 12340,
       "resolves_to": 259
     },
     "status": "ok"
   },
   "totals": {
     "files": 98,
-    "nodes": 6052,
-    "relations": 7115
+    "nodes": 6090,
+    "relations": 7154
   }
 }

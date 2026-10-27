@@ -552,6 +552,24 @@ impl RustAdapter {
     }
 }
 
+/// Whether the node an answer was bound to is a parameter or a variable the enclosing
+/// callable declared (a called local, `qualified_name` = `<enclosing>.<name>`): a value
+/// read of one is not a reference to a definition of the project.
+fn is_local_binding(graph: &Graph, bound: &str, enclosing: &str) -> bool {
+    let nodes = graph.node_map();
+    let (Some(bound), Some(enclosing)) = (nodes.get(bound), nodes.get(enclosing)) else {
+        return false;
+    };
+    let (bound, enclosing) = (bound.get(), enclosing.get());
+    match bound.kind {
+        NodeKind::Parameter => true,
+        NodeKind::Variable => bound
+            .qualified_name
+            .starts_with(&format!("{}.", enclosing.qualified_name)),
+        _ => false,
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn resolve_pass(
     py: Python<'_>,
@@ -669,8 +687,23 @@ fn resolve_pass(
             }
             continue;
         }
+        // A name in expression or pattern position (`detail` `value`): an answer that
+        // lands on a local or a parameter is no reference to a definition. No edge and
+        // no EXTERNAL_SYMBOL.
+        let is_value = occurrence.detail.as_deref() == Some(super::VALUE_DETAIL);
+        if is_value
+            && (reference.kind == "local"
+                || target_id
+                    .as_deref()
+                    .is_some_and(|bound| is_local_binding(graph, bound, &occurrence.enclosing_id)))
+        {
+            continue;
+        }
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
+        } else if is_value {
+            // A value read is not an argument: nothing for the flow pass. It must not
+            // reach the `detail.is_some()` branch below, which would drop it.
         } else if let Some(held) = target_id.as_deref() {
             flow.arg(path, occurrence, held);
         } else if occurrence.detail.is_some() {

@@ -48,6 +48,11 @@ YAML records `ok` with **zero** queries. That is not an omission: the adapter
 emits no occurrences at all, and pinning the zero is what would catch it
 starting to.
 
+The Rust pins were re-recorded for RUST-05: value, pattern and struct-literal
+reads are now `REFERENCES` edges (ripgrep, axum and ruff gained most of them), and
+the resolver counters rose with the extra queries. Those moves are intended, not
+a regression.
+
 ## Cross-check against graphlens, 2026-07-30
 
 [graphlens](https://github.com/Neko1313/graphlens) is the Python implementation

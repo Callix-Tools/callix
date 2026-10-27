@@ -203,14 +203,14 @@
       "has_type": 15,
       "imports": 2,
       "inherits_from": 1,
-      "references": 6,
+      "references": 11,
       "resolves_to": 2
     },
     "resolver": {
-      "external": 15,
-      "internal": 16,
-      "queries": 33,
-      "resolved": 33,
+      "external": 16,
+      "internal": 20,
+      "queries": 39,
+      "resolved": 39,
       "unresolved": 0
     },
     "resolver_status": "ok"

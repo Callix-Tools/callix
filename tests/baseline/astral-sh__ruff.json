@@ -7778,7 +7778,7 @@
     "crates/ty_ide/src/all_symbols.rs": {
       "hash": "30c31d6056737510",
       "nodes": 81,
-      "relations": 117
+      "relations": 116
     },
     "crates/ty_ide/src/call_hierarchy.rs": {
       "hash": "f2163f01a0822684",
@@ -7948,7 +7948,7 @@
     "crates/ty_ide/src/workspace_symbols.rs": {
       "hash": "e6d956d4de6080f4",
       "nodes": 26,
-      "relations": 44
+      "relations": 43
     },
     "crates/ty_module_resolver/src/db.rs": {
       "hash": "6b309b1dfca2657a",
@@ -9356,22 +9356,22 @@
       "attribute": 6834,
       "class": 4570,
       "dependency": 868,
-      "external_symbol": 4902,
+      "external_symbol": 4874,
       "file": 1870,
       "function": 9083,
       "import": 15121,
       "method": 14813,
-      "module": 1867,
+      "module": 2171,
       "parameter": 23612,
       "project": 52,
       "type_alias": 117,
       "variable": 696
     },
     "relations": {
-      "contains": 3737,
+      "contains": 4041,
       "declares": 82119,
       "depends_on": 868,
-      "imports": 14825,
+      "imports": 14823,
       "resolves_to": 15121
     }
   },
@@ -9379,28 +9379,28 @@
   "ref": "0.15.18",
   "resolution": {
     "metrics": {
-      "external": 89169,
-      "internal": 170002,
-      "queries": 310323,
-      "resolved": 307993,
-      "unresolved": 1913
+      "external": 182702,
+      "internal": 304288,
+      "queries": 570356,
+      "resolved": 566533,
+      "unresolved": 3406
     },
     "relations": {
       "calls": 167347,
-      "contains": 3737,
+      "contains": 4041,
       "declares": 82119,
       "depends_on": 868,
-      "has_type": 30460,
-      "imports": 14825,
-      "inherits_from": 3992,
-      "references": 58231,
+      "has_type": 70198,
+      "imports": 14823,
+      "inherits_from": 4720,
+      "references": 245584,
       "resolves_to": 15121
     },
     "status": "ok"
   },
   "totals": {
     "files": 1870,
-    "nodes": 84405,
-    "relations": 116670
+    "nodes": 84681,
+    "relations": 116972
   }
 }

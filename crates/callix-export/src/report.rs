@@ -234,7 +234,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              path before the last and every `pub(crate)` / `pub(super)` / `pub(in path)` is a \
              reference to the type or MODULE it names, while `self` in a path and `<T as Trait>::` \
              qualifiers are not recorded, and a reference to a MODULE is not exported to LSIF or \
-             SCIP (a MODULE has no file to define it in)",
+             SCIP (a MODULE has no file to define it in); a const or static read, a struct \
+             literal's type and fields (shorthand included) and the paths and fields of match and \
+             `let` patterns are references, while a read of a local or a parameter is not an edge; \
+             enum variants are not nodes, so a reference to one is `unlocated`; names inside the \
+             arguments of a macro the project defines and the bare receiver of a field access \
+             are not recorded",
         ),
         "php" => (
             "symbol table, by names",

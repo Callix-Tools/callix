@@ -1487,12 +1487,12 @@
       "boundary": 182,
       "class": 434,
       "dependency": 458,
-      "external_symbol": 835,
+      "external_symbol": 831,
       "file": 296,
       "function": 1145,
       "import": 1375,
       "method": 889,
-      "module": 296,
+      "module": 386,
       "parameter": 1393,
       "project": 61,
       "type_alias": 13,
@@ -1500,7 +1500,7 @@
     },
     "relations": {
       "consumes": 350,
-      "contains": 592,
+      "contains": 682,
       "declares": 6153,
       "depends_on": 458,
       "exposes": 365,
@@ -1512,30 +1512,30 @@
   "ref": "axum-v0.8.9",
   "resolution": {
     "metrics": {
-      "external": 7837,
-      "internal": 5234,
-      "queries": 17258,
-      "resolved": 14920,
-      "unresolved": 2291
+      "external": 17881,
+      "internal": 9262,
+      "queries": 34920,
+      "resolved": 29846,
+      "unresolved": 5027
     },
     "relations": {
       "calls": 9668,
       "consumes": 350,
-      "contains": 592,
+      "contains": 682,
       "declares": 6153,
       "depends_on": 458,
       "exposes": 365,
-      "has_type": 1363,
+      "has_type": 7860,
       "imports": 1361,
-      "inherits_from": 286,
-      "references": 1825,
+      "inherits_from": 374,
+      "references": 9312,
       "resolves_to": 1375
     },
     "status": "ok"
   },
   "totals": {
     "files": 296,
-    "nodes": 7838,
-    "relations": 10654
+    "nodes": 7924,
+    "relations": 10744
   }
 }

@@ -14,6 +14,14 @@
 //! Every segment of a path before the last (`Foo` in `Foo::new()`, `inner`, `crate`,
 //! `super`, the `crate` of `pub(crate)`) is a `read` occurrence, never an annotation:
 //! a module is not a type. `self` and primitive qualifiers are not recorded.
+//!
+//! A name in expression or pattern position is a `read` (a `write` for an assignment
+//! target) with `detail` `value`: a const or static, the last segment of a path
+//! (`Mode::A`), a struct literal's type and its field initializers (shorthand
+//! included), and the paths and fields of struct and tuple-struct patterns. A
+//! lowercase identifier in a pattern is a binding and is not recorded. Callees and
+//! plain-name arguments keep their own occurrence: `collect_calls` marks them in
+//! `recorded`.
 
 use std::collections::{HashMap, HashSet};
 
@@ -73,6 +81,60 @@ fn plain_name<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
 /// The name a call's callee ends in.
 fn callee_name<'tree>(call: TsNode<'tree>) -> Option<TsNode<'tree>> {
     call.child_by_field_name("function").and_then(plain_name)
+}
+
+/// The last segment of a path that names a type, a struct or a tuple-struct pattern's
+/// constructor: `Cfg`, `m::Cfg`, `Cfg::<T>`.
+fn last_segment<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    match node.kind() {
+        "identifier" | "type_identifier" => Some(node),
+        "scoped_identifier" | "scoped_type_identifier" => node
+            .child_by_field_name("name")
+            .filter(|name| matches!(name.kind(), "identifier" | "type_identifier")),
+        "generic_type" | "generic_type_with_turbofish" => {
+            node.child_by_field_name("type").and_then(last_segment)
+        }
+        _ => None,
+    }
+}
+
+/// Subtrees the value pass never enters: types (they belong to annotations), items
+/// declared inside a body, `use`, macros the project defines or that are opaque,
+/// attributes, lifetimes and labels.
+fn skips_values(kind: &str) -> bool {
+    kind.ends_with("_type")
+        || matches!(
+            kind,
+            "type_identifier"
+                | "scoped_type_identifier"
+                | "generic_type_with_turbofish"
+                | "type_arguments"
+                | "function_item"
+                | "use_declaration"
+                | "macro_definition"
+                | "macro_invocation"
+                | "attribute_item"
+                | "inner_attribute_item"
+                | "visibility_modifier"
+                | "lifetime"
+                | "label"
+                | "impl_item"
+                | "trait_item"
+                | "struct_item"
+                | "enum_item"
+                | "union_item"
+                | "mod_item"
+                | "type_item"
+                | "extern_crate_declaration"
+                | "foreign_mod_item"
+        )
+}
+
+/// Whether the identifier is the bare receiver of a field access (`x` in `x.f`).
+fn is_field_receiver(node: TsNode<'_>) -> bool {
+    node.parent().is_some_and(|parent| {
+        parent.kind() == "field_expression" && parent.child_by_field_name("value") == Some(node)
+    })
 }
 
 /// Primitive type names: `u8::MAX` and `str::len` qualify with a type rust-analyzer
@@ -182,7 +244,7 @@ pub struct RustExtractor<'a> {
     internal_imports: Vec<(String, String, String, String)>,
     /// The `macro_rules!` of this file, by name.
     macros: HashMap<String, super::macros::MacroRules>,
-    /// Start byte of every identifier already recorded as an annotation, an impl's `base` or a path prefix: one site never yields two occurrences.
+    /// Start byte of every identifier already recorded as an annotation, an impl's `base`, a path prefix, a callee, a call argument or a value: one site never yields two occurrences.
     recorded: HashSet<usize>,
     /// `(qualified name, name span)` of every inline `mod foo { ... }` with a body.
     inline_modules: Vec<(String, crate::span::Span)>,
@@ -424,6 +486,159 @@ impl<'a> RustExtractor<'a> {
         }
     }
 
+    /// A `read` (a `write` for an assignment target) with `detail` `value` for every name
+    /// in expression or pattern position of a callable: its parameter patterns and its
+    /// body. Must run after `collect_calls` and `record_path_prefixes`, which mark the
+    /// callee names, the plain-name arguments and the path prefixes in `recorded`.
+    fn collect_values(&mut self, callable: TsNode<'_>, enclosing_id: &str) {
+        if let Some(parameters) = callable.child_by_field_name("parameters") {
+            for parameter in ts::named_children(parameters) {
+                if parameter.kind() == "parameter" {
+                    self.walk_values(parameter, false, enclosing_id);
+                }
+            }
+        }
+        if let Some(body) = callable.child_by_field_name("body") {
+            self.walk_values(body, false, enclosing_id);
+        }
+    }
+
+    /// One occurrence for `name`, once per site. `site` is the node whose role matters
+    /// (the whole path for a `scoped_identifier`).
+    fn record_value(&mut self, site: TsNode<'_>, name: TsNode<'_>, enclosing_id: &str) {
+        if self.recorded.insert(name.start_byte()) {
+            let role = if is_assignment_target(site) { "write" } else { "read" };
+            self.add_occurrence_with(role, name, enclosing_id, Some(super::VALUE_DETAIL.to_string()));
+        }
+    }
+
+    /// The walk behind `collect_values`. `pattern` is true in pattern position, where a
+    /// lowercase identifier is a binding and an uppercase one a const, unit struct or variant.
+    fn walk_values(&mut self, node: TsNode<'_>, pattern: bool, enclosing_id: &str) {
+        let kind = node.kind();
+        if skips_values(kind) {
+            return;
+        }
+        match kind {
+            "identifier" => {
+                if pattern {
+                    if self.text(node).starts_with(|c: char| c.is_uppercase()) {
+                        self.record_value(node, node, enclosing_id);
+                    }
+                } else if !is_field_receiver(node) {
+                    self.record_value(node, node, enclosing_id);
+                }
+            }
+            // Only the outermost path is reached (the walk does not enter it): its last
+            // segment is the value, its prefixes are recorded already.
+            "scoped_identifier" => {
+                if let Some(name) = node.child_by_field_name("name")
+                    && name.kind() == "identifier"
+                {
+                    self.record_value(node, name, enclosing_id);
+                }
+            }
+            "field_expression" => {
+                // `x.f`: the bare receiver is not recorded; anything else is walked.
+                if let Some(value) = node.child_by_field_name("value")
+                    && value.kind() != "identifier"
+                {
+                    self.walk_values(value, false, enclosing_id);
+                }
+            }
+            "struct_expression" => {
+                if let Some(name) = node.child_by_field_name("name").and_then(last_segment) {
+                    self.record_value(name, name, enclosing_id);
+                }
+                let Some(body) = node.child_by_field_name("body") else {
+                    return;
+                };
+                for item in ts::named_children(body) {
+                    match item.kind() {
+                        "field_initializer" => {
+                            if let Some(field) = item.child_by_field_name("field")
+                                && field.kind() == "field_identifier"
+                            {
+                                self.record_value(field, field, enclosing_id);
+                            }
+                            if let Some(value) = item.child_by_field_name("value") {
+                                self.walk_values(value, false, enclosing_id);
+                            }
+                        }
+                        "shorthand_field_initializer" => {
+                            if let Some(name) = ts::child_of_type(item, "identifier") {
+                                self.record_value(name, name, enclosing_id);
+                            }
+                        }
+                        // `..base`
+                        _ => self.walk_values(item, false, enclosing_id),
+                    }
+                }
+            }
+            "let_declaration" | "let_condition" | "for_expression" => {
+                let target = node.child_by_field_name("pattern");
+                for child in ts::named_children(node) {
+                    self.walk_values(child, Some(child) == target, enclosing_id);
+                }
+            }
+            "match_pattern" => {
+                // The pattern is a pattern; the `if` guard is an expression.
+                let guard = node.child_by_field_name("condition");
+                for child in ts::named_children(node) {
+                    self.walk_values(child, Some(child) != guard, enclosing_id);
+                }
+            }
+            "closure_parameters" => {
+                for child in ts::named_children(node) {
+                    self.walk_values(child, true, enclosing_id);
+                }
+            }
+            "parameter" => {
+                if let Some(inner) = node.child_by_field_name("pattern") {
+                    self.walk_values(inner, true, enclosing_id);
+                }
+            }
+            // A const or static declared in a body: the name and the type are not uses.
+            "const_item" | "static_item" => {
+                if let Some(value) = node.child_by_field_name("value") {
+                    self.walk_values(value, false, enclosing_id);
+                }
+            }
+            "tuple_struct_pattern" => {
+                let constructor = node.child_by_field_name("type");
+                if let Some(name) = constructor.and_then(last_segment) {
+                    self.record_value(name, name, enclosing_id);
+                }
+                for child in ts::named_children(node) {
+                    if Some(child) != constructor {
+                        self.walk_values(child, true, enclosing_id);
+                    }
+                }
+            }
+            "struct_pattern" => {
+                if let Some(name) = node.child_by_field_name("type").and_then(last_segment) {
+                    self.record_value(name, name, enclosing_id);
+                }
+                for field in ts::named_children(node) {
+                    if field.kind() != "field_pattern" {
+                        continue;
+                    }
+                    if let Some(name) = field.child_by_field_name("name") {
+                        self.record_value(name, name, enclosing_id);
+                    }
+                    if let Some(inner) = field.child_by_field_name("pattern") {
+                        self.walk_values(inner, true, enclosing_id);
+                    }
+                }
+            }
+            _ => {
+                for child in ts::named_children(node) {
+                    self.walk_values(child, pattern, enclosing_id);
+                }
+            }
+        }
+    }
+
     /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in owned_descendants(scope) {
@@ -458,18 +673,21 @@ impl<'a> RustExtractor<'a> {
             let mut callee: Option<String> = None;
             if let Some(name_node) = plain_name(function) {
                 self.add_occurrence("call", name_node, enclosing_id);
+                self.recorded.insert(name_node.start_byte());
                 site = Some(ts::span(name_node));
                 callee = Some(self.text(name_node));
             } else if function.kind() == "call_expression" {
                 // `f()()`: a call of whatever `f` returns.
                 if let Some(inner) = callee_name(function) {
                     self.add_occurrence_with("call", inner, enclosing_id, Some("result".into()));
+                    self.recorded.insert(inner.start_byte());
                 }
             } else if function.kind() == "index_expression"
                 && let Some(base) = ts::named_children(function).first().copied().and_then(plain_name)
             {
                 // `table[i]()`: a call of whatever the container holds.
                 self.add_occurrence("call", base, enclosing_id);
+                self.recorded.insert(base.start_byte());
             }
             // The names handed to the call say which parameter they are handed to.
             if let (Some(site), Some(arguments)) = (site, node.child_by_field_name("arguments")) {
@@ -477,6 +695,7 @@ impl<'a> RustExtractor<'a> {
                     if let Some(name) = plain_name(argument) {
                         let detail = format!("arg:{}:{}:{index}", site.start_line, site.start_col);
                         self.add_occurrence_with("read", name, enclosing_id, Some(detail));
+                        self.recorded.insert(name.start_byte());
                         // `iter.map(f)`, `thread::spawn(f)`: the library calls what it is given.
                         if callee.as_deref().is_some_and(calls_its_arguments) {
                             let detail = format!("c:{}:{}", site.start_line, site.start_col);
@@ -854,6 +1073,7 @@ impl<'a> RustExtractor<'a> {
         // Parameter and return types were claimed above; this sweeps the expression
         // paths (`Foo::new()`, `inner::f()`, patterns, struct literals, macros).
         self.record_path_prefixes(node, id);
+        self.collect_values(node, id);
         self.collect_flow(node, qname, id)?;
         // Functions declared inside this one are nodes of their own.
         if let Some(body) = node.child_by_field_name("body") {

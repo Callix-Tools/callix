@@ -272,7 +272,10 @@ impl RustResolver {
         let name = &self.symbols[symbol as usize];
         if name.starts_with("local ") {
             let (line, col) = *self.local_defs[doc as usize].get(&symbol)?;
-            return Some(self.definition_ref(doc, line, col, "internal"));
+            let mut found = self.definition_ref(doc, line, col, "internal");
+            // A local has no node: the adapter drops a value read that lands on one.
+            found.kind = "local".to_string();
+            return Some(found);
         }
         if let Some((target_doc, line, col)) = self.defs.get(&symbol) {
             return Some(self.definition_ref(*target_doc, *line, *col, "internal"));

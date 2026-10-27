@@ -157,6 +157,14 @@ mod tests {
     }
 
     #[test]
+    fn a_reference_to_a_field_or_a_struct_is_a_definition() {
+        for kind in [NodeKind::Attribute, NodeKind::Class, NodeKind::Variable] {
+            let r = Resolution::classify(RelationKind::References, Some(kind), "internal");
+            assert_eq!(r, Resolution::Definition);
+        }
+    }
+
+    #[test]
     fn a_call_of_a_function_is_a_definition() {
         let r = Resolution::classify(RelationKind::Calls, Some(NodeKind::Function), "internal");
         assert_eq!(r, Resolution::Definition);

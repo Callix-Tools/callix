@@ -17,6 +17,11 @@ pub use deps::{
 };
 pub use resolver::RustResolver;
 
+/// The `detail` of a `read` / `write` occurrence for a name in expression or pattern
+/// position (a const, a struct literal, a pattern path). The visitor sets it and
+/// `resolve_pass` reads it: an answer that lands on a local or a parameter is dropped.
+pub(crate) const VALUE_DETAIL: &str = "value";
+
 use std::cell::RefCell;
 
 use crate::py::prelude::*;

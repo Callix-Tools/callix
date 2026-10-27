@@ -119,7 +119,9 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   pass follows to the parameter it is handed to, through locals and `$this->name`
   properties, and it is a call where one of those is called (`$f()`,
   `($this->f)()`, `call_user_func($f)`). The pass ignores order: a parameter
-  reassigned before the call holds both values.
+  reassigned before the call holds both values. Where it is written, `g(...)`,
+  `A::m(...)` or `$o->m(...)` is also a `REFERENCES` edge (access `read`) from the
+  enclosing scope to the function or method, and never a `CALLS` edge at that site.
 - **Anything in `vendor/`** — deliberately not collected, so a call into a
   framework becomes an `EXTERNAL_SYMBOL`. That is the right answer for a call
   graph of *your* code, but it means callix cannot tell you what

@@ -341,7 +341,7 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "call" => RelationKind::Calls,
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
-        "read" | "write" => RelationKind::References,
+        "read" | "write" | "read_callable" => RelationKind::References,
         "import" => RelationKind::ResolvesTo,
         _ => return None,
     })
@@ -643,10 +643,6 @@ fn resolve_pass(
     }
 
     for ((path, occurrence), reference) in sent.iter().copied().zip(refs.iter()) {
-        // `$o->m(...)` makes a callable of `m`; the occurrence only places the name.
-        if occurrence.role == "read_callable" {
-            continue;
-        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
@@ -722,6 +718,8 @@ fn resolve_pass(
         metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
+        } else if occurrence.role == "read_callable" {
+            metadata.set_item("access", "read")?;
         }
         graph.note_site_file(
             &occurrence.enclosing_id,

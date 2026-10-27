@@ -1147,8 +1147,16 @@ impl<'a> PhpVisitor<'a> {
             .is_some_and(|f| f.kind() == "name" && super::builtins::is_language_construct(&ts::text(f, self.source)));
         if let Some(function) = node.child_by_field_name("function") {
             match function.kind() {
-                // `g(...)` makes a callable of `g`; it is not a call of it.
-                "name" | "qualified_name" | "relative_name" if first_class => {}
+                // `g(...)` makes a callable of `g`: a reference to `g`, not a call of it.
+                // `isset(...)` and the other language constructs stay syntax.
+                "name" | "qualified_name" | "relative_name" if first_class => {
+                    if !construct
+                        && let Some(name_node) = last_name(function)
+                    {
+                        let container = self.container();
+                        self.record_occurrence("read_callable", name_node, &container);
+                    }
+                }
                 // `isset(...)`, `empty(...)`, `eval(...)`: syntax, not a call of a symbol.
                 "name" if construct => {}
                 "name" | "qualified_name" | "relative_name" => {

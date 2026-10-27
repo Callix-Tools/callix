@@ -166,3 +166,61 @@ function build() {
     )
     assert ("App\\A\\run", "App\\A\\go") in found
     assert ("App\\build", "App\\Made\\__construct") in found
+
+
+def test_first_class_callable_references(tmp_path: Path) -> None:
+    (tmp_path / "composer.json").write_text('{"name":"t/t","autoload":{"psr-4":{"App\\\\":"src/"}}}')
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "Str.php").write_text(
+        "<?php\nnamespace App;\n\n"
+        "function helper(string $s): string { return $s; }\n\n"
+        "class Str {\n"
+        "    public static function snake(string $s): string { return $s; }\n"
+        "    public function inst(string $s): string { return $s; }\n"
+        "}\n"
+    )
+    (src / "Use.php").write_text(
+        "<?php\nnamespace App;\n\n"
+        "class User {\n"
+        "    public function run(array $xs, Str $o): array {\n"
+        "        $a = array_map(Str::snake(...), $xs);\n"
+        "        $b = array_map(helper(...), $xs);\n"
+        "        $c = array_map($o->inst(...), $xs);\n"
+        "        return [$a, $b, $c];\n"
+        "    }\n"
+        "}\n"
+    )
+    graph = callix.PhpAdapter().analyze(str(tmp_path))
+    for name in ("snake", "helper", "inst"):
+        refs = [
+            r
+            for r in graph.relations
+            if r.kind is RelationKind.REFERENCES
+            and graph.nodes[r.target_id].name == name
+            and graph.nodes[r.source_id].qualified_name == "App\\User\\run"
+        ]
+        assert len(refs) == 1, name
+        meta = refs[0].metadata
+        assert meta["span"], name
+        assert 6 <= meta["span"].start_line <= 8, name
+        assert meta["access"] == "read", name
+        assert meta["resolution"] == "definition", name
+        assert not any(
+            r.kind is RelationKind.CALLS and graph.nodes[r.target_id].name == name for r in graph.relations
+        ), name
+
+
+def test_first_class_builtin_is_an_external_reference(tmp_path: Path) -> None:
+    (tmp_path / "app.php").write_text("<?php\nnamespace App;\nfunction run(array $xs) { return array_map(strlen(...), $xs); }\n")
+    graph = callix.PhpAdapter().analyze(str(tmp_path))
+    refs = [
+        r
+        for r in graph.relations
+        if r.kind is RelationKind.REFERENCES and graph.nodes[r.target_id].name.endswith("strlen")
+    ]
+    assert refs
+    assert all(r.metadata["resolution"] == "external" for r in refs)
+    assert not any(
+        r.kind is RelationKind.CALLS and graph.nodes[r.target_id].name.endswith("strlen") for r in graph.relations
+    )

@@ -776,9 +776,24 @@ fn apply_resolutions_inner(
             continue;
         };
         metrics.resolved += 1;
+        // A site that declares the property is not a use of it: an object-literal key
+        // or a `this.x = 1` expando that the backend answers with its own position.
+        if matches!(occurrence.detail.as_deref(), Some("key" | "member"))
+            && reference.line == occurrence.line
+            && reference.col == occurrence.col
+            && reference
+                .file_path
+                .as_deref()
+                .is_some_and(|f| relative_to(f, project_root) == relative_to(path, project_root))
+        {
+            continue;
+        }
         let is_alias = occurrence.role == "alias";
         // `Item(name=1)`: the keyword's name, recorded by the visitor as a `read` with detail `kw`.
-        let keyword = occurrence.role == "read" && occurrence.detail.as_deref() == Some("kw");
+        // A TypeScript object-literal key is the same kind of thing, detail `key`.
+        let is_key = occurrence.role == "read" && occurrence.detail.as_deref() == Some("key");
+        let keyword =
+            occurrence.role == "read" && (occurrence.detail.as_deref() == Some("kw") || is_key);
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
             None if is_alias
@@ -818,6 +833,11 @@ fn apply_resolutions_inner(
                 target_id.as_deref().and_then(|id| graph.node_kind(id)),
                 Some(NodeKind::Attribute | NodeKind::Variable)
             )
+            && !(is_key
+                && matches!(
+                    target_id.as_deref().and_then(|id| graph.node_kind(id)),
+                    Some(NodeKind::Method)
+                ))
         {
             metrics.resolved -= 1;
             metrics.unresolved += 1;

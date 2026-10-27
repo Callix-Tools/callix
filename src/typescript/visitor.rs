@@ -224,6 +224,9 @@ pub struct TsVisitor<'a> {
     /// Overload signatures seen so far, by the qualified name of the function
     /// they belong to: the implementation that follows is declared at each.
     overloads: HashMap<String, Vec<Span>>,
+    /// Start positions of every `read`/`write`/`call` already recorded, so a name
+    /// is never recorded twice as a use.
+    named_sites: HashSet<(u32, u32)>,
 }
 
 impl<'a> TsVisitor<'a> {
@@ -257,6 +260,7 @@ impl<'a> TsVisitor<'a> {
             kind_stack: vec![NodeKind::File],
             occurrences: Vec::new(),
             overloads: HashMap::new(),
+            named_sites: HashSet::new(),
         }
     }
 
@@ -352,6 +356,9 @@ impl<'a> TsVisitor<'a> {
             expr.kind(),
             "assignment_expression" | "augmented_assignment_expression"
         ) {
+            if let Some(left) = ts::children(expr).first().copied() {
+                self.scan_assignment_target(left, &enclosing)?;
+            }
             if let Some(rhs) = ts::children(expr).last() {
                 self.scan_value(*rhs, &enclosing)?;
             }
@@ -982,12 +989,20 @@ impl<'a> TsVisitor<'a> {
             };
             match function {
                 Some((None, method)) => {
+                    if let Some(name) = method.child_by_field_name("name")
+                        && matches!(name.kind(), "property_identifier" | "string")
+                    {
+                        self.record_site("read", name, enclosing, Some("key"));
+                    }
                     self.push(qname.to_string(), var_id.to_string(), NodeKind::Variable);
                     let result = self.handle_function(method);
                     self.pop();
                     result?;
                 }
                 Some((Some(key), value)) => {
+                    if key.kind() == "property_identifier" {
+                        self.record_site("read", key, enclosing, Some("key"));
+                    }
                     self.push(qname.to_string(), var_id.to_string(), NodeKind::Variable);
                     let result = self.handle_lexical_function(key, value);
                     self.pop();
@@ -1463,6 +1478,9 @@ impl<'a> TsVisitor<'a> {
         detail: Option<String>,
     ) {
         let span = ts::span(name_node);
+        if matches!(role, "read" | "write" | "call") {
+            self.named_sites.insert((span.start_line, span.start_col));
+        }
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
             line: span.start_line,
@@ -1473,6 +1491,37 @@ impl<'a> TsVisitor<'a> {
         });
     }
 
+    /// Records a use of a member name unless that position already has one.
+    fn record_site(
+        &mut self,
+        role: &str,
+        node: TsNode<'_>,
+        enclosing_id: &str,
+        detail: Option<&str>,
+    ) {
+        let span = ts::span(node);
+        if self.named_sites.contains(&(span.start_line, span.start_col)) {
+            return;
+        }
+        self.record_occurrence_with(role, node, enclosing_id, detail.map(str::to_string));
+    }
+
+    /// The left side of `a.b = v`: the property is written, the object is read.
+    fn scan_assignment_target(&mut self, left: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        if left.kind() != "member_expression" {
+            return Ok(());
+        }
+        if let Some(property) = left.child_by_field_name("property")
+            && matches!(property.kind(), "property_identifier" | "private_property_identifier")
+        {
+            self.record_site("write", property, enclosing_id, Some("member"));
+        }
+        if let Some(object) = left.child_by_field_name("object") {
+            self.scan_value(object, enclosing_id)?;
+        }
+        Ok(())
+    }
+
     /// Scans a value expression, collecting `call` and `read`.
     fn scan_value(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         // A closure written inline - a callback, an IIFE - is part of the function
@@ -1481,19 +1530,58 @@ impl<'a> TsVisitor<'a> {
         if matches!(node.kind(), "arrow_function" | "function" | "function_expression") {
             return self.scan_closure(node, enclosing_id);
         }
+        // A method of an object literal: its name is the key of the member.
+        if node.kind() == "method_definition"
+            && node.parent().is_some_and(|p| p.kind() == "object")
+            && let Some(name) = node.child_by_field_name("name")
+            && matches!(name.kind(), "property_identifier" | "string")
+        {
+            self.record_site("read", name, enclosing_id, Some("key"));
+        }
         if NESTED_DEF_TYPES.contains(&node.kind()) {
             return Ok(());
         }
 
         match node.kind() {
             "new_expression" | "call_expression" => self.scan_call(node, enclosing_id, enclosing_id),
+            // `s.kind`, `s?.kind`, `this.#p`: the property is read, then the object.
+            "member_expression" => {
+                if let Some(property) = node.child_by_field_name("property")
+                    && matches!(property.kind(), "property_identifier" | "private_property_identifier")
+                {
+                    self.record_site("read", property, enclosing_id, None);
+                }
+                match node.child_by_field_name("object") {
+                    Some(object) => self.scan_value(object, enclosing_id),
+                    None => Ok(()),
+                }
+            }
+            // `a.b = v` inside an expression (`() => this.x = 1`, `a = b.c = 1`).
+            "assignment_expression" | "augmented_assignment_expression"
+                if node
+                    .child_by_field_name("left")
+                    .is_some_and(|l| l.kind() == "member_expression") =>
+            {
+                if let Some(left) = node.child_by_field_name("left") {
+                    self.scan_assignment_target(left, enclosing_id)?;
+                }
+                match node.child_by_field_name("right") {
+                    Some(right) => self.scan_value(right, enclosing_id),
+                    None => Ok(()),
+                }
+            }
             "identifier" => {
                 self.record_occurrence("read", node, enclosing_id);
                 Ok(())
             }
-            // An object literal { key: value } — only the value is scanned.
+            // An object literal { key: value } — the key is a read of the member, then the value is scanned.
             "pair" => {
                 let named = ts::named_children(node);
+                if let Some(key) = named.first()
+                    && matches!(key.kind(), "property_identifier" | "string")
+                {
+                    self.record_site("read", *key, enclosing_id, Some("key"));
+                }
                 if named.len() > 1 {
                     self.scan_value(named[1], enclosing_id)?;
                 }
@@ -1916,6 +2004,9 @@ impl<'a> TsVisitor<'a> {
                         if self.graph.has_node(&attribute) {
                             self.record_aliases(*rhs, &attribute, 0);
                         }
+                    }
+                    if let Some(left) = ts::children(expr).first().copied() {
+                        self.scan_assignment_target(left, enclosing_id)?;
                     }
                     self.scan_value(*rhs, enclosing_id)?;
                 }

@@ -1,0 +1,1 @@
+{"main.ts": ["main.label", "main.run"], "main.Handler.handle": [], "main.helper": [], "main.label": [], "main.h.handle": ["main.helper"], "main.run": ["main.Handler.handle"]}

@@ -55,6 +55,23 @@ Express routes and NestJS `@Get(...)` controller methods on the server side;
 A `fetch(url, {method: "POST"})` is read as POST — the literal wins over the
 GET default, so a non-GET request does not enter the graph as a GET.
 
+## Members and object-literal keys
+
+A property read (`s.kind`) and a property write (`s.size = 3`) give a `REFERENCES`
+edge to the property they name, with `access` `read` or `write`, when the type
+checker can place it (an interface member, a class field, a method). A property
+of a library type becomes an external symbol, as a library call does.
+
+The key of an object literal, and the name of a method written in one, references
+the member of the type the literal is checked against (`const h: Shape = { kind: 1 }`,
+a returned literal, `{...} as Shape`); its `access` is `read`. The key of an
+untyped literal declares the property and gives no edge, and a key typed by a
+library interface gives none either.
+
+Not covered: element access (`o["k"]`, `o[k]`), shorthand keys (`{ x }` references the
+local), computed keys, `x.count++` as a write, and members of a type literal, which
+have no node yet, so reads of them are `unlocated`.
+
 ## The embedded typescript-go
 
 The resolver is built on

@@ -274,6 +274,13 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   no answer at all is dropped and counted `unresolved` (like an import that reaches
   nothing) - never turned into an `EXTERNAL_SYMBOL`. `kw` occurrences never feed
   the flow pass.
+- **A TypeScript object-literal key or method name is a `read` occurrence with detail
+  `key`**, filtered like `kw`: the adapter keeps the REFERENCES edge only when the
+  answer binds to an `ATTRIBUTE`, `VARIABLE` or `METHOD` of the project, and drops it
+  (counted `unresolved`, never an `EXTERNAL_SYMBOL`) otherwise. A `key` or `member`
+  (property write, `obj.x = v`) occurrence whose answer is its own site is a
+  declaration of the property and produces no edge. Member reads are plain `read`s
+  at the property; a callee's name stays a `call` only.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`

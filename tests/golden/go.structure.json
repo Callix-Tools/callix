@@ -506,6 +506,122 @@
         31,
         2
       ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "849fb5fae24f1a31",
+      "kind": "class",
+      "metadata": {
+        "doc": "Limits bounds a request.",
+        "name_span": {
+          "__span__": [
+            34,
+            6,
+            34,
+            12
+          ]
+        }
+      },
+      "name": "Limits",
+      "qualified_name": "example.com/fixture/store.Limits",
+      "span": [
+        34,
+        6,
+        37,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "fe00224e38013376",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            35,
+            2,
+            35,
+            5
+          ]
+        }
+      },
+      "name": "Min",
+      "qualified_name": "example.com/fixture/store.Limits.Min",
+      "span": [
+        35,
+        2,
+        35,
+        14
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "a0195eaadef2e416",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            35,
+            7,
+            35,
+            10
+          ]
+        }
+      },
+      "name": "Max",
+      "qualified_name": "example.com/fixture/store.Limits.Max",
+      "span": [
+        35,
+        2,
+        35,
+        14
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "303926f8f2d7c775",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            36,
+            2,
+            36,
+            7
+          ]
+        }
+      },
+      "name": "Retry",
+      "qualified_name": "example.com/fixture/store.Limits.Retry",
+      "span": [
+        36,
+        2,
+        36,
+        30
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "502c516a73959158",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            36,
+            19,
+            36,
+            24
+          ]
+        }
+      },
+      "name": "Count",
+      "qualified_name": "example.com/fixture/store.Limits.Retry.<anon>.Count",
+      "span": [
+        36,
+        19,
+        36,
+        28
+      ]
     }
   ],
   "relations": [
@@ -712,6 +828,60 @@
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
       "target_id": "1e4f1fc8faccd845"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "849fb5fae24f1a31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "fe00224e38013376"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "fe00224e38013376"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "a0195eaadef2e416"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "a0195eaadef2e416"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "303926f8f2d7c775"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "303926f8f2d7c775"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "502c516a73959158"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "303926f8f2d7c775",
+      "target_id": "502c516a73959158"
     },
     {
       "kind": "imports",

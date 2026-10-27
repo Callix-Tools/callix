@@ -232,7 +232,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              not found in expressions; a field selector (an embedded field is named after its type), and the key of a keyed struct literal \
              (`T{F: v}`, `&T{..}` and the elided `[]T{{F: v}}` included), is a `references` \
              edge with access read or write to the field, while the keys of map, slice and \
-             array literals and fields of types declared inside a function get none; a bare \
+             array literals and fields of types declared inside a function, of a package-level \
+             `var x struct{..}` and of a literal's own struct type get none (every name of a \
+             multi-name field and the fields of an anonymous struct field type, `T.F.<anon>.G`, \
+             through `*`, `[]`, `[N]`, map values and chan, are covered); a bare \
              use of a package-level const, var or function (an assignment side, an operand, a \
              return value, a case, a composite element, a range operand, `v` in `v.M`) is a \
              `references` edge with access read or write, while locals, parameters, predeclared \

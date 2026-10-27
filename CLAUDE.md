@@ -201,6 +201,8 @@ import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
 be declared below its `impl`.
 
+In Go every name of a multi-name field (`a, b int`) is its own ATTRIBUTE, and the fields of an anonymous struct field type (also behind `*`, `[]`, `[N]`, a map value, a chan) are ATTRIBUTEs `T.F.<anon>.G`, DECLARED by the ATTRIBUTE `F`. There is no node for `<anon>`, and no `base`/`INHERITS_FROM` for types embedded in such a struct.
+
 A Go MODULE is placed by `file_path` (its first non-`_test.go` file) plus
 `metadata["name_span"]` (that file's `package` clause identifier) and has **no
 `span`**, because a package spans several files: `SpanIndex::from_graph` skips

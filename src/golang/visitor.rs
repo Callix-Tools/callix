@@ -261,6 +261,41 @@ fn embedded_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<
     type_name_node(Some(type_node))
 }
 
+/// The `struct_type` a field's type is, looking through `*T`, `(T)`, `[]T`, `[N]T`,
+/// a map's value and a channel's element. `None` for anything else (generic
+/// arguments, func types, a map key are out of scope).
+fn anonymous_struct<'tree>(type_node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let mut current = type_node;
+    loop {
+        current = match current.kind() {
+            "struct_type" => return Some(current),
+            "pointer_type" | "parenthesized_type" => {
+                ts::named_children(current).into_iter().next()?
+            }
+            "slice_type" | "array_type" => current.child_by_field_name("element")?,
+            "map_type" | "channel_type" => current.child_by_field_name("value")?,
+            _ => return None,
+        };
+    }
+}
+
+/// Whether a `struct_type` lies between `node` and `root`, `root` included.
+fn inside_struct(node: TsNode<'_>, root: TsNode<'_>) -> bool {
+    // Starts at `node` itself: when `node` is `root` (a plain `k KeyIdentity`) the
+    // walk must stop there, not climb out into the enclosing struct.
+    let mut current = Some(node);
+    while let Some(current_node) = current {
+        if current_node.kind() == "struct_type" {
+            return true;
+        }
+        if current_node.id() == root.id() {
+            return false;
+        }
+        current = current_node.parent();
+    }
+    false
+}
+
 /// The name an import brings into a file, and the position go/types gives it:
 /// the alias identifier when there is one, else the start of the path literal.
 /// A package qualifier binds to the import only when the resolver answers with
@@ -1123,15 +1158,23 @@ impl<'a> GoExtractor<'a> {
 
     /// ATTRIBUTE nodes for a struct's fields, plus their annotations.
     ///
-    /// An embedded field is an ATTRIBUTE named after its type's last identifier,
-    /// which is the position go/types gives the field, so a selector, a keyed
-    /// literal key or an argument that uses it binds to a node. `collect_bases`
-    /// still records the embedded type as a `base` occurrence.
+    /// Every name of a multi-name field (`top, right int`) is its own ATTRIBUTE with
+    /// its own name span and its own `has_type`. An embedded field is an ATTRIBUTE
+    /// named after its type's last identifier, which is the position go/types gives
+    /// the field, so a selector, a keyed literal key or an argument that uses it
+    /// binds to a node. `collect_bases` still records the embedded type as a `base`
+    /// occurrence (top level only).
+    ///
+    /// A named field whose type is an anonymous struct (also behind `*`, `[]`, `[N]`,
+    /// a map value or a chan, see `anonymous_struct`) recurses: the inner fields are
+    /// ATTRIBUTEs `Owner.F.<anon>.G` declared by the ATTRIBUTE `F`. There is no node
+    /// for `<anon>` itself. `nested` is true inside such a struct.
     fn collect_fields(
         &mut self,
         type_node: TsNode<'_>,
         type_qname: &str,
         type_id: &str,
+        nested: bool,
     ) -> PyResult<()> {
         for list in ts::children(type_node) {
             if list.kind() != "field_declaration_list" {
@@ -1141,16 +1184,31 @@ impl<'a> GoExtractor<'a> {
                 if field.kind() != "field_declaration" {
                     continue;
                 }
-                if let Some(name_node) = field.child_by_field_name("name") {
-                    let name = self.text(name_node);
-                    let qname = format!("{type_qname}.{name}");
-                    let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
-                    self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
-                    if let Some(field_type) = field.child_by_field_name("type") {
-                        self.record_annotation(field_type, &id);
+                let field_type = field.child_by_field_name("type");
+                let mut cursor = field.walk();
+                let names: Vec<TsNode<'_>> =
+                    field.children_by_field_name("name", &mut cursor).collect();
+                if !names.is_empty() {
+                    for name_node in names {
+                        let name = self.text(name_node);
+                        let qname = format!("{type_qname}.{name}");
+                        let id =
+                            self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
+                        self.push_relation(
+                            type_id.to_string(),
+                            id.clone(),
+                            RelationKind::Declares,
+                        )?;
+                        if let Some(field_type) = field_type {
+                            self.record_field_type(field_type, &id);
+                            if let Some(inner) = anonymous_struct(field_type) {
+                                let anon_qname = format!("{qname}.<anon>");
+                                self.collect_fields(inner, &anon_qname, &id, true)?;
+                            }
+                        }
                     }
                 } else {
-                    let Some(field_type) = field.child_by_field_name("type") else {
+                    let Some(field_type) = field_type else {
                         continue;
                     };
                     let Some(name_node) = embedded_name_node(Some(field_type)) else {
@@ -1161,13 +1219,38 @@ impl<'a> GoExtractor<'a> {
                     let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
                     self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
                     // Names only: `collect_bases` already records the package qualifier
-                    // with the class as its source.
+                    // with the class as its source. Inside an anonymous struct nothing
+                    // else does, so the qualifier is recorded here.
                     let params = type_parameter_names(self.source, field_type);
                     self.annotate_names(walk_type(field_type, "type_identifier"), &id, &params);
+                    if nested {
+                        self.record_type_qualifiers(field_type, &id);
+                    }
                 }
             }
         }
         Ok(())
+    }
+
+    /// `record_annotation` for a field's type, minus every name that sits inside a
+    /// `struct_type` of that type: those belong to the fields of the anonymous
+    /// struct, which are declared separately. Without an anonymous struct it is
+    /// identical to `record_annotation`.
+    fn record_field_type(&mut self, field_type: TsNode<'_>, id: &str) {
+        let params = type_parameter_names(self.source, field_type);
+        let names: Vec<TsNode<'_>> = walk_type(field_type, "type_identifier")
+            .into_iter()
+            .filter(|n| !inside_struct(*n, field_type))
+            .collect();
+        self.annotate_names(names, id, &params);
+        for qualified in walk_type(field_type, "qualified_type") {
+            if inside_struct(qualified, field_type) {
+                continue;
+            }
+            if let Some(package) = qualified.child_by_field_name("package") {
+                self.record_qualifier(package, id);
+            }
+        }
     }
 
     /// METHOD nodes for the methods an interface declares: a call through an
@@ -1261,7 +1344,7 @@ impl<'a> GoExtractor<'a> {
                 && let Some(type_node) = type_node
             {
                 self.collect_bases(type_node, &id);
-                self.collect_fields(type_node, &qname, &id)?;
+                self.collect_fields(type_node, &qname, &id, false)?;
                 self.collect_interface_methods(type_node, &qname, &id)?;
             } else if let Some(type_node) = type_node {
                 // `type Items []Item`, `type H func(*Item)`, any alias: the right-hand

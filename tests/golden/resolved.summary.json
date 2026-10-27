@@ -75,8 +75,8 @@
   },
   "go": {
     "nodes": {
-      "attribute": 3,
-      "class": 3,
+      "attribute": 7,
+      "class": 4,
       "external_symbol": 3,
       "file": 2,
       "function": 3,
@@ -91,7 +91,7 @@
     "relations": {
       "calls": 6,
       "contains": 4,
-      "declares": 23,
+      "declares": 32,
       "has_type": 6,
       "imports": 3,
       "inherits_from": 1,

@@ -45,6 +45,8 @@ after its type's last identifier (`Engine.Base` for `Base`, `*Base`,
 (`e.Base`), a keyed-literal key (`Engine{Base: b}`) and an argument therefore
 bind to the field like a named one.
 
+Every name of a multi-name field (`top, right int`) is its own `ATTRIBUTE`. A field whose type is an anonymous struct, also behind `*`, `[]`, `[N]`, a map value or a chan, has its fields as `ATTRIBUTE`s named `T.F.<anon>.G`, declared by the field `T.F`; there is no node for the struct itself, and a type embedded in it has no `INHERITS_FROM`. Not covered: a package-level `var x struct{...}`, struct types inside function bodies, a composite literal's own `struct{...}{...}` type, `type A = struct{...}`, anonymous structs in generic arguments, function signatures or map keys.
+
 Embedding is distinguished from generic constraints by term count: a type-set
 union like `A | B` or `~int` has several terms in one element, real embedding
 has exactly one.

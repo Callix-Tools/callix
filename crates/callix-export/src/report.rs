@@ -239,7 +239,11 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              use of a package-level const, var or function (an assignment side, an operand, a \
              return value, a case, a composite element, a range operand, `v` in `v.M`) is a \
              `references` edge with access read or write, while locals, parameters, predeclared \
-             names and dot-imported names get none",
+             names and dot-imported names get none; a conversion `T(x)` or `pkg.T(x)` to a type \
+             of the project is a `references` edge with access read to the type, never a call, \
+             but a parenthesised conversion `(*T)(p)`, a generic type conversion `G[int](x)` \
+             and a conversion to a standard-library or third-party type (still an external \
+             call) are not",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

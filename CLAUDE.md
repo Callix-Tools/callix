@@ -418,6 +418,9 @@ Things that are easy to get wrong:
   external, so its name is skipped (scope-insensitively); and `F[T](x)` parses
   as `type_conversion_expression{generic_type}`, so the base `F` would become a
   HAS_TYPE edge to a function — only its type arguments are annotated.
+  A `call` occurrence that go/types binds to a CLASS/TYPE_ALIAS is a conversion
+  `T(x)`: `resolve_pass` re-kinds it to REFERENCES (access read), never CALLS and
+  never dropped.
 - **Decorators, parameter defaults and a call's receiver are values the definition
   depends on, and `scan_value` must reach them.** The Python and TypeScript
   visitors once skipped all three — a bare `@deco` recorded nothing, a default was

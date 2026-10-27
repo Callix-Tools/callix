@@ -764,12 +764,15 @@ fn resolve_pass(
         // What the answer was bound to, before an unbound one becomes an external
         // symbol: that is what decides how the edge is described.
         let bound_kind = target_id.as_deref().and_then(|id| graph.node_kind(id));
-        // `HandlerFunc(g)`, `T(x)`: a type "called" is a conversion, not a call.
-        if rel_kind == RelationKind::Calls
-            && matches!(bound_kind, Some(NodeKind::Class | NodeKind::TypeAlias))
-        {
-            continue;
-        }
+        // `HandlerFunc(g)`, `T(x)`: a type "called" is a conversion, not a call; it is
+        // a use of the type, a REFERENCES edge with access read.
+        let is_conversion = rel_kind == RelationKind::Calls
+            && matches!(bound_kind, Some(NodeKind::Class | NodeKind::TypeAlias));
+        let rel_kind = if is_conversion {
+            RelationKind::References
+        } else {
+            rel_kind
+        };
         match target_id {
             Some(_) => metrics.internal += 1,
             None => {
@@ -800,6 +803,8 @@ fn resolve_pass(
         metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
+        } else if is_conversion {
+            metadata.set_item("access", "read")?;
         }
         graph.note_site_file(
             &occurrence.enclosing_id,

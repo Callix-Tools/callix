@@ -88,6 +88,12 @@ operand of `v.M`, or `h := helper` for a function value) is a `REFERENCES` edge 
 predeclared names (`nil`, `true`, `len`) and names brought in by a dot import get
 no edge and no external symbol.
 
+A conversion is not a call. `T(x)` (also `pkg.T(x)`) to a type of the project is a
+`REFERENCES` edge with `access` `read` to the `CLASS` or `TYPE_ALIAS`, resolution
+`definition`, at the type name's span. Three forms get no such edge: a parenthesised
+conversion `(*T)(p)`, a generic type conversion `G[int](x)`, and a conversion to a
+standard-library or third-party type, which is still an external call.
+
 ## Dependency classification
 
 Go's own rule applies — a standard-library import path has no dot in its first

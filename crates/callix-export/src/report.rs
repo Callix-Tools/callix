@@ -216,12 +216,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
-            "static calls and concrete methods; a function value is followed by a flow pass and \
+            "static calls and concrete methods (also those in a package-level var or const initializer, which belong to that variable); a function value is followed by a flow pass and \
              marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
              standard-library callbacks); a call through an interface lands on the interface's \
              method, never on an implementation; every named type in a receiver, parameter, \
              result, field, type declaration (right-hand side and constraints), var or const \
-             type, or anywhere in a function body (literals, closures, assertions, type \
+             type or initializer, or anywhere in a function body (literals, closures, assertions, type \
              switches, make and new, type arguments) is a `has_type`, except predeclared \
              types, type parameters, types declared inside a function, and the generic in an \
              explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion; a \

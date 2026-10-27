@@ -1,7 +1,9 @@
 //! Structural extraction from Go: packages, types, functions, imports.
 //!
 //! Simpler than Python and TypeScript: Go has no nested declaration scopes,
-//! so there are no stacks — only a file's top-level declarations are walked.
+//! so there are no stacks — only a file's top-level declarations are walked,
+//! and the value of a package-level `var` or `const` is scanned with the
+//! variable as the enclosing node.
 
 use std::collections::{HashMap, HashSet};
 
@@ -573,6 +575,12 @@ impl<'a> GoExtractor<'a> {
         let Some(body) = callable.child_by_field_name("body") else {
             return;
         };
+        self.collect_scope_types(body, enclosing_id);
+    }
+
+    /// The type names of any scope (a function body, or the value of a
+    /// package-level `var`), with the skips documented on `collect_body_types`.
+    fn collect_scope_types(&mut self, body: TsNode<'_>, enclosing_id: &str) {
         let mut skip = type_parameter_names(self.source, body);
         let mut excluded: Vec<(usize, usize)> = Vec::new();
         for node in descendants(body) {
@@ -1062,6 +1070,26 @@ impl<'a> GoExtractor<'a> {
         Ok(())
     }
 
+    /// Scans one package-level initializer with the VARIABLE as the enclosing
+    /// definition. A func literal that is the whole value is the variable's body:
+    /// its parameters become PARAMETER nodes `<var>.<p>` and its called locals are
+    /// nodes under the variable. Any other value is walked like a function body, so
+    /// a literal nested in it is a closure (no PARAMETER nodes, its calls belong to
+    /// the variable).
+    fn scan_initializer(&mut self, value: TsNode<'_>, var_qname: &str, var_id: &str) -> PyResult<()> {
+        if value.kind() == "func_literal" {
+            return self.on_callable(value, var_qname, var_id);
+        }
+        self.collect_scope_types(value, var_id);
+        self.collect_calls(value, var_id);
+        self.collect_references(value, var_id);
+        Ok(())
+    }
+
+    /// Declares each name of a `var`/`const` spec, then scans the values. With one
+    /// value per name, value i belongs to name i; otherwise (`var a, b = f()`) every
+    /// value is scanned once, by the first name, so no site gets two occurrences.
+    /// A const with an implicit repeated value has no value node: nothing to scan.
     fn on_value_specs(&mut self, node: TsNode<'_>, spec_kind: &str) -> PyResult<()> {
         for spec in walk_type(node, spec_kind) {
             let mut cursor = spec.walk();
@@ -1072,13 +1100,14 @@ impl<'a> GoExtractor<'a> {
                 .child_by_field_name("value")
                 .map(|v| ts::named_children(v))
                 .unwrap_or_default();
+            let mut declared: Vec<(String, String)> = Vec::new();
             for (position, name_node) in names.iter().enumerate() {
                 let name = self.text(*name_node);
                 let qname = format!("{}.{name}", self.package_qname);
                 let id = self.declare(&qname, &name, NodeKind::Variable, spec, *name_node)?;
                 // `var Global Item`, `const K Kind = 1`: one annotation per name.
-                if let Some(declared) = spec.child_by_field_name("type") {
-                    self.record_annotation(declared, &id);
+                if let Some(declared_type) = spec.child_by_field_name("type") {
+                    self.record_annotation(declared_type, &id);
                 }
                 // `var handler = g`: the variable holds what it is initialised with.
                 if spec_kind == "var_spec"
@@ -1086,6 +1115,20 @@ impl<'a> GoExtractor<'a> {
                     && let Some(value) = values.get(position)
                 {
                     self.record_aliases(*value, &id, 0);
+                }
+                declared.push((qname, id));
+            }
+            if declared.is_empty() {
+                continue;
+            }
+            if values.len() == names.len() {
+                for (value, (qname, id)) in values.iter().zip(declared.iter()) {
+                    self.scan_initializer(*value, qname, id)?;
+                }
+            } else {
+                let (qname, id) = &declared[0];
+                for value in &values {
+                    self.scan_initializer(*value, qname, id)?;
                 }
             }
         }

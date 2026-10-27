@@ -2322,23 +2322,23 @@
   "ref": "v3.98.0",
   "resolution": {
     "metrics": {
-      "external": 24356,
-      "internal": 28484,
-      "queries": 67011,
-      "resolved": 66870,
+      "external": 24492,
+      "internal": 28572,
+      "queries": 67239,
+      "resolved": 67098,
       "unresolved": 141
     },
     "relations": {
-      "calls": 19354,
+      "calls": 19413,
       "consumes": 2,
       "contains": 492,
       "declares": 16152,
       "depends_on": 309,
       "exposes": 2,
-      "has_type": 6446,
+      "has_type": 6506,
       "imports": 2394,
       "inherits_from": 28,
-      "references": 27016,
+      "references": 27121,
       "resolves_to": 2394
     },
     "status": "ok"

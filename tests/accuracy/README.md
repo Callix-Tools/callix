@@ -63,6 +63,7 @@ is which edges a program has.
   more. A call on a value of the concrete type is the implementation's.
 * Calls in a closure, lambda or function literal belong to the function that
   contains it.
+* Code in a package-level initializer (Go `var x = f()`) belongs to the variable it initialises.
 * `new A()` / `A()` is an edge to the constructor when the class declares one, and
   no edge when it does not.
 * A function reached through a variable, argument, return value or container is
@@ -73,7 +74,7 @@ is which edges a program has.
 |---|---|---|---|---|
 | Python | `main` | `main.f` | `main.C.m` | `main.C.__init__` |
 | TypeScript | `main.ts` | `main.f` | `main.C.m` | `main.C.constructor` |
-| Go | — | `m.f` | `m.T.M` | — |
+| Go | `m.x` (the var/const it initialises) | `m.f` | `m.T.M` | — |
 | Rust | — | `m::f` | `m::T.m` | — |
 | PHP | `main.php` | `App\f` | `App\C\m` | `App\C\__construct` |
 | C | — | `f`, `file.c::f` if static | — | — |

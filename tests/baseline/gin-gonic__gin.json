@@ -206,9 +206,9 @@
       "relations": 16
     },
     "context_test.go": {
-      "hash": "56a96881ae3cd15c",
-      "nodes": 409,
-      "relations": 472
+      "hash": "e8ace6be91726d7c",
+      "nodes": 410,
+      "relations": 473
     },
     "debug.go": {
       "hash": "827d459eb71c21f3",
@@ -306,9 +306,9 @@
       "relations": 27
     },
     "logger.go": {
-      "hash": "5ff56ba5d60c5c9a",
-      "nodes": 60,
-      "relations": 87
+      "hash": "29705cdb532751d1",
+      "nodes": 61,
+      "relations": 88
     },
     "logger_test.go": {
       "hash": "d0f5040b26c2a2cd",
@@ -498,14 +498,14 @@
       "import": 511,
       "method": 444,
       "module": 7,
-      "parameter": 1587,
+      "parameter": 1589,
       "project": 1,
       "type_alias": 34,
       "variable": 167
     },
     "relations": {
       "contains": 104,
-      "declares": 4353,
+      "declares": 4355,
       "depends_on": 35,
       "exposes": 201,
       "imports": 511,
@@ -516,29 +516,29 @@
   "ref": "v1.12.0",
   "resolution": {
     "metrics": {
-      "external": 12926,
-      "internal": 11030,
-      "queries": 28385,
-      "resolved": 28278,
-      "unresolved": 107
+      "external": 13434,
+      "internal": 11107,
+      "queries": 29000,
+      "resolved": 28875,
+      "unresolved": 125
     },
     "relations": {
-      "calls": 8839,
+      "calls": 8871,
       "contains": 104,
-      "declares": 4353,
+      "declares": 4355,
       "depends_on": 35,
       "exposes": 201,
-      "has_type": 3154,
+      "has_type": 3191,
       "imports": 511,
       "inherits_from": 26,
-      "references": 11938,
+      "references": 12454,
       "resolves_to": 511
     },
     "status": "ok"
   },
   "totals": {
     "files": 97,
-    "nodes": 4338,
-    "relations": 5715
+    "nodes": 4340,
+    "relations": 5717
   }
 }

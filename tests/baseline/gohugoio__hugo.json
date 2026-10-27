@@ -246,9 +246,9 @@
       "relations": 22
     },
     "common/herrors/error_locator.go": {
-      "hash": "fd742c78822a28cc",
-      "nodes": 36,
-      "relations": 59
+      "hash": "abb06f7b0a2657d0",
+      "nodes": 39,
+      "relations": 62
     },
     "common/herrors/error_locator_test.go": {
       "hash": "625293aa1b8b17c1",
@@ -291,9 +291,9 @@
       "relations": 15
     },
     "common/hexec/exec.go": {
-      "hash": "271389a16d3e5d4a",
-      "nodes": 105,
-      "relations": 159
+      "hash": "92a99f22b913a2e2",
+      "nodes": 112,
+      "relations": 166
     },
     "common/hexec/exec_integration_test.go": {
       "hash": "a7194093db745b49",
@@ -501,9 +501,9 @@
       "relations": 41
     },
     "common/loggers/handlersmisc.go": {
-      "hash": "0bc867bf4349a247",
-      "nodes": 36,
-      "relations": 52
+      "hash": "b8f3bf135d053d7f",
+      "nodes": 37,
+      "relations": 53
     },
     "common/loggers/handlerterminal.go": {
       "hash": "28e94b37b2b20810",
@@ -551,9 +551,9 @@
       "relations": 32
     },
     "common/paths/path.go": {
-      "hash": "e1a0257339f66fbd",
-      "nodes": 102,
-      "relations": 130
+      "hash": "77fc59d05338d8dc",
+      "nodes": 103,
+      "relations": 131
     },
     "common/paths/path_test.go": {
       "hash": "b88c764dca11cdb1",
@@ -596,9 +596,9 @@
       "relations": 68
     },
     "common/predicate/predicate_test.go": {
-      "hash": "112b3fcace1f2e44",
-      "nodes": 30,
-      "relations": 37
+      "hash": "6feb26c08220e7ed",
+      "nodes": 34,
+      "relations": 41
     },
     "common/predicate/rangeop_test.go": {
       "hash": "43320897a126e3b0",
@@ -1046,9 +1046,9 @@
       "relations": 41
     },
     "hugofs/dirsmerger.go": {
-      "hash": "3a25e99c7ec28adb",
-      "nodes": 4,
-      "relations": 7
+      "hash": "248ae5f5313e612d",
+      "nodes": 6,
+      "relations": 9
     },
     "hugofs/fileinfo.go": {
       "hash": "9a25c30b96eff211",
@@ -1241,9 +1241,9 @@
       "relations": 69
     },
     "hugolib/content_map.go": {
-      "hash": "d0342c615e4e3533",
-      "nodes": 70,
-      "relations": 118
+      "hash": "83f2888bbee84057",
+      "nodes": 71,
+      "relations": 119
     },
     "hugolib/content_map_page.go": {
       "hash": "d4aecc9e0a5252b3",
@@ -1671,9 +1671,9 @@
       "relations": 18
     },
     "hugolib/segments/segments_test.go": {
-      "hash": "d904669461eb0faf",
-      "nodes": 23,
-      "relations": 32
+      "hash": "817447186d32a81a",
+      "nodes": 25,
+      "relations": 34
     },
     "hugolib/shortcode.go": {
       "hash": "afdd7059a794cc64",
@@ -1951,9 +1951,9 @@
       "relations": 71
     },
     "langs/language.go": {
-      "hash": "ae1e493949e3c655",
-      "nodes": 68,
-      "relations": 102
+      "hash": "d31fb67754d9024d",
+      "nodes": 71,
+      "relations": 105
     },
     "langs/language_test.go": {
       "hash": "9a3c383c46b95327",
@@ -2401,9 +2401,9 @@
       "relations": 10
     },
     "navigation/menu.go": {
-      "hash": "02beb1b2496c9785",
-      "nodes": 81,
-      "relations": 127
+      "hash": "eb269f65235c2202",
+      "nodes": 83,
+      "relations": 129
     },
     "navigation/menu_cache.go": {
       "hash": "6d6094eb718f08c0",
@@ -2486,9 +2486,9 @@
       "relations": 20
     },
     "parser/metadecoders/encoder.go": {
-      "hash": "be235fdfc924a9d8",
-      "nodes": 4,
-      "relations": 5
+      "hash": "c577c7637e1b8d2a",
+      "nodes": 5,
+      "relations": 6
     },
     "parser/metadecoders/format.go": {
       "hash": "7d7623908f1c01df",
@@ -2701,9 +2701,9 @@
       "relations": 36
     },
     "resources/images/meta/meta.go": {
-      "hash": "e83d17437d179c3a",
-      "nodes": 73,
-      "relations": 116
+      "hash": "82ba6ebd48a06085",
+      "nodes": 75,
+      "relations": 118
     },
     "resources/images/meta/meta_integration_test.go": {
       "hash": "daf14722f41fd5c7",
@@ -2971,9 +2971,9 @@
       "relations": 19
     },
     "resources/page/pages_sort.go": {
-      "hash": "3cf811e9a8e3ec6d",
-      "nodes": 63,
-      "relations": 80
+      "hash": "124818f0622778e9",
+      "nodes": 82,
+      "relations": 99
     },
     "resources/page/pages_sort_search.go": {
       "hash": "54bc977105299ecd",
@@ -3011,9 +3011,9 @@
       "relations": 13
     },
     "resources/page/permalinks.go": {
-      "hash": "fff83a40e6af415d",
-      "nodes": 117,
-      "relations": 156
+      "hash": "5be7b91b507c77f6",
+      "nodes": 119,
+      "relations": 158
     },
     "resources/page/permalinks_integration_test.go": {
       "hash": "5868fb8235be9c22",
@@ -3211,9 +3211,9 @@
       "relations": 50
     },
     "resources/resource_transformers/cssjs/tailwindcss.go": {
-      "hash": "9c04ccc3245611c6",
-      "nodes": 34,
-      "relations": 62
+      "hash": "80056dfe37135ac5",
+      "nodes": 35,
+      "relations": 63
     },
     "resources/resource_transformers/cssjs/tailwindcss_integration_test.go": {
       "hash": "5bc4a6eddbded771",
@@ -4498,15 +4498,15 @@
       "import": 5947,
       "method": 4867,
       "module": 191,
-      "parameter": 8404,
+      "parameter": 8454,
       "project": 4,
       "type_alias": 187,
-      "variable": 1804
+      "variable": 1805
     },
     "relations": {
       "consumes": 12,
       "contains": 1088,
-      "declares": 34283,
+      "declares": 34334,
       "depends_on": 185,
       "exposes": 4,
       "imports": 5947,
@@ -4517,30 +4517,30 @@
   "ref": "v0.163.3",
   "resolution": {
     "metrics": {
-      "external": 56622,
-      "internal": 73137,
-      "queries": 164098,
-      "resolved": 161489,
-      "unresolved": 2609
+      "external": 58341,
+      "internal": 75246,
+      "queries": 168225,
+      "resolved": 165577,
+      "unresolved": 2648
     },
     "relations": {
-      "calls": 47798,
+      "calls": 49010,
       "consumes": 12,
       "contains": 1088,
-      "declares": 34283,
+      "declares": 34334,
       "depends_on": 185,
       "exposes": 4,
-      "has_type": 21880,
+      "has_type": 22682,
       "imports": 5947,
       "inherits_from": 457,
-      "references": 59736,
+      "references": 61563,
       "resolves_to": 5947
     },
     "status": "ok"
   },
   "totals": {
     "files": 897,
-    "nodes": 31404,
-    "relations": 47466
+    "nodes": 31455,
+    "relations": 47517
   }
 }

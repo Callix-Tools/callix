@@ -265,6 +265,12 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **A decorator is called by the scope the definition sits in**, not by the
   definition; the definition only `REFERENCES` it. Calls in a closure belong to the
   function that contains it. Both conventions are what the accuracy suites assume.
+- **Go package-level `var`/`const` initializers are scanned with the VARIABLE as
+  the enclosing definition** (`GoExtractor::scan_initializer`). A func literal that
+  is the whole value is the variable's body: its parameters are PARAMETERs
+  `<var>.<p>` and its called locals are nodes under the variable. A literal nested
+  deeper in the value is a closure and has no PARAMETERs. In `var a, b = f()` the
+  first name owns the call, so no site gets two occurrences.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
 - **A Go package qualifier** (`pkg.X` operand, `pkg.T` in a type) is a `read`

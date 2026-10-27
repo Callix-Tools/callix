@@ -427,6 +427,16 @@ Things that are easy to get wrong:
   edges and an `import` occurrence on the imported name only. They once fell to
   `scan_value`, which recorded every name, the alias included, as a `read` and
   left no IMPORT node or IMPORTS edge.
+- **Every name in a Python annotation is an `annotation` occurrence, not just the
+  first.** `src/python/annotation.rs::type_names` walks subscript arguments, `|`,
+  `Callable` lists, a quoted forward reference (re-parsed, with positions offset
+  into the string) and annotated assignments (module variable, class field, local,
+  `self.x: T`). HAS_TYPE runs from the VARIABLE, ATTRIBUTE or PARAMETER (or the
+  function, for a return type). In `a.B` the type is `B` and `a` is a `read`.
+  `Literal[...]` arguments and `Annotated` metadata are not types. An
+  annotation-only statement has no right-hand side: take
+  `child_by_field_name("right")`, never the last child, or the type is scanned
+  as a value.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

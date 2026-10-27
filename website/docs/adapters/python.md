@@ -50,6 +50,15 @@ Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.
 
+Every name in an annotation is a use, not only the first: `list[Item]`,
+`Optional["Item"]`, `dict[str, Item] | None`, `Callable[[A], R]`, a quoted forward
+reference, and annotated variables (module, class field, local, `self.x: T`) all
+produce a `HAS_TYPE` from the parameter, function, variable or attribute. In a
+qualified name such as `models.Item` the type is the last name: the `HAS_TYPE`
+goes to the class and `models` is a `REFERENCES` to the module. `Literal[...]`
+arguments and the metadata of `Annotated[T, ...]` are values, not types, and a
+string annotation that does not parse as a single expression is ignored.
+
 The name of a keyword argument in a call references the project field it sets
 (`Item(name=...)` on a dataclass, a `NamedTuple`, a `TypedDict`, or a
 `dataclass_transform` model such as a pydantic one), with `access: "read"` and

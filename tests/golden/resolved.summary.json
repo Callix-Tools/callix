@@ -149,7 +149,7 @@
       "boundary": 1,
       "class": 2,
       "dependency": 1,
-      "external_symbol": 14,
+      "external_symbol": 15,
       "file": 3,
       "function": 3,
       "import": 6,
@@ -166,17 +166,17 @@
       "contains": 6,
       "declares": 27,
       "depends_on": 1,
-      "has_type": 10,
+      "has_type": 11,
       "imports": 4,
       "inherits_from": 1,
       "references": 20,
       "resolves_to": 9
     },
     "resolver": {
-      "external": 11,
+      "external": 12,
       "internal": 27,
-      "queries": 55,
-      "resolved": 48,
+      "queries": 56,
+      "resolved": 49,
       "unresolved": 4
     },
     "resolver_status": "ok"

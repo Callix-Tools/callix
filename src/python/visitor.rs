@@ -21,6 +21,7 @@ use crate::relation::{Relation, RelationKind};
 use crate::span::Span;
 use crate::ts;
 
+use super::annotation;
 use super::resolve_relative_import;
 
 /// Which parameter of a call an argument is passed to.
@@ -616,7 +617,7 @@ impl<'a> PythonVisitor<'a> {
         self.scan_decorators(decorator_nodes, &func_id)?;
 
         if let Some(type_node) = type_node {
-            self.record_annotation(type_node, &func_id);
+            self.record_annotation(type_node, &func_id, &func_id);
             self.scan_annotation_calls(type_node, &func_id)?;
         }
 
@@ -769,7 +770,7 @@ impl<'a> PythonVisitor<'a> {
             }
 
             if let Some(ann_type_node) = ann_type_node {
-                self.record_annotation(ann_type_node, &param_id);
+                self.record_annotation(ann_type_node, &param_id, function_id);
                 // Calls inside an annotation (Depends(get_dep)) are value
                 // uses, and they are enclosed by the function, not the
                 // parameter.
@@ -1457,7 +1458,18 @@ impl<'a> PythonVisitor<'a> {
         enclosing_id: &str,
         detail: Option<String>,
     ) {
-        let span = ts::span(name_node);
+        self.record_occurrence_at(role, ts::span(name_node), enclosing_id, detail);
+    }
+
+    /// Like `record_occurrence_with`, for a position that is not a node of the
+    /// tree (a name inside a quoted annotation).
+    fn record_occurrence_at(
+        &mut self,
+        role: &str,
+        span: Span,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
             line: span.start_line,
@@ -1480,10 +1492,17 @@ impl<'a> PythonVisitor<'a> {
         }
     }
 
-    /// Records an `annotation` for the leading identifier of a `type` node.
-    fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
-        if let Some(ident) = ts::first_identifier(type_node) {
-            self.record_occurrence("annotation", ident, enclosing_id);
+    /// Records every name a type annotation mentions: an `annotation` (enclosed by
+    /// `type_enclosing`, the declared thing) for each type, and a `read` (enclosed
+    /// by `value_enclosing`) for each qualifier, so `models.Item` is a HAS_TYPE to
+    /// the class and a REFERENCES to the module. See `annotation::type_names`.
+    fn record_annotation(&mut self, type_node: TsNode<'_>, type_enclosing: &str, value_enclosing: &str) {
+        for name in annotation::type_names(type_node, self.source) {
+            if name.qualifier {
+                self.record_occurrence_at("read", name.span, value_enclosing, None);
+            } else {
+                self.record_occurrence_at("annotation", name.span, type_enclosing, None);
+            }
         }
     }
 
@@ -1590,9 +1609,10 @@ impl<'a> PythonVisitor<'a> {
         let Some(lhs) = children.first().copied() else {
             return Ok(());
         };
-        let annotation = ts::child_of_type(node, "type");
-        let last = children.last().copied();
-        let rhs = last.filter(|n| n.id() != lhs.id());
+        // An annotation-only statement (`n: Item`) has no right-hand side: take the
+        // fields, never the last child, which would be the `type` node.
+        let annotation = node.child_by_field_name("type");
+        let rhs = node.child_by_field_name("right");
 
         match lhs.kind() {
             // `d[k] = v` stores into `d`; it declares nothing.
@@ -1617,6 +1637,14 @@ impl<'a> PythonVisitor<'a> {
         let (var_id, is_alias) = self.declare_target(node, lhs, name_node, annotation)?;
         let container = self.container();
 
+        // `x: list[Item] = []`: the declared thing has the types the annotation names.
+        if let Some(annotation) = annotation
+            && !is_alias
+        {
+            self.record_annotation(annotation, &var_id, &container);
+            self.scan_annotation_calls(annotation, &container)?;
+        }
+
         // `x = y`: the variable holds what `y` resolves to. The enclosing node of
         // an `alias` is the variable, so the flow pass knows who holds it.
         if !is_alias && let Some(value) = rhs {
@@ -1625,11 +1653,7 @@ impl<'a> PythonVisitor<'a> {
 
         match rhs {
             Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,
-            Some(rhs) => {
-                if let Some(ident) = ts::first_identifier(rhs) {
-                    self.record_occurrence("annotation", ident, &container);
-                }
-            }
+            Some(rhs) => self.record_annotation(rhs, &container, &container),
             None => {}
         }
         Ok(())

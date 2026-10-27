@@ -209,7 +209,11 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              and a namespace package has no file, so references to it stay `unlocated`; a keyword \
              argument's name references the field it sets (dataclass, NamedTuple, TypedDict, \
              dataclass_transform models such as pydantic), while the keyword of a plain function \
-             or a hand-written `__init__` is no edge",
+             or a hand-written `__init__` is no edge; every name of an annotation (subscripts, \
+             unions, quoted forward references, annotated variables and fields) is a HAS_TYPE, \
+             while `Literal` arguments and `Annotated` metadata are not, a `Literal` imported \
+             under another name is not recognised, and a string annotation that does not parse \
+             as one expression is skipped",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",

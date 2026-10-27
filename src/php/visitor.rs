@@ -378,6 +378,10 @@ impl<'a> PhpVisitor<'a> {
             "binary_expression" => self.visit_binary_expression(node),
             "catch_clause" => self.visit_catch_clause(node),
             "name" => {
+                // `__DIR__`, `__CLASS__`, ...: the engine's, not a symbol.
+                if super::builtins::is_magic_constant(&ts::text(node, self.source)) {
+                    return Ok(());
+                }
                 let container = self.container();
                 self.record_occurrence("read", node, &container);
                 Ok(())
@@ -1131,10 +1135,15 @@ impl<'a> PhpVisitor<'a> {
 
     fn visit_function_call(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let first_class = super::resolver::is_first_class_callable(node);
+        let construct = node
+            .child_by_field_name("function")
+            .is_some_and(|f| f.kind() == "name" && super::builtins::is_language_construct(&ts::text(f, self.source)));
         if let Some(function) = node.child_by_field_name("function") {
             match function.kind() {
                 // `g(...)` makes a callable of `g`; it is not a call of it.
                 "name" | "qualified_name" | "relative_name" if first_class => {}
+                // `isset(...)`, `empty(...)`, `eval(...)`: syntax, not a call of a symbol.
+                "name" if construct => {}
                 "name" | "qualified_name" | "relative_name" => {
                     if let Some(name_node) = last_name(function) {
                         let container = self.container();
@@ -1188,6 +1197,7 @@ impl<'a> PhpVisitor<'a> {
                 }
             }
         } else if !first_class
+            && !construct
             && let Some(function) = node.child_by_field_name("function")
             && let Some(site) = last_name(function)
             && let Some(arguments) = node.child_by_field_name("arguments")

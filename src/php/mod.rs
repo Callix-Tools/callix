@@ -8,6 +8,7 @@
 
 mod adapter;
 mod boundary;
+mod builtins;
 mod deps;
 mod detector;
 mod resolver;

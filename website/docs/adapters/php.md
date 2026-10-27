@@ -119,8 +119,11 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   `$container->get('service')` returns.
 
 Everything unresolved still produces an edge to an `EXTERNAL_SYMBOL`, so a
-reference is never silently dropped. What the edge says about itself is its
-`resolution`: `definition` for a declaration of the project, `external` for a
+reference is never silently dropped. The exception is syntax: language
+constructs that look like calls (`isset`, `empty`, `eval`, `die`/`exit`, ...)
+and magic constants (`__DIR__`, `__CLASS__`, ...) are not symbols, so they
+produce no edge, while the calls inside their arguments still do. What the
+edge says about itself is its `resolution`: `definition` for a declaration of the project, `external` for a
 name no analysed source declares (a built-in such as `explode`, a library), and
 `unlocated` for a member of a class the project does declare that the table
 could not find on it (inherited from `vendor/`, declared only on an

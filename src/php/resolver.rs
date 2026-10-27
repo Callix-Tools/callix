@@ -1340,6 +1340,16 @@ impl PhpResolver {
             return;
         };
         let name = ts::text(node, source).into_owned();
+        // Syntax, not symbols: the visitor records no query here either.
+        if node.kind() == "name"
+            && match kind {
+                NameKind::Function => super::builtins::is_language_construct(&name),
+                NameKind::Value => super::builtins::is_magic_constant(&name),
+                NameKind::Class => false,
+            }
+        {
+            return;
+        }
         let answer = self.name_answer(&name, doc, namespace, kind);
         self.record(doc, position, answer);
     }

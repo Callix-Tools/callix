@@ -50,6 +50,12 @@ Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.
 
+The name of a keyword argument in a call references the project field it sets
+(`Item(name=...)` on a dataclass, a `NamedTuple`, a `TypedDict`, or a
+`dataclass_transform` model such as a pydantic one), with `access: "read"` and
+`resolution: "definition"`. The keywords of an ordinary function or of a
+hand-written `__init__`, `**kwargs` and unknown names produce no edge.
+
 ## Projects inside the directory
 
 A directory can hold Python projects of its own - `repo/backend` with a

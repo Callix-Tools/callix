@@ -920,8 +920,14 @@ impl<'a> PythonVisitor<'a> {
                     continue;
                 }
                 if child.kind() == "keyword_argument" {
-                    // The value only (the last child) — a kwarg's name
-                    // must not produce REFERENCES.
+                    // The name is recorded as a `kw` read; the adapter keeps its
+                    // REFERENCES edge only when it lands on a field (dataclass,
+                    // NamedTuple, TypedDict, dataclass_transform models).
+                    if let Some(name_node) = child.child_by_field_name("name")
+                        && name_node.kind() == "identifier"
+                    {
+                        self.record_occurrence_with("read", name_node, enclosing_id, Some("kw".into()));
+                    }
                     if let Some(value) = ts::children(child).last().copied() {
                         let keyword = ts::children(child)
                             .first()

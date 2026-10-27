@@ -267,6 +267,13 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **A decorator is called by the scope the definition sits in**, not by the
   definition; the definition only `REFERENCES` it. Calls in a closure belong to the
   function that contains it. Both conventions are what the accuracy suites assume.
+- **A Python keyword argument's name is a `read` occurrence with detail `kw`**, and
+  the adapter keeps its REFERENCES edge only when the answer binds to a field
+  (`ATTRIBUTE`/`VARIABLE`: dataclass, NamedTuple, TypedDict, `dataclass_transform`
+  models such as pydantic). An answer on a parameter, a function, an external, or
+  no answer at all is dropped and counted `unresolved` (like an import that reaches
+  nothing) - never turned into an `EXTERNAL_SYMBOL`. `kw` occurrences never feed
+  the flow pass.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`

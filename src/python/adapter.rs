@@ -777,6 +777,8 @@ fn apply_resolutions_inner(
         };
         metrics.resolved += 1;
         let is_alias = occurrence.role == "alias";
+        // `Item(name=1)`: the keyword's name, recorded by the visitor as a `read` with detail `kw`.
+        let keyword = occurrence.role == "read" && occurrence.detail.as_deref() == Some("kw");
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
             None if is_alias
@@ -805,6 +807,21 @@ fn apply_resolutions_inner(
             target_id = span_index
                 .lookup_name(&relative, reference.line, reference.col)
                 .or_else(|| span_index.lookup_module(&relative, reference.line, reference.col));
+        }
+
+        // A keyword is only worth an edge when it names a field of the project
+        // (ATTRIBUTE or VARIABLE). A parameter, a function, an external or an
+        // unbound answer is dropped, counted unresolved like an import that
+        // reaches nothing, and never becomes an external symbol.
+        if keyword
+            && !matches!(
+                target_id.as_deref().and_then(|id| graph.node_kind(id)),
+                Some(NodeKind::Attribute | NodeKind::Variable)
+            )
+        {
+            metrics.resolved -= 1;
+            metrics.unresolved += 1;
+            continue;
         }
 
         // What a call points at, and what a variable or a parameter holds, is
@@ -924,6 +941,7 @@ fn apply_resolutions_inner(
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
         } else if occurrence.role != "callarg"
+            && !keyword
             && let Some(held) = target_id.as_deref()
         {
             flow.arg(path, occurrence, held);

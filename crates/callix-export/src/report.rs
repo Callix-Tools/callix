@@ -206,7 +206,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              decorators, receivers, keyed containers and the library's own callbacks (`map`, \
              `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
              `getattr` and `eval` are not followed; a module named in code binds to its MODULE, \
-             and a namespace package has no file, so references to it stay `unlocated`",
+             and a namespace package has no file, so references to it stay `unlocated`; a keyword \
+             argument's name references the field it sets (dataclass, NamedTuple, TypedDict, \
+             dataclass_transform models such as pydantic), while the keyword of a plain function \
+             or a hand-written `__init__` is no edge",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",

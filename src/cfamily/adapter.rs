@@ -56,7 +56,7 @@ use super::detector::{
     is_cpp, project_name,
 };
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
-use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
+use super::resolver::{CFamilyIndex, Outcome, SymbolTable, type_key};
 use super::visitor::{
     CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes,
     read_file,
@@ -222,6 +222,10 @@ fn ensure_external_symbol(
         graph.insert_node(id.clone(), Py::new(py, node)?);
     }
     Ok(id)
+}
+
+fn is_callable(kind: NodeKind) -> bool {
+    matches!(kind, NodeKind::Function | NodeKind::Method)
 }
 
 /// Use-site role → edge kind. Identical to the other adapters'.
@@ -467,12 +471,14 @@ fn resolve_with_table(
             {
                 fields_by_class.entry(qualified_name.clone()).or_default().push(decl.qualified_name.clone());
             }
-            index.declare(
+            let value_type = if decl.kind == NodeKind::Variable { type_key(&decl.type_text) } else { None };
+            index.declare_typed(
                 &decl.name,
                 &decl.qualified_name,
                 decl.kind,
                 &file.file_rel,
                 decl.linkage == Linkage::Internal,
+                value_type,
             );
             // Classes, their members and fields: what a receiver's type is asked.
             // `F::operator()()`: the call operator's own parentheses are not the signature's.
@@ -492,6 +498,7 @@ fn resolve_with_table(
                         index.declare_field(class, field, &decl.qualified_name, &decl.type_text);
                     }
                 }
+                NodeKind::TypeAlias => index.declare_alias(&decl.qualified_name, &decl.type_text),
                 _ => {}
             }
         }
@@ -519,7 +526,7 @@ fn resolve_with_table(
             // it is no edge of its own. Only a function is worth following.
             if occurrence.role == "alias" {
                 if let Some((qualified_name, NodeKind::Function | NodeKind::Method, _)) =
-                    index.lookup(&occurrence.name, &file.file_rel)
+                    index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable)
                 {
                     let target = node_id(project, &qualified_name, NodeKind::Function.as_str());
                     let target = if graph.has_node(&target) {
@@ -542,7 +549,7 @@ fn resolve_with_table(
                         };
                         match local {
                             Some((qualified, kind)) => Some(node_id(project, qualified, kind.as_str())),
-                            None => match index.lookup(name, &file.file_rel) {
+                            None => match index.lookup_kinds(name, &file.file_rel, |k| k == NodeKind::Variable) {
                                 Some((qualified, NodeKind::Variable, _)) => {
                                     Some(node_id(project, &qualified, NodeKind::Variable.as_str()))
                                 }
@@ -564,7 +571,7 @@ fn resolve_with_table(
             // `return g;` and `pick()(x)`: what a function returns, and a call of it.
             if matches!(occurrence.role, "returned" | "result_call") {
                 if let Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) =
-                    index.lookup(&occurrence.name, &file.file_rel)
+                    index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable)
                 {
                     let target = node_id(project, &qualified_name, kind.as_str());
                     let owner = enclosing_id(project, file, &occurrence.owner);
@@ -593,7 +600,7 @@ fn resolve_with_table(
                 };
                 let resolved = match own_parameter {
                     Some((parameter, kind)) => Some((parameter.clone(), *kind)),
-                    None => match index.lookup(&occurrence.name, &file.file_rel) {
+                    None => match index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable) {
                         Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) => {
                             Some((qualified_name, kind))
                         }
@@ -689,6 +696,7 @@ fn resolve_with_table(
             // A bare name that is a parameter of the function it is written in means
             // that parameter, not whichever one of the project carries the name.
             let bare = occurrence.site.receiver_name.is_none()
+                && !occurrence.site.member
                 && occurrence.site.qualifier.is_empty()
                 && !occurrence.site.constructs
                 && !occurrence.site.in_initializer_list;
@@ -714,7 +722,7 @@ fn resolve_with_table(
             }
             // A call, a construction and a base in an initialiser list are asked of
             // the class table with everything the site says; the rest by name.
-            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list {
+            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list || occurrence.site.member {
                 match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel) {
                     Outcome::Found { qualified_name, kind, ambiguous } => Some(Some((qualified_name, kind, ambiguous))),
                     // Nothing the project declares: a library, a built-in. A
@@ -736,7 +744,14 @@ fn resolve_with_table(
             };
             let answer = match asked {
                 Some(answer) => answer,
-                None => index.lookup(&occurrence.name, &file.file_rel),
+                // A type position names a class or a typedef; anything else that is
+                // looked up by name (a using-declaration) is never a field.
+                None if matches!(occurrence.role, "annotation" | "base") => index.lookup_kinds(
+                    &occurrence.name,
+                    &file.file_rel,
+                    |k| matches!(k, NodeKind::Class | NodeKind::TypeAlias),
+                ),
+                None => index.lookup_kinds(&occurrence.name, &file.file_rel, |k| k != NodeKind::Attribute),
             };
             // A base in an initialiser list is written like a field and is a call of
             // the base's constructor.

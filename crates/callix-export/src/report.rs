@@ -242,7 +242,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); macros of the project are expanded where they \
+             the name (such edges say `ambiguous`); a member read, write or initialiser is \
+             bound by the receiver's declared type through field chains, typedefs and \
+             file-scope variables, a type with no such field gives an external symbol, and \
+             an unqualified name is never a field; macros of the project are expanded where they \
              are invoked, macros of the project that expand to nothing, an attribute or a \
              storage keyword are erased before parsing, conditionals are not evaluated, and \
              a callback handed to a library function is followed only for a closed list of \

@@ -136,6 +136,14 @@ about which function it means, and the table reads it in the order C++ does:
   field of the enclosing class — decides, and the nearest class in its lineage
   that has a member `f` wins, hiding the rest as C++ name lookup does. A receiver
   whose type is a library class (`std::string`) is not a project call at all.
+- `x->f` / `x.f` read or written, and `f` in a member initialiser list: the same
+  receiver rule, applied to **fields**. The receiver may be a parameter, a local,
+  `this`, a file-scope variable, a field chain (`n->next->len`), a cast, or a
+  typedef'd pointer (`srv_t s`); the field is looked up in the receiver's class
+  and its bases. A receiver whose type is known and has no such field (`FILE *fp`,
+  `fp->_flags`) is an external symbol, not a guess. An unqualified name never binds
+  to a field, so `mstime()` is the function even when a struct has a field
+  `mstime`.
 - `A::f()` / `n::f()`: a written scope names a class's member or a namespace's
   function.
 - `f()` inside a method means the enclosing class's `f` first.
@@ -160,8 +168,7 @@ about which function it means, and the table reads it in the order C++ does:
 Every edge the table writes has `metadata["resolution"] == "name"`, because that
 is how it was found, and `"ambiguous": true` when it had to choose between
 declarations it could not tell apart. A receiver whose type nothing in reach
-declares falls back to the bare name — the one case where `a.run()` may bind to
-the wrong class, and the one the edge flags.
+declares falls back to the bare name — a method or function-pointer field for a call, a field for a read or write — the one case where `a.run()` or `a->len` may bind to the wrong class, and the one the edge flags.
 
 What it will not do:
 

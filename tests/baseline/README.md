@@ -37,6 +37,8 @@ slow part — ruff alone spends four minutes in `rust-analyzer scip`.
 | C++ | leveldb · rocksdb | the same at two scales, plus `X::y` scope classification |
 | YAML | openapi-directory · argo-cd | the OpenAPI extractor; discovery and flavours |
 
+Pins re-recorded after member accesses became bound by the receiver's declared type (issue #18); redis, leveldb and rocksdb moved because field edges were re-targeted or made external.
+
 PHP and the C family resolve through a symbol table, so their fingerprints
 record `degraded` and — more usefully — the internal/external split. The C
 family's `unresolved` is always 0 by construction: every miss becomes an

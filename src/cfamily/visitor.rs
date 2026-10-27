@@ -541,6 +541,11 @@ pub struct CallSite {
     pub receiver_type: Option<String>,
     /// The identifier `obj` itself, for a member of the enclosing class (`obj_->f()`).
     pub receiver_name: Option<String>,
+    /// The name follows `.` or `->`: it is a member of some receiver, read, written or called.
+    pub member: bool,
+    /// The fields between the root receiver and the name: for `a->b->c`, the site of
+    /// `c` has `["b"]`. The root is `receiver_type` / `receiver_name`.
+    pub receiver_path: Vec<String>,
     /// The qualified class of the method this site is in: what an unqualified
     /// `f()` in a method means first.
     pub class_scope: Option<String>,
@@ -592,6 +597,9 @@ struct BodyContext {
     class_scope: Option<String>,
     /// Type parameters of the enclosing templates: a body's `T x;` names no class.
     template_parameters: HashSet<String>,
+    /// Every parameter and local name, typed or not: an identifier in here is never a
+    /// global or a field of the class, even when its type is unknown.
+    bound: HashSet<String>,
 }
 
 /// A use-site, before it has a node id to hang off.
@@ -1986,6 +1994,9 @@ impl<'a> Reader<'a> {
                 ) else {
                     continue;
                 };
+                if let Some(name) = terminal_declarator(declarator) {
+                    context.bound.insert(self.text(name.name));
+                }
                 if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator))
                     && !template_parameters.contains(&key)
                 {
@@ -2016,6 +2027,7 @@ impl<'a> Reader<'a> {
                     let Some(name) = inner.and_then(terminal_declarator) else {
                         continue;
                     };
+                    context.bound.insert(self.text(name.name));
                     let key = if self.text(type_node) == "auto" {
                         value.and_then(|v| self.constructed_type(v))
                     } else {
@@ -2883,7 +2895,8 @@ impl<'a> Reader<'a> {
                     }
                     if let Some(field) = node.child_by_field_name("field") {
                         let role = if is_write_target(node) { "write" } else { "read" };
-                        self.push_occurrence(role, bare_name(field), owner);
+                        let site = self.member_site(node, context);
+                        self.push_site(role, bare_name(field), owner, site);
                     }
                 }
                 _ => {}
@@ -3180,37 +3193,80 @@ impl<'a> Reader<'a> {
 
     /// What a call says about which function it means.
     fn call_site(&self, call: TsNode<'_>, function: TsNode<'_>, context: &BodyContext) -> CallSite {
-        let mut site = CallSite { class_scope: context.class_scope.clone(), ..CallSite::default() };
+        let mut site = if function.kind() == "field_expression" {
+            self.member_site(function, context)
+        } else {
+            CallSite { class_scope: context.class_scope.clone(), ..CallSite::default() }
+        };
         if let Some(arguments) = call.child_by_field_name("arguments") {
             site.arity = Some(ts::named_children(arguments).len());
             site.arg_kinds = self.argument_kinds(arguments, context);
         }
-        match function.kind() {
-            "field_expression" => {
-                if let Some(receiver) = function.child_by_field_name("argument") {
-                    match receiver.kind() {
-                        "this" => site.receiver_type = context.class_scope.clone(),
-                        "identifier" => {
-                            let name = self.text(receiver);
-                            site.receiver_type = context.locals.get(&name).cloned();
-                            site.receiver_name = Some(name);
-                        }
-                        // `this->member->f()`: the member's declared type tells.
-                        "field_expression" => {
-                            if receiver.child_by_field_name("argument").is_some_and(|a| a.kind() == "this")
-                                && let Some(field) = receiver.child_by_field_name("field")
-                            {
-                                site.receiver_name = Some(self.text(field));
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            "qualified_identifier" => site.qualifier = split_qualified(function, self.source).0,
-            _ => {}
+        if function.kind() == "qualified_identifier" {
+            site.qualifier = split_qualified(function, self.source).0;
         }
         site
+    }
+
+    /// The site of a member access `a.b` / `a->b` (read, write or callee): which
+    /// receiver it has, as far as the declarations in reach say.
+    fn member_site(&self, field_expression: TsNode<'_>, context: &BodyContext) -> CallSite {
+        let mut site = CallSite {
+            class_scope: context.class_scope.clone(),
+            member: true,
+            ..CallSite::default()
+        };
+        if let Some(argument) = field_expression.child_by_field_name("argument") {
+            self.scan_receiver(argument, context, &mut site);
+        }
+        site
+    }
+
+    /// Walks the operand of a member access down to its root.
+    ///
+    /// `this` is the enclosing class; a typed local gives its type and name; an
+    /// untyped local or parameter gives nothing (unknown, never mistaken for a
+    /// global or a field); any other identifier gives its name only (a field of the
+    /// class or a global). A field access in the operand pushes its field onto
+    /// `receiver_path`. Parentheses, `*p`, `&x` and subscripts look through to their
+    /// operand; a cast gives the cast type; anything else (a call result) is unknown.
+    fn scan_receiver(&self, node: TsNode<'_>, context: &BodyContext, site: &mut CallSite) {
+        match node.kind() {
+            "this" => site.receiver_type = context.class_scope.clone(),
+            "identifier" => {
+                let name = self.text(node);
+                if let Some(key) = context.locals.get(&name) {
+                    site.receiver_type = Some(key.clone());
+                    site.receiver_name = Some(name);
+                } else if !context.bound.contains(&name) {
+                    site.receiver_name = Some(name);
+                }
+            }
+            "field_expression" => {
+                if let Some(inner) = node.child_by_field_name("argument") {
+                    self.scan_receiver(inner, context, site);
+                }
+                if let Some(field) = node.child_by_field_name("field") {
+                    site.receiver_path.push(self.text(bare_name(field)));
+                }
+            }
+            "parenthesized_expression" | "pointer_expression" => {
+                if let Some(inner) = ts::named_children(node).first().copied() {
+                    self.scan_receiver(inner, context, site);
+                }
+            }
+            "subscript_expression" => {
+                if let Some(inner) = node.child_by_field_name("argument") {
+                    self.scan_receiver(inner, context, site);
+                }
+            }
+            "cast_expression" => {
+                if let Some(type_node) = node.child_by_field_name("type") {
+                    site.receiver_type = self.type_key(type_node);
+                }
+            }
+            _ => {}
+        }
     }
 
     /// The callee's name token; None when an expression result is called.

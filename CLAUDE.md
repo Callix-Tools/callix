@@ -420,6 +420,7 @@ Things that are easy to get wrong:
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.
+- **A C-family member access carries its receiver, and the flat name table filters by kind.** `CallSite.member` / `receiver_path` (built by `Reader::member_site` in `visitor.rs`) say what `a->b->c` is read from; `CFamilyIndex::resolve` binds a call, a read, a write and a member initialiser by the receiver's declared type through field chains, typedefs (`aliases`) and file-scope variables (`value_type`), and says `Outside` when the type is known and lacks the field. Any by-name fallback goes through `lookup_kinds`/`by_bare_name` with a kind filter that runs BEFORE the first candidate is chosen: an unqualified name never binds to an `Attribute`, or a field declared first would hide a function of the same name.
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
 

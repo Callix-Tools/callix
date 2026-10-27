@@ -75,6 +75,8 @@ struct Symbol {
     /// A file-local symbol is visible only inside `file_rel`; an external one is
     /// visible wherever it has been declared.
     internal: bool,
+    /// For a file-scope variable: the class-like type it was declared with.
+    value_type: Option<String>,
 }
 
 /// Definitions callix parsed, indexed by the shapes a use-site can ask for.
@@ -103,6 +105,8 @@ pub struct CFamilyIndex {
     field_names: HashMap<(String, String), String>,
     /// `namespace short = a::b;`: alias → the namespace it stands for.
     namespace_aliases: HashMap<String, String>,
+    /// Qualified typedef / `using` name → the class-like type it stands for.
+    aliases: BTreeMap<String, String>,
 }
 
 /// A member function of a class.
@@ -122,6 +126,14 @@ pub enum Outcome {
     Outside,
 }
 
+/// What a member access's receiver turned out to be.
+enum Receiver {
+    /// Nothing in reach says what it is.
+    Unknown,
+    /// The classes it can be; empty means a type the project does not declare.
+    Classes(Vec<String>),
+}
+
 impl CFamilyIndex {
     pub fn new() -> Self {
         Self::default()
@@ -132,6 +144,8 @@ impl CFamilyIndex {
     /// `qualified_name` is what the visitor built, so for C++ a callable's
     /// entry already carries its normalized parameter list; the bare name is
     /// what a call site can be matched on, and is indexed separately.
+    // The adapter declares through `declare_typed`; this stays for the tests.
+    #[allow(dead_code)]
     pub fn declare(
         &mut self,
         bare_name: &str,
@@ -139,6 +153,19 @@ impl CFamilyIndex {
         kind: NodeKind,
         file_rel: &str,
         internal: bool,
+    ) {
+        self.declare_typed(bare_name, qualified_name, kind, file_rel, internal, None);
+    }
+
+    /// [`CFamilyIndex::declare`] for a variable whose declared type is known.
+    pub fn declare_typed(
+        &mut self,
+        bare_name: &str,
+        qualified_name: &str,
+        kind: NodeKind,
+        file_rel: &str,
+        internal: bool,
+        value_type: Option<String>,
     ) {
         if bare_name.is_empty() {
             return;
@@ -148,7 +175,15 @@ impl CFamilyIndex {
             kind,
             file_rel: file_rel.to_string(),
             internal,
+            value_type,
         });
+    }
+
+    /// Records a typedef or `using` alias and the type it stands for.
+    pub fn declare_alias(&mut self, qualified_name: &str, type_text: &str) {
+        if let Some(key) = type_key(type_text) {
+            self.aliases.entry(qualified_name.to_string()).or_insert(key);
+        }
     }
 
     /// Records that `file_rel` includes `included`, directly.
@@ -208,31 +243,47 @@ impl CFamilyIndex {
     /// Returns the qualified name, the kind, and whether the answer was
     /// ambiguous — several visible candidates, which is where overload
     /// resolution would be needed and is not available.
+    // The adapter asks `lookup_kinds`; this stays for the tests.
+    #[allow(dead_code)]
     pub fn lookup(&self, name: &str, from_file: &str) -> Option<(String, NodeKind, bool)> {
-        let candidates = self.by_name.get(name)?;
+        self.lookup_kinds(name, from_file, |_| true)
+    }
 
-        // A file-local symbol wins inside its own file even when an
-        // external-linkage symbol of the same name exists elsewhere: that is
-        // what `static` means, and getting it backwards would bind a call to
-        // the wrong function in exactly the codebases that use the idiom most.
-        let local: Vec<&Symbol> = candidates
-            .iter()
-            .filter(|s| s.internal && self.reachable(from_file, &s.file_rel))
-            .collect();
-        let visible: Vec<&Symbol> = if local.is_empty() {
-            candidates
-                .iter()
-                .filter(|s| !s.internal && self.reachable(from_file, &s.file_rel))
-                .collect()
-        } else {
-            local
-        };
-
+    /// [`CFamilyIndex::lookup`] restricted to the kinds `accept` allows. The filter
+    /// runs BEFORE the first candidate is chosen, so a field declared earlier can no
+    /// longer hide a function of the same name.
+    pub fn lookup_kinds(
+        &self,
+        name: &str,
+        from_file: &str,
+        accept: impl Fn(NodeKind) -> bool,
+    ) -> Option<(String, NodeKind, bool)> {
+        let visible = self.visible(name, from_file, &accept);
         // Nothing reachable was declared. Falling back to an unreachable
         // candidate would be guessing: `#include` visibility is the language's
         // own rule for which name a translation unit means.
         let chosen = visible.first()?;
         Some((chosen.qualified_name.clone(), chosen.kind, visible.len() > 1))
+    }
+
+    /// The symbols named `name` of an accepted kind that `from_file` can see. A
+    /// file-local symbol wins inside its own file even when an external-linkage
+    /// symbol of the same name exists elsewhere: that is what `static` means.
+    fn visible(&self, name: &str, from_file: &str, accept: &dyn Fn(NodeKind) -> bool) -> Vec<&Symbol> {
+        let Some(candidates) = self.by_name.get(name) else {
+            return Vec::new();
+        };
+        let fits: Vec<&Symbol> = candidates.iter().filter(|s| accept(s.kind)).collect();
+        let local: Vec<&Symbol> = fits
+            .iter()
+            .copied()
+            .filter(|s| s.internal && self.reachable(from_file, &s.file_rel))
+            .collect();
+        if local.is_empty() {
+            fits.into_iter().filter(|s| !s.internal && self.reachable(from_file, &s.file_rel)).collect()
+        } else {
+            local
+        }
     }
 
     /// A written scope with a namespace alias in its first component expanded.
@@ -384,6 +435,63 @@ impl CFamilyIndex {
         self.lineage(class).into_iter().find_map(|c| self.fields.get(&(c, field.to_string())).cloned())
     }
 
+    /// The classes a type name as written can mean: the class itself, or the class a
+    /// typedef / `using` alias leads to (at most 8 hops). Empty for a library type.
+    fn class_of(&self, written: &str) -> Vec<String> {
+        let mut current = written.to_string();
+        for _ in 0..8 {
+            let found = self.classes_named(&current);
+            if !found.is_empty() {
+                return found.into_iter().cloned().collect();
+            }
+            let tail = format!("::{current}");
+            let next = self
+                .aliases
+                .iter()
+                .find(|(q, _)| q.as_str() == current || q.ends_with(&tail))
+                .map(|(_, target)| target.clone());
+            match next {
+                Some(target) if target != current => current = target,
+                _ => return Vec::new(),
+            }
+        }
+        Vec::new()
+    }
+
+    /// The declared type of a visible file-scope variable.
+    fn global_type(&self, name: &str, from_file: &str) -> Option<String> {
+        self.visible(name, from_file, &|k| k == NodeKind::Variable)
+            .first()
+            .and_then(|s| s.value_type.clone())
+    }
+
+    /// What the receiver of a member access is: its root type (a typed local, `this`,
+    /// a field of the enclosing class, a global), then one step per field of
+    /// `receiver_path`.
+    fn receiver_classes(&self, site: &CallSite, from_file: &str) -> Receiver {
+        let start = site.receiver_type.clone().or_else(|| {
+            let name = site.receiver_name.as_deref()?;
+            site.class_scope
+                .as_deref()
+                .and_then(|scope| self.field_type(scope, name))
+                .or_else(|| self.global_type(name, from_file))
+        });
+        let Some(mut current) = start else {
+            return Receiver::Unknown;
+        };
+        for step in &site.receiver_path {
+            let classes = self.class_of(&current);
+            if classes.is_empty() {
+                return Receiver::Classes(Vec::new());
+            }
+            match classes.iter().find_map(|c| self.field_type(c, step)) {
+                Some(next) => current = next,
+                None => return Receiver::Unknown,
+            }
+        }
+        Receiver::Classes(self.class_of(&current))
+    }
+
     /// Resolves a call or a construction using everything the site says.
     ///
     /// The order is the order C++ reads a name in: a receiver's class decides a
@@ -434,30 +542,61 @@ impl CFamilyIndex {
             };
         }
         if site.in_initializer_list {
+            // `Set() : next_(2)`: a field of the class, bases included. Anything else
+            // (a delegating constructor) is not the table's question.
+            if let Some(scope) = site.class_scope.as_deref()
+                && let Some(field) = self.field_of(scope, name)
+            {
+                return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
+            }
             return Outcome::NotACall;
         }
 
-        // A member call: the receiver's type decides.
-        let receiver_type = site.receiver_type.clone().or_else(|| {
-            let field = site.receiver_name.as_deref()?;
-            self.field_type(site.class_scope.as_deref()?, field)
-        });
-        if let Some(receiver) = receiver_type {
-            for class in self.classes_named(&receiver) {
-                if let Some((member, ambiguous)) = self.member_of(class, name, site) {
-                    return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
-                }
-                // A call through a member that holds a function pointer.
-                if let Some(field) = self.field_of(class, name) {
-                    return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
-                }
+        // A member access (call, read or write): the receiver's declared type decides.
+        if site.member || site.receiver_type.is_some() || site.receiver_name.is_some() {
+            let receiver = self.receiver_classes(site, from_file);
+            if role == "call" {
+                return match receiver {
+                    Receiver::Classes(classes) => {
+                        for class in &classes {
+                            if let Some((member, ambiguous)) = self.member_of(class, name, site) {
+                                return Outcome::Found {
+                                    qualified_name: member.qualified_name,
+                                    kind: member.kind,
+                                    ambiguous,
+                                };
+                            }
+                            // A call through a member that holds a function pointer.
+                            if let Some(field) = self.field_of(class, name) {
+                                return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
+                            }
+                        }
+                        if site.speculative { Outcome::NotACall } else { Outcome::Outside }
+                    }
+                    // `obj.f()` with an `obj` nothing in reach declares: any method or
+                    // function-pointer field `f` fits; `x->f()` is never a free function.
+                    Receiver::Unknown => self.by_bare_name(name, site, from_file, &|k| {
+                        matches!(k, NodeKind::Method | NodeKind::Attribute)
+                    }),
+                };
             }
-            return if site.speculative { Outcome::NotACall } else { Outcome::Outside };
-        }
-        if site.receiver_name.is_some() {
-            // `obj.f()` with an `obj` nothing in reach declares: any `f` fits, and
-            // the table has no way to choose.
-            return self.by_bare_name(name, site, from_file);
+            return match receiver {
+                Receiver::Classes(classes) => {
+                    for class in &classes {
+                        if let Some(field) = self.field_of(class, name) {
+                            return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
+                        }
+                        if let Some((member, ambiguous)) = self.member_of(class, name, site) {
+                            return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+                        }
+                    }
+                    // The type is known and has no such field: not a project symbol.
+                    Outcome::Outside
+                }
+                Receiver::Unknown => {
+                    self.by_bare_name(name, site, from_file, &|k| k == NodeKind::Attribute)
+                }
+            };
         }
 
         // A written scope: a class's member, or a namespace's function.
@@ -488,13 +627,17 @@ impl CFamilyIndex {
         }
 
         // An unqualified name inside a method means the class first.
-        if let Some(scope) = site.class_scope.as_deref()
-            && let Some((member, ambiguous)) = self.member_of(scope, name, site)
-        {
-            return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+        if let Some(scope) = site.class_scope.as_deref() {
+            if let Some((member, ambiguous)) = self.member_of(scope, name, site) {
+                return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
+            }
+            // A member function pointer called by its bare name: `cb_()`.
+            if let Some(field) = self.field_of(scope, name) {
+                return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
+            }
         }
-        let _ = role;
-        match self.by_bare_name(name, site, from_file) {
+        // A field is never the answer for an unqualified name.
+        match self.by_bare_name(name, site, from_file, &|k| k != NodeKind::Attribute) {
             Outcome::Outside if site.speculative => Outcome::NotACall,
             found => found,
         }
@@ -502,17 +645,14 @@ impl CFamilyIndex {
 
     /// The old question: a name, and what a file can see by that name. Overloads
     /// are told apart by the call's arguments when there are several.
-    fn by_bare_name(&self, name: &str, site: &CallSite, from_file: &str) -> Outcome {
-        let Some(candidates) = self.by_name.get(name) else {
-            return Outcome::Outside;
-        };
-        let local: Vec<&Symbol> =
-            candidates.iter().filter(|s| s.internal && self.reachable(from_file, &s.file_rel)).collect();
-        let visible: Vec<&Symbol> = if local.is_empty() {
-            candidates.iter().filter(|s| !s.internal && self.reachable(from_file, &s.file_rel)).collect()
-        } else {
-            local
-        };
+    fn by_bare_name(
+        &self,
+        name: &str,
+        site: &CallSite,
+        from_file: &str,
+        accept: &dyn Fn(NodeKind) -> bool,
+    ) -> Outcome {
+        let visible = self.visible(name, from_file, accept);
         if visible.is_empty() {
             return Outcome::Outside;
         }
@@ -556,6 +696,10 @@ impl CFamilyResolver {
 /// The class-like name a declared type spells: qualifiers, pointers, references
 /// and template arguments removed; None for a built-in.
 pub fn type_key(text: &str) -> Option<String> {
+    // `struct { int x; }`: an anonymous definition names no class.
+    if text.contains('{') {
+        return None;
+    }
     let mut cleaned = String::new();
     let mut depth = 0usize;
     for c in text.chars() {
@@ -801,5 +945,116 @@ mod tests {
         index.include("main.c", "a.h");
         index.close_includes();
         assert!(index.resolve_type("S", &[], false, "main.c").is_some());
+    }
+
+    fn found(outcome: Outcome) -> Option<(String, NodeKind, bool)> {
+        match outcome {
+            Outcome::Found { qualified_name, kind, ambiguous } => Some((qualified_name, kind, ambiguous)),
+            _ => None,
+        }
+    }
+
+    fn member(root: Option<&str>, path: &[&str]) -> CallSite {
+        CallSite {
+            member: true,
+            receiver_type: root.map(str::to_string),
+            receiver_path: path.iter().map(|s| s.to_string()).collect(),
+            ..CallSite::default()
+        }
+    }
+
+    fn list_index() -> CFamilyIndex {
+        let mut index = CFamilyIndex::new();
+        for class in ["other", "Node", "List"] {
+            index.declare_class(class);
+            index.declare("len", &format!("{class}::len"), NodeKind::Attribute, "a.h", false);
+            index.declare_field(class, "len", &format!("{class}::len"), "int");
+        }
+        index.declare_field("Node", "next", "Node::next", "Node*");
+        index.declare_field("List", "head", "List::head", "Node*");
+        index
+    }
+
+    #[test]
+    fn a_field_read_follows_the_receiver_through_a_chain() {
+        let index = list_index();
+        let read = |site: CallSite| found(index.resolve("len", "read", &site, "a.h"));
+        assert_eq!(read(member(Some("Node"), &["next"])), Some(("Node::len".into(), NodeKind::Attribute, false)));
+        assert_eq!(read(member(Some("List"), &["head"])), Some(("Node::len".into(), NodeKind::Attribute, false)));
+        assert_eq!(read(member(Some("List"), &[])), Some(("List::len".into(), NodeKind::Attribute, false)));
+    }
+
+    #[test]
+    fn a_typedef_receiver_leads_to_its_class() {
+        let mut index = list_index();
+        index.declare_alias("node_t", "struct Node *");
+        index.declare_alias("node_tt", "node_t");
+        let got = found(index.resolve("len", "read", &member(Some("node_tt"), &[]), "a.h"));
+        assert_eq!(got.map(|g| g.0).as_deref(), Some("Node::len"));
+    }
+
+    #[test]
+    fn a_global_receiver_takes_the_type_of_the_variable() {
+        let mut index = list_index();
+        index.declare_typed("server", "server", NodeKind::Variable, "a.h", false, type_key("struct List"));
+        let site = CallSite { member: true, receiver_name: Some("server".into()), ..CallSite::default() };
+        let got = found(index.resolve("len", "read", &site, "a.h"));
+        assert_eq!(got.map(|g| g.0).as_deref(), Some("List::len"));
+    }
+
+    #[test]
+    fn a_known_type_without_the_field_is_outside() {
+        let index = list_index();
+        assert!(matches!(index.resolve("bogus", "read", &member(Some("Node"), &[]), "a.h"), Outcome::Outside));
+        assert!(matches!(index.resolve("len", "read", &member(Some("FILE"), &[]), "a.h"), Outcome::Outside));
+    }
+
+    #[test]
+    fn an_unknown_receiver_falls_back_to_fields_only_and_says_ambiguous() {
+        let index = list_index();
+        let site = CallSite { member: true, ..CallSite::default() };
+        let got = found(index.resolve("len", "read", &site, "a.h")).unwrap();
+        assert_eq!(got.1, NodeKind::Attribute);
+        assert!(got.2);
+    }
+
+    #[test]
+    fn an_initialiser_binds_to_the_field_of_its_class() {
+        let mut index = CFamilyIndex::new();
+        index.declare_class("Edit");
+        index.declare_class("Set");
+        index.declare_field("Edit", "next_", "Edit::next_", "int");
+        index.declare_field("Set", "next_", "Set::next_", "int");
+        let site = CallSite {
+            class_scope: Some("Set".into()),
+            in_initializer_list: true,
+            ..CallSite::default()
+        };
+        assert_eq!(found(index.resolve("next_", "write", &site, "a.h")).map(|g| g.0).as_deref(), Some("Set::next_"));
+        assert!(matches!(index.resolve("Set", "write", &site, "a.h"), Outcome::NotACall));
+    }
+
+    #[test]
+    fn an_unqualified_call_skips_a_field_of_the_same_name() {
+        let mut index = CFamilyIndex::new();
+        index.declare("mstime", "srv::mstime", NodeKind::Attribute, "a.c", false);
+        index.declare("mstime", "mstime", NodeKind::Function, "a.c", false);
+        let got = found(index.resolve("mstime", "call", &CallSite::default(), "a.c")).unwrap();
+        assert_eq!((got.0.as_str(), got.1), ("mstime", NodeKind::Function));
+    }
+
+    #[test]
+    fn lookup_kinds_filters_before_choosing_the_first() {
+        let mut index = CFamilyIndex::new();
+        index.declare("mstime", "srv::mstime", NodeKind::Attribute, "a.c", false);
+        index.declare("mstime", "mstime", NodeKind::Function, "a.c", false);
+        assert_eq!(index.lookup("mstime", "a.c").unwrap().1, NodeKind::Attribute);
+        let got = index.lookup_kinds("mstime", "a.c", |k| k == NodeKind::Function).unwrap();
+        assert_eq!((got.0.as_str(), got.1, got.2), ("mstime", NodeKind::Function, false));
+    }
+
+    #[test]
+    fn an_anonymous_definition_names_no_class() {
+        assert_eq!(type_key("struct { int x; }"), None);
     }
 }

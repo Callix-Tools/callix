@@ -342,6 +342,7 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
         "read" | "write" => RelationKind::References,
+        "import" => RelationKind::ResolvesTo,
         _ => return None,
     })
 }
@@ -658,6 +659,20 @@ fn resolve_pass(
         {
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+        }
+        if occurrence.role == "import" {
+            // A custom resolver may answer with the import itself: that binds nothing.
+            if target_id.as_deref() == Some(occurrence.enclosing_id.as_str()) {
+                target_id = None;
+            }
+            // `use App\Contracts;` names a namespace: bind to its MODULE rather than
+            // creating an EXTERNAL_SYMBOL for it.
+            if target_id.is_none() && !reference.full_name.is_empty() {
+                let module = node_id(project, &reference.full_name, NodeKind::Module.as_str());
+                if graph.has_node(&module) {
+                    target_id = Some(module);
+                }
+            }
         }
 
         if occurrence.role == "call" {

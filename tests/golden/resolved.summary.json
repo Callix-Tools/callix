@@ -132,13 +132,13 @@
       "imports": 2,
       "inherits_from": 3,
       "references": 4,
-      "resolves_to": 4
+      "resolves_to": 8
     },
     "resolver": {
-      "external": 4,
-      "internal": 16,
-      "queries": 21,
-      "resolved": 20,
+      "external": 5,
+      "internal": 19,
+      "queries": 25,
+      "resolved": 24,
       "unresolved": 1
     },
     "resolver_status": "degraded"

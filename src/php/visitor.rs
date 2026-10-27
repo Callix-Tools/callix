@@ -1046,11 +1046,16 @@ impl<'a> PhpVisitor<'a> {
             "class" => declared_kind,
             own => own,
         };
-        self.emit_import(&local, &ext_qname, &last_segment, kind)
+        let Some(last) = last_name(path_node) else {
+            return Ok(());
+        };
+        self.emit_import(clause, last, &local, &ext_qname, &last_segment, kind)
     }
 
     fn emit_import(
         &mut self,
+        clause: TsNode<'_>,
+        last: TsNode<'_>,
         local_name: &str,
         ext_qname: &str,
         last_segment: &str,
@@ -1072,9 +1077,9 @@ impl<'a> PhpVisitor<'a> {
             NodeKind::Import,
             &import_qname,
             local_name,
-            None,
+            Some(clause),
             metadata,
-            None,
+            Some(last),
         )?;
         let import_id = import_node.get().id.clone();
         self.add_node_with_relation(import_node, RelationKind::Declares)?;
@@ -1095,6 +1100,9 @@ impl<'a> PhpVisitor<'a> {
 
         let file_id = self.file_node_id.to_string();
         self.push_relation(file_id, target_id.clone(), RelationKind::Imports)?;
+        // The resolution pass turns this into a RESOLVES_TO with a position, to the
+        // class, function or constant the clause names.
+        self.record_occurrence("import", last, &import_id);
         self.push_relation(import_id, target_id, RelationKind::ResolvesTo)
     }
 

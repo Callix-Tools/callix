@@ -406,6 +406,59 @@ fn use_kind(node: TsNode<'_>) -> &'static str {
     }
 }
 
+/// One import of a `use` statement, group clauses already joined to their prefix.
+pub(super) struct UseClause<'tree> {
+    /// The fully-qualified name imported, without a leading `\`.
+    pub target: String,
+    /// The final `name` token of the ORIGINAL path (never the alias): this is
+    /// where the visitor records the `import` occurrence and where the answer is keyed.
+    pub last: TsNode<'tree>,
+    /// `class`, `function` or `const`.
+    pub kind: &'static str,
+}
+
+/// Every clause of a `namespace_use_declaration`, the group form included.
+pub(super) fn use_clauses<'tree>(decl: TsNode<'tree>, source: &[u8]) -> Vec<UseClause<'tree>> {
+    let declared = use_kind(decl);
+    let (prefix, clauses) = match decl.child_by_field_name("body") {
+        Some(group) => (
+            ts::child_of_type(decl, "namespace_name")
+                .map(|n| ts::text(n, source).into_owned())
+                .unwrap_or_default(),
+            ts::children(group),
+        ),
+        None => (String::new(), ts::children(decl)),
+    };
+    let mut out = Vec::new();
+    for clause in clauses {
+        if clause.kind() != "namespace_use_clause" {
+            continue;
+        }
+        let Some(path_node) = ts::child_of_types(clause, &["qualified_name", "name"]) else {
+            continue;
+        };
+        let Some(last) = last_name(path_node) else {
+            continue;
+        };
+        let path = ts::text(path_node, source);
+        let path = path.trim_matches('\\');
+        let target = if prefix.is_empty() {
+            path.to_string()
+        } else {
+            format!("{}\\{path}", prefix.trim_matches('\\'))
+        };
+        if target.is_empty() {
+            continue;
+        }
+        let kind = match use_kind(clause) {
+            "class" => declared,
+            own => own,
+        };
+        out.push(UseClause { target, last, kind });
+    }
+    out
+}
+
 /// The namespace a `namespace` statement or block names.
 fn namespace_of(node: TsNode<'_>, source: &[u8]) -> String {
     node.child_by_field_name("name")
@@ -773,6 +826,29 @@ impl PhpResolver {
 
     fn declared_constant(&self, fqn: &str) -> Option<Site> {
         self.constants.get(fqn).copied()
+    }
+
+    /// The answer for the name a `use` clause imports. A use path is always fully
+    /// qualified, so it never goes through `candidates()`: the file's own aliases
+    /// would otherwise rewrite it.
+    fn use_answer(&self, doc: u32, fqn: &str, kind: &str) -> Answer {
+        match kind {
+            "function" => match self.declared_function(fqn) {
+                Some(site) => Answer::Internal(site),
+                None => self.external(fqn.to_string()),
+            },
+            "const" => match self.declared_constant(fqn) {
+                Some(site) => Answer::Internal(site),
+                None => self.external(fqn.to_string()),
+            },
+            _ => match self.class_ref(&format!("\\{fqn}"), doc, "") {
+                ClassRef::Declared(key) => match self.classes.get(&key) {
+                    Some(entry) => Answer::Internal(entry.site),
+                    None => self.external(fqn.to_string()),
+                },
+                ClassRef::Foreign(_) => self.external(fqn.to_string()),
+            },
+        }
     }
 
     /// The answer for a name written in an expression or a type.
@@ -1503,9 +1579,14 @@ impl PhpResolver {
                     None => scope.namespace = name,
                 }
             }
-            // The imported paths are not use-sites: the visitor turns them into
-            // IMPORT nodes itself and records no occurrence for them.
-            "namespace_use_declaration" => {}
+            // Each clause is answered at the last name of the original path, which
+            // is where the visitor records its `import` occurrence.
+            "namespace_use_declaration" => {
+                for clause in use_clauses(node, source) {
+                    let answer = self.use_answer(doc, &clause.target, clause.kind);
+                    self.record(doc, clause.last, answer);
+                }
+            }
 
             "class_declaration" | "interface_declaration" | "trait_declaration"
             | "enum_declaration" => self.walk_class(doc, source, node, scope),

@@ -81,6 +81,11 @@ Trait methods resolve through the class that uses them. In the fixture,
 `Fixture\Models\Describes\describe` — the trait's method, which is where the
 implementation actually is.
 
+Every `use` clause - plain, aliased, grouped, `use function` and `use const` - gets
+a `RESOLVES_TO` with a position to the class, function or constant it names. The
+`IMPORTS` edge to the namespace MODULE stays. A namespace alias resolves to its
+MODULE, and a vendor name to an EXTERNAL_SYMBOL marked `external`.
+
 Using a trait produces an `INHERITS_FROM` edge, the same as `extends` and
 `implements`. PHP traits are mixed in rather than inherited, so this is a
 modelling choice: the graph records that the methods arrive from there, which is

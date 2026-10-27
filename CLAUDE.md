@@ -399,7 +399,12 @@ Things that are easy to get wrong:
   of a module whose file comes later in the walk still lands on it. It once fell
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
-  resolver adds a `RESOLVES_TO` from the import to the definition.
+  resolver adds a `RESOLVES_TO` from the import to the definition. A PHP `use`
+  clause does the same at the last segment of the ORIGINAL name (never the
+  alias): the symbol table answers it by fully-qualified name and use kind
+  (class, function or const) without going through the file's alias map, a
+  namespace alias (`use App\Contracts;`) binds to its MODULE, and the IMPORT
+  node carries the clause's span.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

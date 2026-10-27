@@ -20,6 +20,7 @@
 //! 4. **Resolve, then boundaries.** In that order, so BOUNDARY nodes land after
 //!    resolver edges.
 
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -49,6 +50,7 @@ use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
 use super::deps::dependencies;
+use super::erase;
 use super::detector::{
     C_EXTENSIONS, CPP_EXTENSIONS, c_roots, collect_c_files, collect_cpp_files, cpp_roots, is_c,
     is_cpp, project_name,
@@ -56,11 +58,18 @@ use super::detector::{
 use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
 use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
 use super::visitor::{
-    CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes, read_file,
+    CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes,
+    read_file,
 };
 use super::{Dialect, parse_tree};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
+/// A file read in pass 1: its path, its relative path, the bytes to parse, and
+/// the raw bytes when erasure changed them.
+type ErasedSource = (PathBuf, String, Vec<u8>, Option<Vec<u8>>);
+/// What pass 3 needs of a read file's bytes: the parsed text and the raw bytes
+/// when they differ.
+type ReadSource = (Vec<u8>, Option<Vec<u8>>);
 
 /// One file, carried between the four passes.
 struct Analysed {
@@ -77,13 +86,15 @@ struct Analysed {
 
 /// Reads a file and decides whether this dialect owns it.
 ///
-/// Returns `None` for a file the other adapter claims, which is how an
-/// ambiguous `.h` ends up in exactly one graph.
-fn owned_source(dialect: Dialect, path: &Path) -> PyResult<Option<Vec<u8>>> {
+/// Returns `None` for an unreadable file. The flag is false for a file the
+/// other adapter claims, which is how an ambiguous `.h` ends up in exactly one
+/// graph; such a file is still read, for its macros only.
+fn read_source(dialect: Dialect, path: &Path) -> PyResult<Option<(Vec<u8>, bool)>> {
     let Ok(source) = std::fs::read(path) else {
         return Ok(None);
     };
-    Ok(claims(dialect, path, &source)?.then_some(source))
+    let owned = claims(dialect, path, &source)?;
+    Ok(Some((source, owned)))
 }
 
 fn relative_to(file: &Path, project_root: &Path, lang_root: &Path) -> String {
@@ -238,39 +249,87 @@ fn build_root(
 ) -> PyResult<(String, Vec<Analysed>)> {
     let project = project_name(lang_root);
 
-    // Pass 1 — the scope names of every file, before anything is read in
-    // earnest. `records` is what tells `Engine::ping` from `fixture::ping`.
-    let mut records: HashSet<String> = HashSet::new();
+    // Pass 1a — the macros of every file, on the RAW bytes (ownership was
+    // decided on them too: a blanked C++ class head can parse as K&R C).
     let mut macros = MacroTable::new();
-    let mut sources: Vec<(PathBuf, String, Vec<u8>)> = Vec::new();
+    // Macros of headers the OTHER dialect owns. A header made of nothing but
+    // `#define`s parses cleanly as C, so it probes as C (leveldb's export.h and
+    // port/thread_annotations.h) while `class LEVELDB_EXPORT DB` is C++. Such a
+    // file is read for erasure only: no FILE node, no facts, not part of the
+    // expansion table, so ownership (one adapter per `.h`) is unchanged.
+    let mut foreign = MacroTable::new();
+    let mut raw_sources: Vec<(PathBuf, String, Vec<u8>, Vec<String>)> = Vec::new();
     for file in files {
-        let Some(source) = owned_source(dialect, file)? else {
+        let Some((source, owned)) = read_source(dialect, file)? else {
             continue;
         };
+        if !owned {
+            if source.windows(7).any(|w| w == b"#define") {
+                let tree = parse_tree(&source, dialect)?;
+                declared_macros(tree.root_node(), &source, &mut foreign);
+            }
+            continue;
+        }
         let tree = parse_tree(&source, dialect)?;
         let scopes = declared_scopes(tree.root_node(), &source);
         declared_macros(tree.root_node(), &source, &mut macros);
-        // Only `records` is wanted: it is what classifies `X::y` as a method
-        // rather than a namespaced function. `scopes.namespaces` is dropped
-        // because MODULE is the directory here; see below.
-        records.extend(scopes.records);
         let file_rel = relative_to(file, project_root, lang_root);
-        sources.push((file.clone(), file_rel, source));
+        raw_sources.push((file.clone(), file_rel, source, scopes.records));
+    }
+
+    // Pass 1b — erase the project's annotation macros (empty, attribute or
+    // storage-keyword bodies) with same-length spaces, so `class API Foo {}`
+    // and `int x GUARDED_BY(m);` parse as written. A file that changed is
+    // parsed again for its scope names. `records` is what tells
+    // `Engine::ping` from `fixture::ping`; `scopes.namespaces` is dropped
+    // because MODULE is the directory here; see below.
+    let erasable = if foreign.is_empty() {
+        erase::erasable(&macros)
+    } else {
+        erase::erasable_in(&[&macros, &foreign])
+    };
+    let mut records: HashSet<String> = HashSet::new();
+    // (file, relative path, text to parse, the raw bytes when they differ)
+    let mut sources: Vec<ErasedSource> = Vec::new();
+    for (file, file_rel, raw, raw_records) in raw_sources {
+        let blanked = match erase::blank(&raw, &erasable) {
+            Cow::Borrowed(_) => None,
+            Cow::Owned(text) => Some(text),
+        };
+        match blanked {
+            None => {
+                records.extend(raw_records);
+                sources.push((file, file_rel, raw, None));
+            }
+            Some(text) => {
+                let tree = parse_tree(&text, dialect)?;
+                records.extend(declared_scopes(tree.root_node(), &text).records);
+                sources.push((file, file_rel, text, Some(raw)));
+            }
+        }
     }
 
     // Pass 2 — read every file, and record every declaring site before the
     // first node exists.
     let mut ledger = DeclLedger::new();
-    let mut read: Vec<(String, String, FileFacts, Vec<u8>)> = Vec::with_capacity(sources.len());
-    for (file, file_rel, source) in &sources {
+    let mut read: Vec<(String, String, FileFacts, ReadSource)> = Vec::with_capacity(sources.len());
+    for (file, file_rel, source, raw) in &sources {
         let tree = parse_tree(source, dialect)?;
-        let facts = read_file(tree.root_node(), source, dialect, file_rel, &records, &macros);
+        let facts = read_file(
+            tree.root_node(),
+            source,
+            dialect,
+            file_rel,
+            &records,
+            &macros,
+            &erasable,
+        );
         facts.survey(&mut ledger);
         read.push((
             file_rel.clone(),
             file.to_string_lossy().into_owned(),
             facts,
-            source.clone(),
+            (source.clone(), raw.clone()),
         ));
     }
 
@@ -333,13 +392,15 @@ fn build_root(
     // Pass 3 — emit.
     let emitter = CFamilyEmitter::new(py, &project, &ledger, &search_dirs, &known_files);
     let mut analysed = Vec::with_capacity(read.len());
-    for (file_rel, file_abs, facts, source) in read {
+    for (file_rel, file_abs, facts, (source, raw)) in read {
         let file_id = file_ids[&file_rel].clone();
         emitter.emit(graph, &facts, &file_id)?;
 
         let tree = parse_tree(&source, dialect)?;
         let mut boundaries = extract_boundaries(tree.root_node(), &source, dialect);
-        boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
+        // User extractors see the file as written, not with its macros erased.
+        let raw_text = raw.as_deref().unwrap_or(source.as_slice());
+        boundaries.extend(run_extractors(py, extra_extractors, raw_text, &file_rel)?);
 
         // The files this one includes, as the project-relative paths their
         // declarations are filed under; an include that leaves the project

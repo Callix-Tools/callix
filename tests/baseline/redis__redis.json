@@ -866,7 +866,7 @@
       "relations": 0
     },
     "deps/jemalloc/include/jemalloc/internal/util.h": {
-      "hash": "10147c59e5ca0f68",
+      "hash": "d9d613b6856f87e0",
       "nodes": 16,
       "relations": 15
     },
@@ -2316,9 +2316,9 @@
       "relations": 5
     },
     "deps/lua/src/lundump.c": {
-      "hash": "2a9fe76345b15096",
-      "nodes": 48,
-      "relations": 67
+      "hash": "06c033081f631ef6",
+      "nodes": 45,
+      "relations": 64
     },
     "deps/lua/src/lundump.h": {
       "hash": "ca840f6a12a45be2",
@@ -2506,9 +2506,9 @@
       "relations": 3
     },
     "deps/xxhash/xxhash.h": {
-      "hash": "c62be9cbcfeff19b",
-      "nodes": 635,
-      "relations": 691
+      "hash": "2838514178b44035",
+      "nodes": 648,
+      "relations": 704
     },
     "modules/vector-sets/expr.c": {
       "hash": "45b9b1493af1c040",
@@ -2526,7 +2526,7 @@
       "relations": 73
     },
     "modules/vector-sets/hnsw.c": {
-      "hash": "205c4c5ec0f414cb",
+      "hash": "596eb68a61062e66",
       "nodes": 312,
       "relations": 335
     },
@@ -2641,7 +2641,7 @@
       "relations": 40
     },
     "src/bitops.c": {
-      "hash": "ff38de9c17e632f9",
+      "hash": "ff9867783504dc3f",
       "nodes": 118,
       "relations": 131
     },
@@ -2841,7 +2841,7 @@
       "relations": 291
     },
     "src/dict.c": {
-      "hash": "4302fc7b881498e4",
+      "hash": "09dbd62f2a1ad78e",
       "nodes": 373,
       "relations": 417
     },
@@ -3001,7 +3001,7 @@
       "relations": 47
     },
     "src/hyperloglog.c": {
-      "hash": "86f00b8995503122",
+      "hash": "826b91c887ff3bbc",
       "nodes": 98,
       "relations": 114
     },
@@ -3256,9 +3256,9 @@
       "relations": 135
     },
     "src/quicklist.c": {
-      "hash": "bf149315e89bd3f4",
-      "nodes": 282,
-      "relations": 310
+      "hash": "7990373f210dcc40",
+      "nodes": 281,
+      "relations": 309
     },
     "src/quicklist.h": {
       "hash": "14ebd3524bfafdd1",
@@ -3331,9 +3331,9 @@
       "relations": 5
     },
     "src/redismodule.h": {
-      "hash": "deb43a4ee4b22251",
-      "nodes": 249,
-      "relations": 388
+      "hash": "80a9b7e28595d256",
+      "nodes": 618,
+      "relations": 757
     },
     "src/release.c": {
       "hash": "0925cc8c30ecde1e",
@@ -3903,17 +3903,17 @@
       "dependency": 21,
       "external_symbol": 518,
       "file": 779,
-      "function": 10750,
+      "function": 10755,
       "import": 3128,
       "module": 30,
-      "parameter": 22655,
+      "parameter": 22668,
       "project": 15,
       "type_alias": 1055,
-      "variable": 1172
+      "variable": 1532
     },
     "relations": {
       "contains": 809,
-      "declares": 53080,
+      "declares": 53458,
       "depends_on": 21,
       "imports": 3127,
       "resolves_to": 3128
@@ -3923,27 +3923,27 @@
   "ref": "8.10.0",
   "resolution": {
     "metrics": {
-      "external": 54211,
-      "internal": 134594,
-      "queries": 188805,
-      "resolved": 188805,
+      "external": 54030,
+      "internal": 134757,
+      "queries": 188787,
+      "resolved": 188787,
       "unresolved": 0
     },
     "relations": {
-      "calls": 77650,
+      "calls": 77708,
       "contains": 809,
-      "declares": 53080,
+      "declares": 53458,
       "depends_on": 21,
-      "has_type": 22185,
+      "has_type": 22062,
       "imports": 3127,
-      "references": 60529,
+      "references": 60555,
       "resolves_to": 3128
     },
     "status": "degraded"
   },
   "totals": {
     "files": 779,
-    "nodes": 45782,
-    "relations": 60165
+    "nodes": 46160,
+    "relations": 60543
   }
 }

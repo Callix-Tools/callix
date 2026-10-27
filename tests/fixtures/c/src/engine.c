@@ -29,3 +29,10 @@ const char *engine_describe(const engine_t *engine)
     }
     return engine->label;
 }
+
+#include "api.h"
+
+FIXTURE_API int (engine_version)(void)
+{
+    return 1;
+}

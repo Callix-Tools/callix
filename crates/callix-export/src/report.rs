@@ -243,8 +243,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
              the name (such edges say `ambiguous`); macros of the project are expanded where they \
-             are invoked, conditionals are not evaluated, and a callback handed to a library \
-             function is followed only for a closed list of them",
+             are invoked, macros of the project that expand to nothing, an attribute or a \
+             storage keyword are erased before parsing, conditionals are not evaluated, and \
+             a callback handed to a library function is followed only for a closed list of \
+             them",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

@@ -179,7 +179,22 @@ usually declared in a different file from the definition. A survey pass then
 reads every file into `FileFacts` and records declaring sites in a `DeclLedger`
 before any node is written — a prototype in a header and its definition in a
 source file are ONE node, and whichever file was read first would otherwise
-decide its span. **`src/yaml/` has no visitor and no resolver at all**: it
+decide its span.
+
+**Before the scope pass, the adapter blanks the project's erasable macros**
+(`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,
+`inline`, `extern "C"` or a storage keyword that fits the macro's name, in every `#if`
+arm) with same-length spaces, so `class API Foo {}`, `int x GUARDED_BY(m);` and
+`API int (*f)(int);` parse as written and every span stays a position in the original
+file. Header ownership (`claims`) is decided on the RAW bytes, because the blanked text
+of a C++ class can parse cleanly as K&R C; user boundary extractors get the raw source.
+A header the OTHER dialect claims still contributes its macros to the erasable set,
+though never to expansion: a header of nothing but `#define`s parses cleanly as C, so
+leveldb's `export.h` belongs to C while `class LEVELDB_EXPORT DB` is C++. Ownership is
+unchanged (no FILE node, no facts from that header). Macros defined outside the
+analysed root, or in another root, are not erased (each root builds its own table).
+
+**`src/yaml/` has no visitor and no resolver at all**: it
 declares no symbols, emits no occurrences, and contributes only FILE nodes,
 dependencies and boundaries.
 

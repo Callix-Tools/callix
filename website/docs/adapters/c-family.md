@@ -164,7 +164,11 @@ What it will not do:
   invoked: `CALL(x)` is a call of what `CALL`'s body calls (a parameter called as a
   function is the argument that was passed; `##` is joined; a macro within a macro is
   followed), a macro invoked where a declaration goes declares what it expands to,
-  and the macro's own name is not a call. Macros from system headers are not known,
+  and the macro's own name is not a call. A macro of the project that expands to nothing, an attribute or a storage keyword (`class API Foo`, `int x GUARDED_BY(m)`, `API int (*hook)(int)`) is erased before parsing, so the declaration is read as written; this includes
+  macros defined in a header the other dialect reads (a macro-only `.h`, which probes
+  as C). A storage-keyword macro whose name is shorter than its keyword, or one defined
+  differently in another `#if` arm, is not erased, and neither is a macro from another
+  root or a system header. Macros from system headers are not known,
   conditionals are not evaluated (every definition of a macro is followed), and a body
   that does not parse on its own is skipped.
 - **Resolve overloads exactly.** Choosing the overload a call selects needs the

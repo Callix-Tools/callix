@@ -43,6 +43,7 @@ use crate::span::Span;
 use crate::ts;
 
 use super::Dialect;
+use super::erase::{self, Erasable};
 use super::headers::{
     DeclKey, DeclLedger, DeclSite, Linkage, MEMBER_SEPARATOR, SCOPE_SEPARATOR, qualify,
     resolve_include,
@@ -819,6 +820,8 @@ struct Reader<'a> {
     file_rel: &'a str,
     records: &'a HashSet<String>,
     macros: &'a MacroTable,
+    /// The project macros that expand to nothing, an attribute or a storage keyword.
+    erasable: &'a Erasable,
     /// How many macro declarations deep this reader is.
     macro_depth: usize,
     /// The qualified-name prefix, without the file component `qualify` adds for
@@ -836,6 +839,7 @@ pub fn read_file(
     file_rel: &str,
     records: &HashSet<String>,
     macros: &MacroTable,
+    erasable: &Erasable,
 ) -> FileFacts {
     let mut reader = Reader {
         source,
@@ -843,6 +847,7 @@ pub fn read_file(
         file_rel,
         records,
         macros,
+        erasable,
         macro_depth: 0,
         parts: Vec::new(),
         frames: vec![Frame {
@@ -1095,6 +1100,7 @@ impl<'a> Reader<'a> {
                 pairs.push(("__VA_ARGS__".to_string(), rest.join(", ")));
             }
             let body = collapse_pastes(&replace_identifiers(&def.body, &pairs));
+            let body = erase::blank_string(&body, self.erasable);
             let bytes = body.as_bytes();
             let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
                 continue;
@@ -1109,6 +1115,7 @@ impl<'a> Reader<'a> {
                 file_rel: self.file_rel,
                 records: self.records,
                 macros,
+                erasable: self.erasable,
                 macro_depth: self.macro_depth + 1,
                 parts: self.parts.clone(),
                 frames: vec![Frame {
@@ -2847,6 +2854,7 @@ impl<'a> Reader<'a> {
             out
         };
         let wrapped = format!("void __callix_macro(void) {{ {body} ; }}");
+        let wrapped = erase::blank_string(&wrapped, self.erasable);
         let bytes = wrapped.as_bytes();
         let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
             return;

@@ -34,3 +34,11 @@ int main()
     }
     return fetch_one(1);
 }
+
+#include "export.hpp"
+
+int fixture_use_export()
+{
+    fixture::Exported item;
+    return item.bump();
+}

@@ -131,14 +131,14 @@
       "has_type": 7,
       "imports": 2,
       "inherits_from": 3,
-      "references": 4,
+      "references": 5,
       "resolves_to": 8
     },
     "resolver": {
       "external": 5,
-      "internal": 19,
-      "queries": 25,
-      "resolved": 24,
+      "internal": 20,
+      "queries": 26,
+      "resolved": 25,
       "unresolved": 1
     },
     "resolver_status": "degraded"

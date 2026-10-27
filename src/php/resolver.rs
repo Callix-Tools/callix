@@ -11,7 +11,10 @@
 //!
 //! * a name, through the file's `use` aliases, then the enclosing namespace,
 //!   then the global namespace, then the file PSR-4 would load it from;
-//! * `$this->m()`, `self::m()`, `static::m()` and `parent::m()`;
+//! * `$this->m()`, `self::m()`, `static::m()` and `parent::m()`, and the keywords
+//!   themselves wherever they are written (a type, `new`, `instanceof`, `::`):
+//!   `self` and `static` are the class they are written in (no late static
+//!   binding), `parent` is its first base class;
 //! * `$x = new Foo(); $x->m()`, and the same receiver from a typed parameter, a
 //!   typed property, a promoted constructor property and a `catch` variable;
 //! * a member inherited from a base class, an interface or a trait.
@@ -491,6 +494,34 @@ struct UseScope {
     class_strings: HashMap<String, Option<ClassRef>>,
 }
 
+/// Which class a `self`, `static` or `parent` keyword stands for.
+#[derive(Clone, Copy)]
+enum Relative {
+    /// `self` and `static`: the class the keyword is written in.
+    Enclosing,
+    /// `parent`: its first base class.
+    Parent,
+}
+
+/// The keyword a written name is, matched the way PHP does: ASCII case-insensitively.
+fn relative_keyword(text: &str) -> Option<Relative> {
+    if text.eq_ignore_ascii_case("self") || text.eq_ignore_ascii_case("static") {
+        Some(Relative::Enclosing)
+    } else if text.eq_ignore_ascii_case("parent") {
+        Some(Relative::Parent)
+    } else {
+        None
+    }
+}
+
+/// The class a keyword names in this scope, or None when the scope has none.
+fn relative_class(scope: &UseScope, which: Relative) -> Option<ClassRef> {
+    match which {
+        Relative::Enclosing => scope.class.clone(),
+        Relative::Parent => scope.parent.clone(),
+    }
+}
+
 type MemberKey = (String, String);
 type MemberTable = HashMap<MemberKey, Site>;
 type Answers = HashMap<(u32, u32), Answer>;
@@ -678,6 +709,27 @@ impl PhpResolver {
             return ClassRef::Foreign(bare.to_string());
         }
         ClassRef::Foreign(Self::reportable(&candidates, NameKind::Class))
+    }
+
+    /// What a use-site of a class answers with: the declaration, or the real name of
+    /// a class the workspace does not declare (a vendor base class).
+    fn class_answer(&self, class: &ClassRef) -> Answer {
+        match class {
+            ClassRef::Declared(key) => match self.classes.get(key) {
+                Some(entry) => Answer::Internal(entry.site),
+                None => self.external(key.clone()),
+            },
+            ClassRef::Foreign(fqn) => self.external(fqn.clone()),
+        }
+    }
+
+    /// Like `class_ref`, but `self`, `static` and `parent` are the scope's classes
+    /// and never a name to qualify. None when the scope has no such class.
+    fn scoped_class_ref(&self, name: &str, doc: u32, scope: &UseScope) -> Option<ClassRef> {
+        match relative_keyword(name) {
+            Some(which) => relative_class(scope, which),
+            None => Some(self.class_ref(name, doc, &scope.namespace)),
+        }
     }
 
     /// The class declared by the file PSR-4 maps the name to.
@@ -1241,7 +1293,15 @@ impl PhpResolver {
     fn link(&mut self) {
         let pending = std::mem::take(&mut self.pending);
         for item in pending {
-            let class = self.class_ref(&item.name, item.doc, &item.namespace);
+            // A property typed `self` or `static` holds the class it is declared in.
+            // `parent` cannot be told here (the base link is being built in this very
+            // loop), so that property stays untyped rather than guessed.
+            let keyword = relative_keyword(&item.name).filter(|_| item.property.is_some());
+            let class = match keyword {
+                Some(Relative::Enclosing) => ClassRef::Declared(item.class.clone()),
+                Some(Relative::Parent) => continue,
+                None => self.class_ref(&item.name, item.doc, &item.namespace),
+            };
             match item.property {
                 Some(property) => {
                     self.property_types.insert((item.class, property), class);
@@ -1298,10 +1358,26 @@ impl PhpResolver {
 
     /// Every class name a type declaration mentions, so a union type binds to
     /// each member of it rather than to its first.
-    fn record_type(&mut self, doc: u32, source: &[u8], type_node: TsNode<'_>, namespace: &str) {
+    fn record_type(&mut self, doc: u32, source: &[u8], type_node: TsNode<'_>, scope: &UseScope) {
         for reference in class_refs(type_node) {
-            self.record_name(doc, source, reference, namespace, NameKind::Class);
+            self.record_class_name(doc, source, reference, scope);
         }
+    }
+
+    /// A class named in a type, `instanceof` or similar position. `self`, `static`
+    /// and `parent` answer with the scope's class; with no such class they answer
+    /// nothing (counted unresolved) instead of a made-up `App\self`.
+    fn record_class_name(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &UseScope) {
+        if node.kind() == "name"
+            && let Some(which) = relative_keyword(&ts::text(node, source))
+        {
+            if let Some(class) = relative_class(scope, which) {
+                let answer = self.class_answer(&class);
+                self.record(doc, node, answer);
+            }
+            return;
+        }
+        self.record_name(doc, source, node, &scope.namespace, NameKind::Class);
     }
 
     /// The class an expression evaluates to, as far as a symbol table can tell.
@@ -1330,12 +1406,12 @@ impl PhpResolver {
                 _ => scope.class.clone(),
             },
             "name" | "qualified_name" | "relative_name" => {
-                Some(self.class_ref(&ts::text(node, source), doc, &scope.namespace))
+                self.scoped_class_ref(&ts::text(node, source), doc, scope)
             }
             "object_creation_expression" => {
                 let class =
                     ts::child_of_types(node, &["name", "qualified_name", "relative_name"])?;
-                Some(self.class_ref(&ts::text(class, source), doc, &scope.namespace))
+                self.scoped_class_ref(&ts::text(class, source), doc, scope)
             }
             "member_access_expression" | "nullsafe_member_access_expression" => {
                 let object = node.child_by_field_name("object")?;
@@ -1434,7 +1510,6 @@ impl PhpResolver {
         parameters: TsNode<'_>,
         scope: &mut UseScope,
     ) {
-        let namespace = scope.namespace.clone();
         for parameter in ts::children(parameters) {
             if !matches!(
                 parameter.kind(),
@@ -1449,15 +1524,15 @@ impl PhpResolver {
                 scope.class_strings.insert(name, None);
             }
             if let Some(type_node) = parameter.child_by_field_name("type") {
-                self.record_type(doc, source, type_node, &namespace);
+                self.record_type(doc, source, type_node, scope);
                 let references = class_refs(type_node);
                 // One class names a receiver; a union names none.
                 if let [only] = references[..]
                     && let Some(ident) = parameter
                         .child_by_field_name("name")
                         .and_then(variable_identifier)
+                    && let Some(class) = self.scoped_class_ref(&ts::text(only, source), doc, scope)
                 {
-                    let class = self.class_ref(&ts::text(only, source), doc, &namespace);
                     scope
                         .vars
                         .insert(ts::text(ident, source).into_owned(), class);
@@ -1481,7 +1556,6 @@ impl PhpResolver {
         inherits: bool,
     ) {
         let mut inner = Self::callable_scope(scope, inherits);
-        let namespace = inner.namespace.clone();
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, &mut inner);
         }
@@ -1489,7 +1563,7 @@ impl PhpResolver {
             self.bind_parameters(doc, source, parameters, &mut inner);
         }
         if let Some(return_type) = node.child_by_field_name("return_type") {
-            self.record_type(doc, source, return_type, &namespace);
+            self.record_type(doc, source, return_type, &inner);
         }
         // Absent on an abstract method and on an interface's members.
         if let Some(body) = node.child_by_field_name("body") {
@@ -1538,12 +1612,9 @@ impl PhpResolver {
             None => self.name_answer(&format!("\\{}", literal.text), doc, &scope.namespace, NameKind::Function),
             Some(class) => {
                 let receiver = match class {
-                    CallableClass::Named(name) => Some(self.class_ref(name, doc, &scope.namespace)),
+                    CallableClass::Named(name) => self.scoped_class_ref(name, doc, scope),
                     CallableClass::Expression(class) if class.kind() == "class_constant_access_expression" => {
-                        ts::children(*class)
-                            .into_iter()
-                            .find(|c| matches!(c.kind(), "name" | "qualified_name" | "relative_name"))
-                            .map(|n| self.class_ref(&ts::text(n, source), doc, &scope.namespace))
+                        self.class_constant_name(doc, source, *class, scope)
                     }
                     CallableClass::Expression(class) => self.infer(doc, source, *class, scope),
                 };
@@ -1657,24 +1728,11 @@ impl PhpResolver {
                         }
                         // `new static()`: the class the keyword stands for.
                         "relative_scope" | "name" => {
-                            let class = if child.kind() == "name"
-                                && ts::text(child, source).eq_ignore_ascii_case("parent")
+                            if let Some(which) = relative_keyword(&ts::text(child, source))
+                                && let Some(class) = relative_class(scope, which)
                             {
-                                scope.parent.clone()
-                            } else if child.kind() == "name" {
-                                scope.class.clone()
-                            } else {
-                                self.infer(doc, source, child, scope)
-                            };
-                            if let Some(ClassRef::Declared(key)) = class
-                                && let Some(entry) = self.classes.get(&key)
-                            {
-                                let site = entry.site;
-                                self.record(
-                                    doc,
-                                    child,
-                                    Answer::Internal(site),
-                                );
+                                let answer = self.class_answer(&class);
+                                self.record(doc, child, answer);
                             }
                         }
                         // `new $class()`: the class the variable is known to name.
@@ -1745,8 +1803,7 @@ impl PhpResolver {
                 if is_instanceof
                     && let Some(operand) = operand
                 {
-                    let namespace = scope.namespace.clone();
-                    self.record_name(doc, source, operand, &namespace, NameKind::Class);
+                    self.record_class_name(doc, source, operand, scope);
                     if let Some(left) = node.child_by_field_name("left") {
                         self.walk_uses(doc, source, left, scope);
                     }
@@ -1813,6 +1870,15 @@ impl PhpResolver {
                 let namespace = scope.namespace.clone();
                 self.record_name(doc, source, node, &namespace, NameKind::Value);
             }
+            // `self`, `static`, `parent` before `::`: the class the keyword stands for.
+            "relative_scope" => {
+                if let Some(which) = relative_keyword(&ts::text(node, source))
+                    && let Some(class) = relative_class(scope, which)
+                {
+                    let answer = self.class_answer(&class);
+                    self.record(doc, node, answer);
+                }
+            }
             // A local variable, `$this` included: nothing outside the function
             // can name it, so there is nothing to resolve.
             "variable_name" => {}
@@ -1830,9 +1896,8 @@ impl PhpResolver {
         node: TsNode<'_>,
         scope: &mut UseScope,
     ) {
-        let namespace = scope.namespace.clone();
         if let Some(type_node) = node.child_by_field_name("type") {
-            self.record_type(doc, source, type_node, &namespace);
+            self.record_type(doc, source, type_node, scope);
         }
         if let Some(attributes) = node.child_by_field_name("attributes") {
             self.walk_use_children(doc, source, attributes, scope);
@@ -2013,17 +2078,16 @@ impl PhpResolver {
     /// `catch (FooError | BarError $e) { … }` — a type position, and one that
     /// types the variable it binds.
     fn walk_catch(&mut self, doc: u32, source: &[u8], node: TsNode<'_>, scope: &mut UseScope) {
-        let namespace = scope.namespace.clone();
         if let Some(type_node) = node.child_by_field_name("type") {
-            self.record_type(doc, source, type_node, &namespace);
+            self.record_type(doc, source, type_node, scope);
             let references = class_refs(type_node);
             // A union of exception types names no single class.
             if let [only] = references[..]
                 && let Some(ident) = node
                     .child_by_field_name("name")
                     .and_then(variable_identifier)
+                && let Some(class) = self.scoped_class_ref(&ts::text(only, source), doc, scope)
             {
-                let class = self.class_ref(&ts::text(only, source), doc, &namespace);
                 scope
                     .vars
                     .insert(ts::text(ident, source).into_owned(), class);

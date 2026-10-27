@@ -382,6 +382,15 @@ impl<'a> PhpVisitor<'a> {
                 self.record_occurrence("read", node, &container);
                 Ok(())
             }
+            // `self::`, `static::`, `parent::` in a scoped call, a scoped property, a
+            // class constant or `::class`: the keyword is a named node whose only
+            // child is an anonymous token, so it needs its own occurrence. The
+            // resolver answers it with the class the keyword stands for.
+            "relative_scope" => {
+                let container = self.container();
+                self.record_occurrence("read", node, &container);
+                Ok(())
+            }
             "qualified_name" | "relative_name" => {
                 if let Some(name_node) = last_name(node) {
                     let container = self.container();

@@ -75,6 +75,10 @@ map, the enclosing namespace, the global namespace, then a PSR-4 prefix lookup.
 Receiver types are inferred for the cases that are syntactically recoverable and
 overwhelmingly common — `$x = new Foo()` followed by `$x->m()`, promoted
 constructor properties, `$this->`, and `self::` / `static::` / `parent::`.
+The keywords themselves resolve too, in every position they can be written - a
+type, `new`, `instanceof`, `::` and `::class`: `self` and `static` to the
+enclosing class, `parent` to its first base class (a `HAS_TYPE` or `REFERENCES`
+edge to it). Outside a class they resolve to nothing.
 
 Trait methods resolve through the class that uses them. In the fixture,
 `inspect(Base $item)` calling `$item->describe()` binds to
@@ -99,6 +103,8 @@ Stated plainly, because `degraded` is the honest status and not a formality:
   return, an array element, a parameter with no type declaration.
 - **Dynamic class names** — `new $cls` and `$cls::method()` are followed only
   while `$cls` is assigned one `Foo::class` and nothing else.
+- **Late static binding** — `static` is taken to be the class it is written in, so
+  `static::m()` in a base class lands on the base's `m`, not on a subclass override.
 - **`__get`** — nothing declares what it accepts. `__call` and `__callStatic` are
   followed: a method no class of the hierarchy declares is a call of the one that
   does, unless a base class or trait outside the project may declare it.

@@ -440,6 +440,29 @@
     },
     {
       "file_path": "store/store.go",
+      "id": "39c8839d12526882",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            25,
+            2,
+            25,
+            6
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "example.com/fixture/store.Engine.Base",
+      "span": [
+        25,
+        2,
+        25,
+        6
+      ]
+    },
+    {
+      "file_path": "store/store.go",
       "id": "5c3b9314b7f1bcf2",
       "kind": "attribute",
       "metadata": {
@@ -659,6 +682,18 @@
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
       "target_id": "09e9175fa750828c"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "39c8839d12526882"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "09e9175fa750828c",
+      "target_id": "39c8839d12526882"
     },
     {
       "kind": "declares",

@@ -251,6 +251,16 @@ fn type_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<'tre
     }
 }
 
+/// The identifier go/types names an embedded field after: `T`, `*T`, `pkg.T`,
+/// `T[A]` and `pkg.T[A]` all give the last identifier of the type's name.
+fn embedded_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<'tree>> {
+    let type_node = type_node?;
+    if type_node.kind() == "generic_type" {
+        return type_name_node(type_node.child_by_field_name("type"));
+    }
+    type_name_node(Some(type_node))
+}
+
 /// The name an import brings into a file, and the position go/types gives it:
 /// the alias identifier when there is one, else the start of the path literal.
 /// A package qualifier binds to the import only when the resolver answers with
@@ -658,7 +668,7 @@ impl<'a> GoExtractor<'a> {
                     if fd.child_by_field_name("name").is_some() {
                         continue;
                     }
-                    if let Some(name_node) = type_name_node(fd.child_by_field_name("type")) {
+                    if let Some(name_node) = embedded_name_node(fd.child_by_field_name("type")) {
                         self.add_occurrence("base", name_node, enclosing_id);
                     }
                     if let Some(embedded) = fd.child_by_field_name("type") {
@@ -1111,10 +1121,12 @@ impl<'a> GoExtractor<'a> {
         }
     }
 
-    /// ATTRIBUTE nodes for a struct's named fields, plus their annotations.
+    /// ATTRIBUTE nodes for a struct's fields, plus their annotations.
     ///
-    /// A field with no name is an embedded type, which `collect_bases` already
-    /// records as a `base` occurrence.
+    /// An embedded field is an ATTRIBUTE named after its type's last identifier,
+    /// which is the position go/types gives the field, so a selector, a keyed
+    /// literal key or an argument that uses it binds to a node. `collect_bases`
+    /// still records the embedded type as a `base` occurrence.
     fn collect_fields(
         &mut self,
         type_node: TsNode<'_>,
@@ -1129,15 +1141,29 @@ impl<'a> GoExtractor<'a> {
                 if field.kind() != "field_declaration" {
                     continue;
                 }
-                let Some(name_node) = field.child_by_field_name("name") else {
-                    continue;
-                };
-                let name = self.text(name_node);
-                let qname = format!("{type_qname}.{name}");
-                let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
-                self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
-                if let Some(field_type) = field.child_by_field_name("type") {
-                    self.record_annotation(field_type, &id);
+                if let Some(name_node) = field.child_by_field_name("name") {
+                    let name = self.text(name_node);
+                    let qname = format!("{type_qname}.{name}");
+                    let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
+                    self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+                    if let Some(field_type) = field.child_by_field_name("type") {
+                        self.record_annotation(field_type, &id);
+                    }
+                } else {
+                    let Some(field_type) = field.child_by_field_name("type") else {
+                        continue;
+                    };
+                    let Some(name_node) = embedded_name_node(Some(field_type)) else {
+                        continue;
+                    };
+                    let name = self.text(name_node);
+                    let qname = format!("{type_qname}.{name}");
+                    let id = self.declare(&qname, &name, NodeKind::Attribute, field, name_node)?;
+                    self.push_relation(type_id.to_string(), id.clone(), RelationKind::Declares)?;
+                    // Names only: `collect_bases` already records the package qualifier
+                    // with the class as its source.
+                    let params = type_parameter_names(self.source, field_type);
+                    self.annotate_names(walk_type(field_type, "type_identifier"), &id, &params);
                 }
             }
         }

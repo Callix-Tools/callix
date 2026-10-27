@@ -39,7 +39,11 @@ internal/store/store.go        →  MODULE github.com/acme/svc/internal/store
 Functions, methods with their receiver type in the qualified name, structs and
 interfaces, type aliases, constants and variables, and imports. Embedded types
 in structs and interfaces become `base` occurrences and resolve to
-`INHERITS_FROM`.
+`INHERITS_FROM`. An embedded field of a struct is also an `ATTRIBUTE` named
+after its type's last identifier (`Engine.Base` for `Base`, `*Base`,
+`pkg.Base` or `Base[T]`), with a `has_type` to that type. A selector
+(`e.Base`), a keyed-literal key (`Engine{Base: b}`) and an argument therefore
+bind to the field like a named one.
 
 Embedding is distinguished from generic constraints by term count: a type-set
 union like `A | B` or `~int` has several terms in one element, real embedding

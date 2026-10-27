@@ -12,10 +12,10 @@
     "sound": 50
   },
   "go/micro": {
-    "complete": 60,
+    "complete": 62,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 60
+    "sound": 62
   },
   "php/micro": {
     "complete": 61,

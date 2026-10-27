@@ -90,6 +90,8 @@ Trait methods resolve through the class that uses them. In the fixture,
 `Fixture\Models\Describes\describe` — the trait's method, which is where the
 implementation actually is.
 
+A member is looked up in PHP's order: the class itself, then its traits, then its base class (recursively, with the base's own traits). An interface's declaration is the target only when none of those declares the method.
+
 Every `use` clause - plain, aliased, grouped, `use function` and `use const` - gets
 a `RESOLVES_TO` with a position to the class, function or constant it names. The
 `IMPORTS` edge to the namespace MODULE stays. A namespace alias resolves to its

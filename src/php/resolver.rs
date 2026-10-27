@@ -116,15 +116,37 @@ struct Uses {
 struct Pending {
     /// The owning class, as a table key.
     class: String,
-    /// The property this types, or None when the name is a base class, an
-    /// interface or a trait.
-    property: Option<String>,
+    /// What the name is: a property's type, or a parent link of some kind.
+    role: PendingRole,
     name: String,
     doc: u32,
     namespace: String,
-    /// Whether this is a base class or a trait, which contribute members; an
-    /// interface contributes none.
-    inherits: bool,
+}
+
+/// Which kind of parent link a name is.
+#[derive(Clone, Copy)]
+enum ParentKind {
+    Base,
+    Trait,
+    Interface,
+}
+
+/// What a pending name stands for.
+enum PendingRole {
+    /// The type of this property (a method return type is `()name`).
+    Property(String),
+    /// A base class, a trait or an interface of the owning class.
+    Parent(ParentKind),
+}
+
+/// A class's parents, by kind, each in declared order. PHP searches them in a
+/// fixed order (traits, then base, then interfaces), so the kind matters.
+#[derive(Default)]
+struct Parents {
+    traits: Vec<String>,
+    /// A Vec only because half-written code can carry more than one `extends`.
+    bases: Vec<String>,
+    interfaces: Vec<String>,
 }
 
 /// The fully-qualified names a written name may mean, most specific first.
@@ -552,10 +574,9 @@ pub struct PhpResolver {
     methods: MemberTable,
     properties: MemberTable,
     class_constants: MemberTable,
-    /// A class → its base class, its interfaces and its traits. All three
-    /// contribute members, so all three are walked when a member is not
-    /// declared on the class itself.
-    parents: HashMap<String, Vec<String>>,
+    /// A class → its traits, its base class and its interfaces, kept apart.
+    /// All three contribute members; `in_hierarchy` walks them in PHP's order.
+    parents: HashMap<String, Parents>,
     /// Classes with a base class or a trait outside the workspace: what they
     /// inherit is not known, so a method they do not declare may be there.
     foreign_parents: HashSet<String>,
@@ -811,12 +832,18 @@ impl PhpResolver {
         }
     }
 
-    /// Walks a class, its base class, its interfaces and its traits.
+    /// Walks a class in the order PHP finds a member: the class itself, its
+    /// traits (a trait may `use` others), then its base class and the base's own
+    /// traits and base. Interfaces are searched in a second pass, only when no
+    /// class or trait in the chain has the member: an interface method is the
+    /// target only when nothing implements it on the way.
     ///
     /// The visited set is not an optimization: PHP rejects a cycle, but a
     /// half-written file can still describe one and this must not hang.
     fn in_hierarchy<T>(&self, class: &str, probe: impl Fn(&str) -> Option<T>) -> Option<T> {
         let mut seen: HashSet<String> = HashSet::new();
+        // Interfaces met in the first pass, in visit order: the roots of the second.
+        let mut interfaces: Vec<String> = Vec::new();
         let mut stack = vec![class.to_string()];
         while let Some(current) = stack.pop() {
             if !seen.insert(current.clone()) {
@@ -826,7 +853,24 @@ impl PhpResolver {
                 return Some(found);
             }
             if let Some(parents) = self.parents.get(&current) {
-                stack.extend(parents.iter().cloned());
+                interfaces.extend(parents.interfaces.iter().cloned());
+                // Pushed last, popped first: traits before the base class.
+                stack.extend(parents.bases.iter().rev().cloned());
+                stack.extend(parents.traits.iter().rev().cloned());
+            }
+        }
+        let mut stack: Vec<String> = interfaces.into_iter().rev().collect();
+        while let Some(current) = stack.pop() {
+            if !seen.insert(current.clone()) {
+                continue;
+            }
+            if let Some(found) = probe(&current) {
+                return Some(found);
+            }
+            if let Some(parents) = self.parents.get(&current) {
+                stack.extend(parents.traits.iter().rev().cloned());
+                stack.extend(parents.bases.iter().rev().cloned());
+                stack.extend(parents.interfaces.iter().rev().cloned());
             }
         }
         None
@@ -1100,7 +1144,7 @@ impl PhpResolver {
                     let namespace = scope.namespace.clone();
                     for child in ts::children(node) {
                         if matches!(child.kind(), "name" | "qualified_name" | "relative_name") {
-                            self.push_pending(doc, source, &class, None, child, &namespace, true);
+                            self.push_pending(doc, source, &class, PendingRole::Parent(ParentKind::Trait), child, &namespace);
                         }
                     }
                 }
@@ -1115,15 +1159,13 @@ impl PhpResolver {
         doc: u32,
         source: &[u8],
         class: &str,
-        property: Option<&str>,
+        role: PendingRole,
         reference: TsNode<'_>,
         namespace: &str,
-        inherits: bool,
     ) {
         self.pending.push(Pending {
-            inherits,
             class: class.to_lowercase(),
-            property: property.map(str::to_string),
+            role,
             name: ts::text(reference, source).into_owned(),
             doc,
             namespace: namespace.to_string(),
@@ -1177,15 +1219,20 @@ impl PhpResolver {
             if !matches!(clause.kind(), "base_clause" | "class_interface_clause") {
                 continue;
             }
+            // `interface I extends J` lists interfaces; a class's `extends` is a base.
+            let kind = if clause.kind() == "base_clause" && node.kind() != "interface_declaration" {
+                ParentKind::Base
+            } else {
+                ParentKind::Interface
+            };
             for reference in class_refs(clause) {
                 self.push_pending(
                     doc,
                     source,
                     class_fqn,
-                    None,
+                    PendingRole::Parent(kind),
                     reference,
                     namespace,
-                    clause.kind() == "base_clause",
                 );
             }
         }
@@ -1263,7 +1310,7 @@ impl PhpResolver {
             if text == "self" || text == "static" {
                 self.self_returning.insert((class.to_lowercase(), name.clone()));
             } else if let [only] = class_refs(return_type)[..] {
-                self.push_pending(doc, source, class, Some(&format!("(){name}")), only, namespace, false);
+                self.push_pending(doc, source, class, PendingRole::Property(format!("(){name}")), only, namespace);
             }
         }
 
@@ -1331,7 +1378,7 @@ impl PhpResolver {
         if let Some(type_node) = type_node {
             let references = class_refs(type_node);
             if let [only] = references[..] {
-                self.push_pending(doc, source, class, Some(&name), only, namespace, false);
+                self.push_pending(doc, source, class, PendingRole::Property(name.clone()), only, namespace);
             }
         }
     }
@@ -1376,22 +1423,30 @@ impl PhpResolver {
             // A property typed `self` or `static` holds the class it is declared in.
             // `parent` cannot be told here (the base link is being built in this very
             // loop), so that property stays untyped rather than guessed.
-            let keyword = relative_keyword(&item.name).filter(|_| item.property.is_some());
+            let is_property = matches!(item.role, PendingRole::Property(_));
+            let keyword = relative_keyword(&item.name).filter(|_| is_property);
             let class = match keyword {
                 Some(Relative::Enclosing) => ClassRef::Declared(item.class.clone()),
                 Some(Relative::Parent) => continue,
                 None => self.class_ref(&item.name, item.doc, &item.namespace),
             };
-            match item.property {
-                Some(property) => {
+            match item.role {
+                PendingRole::Property(property) => {
                     self.property_types.insert((item.class, property), class);
                 }
-                // A base class outside the workspace contributes no members
-                // this index could find, so the link is not worth keeping.
-                None => {
+                // A parent outside the workspace contributes no members this
+                // index could find, so the link is not worth keeping. An
+                // undeclared base class or trait makes the class foreign; an
+                // interface contributes no members, so it does not.
+                PendingRole::Parent(kind) => {
                     if let ClassRef::Declared(parent) = class {
-                        self.parents.entry(item.class).or_default().push(parent);
-                    } else if item.inherits {
+                        let parents = self.parents.entry(item.class).or_default();
+                        match kind {
+                            ParentKind::Base => parents.bases.push(parent),
+                            ParentKind::Trait => parents.traits.push(parent),
+                            ParentKind::Interface => parents.interfaces.push(parent),
+                        }
+                    } else if matches!(kind, ParentKind::Base | ParentKind::Trait) {
                         self.foreign_parents.insert(item.class);
                     }
                 }

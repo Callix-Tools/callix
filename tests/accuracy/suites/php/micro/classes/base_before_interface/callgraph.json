@@ -1,0 +1,1 @@
+{"main.php": ["App\\Child\\run"], "App\\Child\\run": ["App\\Base\\info"], "App\\Base\\info": [], "App\\Contract\\info": []}

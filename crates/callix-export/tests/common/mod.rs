@@ -176,3 +176,21 @@ pub fn decode_scip(bytes: &[u8]) -> Scip {
     }
     index
 }
+
+/// A Go package placed at its package clause, with a qualifier and an import path
+/// that reference it, and a standard-library package that is only referenced.
+pub const GO_PACKAGE_GRAPH: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+ "nodes":[
+  {"id":"p","kind":"project","qualified_name":"example.com/m","name":"m","file_path":null,"span":null,"metadata":{}},
+  {"id":"mu","kind":"module","qualified_name":"example.com/m/util","name":"util","file_path":"util/util.go","span":null,"metadata":{"name_span":{"__span__":[1,9,1,13]}}},
+  {"id":"fu","kind":"file","qualified_name":"util/util.go","name":"util.go","file_path":"util/util.go","span":null,"metadata":{}},
+  {"id":"fm","kind":"file","qualified_name":"main.go","name":"main.go","file_path":"main.go","span":null,"metadata":{}},
+  {"id":"im","kind":"import","qualified_name":"main.go::example.com/m/util","name":"example.com/m/util","file_path":"main.go","span":[3,8,3,28],"metadata":{"origin":"internal"}},
+  {"id":"main","kind":"function","qualified_name":"example.com/m.main","name":"main","file_path":"main.go","span":[5,1,8,2],"metadata":{"name_span":{"__span__":[5,6,5,10]}}},
+  {"id":"fmt","kind":"external_symbol","qualified_name":"fmt","name":"fmt","file_path":null,"span":null,"metadata":{"origin":"stdlib"}}],
+ "relations":[
+  {"source_id":"fm","target_id":"main","kind":"declares","metadata":{}},
+  {"source_id":"fm","target_id":"im","kind":"declares","metadata":{}},
+  {"source_id":"im","target_id":"mu","kind":"resolves_to","metadata":{"span":{"__span__":[3,8,3,28]}}},
+  {"source_id":"main","target_id":"mu","kind":"references","metadata":{"span":{"__span__":[6,6,6,10]},"access":"read","resolution":"definition"}},
+  {"source_id":"main","target_id":"fmt","kind":"references","metadata":{"span":{"__span__":[7,2,7,5]},"access":"read","resolution":"external"}}]}"#;

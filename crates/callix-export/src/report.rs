@@ -224,7 +224,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              type, or anywhere in a function body (literals, closures, assertions, type \
              switches, make and new, type arguments) is a `has_type`, except predeclared \
              types, type parameters, types declared inside a function, and the generic in an \
-             explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion",
+             explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion; a \
+             package qualifier (`pkg.X`, `pkg.T`) and an import path bind to the package's \
+             `MODULE`, placed at the package clause of its first non-test file, or to the \
+             import's external symbol; a local that shadows a package gets no edge, and an \
+             unaliased package whose name differs from the last element of its import path is \
+             not found in expressions",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

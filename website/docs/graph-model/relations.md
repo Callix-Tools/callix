@@ -20,7 +20,7 @@ relation.metadata    # dict[str, object]
 | `CONTAINS` | project → module, module → file | structure |
 | `DECLARES` | file → declaration | structure |
 | `IMPORTS` | file → import | structure |
-| `RESOLVES_TO` | import → module or external symbol | structure |
+| `RESOLVES_TO` | import → module or external symbol (in Go it carries the `span` of the import path) | structure |
 | `DEPENDS_ON` | project → dependency | structure |
 | `CALLS` | function → callee | resolution |
 | `REFERENCES` | declaration → symbol read or written | resolution |

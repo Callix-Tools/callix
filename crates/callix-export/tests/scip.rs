@@ -187,3 +187,35 @@ fn symbol_documentation_carries_what_the_author_wrote() {
     // Something in the graph is documented, so there is nothing to warn about.
     assert!(warnings.iter().all(|w| w.code != "no-documentation"), "{warnings:?}");
 }
+
+#[test]
+fn a_go_package_is_a_definition_and_its_qualifier_and_import_path_reference_it() {
+    let (bytes, warnings) = export(&Graph::from_json(common::GO_PACKAGE_GRAPH).unwrap());
+    let index = decode_scip(&bytes);
+
+    let util = index.documents.iter().find(|d| d.path == "util/util.go").expect("util/util.go");
+    let definition = util
+        .occurrences
+        .iter()
+        .find(|o| o.symbol.contains("example.com/m/util"))
+        .expect("the package is defined at its package clause");
+    assert_eq!(definition.roles, 1, "Definition");
+    // name_span 1:9-1:13 -> 0-based [line, start, end]
+    assert_eq!(definition.range, [0, 8, 12]);
+    assert!(util.symbols.iter().any(|(s, kind, _)| s.contains("example.com/m/util") && *kind == 29));
+
+    let main = index.documents.iter().find(|d| d.path == "main.go").expect("main.go");
+    let refs: Vec<_> = main
+        .occurrences
+        .iter()
+        .filter(|o| o.symbol.contains("example.com/m/util") && o.roles & 1 == 0)
+        .map(|o| o.range.clone())
+        .collect();
+    // the import path (3:8-3:28) and the qualifier (6:6-6:10)
+    assert!(refs.iter().any(|r| *r == [2, 7, 27]), "{refs:?}");
+    assert!(refs.iter().any(|r| *r == [5, 5, 9]), "{refs:?}");
+    assert!(main.occurrences.iter().any(|o| o.symbol.contains("fmt") && o.roles & 1 == 0));
+    for code in ["no-name-span", "unsupported-reference", "unnamed-external"] {
+        assert!(warnings.iter().all(|w| w.code != code), "{code}: {warnings:?}");
+    }
+}

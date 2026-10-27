@@ -14,6 +14,7 @@ use crate::ids::node_id;
 use crate::node::{Node, NodeKind};
 use crate::occurrence::OccurrenceRef;
 use crate::relation::{Relation, RelationKind};
+use crate::span::Span;
 use crate::ts;
 
 /// A node's descendants in the order the Python version walks them: a stack
@@ -155,6 +156,34 @@ fn type_name_node<'tree>(type_node: Option<TsNode<'tree>>) -> Option<TsNode<'tre
     }
 }
 
+/// The name an import brings into a file, and the position go/types gives it:
+/// the alias identifier when there is one, else the start of the path literal.
+/// A package qualifier binds to the import only when the resolver answers with
+/// exactly this position, which is what keeps a local that shadows a package out.
+pub struct ImportSite {
+    pub line: u32,
+    pub col: u32,
+    pub path: String,
+    pub origin: &'static str,
+}
+
+/// The package name an import path is assumed to declare, as gopls assumes it
+/// (`ImportPathToAssumedName`): the last element, or the one before it when the
+/// last is a major-version suffix `vN`; a `go-` prefix is dropped and the name
+/// is cut at the first character that cannot be part of an identifier.
+pub fn assumed_package_name(path: &str) -> String {
+    let mut parts: Vec<&str> = path.split('/').collect();
+    let mut base = parts.pop().unwrap_or("");
+    let is_version = base.len() > 1
+        && base.starts_with('v')
+        && base[1..].bytes().all(|b| b.is_ascii_digit());
+    if is_version && let Some(previous) = parts.last() {
+        base = previous;
+    }
+    let base = base.strip_prefix("go-").unwrap_or(base);
+    base.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect()
+}
+
 pub struct GoExtractor<'a> {
     py: Python<'a>,
     graph: &'a mut Graph,
@@ -167,10 +196,14 @@ pub struct GoExtractor<'a> {
     module_path: Option<&'a str>,
     required: &'a HashSet<String>,
     occurrences: Vec<OccurrenceRef>,
-    /// `(import node id, path, importing file)` for internal imports: the
-    /// adapter substitutes the real MODULE node once every package exists, and
-    /// emits IMPORTS from the file at the same time.
-    internal_imports: Vec<(String, String, String)>,
+    /// `(import node id, path, importing file, span of the path literal)` for
+    /// internal imports: the adapter substitutes the real MODULE node once every
+    /// package exists, and emits IMPORTS from the file at the same time.
+    internal_imports: Vec<(String, String, String, Span)>,
+    /// The local names the file's imports bind (an alias, else the assumed name
+    /// of the path). Dot and blank imports are not in it.
+    package_names: HashSet<String>,
+    import_sites: Vec<ImportSite>,
 }
 
 impl<'a> GoExtractor<'a> {
@@ -198,11 +231,16 @@ impl<'a> GoExtractor<'a> {
             required,
             occurrences: Vec::new(),
             internal_imports: Vec::new(),
+            package_names: HashSet::new(),
+            import_sites: Vec::new(),
         }
     }
 
-    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String, String)>) {
-        (self.occurrences, self.internal_imports)
+    #[allow(clippy::type_complexity)]
+    pub fn into_parts(
+        self,
+    ) -> (Vec<OccurrenceRef>, Vec<(String, String, String, Span)>, Vec<ImportSite>) {
+        (self.occurrences, self.internal_imports, self.import_sites)
     }
 
     fn text(&self, node: TsNode<'_>) -> String {
@@ -211,6 +249,7 @@ impl<'a> GoExtractor<'a> {
 
     /// Parses the file's top-level declarations.
     pub fn extract(&mut self, root: TsNode<'_>) -> PyResult<()> {
+        self.collect_import_sites(root);
         for child in ts::children(root) {
             match child.kind() {
                 "function_declaration" => self.on_function(child)?,
@@ -280,6 +319,61 @@ impl<'a> GoExtractor<'a> {
         });
     }
 
+    /// Reads every import spec of the file without touching the graph (so node
+    /// order is unchanged): the names the imports bind, and the position the
+    /// type checker gives each of them.
+    fn collect_import_sites(&mut self, root: TsNode<'_>) {
+        for declaration in ts::children(root) {
+            if declaration.kind() != "import_declaration" {
+                continue;
+            }
+            for spec in walk_type(declaration, "import_spec") {
+                let Some(path_node) = spec.child_by_field_name("path") else {
+                    continue;
+                };
+                let import_path = self.text(path_node).trim_matches('"').to_string();
+                if import_path.is_empty() {
+                    continue;
+                }
+                let name_node = spec.child_by_field_name("name");
+                let local = match name_node {
+                    Some(name) => self.text(name),
+                    None => assumed_package_name(&import_path),
+                };
+                // `.` and `_` imports bind no qualifier.
+                if local.is_empty() || local == "." || local == "_" {
+                    continue;
+                }
+                let at = ts::span(name_node.unwrap_or(path_node));
+                let origin = classify_import(&import_path, self.module_path, self.required);
+                self.package_names.insert(local);
+                self.import_sites.push(ImportSite {
+                    line: at.start_line,
+                    col: at.start_col,
+                    path: import_path,
+                    origin,
+                });
+            }
+        }
+    }
+
+    /// The package name in `pkg.X` / `pkg.T`: a `read` whose detail is `package`.
+    /// The resolution pass binds it to the package only when the type checker
+    /// answers with the position of one of the file's imports.
+    fn record_qualifier(&mut self, node: TsNode<'_>, enclosing_id: &str) {
+        self.add_occurrence_with("read", node, enclosing_id, Some("package".to_string()));
+    }
+
+    /// Qualifiers of every `pkg.T` in a type. A `package_identifier` in a type
+    /// position is always a package, so it is not filtered by the import names.
+    fn record_type_qualifiers(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
+        for qualified in walk_type(scope, "qualified_type") {
+            if let Some(package) = qualified.child_by_field_name("package") {
+                self.record_qualifier(package, enclosing_id);
+            }
+        }
+    }
+
     /// A call site for every `call_expression` inside the scope.
     fn collect_calls(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
@@ -327,10 +421,24 @@ impl<'a> GoExtractor<'a> {
     /// Selectors already recorded as a `call` (that is, `pkg.Foo` in
     /// `pkg.Foo()`) are skipped so one site does not yield two occurrences. A
     /// selector on an assignment's left-hand side yields `write`.
+    ///
+    /// This is also the only place a package qualifier is found in an expression:
+    /// when the operand of any selector (callee and argument included) is an
+    /// identifier naming one of the file's imports, the operand gets a `read`
+    /// with detail `package`. A local that shadows the package passes this test
+    /// and is rejected later, because the resolver answers with the local.
     fn collect_references(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
         for node in descendants(scope) {
             if node.kind() != "selector_expression" {
                 continue;
+            }
+            if let Some(operand) = node.child_by_field_name("operand")
+                && operand.kind() == "identifier"
+            {
+                let is_package = self.package_names.contains(&self.text(operand));
+                if is_package {
+                    self.record_qualifier(operand, enclosing_id);
+                }
             }
             let is_callee = node.parent().is_some_and(|parent| {
                 parent.kind() == "call_expression"
@@ -375,6 +483,9 @@ impl<'a> GoExtractor<'a> {
                     if let Some(name_node) = type_name_node(fd.child_by_field_name("type")) {
                         self.add_occurrence("base", name_node, enclosing_id);
                     }
+                    if let Some(embedded) = fd.child_by_field_name("type") {
+                        self.record_type_qualifiers(embedded, enclosing_id);
+                    }
                 }
             }
             return;
@@ -395,6 +506,7 @@ impl<'a> GoExtractor<'a> {
             if let Some(name_node) = type_name_node(Some(terms[0])) {
                 self.add_occurrence("base", name_node, enclosing_id);
             }
+            self.record_type_qualifiers(terms[0], enclosing_id);
         }
     }
 
@@ -410,6 +522,7 @@ impl<'a> GoExtractor<'a> {
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         let params = type_parameter_names(self.source, type_node);
         self.annotate_names(walk_type(type_node, "type_identifier"), enclosing_id, &params);
+        self.record_type_qualifiers(type_node, enclosing_id);
     }
 
     /// One `annotation` occurrence per name, minus the predeclared ones and the
@@ -487,6 +600,9 @@ impl<'a> GoExtractor<'a> {
             .filter(|n| !excluded.contains(&(n.start_byte(), n.end_byte())))
             .collect();
         self.annotate_names(names, enclosing_id, &skip);
+        // The qualifier of `pkg.F[T](x)` is a real package use, so the base
+        // exclusion above does not apply to it.
+        self.record_type_qualifiers(body, enclosing_id);
     }
 
     /// PARAMETER nodes for a declaration's parameters, plus their annotations.
@@ -1002,6 +1118,8 @@ impl<'a> GoExtractor<'a> {
         if self.graph.has_node(&import_id) {
             return Ok(());
         }
+        // The path literal, quotes included: where this import names its package.
+        let path_span = spec.child_by_field_name("path").map(ts::span).unwrap_or_else(|| ts::span(spec));
 
         let metadata = PyDict::new(self.py);
         metadata.set_item("origin", origin)?;
@@ -1026,8 +1144,12 @@ impl<'a> GoExtractor<'a> {
             // Deferred: bound to the real MODULE node once every package
             // exists (falling back to an EXTERNAL_SYMBOL otherwise). IMPORTS
             // is deferred with it, since it needs the same target.
-            self.internal_imports
-                .push((import_id, import_path.to_string(), self.file_id.to_string()));
+            self.internal_imports.push((
+                import_id,
+                import_path.to_string(),
+                self.file_id.to_string(),
+                path_span,
+            ));
             return Ok(());
         }
 
@@ -1047,7 +1169,7 @@ impl<'a> GoExtractor<'a> {
             self.graph.insert_node(sym_id.clone(), Py::new(self.py, node)?);
         }
         self.push_relation(self.file_id.to_string(), sym_id.clone(), RelationKind::Imports)?;
-        self.push_relation(import_id, sym_id, RelationKind::ResolvesTo)
+        self.push_relation_with_span(import_id, sym_id, RelationKind::ResolvesTo, path_span)
     }
 
     fn receiver_type(&self, method_node: TsNode<'_>) -> String {
@@ -1075,6 +1197,22 @@ impl<'a> GoExtractor<'a> {
             kind,
             metadata: PyDict::new(self.py).unbind(),
         };
+        self.graph.push_relation(Py::new(self.py, relation)?);
+        Ok(())
+    }
+
+    /// A structural edge that records where it was observed (so it is exempt
+    /// from `dedupe_structural_relations`).
+    fn push_relation_with_span(
+        &mut self,
+        source_id: String,
+        target_id: String,
+        kind: RelationKind,
+        span: Span,
+    ) -> PyResult<()> {
+        let metadata = PyDict::new(self.py);
+        metadata.set_item("span", span)?;
+        let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
         self.graph.push_relation(Py::new(self.py, relation)?);
         Ok(())
     }
@@ -1131,4 +1269,19 @@ fn calls_its_arguments(callee: &str) -> bool {
     callee
         .rsplit_once('.')
         .is_some_and(|(_, name)| matches!(name, "Do" | "Go" | "Run" | "AfterFunc" | "HandleFunc"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::assumed_package_name;
+
+    #[test]
+    fn assumed_names_follow_gopls() {
+        assert_eq!(assumed_package_name("fmt"), "fmt");
+        assert_eq!(assumed_package_name("example.com/m/util"), "util");
+        assert_eq!(assumed_package_name("gopkg.in/yaml.v3"), "yaml");
+        assert_eq!(assumed_package_name("github.com/go-chi/chi/v5"), "chi");
+        assert_eq!(assumed_package_name("github.com/mattn/go-sqlite3"), "sqlite3");
+        assert_eq!(assumed_package_name("github.com/x/v"), "v");
+    }
 }

@@ -1,9 +1,9 @@
 {
   "files": {
     "auth.go": {
-      "hash": "f6fb792bb0b26705",
-      "nodes": 28,
-      "relations": 39
+      "hash": "b90c4481fb2dfde4",
+      "nodes": 29,
+      "relations": 79
     },
     "auth_test.go": {
       "hash": "e3986cd53dd765ce",
@@ -16,9 +16,9 @@
       "relations": 70
     },
     "binding/binding.go": {
-      "hash": "3e886fbc34a199d9",
-      "nodes": 47,
-      "relations": 55
+      "hash": "e14c6ab0a96211d9",
+      "nodes": 48,
+      "relations": 85
     },
     "binding/binding_msgpack_test.go": {
       "hash": "3ad2e7e9267760f8",
@@ -166,9 +166,9 @@
       "relations": 11
     },
     "codec/json/api.go": {
-      "hash": "1f5ac8353cdf5eae",
-      "nodes": 27,
-      "relations": 38
+      "hash": "bfc239d05daa53ea",
+      "nodes": 28,
+      "relations": 43
     },
     "codec/json/go_json.go": {
       "hash": "c9cb6b463587a254",
@@ -261,9 +261,9 @@
       "relations": 222
     },
     "ginS/gins.go": {
-      "hash": "a87648622e4b74e5",
-      "nodes": 72,
-      "relations": 79
+      "hash": "21b15eff2d6ec56b",
+      "nodes": 73,
+      "relations": 81
     },
     "ginS/gins_test.go": {
       "hash": "7e44eae7f698bfa1",
@@ -286,9 +286,9 @@
       "relations": 59
     },
     "internal/bytesconv/bytesconv.go": {
-      "hash": "52279f806ce435e1",
-      "nodes": 6,
-      "relations": 7
+      "hash": "e7db89f152da93fa",
+      "nodes": 7,
+      "relations": 9
     },
     "internal/bytesconv/bytesconv_test.go": {
       "hash": "5aa134a52e41f9dd",
@@ -296,9 +296,9 @@
       "relations": 47
     },
     "internal/fs/fs.go": {
-      "hash": "9b2ef7c11496039e",
-      "nodes": 6,
-      "relations": 9
+      "hash": "59bff5e4509fb81e",
+      "nodes": 7,
+      "relations": 11
     },
     "internal/fs/fs_test.go": {
       "hash": "852d7f8a055d94d0",
@@ -351,9 +351,9 @@
       "relations": 53
     },
     "render/bson.go": {
-      "hash": "beabe3ae7b49eca6",
-      "nodes": 10,
-      "relations": 14
+      "hash": "51337c8d39cebab8",
+      "nodes": 11,
+      "relations": 30
     },
     "render/data.go": {
       "hash": "e2cd17728dac169a",
@@ -516,11 +516,11 @@
   "ref": "v1.12.0",
   "resolution": {
     "metrics": {
-      "external": 7251,
-      "internal": 8965,
-      "queries": 20614,
-      "resolved": 20536,
-      "unresolved": 78
+      "external": 12926,
+      "internal": 11030,
+      "queries": 28385,
+      "resolved": 28278,
+      "unresolved": 107
     },
     "relations": {
       "calls": 8839,
@@ -528,10 +528,10 @@
       "declares": 4353,
       "depends_on": 35,
       "exposes": 201,
-      "has_type": 1227,
+      "has_type": 3154,
       "imports": 511,
       "inherits_from": 26,
-      "references": 6125,
+      "references": 11938,
       "resolves_to": 511
     },
     "status": "ok"

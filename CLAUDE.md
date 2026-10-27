@@ -201,6 +201,12 @@ import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
 be declared below its `impl`.
 
+A Go MODULE is placed by `file_path` (its first non-`_test.go` file) plus
+`metadata["name_span"]` (that file's `package` clause identifier) and has **no
+`span`**, because a package spans several files: `SpanIndex::from_graph` skips
+span-less nodes, so a package never steals a real name. The placement file is
+chosen from the paths before the walk (`placement_files`).
+
 ### Resolvers: what is linked in and what is not
 
 | Language | Backend | External requirement |
@@ -261,6 +267,16 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   function that contains it. Both conventions are what the accuracy suites assume.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
+- **A Go package qualifier** (`pkg.X` operand, `pkg.T` in a type) is a `read`
+  occurrence with detail `package`. The pass binds it only when go/types answers
+  with the declaring position of one of the file's import specs (the alias, else
+  the path literal), so a local that shadows a package gets no edge. The edge is a
+  `REFERENCES` to the MODULE, or to the import path's EXTERNAL_SYMBOL, classified
+  with the import's own origin. The import path literal is the `span` of the
+  structural `RESOLVES_TO`; `IMPORTS` stays unpositioned. Selector operands are
+  filtered by the alias or the gopls assumed name (`assumed_package_name`), so an
+  unaliased import whose package name differs from its last path element is missed
+  in expressions; types are not filtered.
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.

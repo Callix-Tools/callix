@@ -1,14 +1,14 @@
 {
   "files": {
     "authz/authz.go": {
-      "hash": "bb15d22c445c0c7b",
-      "nodes": 24,
-      "relations": 35
+      "hash": "7adc33cca35317c9",
+      "nodes": 25,
+      "relations": 36
     },
     "captcha/aliyun.go": {
-      "hash": "5a66a31e2cc50c2f",
-      "nodes": 37,
-      "relations": 62
+      "hash": "82e81f8230770121",
+      "nodes": 38,
+      "relations": 69
     },
     "captcha/default.go": {
       "hash": "fec8cee61328ebbe",
@@ -41,9 +41,9 @@
       "relations": 26
     },
     "certificate/account.go": {
-      "hash": "bd92eb294455829a",
-      "nodes": 22,
-      "relations": 36
+      "hash": "1834a21b3fdf1ea1",
+      "nodes": 23,
+      "relations": 42
     },
     "certificate/account_test.go": {
       "hash": "56ffd85c908696c1",
@@ -71,9 +71,9 @@
       "relations": 11
     },
     "conf/conf.go": {
-      "hash": "1c919fdad3f48d72",
-      "nodes": 23,
-      "relations": 36
+      "hash": "394f8c54785edc3e",
+      "nodes": 24,
+      "relations": 40
     },
     "conf/conf_quota.go": {
       "hash": "3d3c861ba9d5c4b9",
@@ -91,9 +91,9 @@
       "relations": 18
     },
     "controllers/account.go": {
-      "hash": "dccd8bfd9a8d8017",
-      "nodes": 55,
-      "relations": 99
+      "hash": "ed6ae6164168be12",
+      "nodes": 56,
+      "relations": 174
     },
     "controllers/adapter.go": {
       "hash": "c36f763a8d02cbf3",
@@ -466,9 +466,9 @@
       "relations": 14
     },
     "cred/argon2id.go": {
-      "hash": "c2e616f8abd40a9c",
-      "nodes": 11,
-      "relations": 12
+      "hash": "3de53cc496da8677",
+      "nodes": 12,
+      "relations": 22
     },
     "cred/bcrypt.go": {
       "hash": "18cb8a22ecfb15ec",
@@ -516,9 +516,9 @@
       "relations": 19
     },
     "deployment/deploy.go": {
-      "hash": "5c6b02969b7b0a63",
-      "nodes": 16,
-      "relations": 31
+      "hash": "5e69712f62855b3f",
+      "nodes": 17,
+      "relations": 33
     },
     "deployment/deploy_test.go": {
       "hash": "8ed9e2366e18682e",
@@ -526,9 +526,9 @@
       "relations": 11
     },
     "email/azure_acs.go": {
-      "hash": "3d297abe5839a6b4",
-      "nodes": 72,
-      "relations": 119
+      "hash": "a41a573b410cfb1e",
+      "nodes": 73,
+      "relations": 125
     },
     "email/custom_http.go": {
       "hash": "e251729f171026cb",
@@ -556,9 +556,9 @@
       "relations": 26
     },
     "faceId/aliyun.go": {
-      "hash": "bcade3a87cb5d38f",
-      "nodes": 18,
-      "relations": 31
+      "hash": "028b82be9ba3f49d",
+      "nodes": 19,
+      "relations": 36
     },
     "faceId/local_uniface.go": {
       "hash": "616ffc584c5b0293",
@@ -581,9 +581,9 @@
       "relations": 7
     },
     "form/auth.go": {
-      "hash": "dd573c710bc183b2",
-      "nodes": 53,
-      "relations": 101
+      "hash": "5e040266c54640d3",
+      "nodes": 54,
+      "relations": 103
     },
     "form/verification.go": {
       "hash": "63183c20c8262572",
@@ -596,9 +596,9 @@
       "relations": 32
     },
     "i18n/generate.go": {
-      "hash": "31c26cf6a2012ae6",
-      "nodes": 29,
-      "relations": 42
+      "hash": "6bf9437b0047e2a1",
+      "nodes": 30,
+      "relations": 46
     },
     "i18n/generate_test.go": {
       "hash": "7deeb8c01987f494",
@@ -611,9 +611,9 @@
       "relations": 34
     },
     "idp/adfs.go": {
-      "hash": "79b83af81b4bc83f",
-      "nodes": 34,
-      "relations": 63
+      "hash": "19ce0d226aef43a7",
+      "nodes": 35,
+      "relations": 96
     },
     "idp/alipay.go": {
       "hash": "3ba2a32180114eb2",
@@ -776,9 +776,9 @@
       "relations": 112
     },
     "idv/aliyun.go": {
-      "hash": "35a9a96ba37a10fd",
-      "nodes": 18,
-      "relations": 28
+      "hash": "91984bf357d8e22e",
+      "nodes": 19,
+      "relations": 31
     },
     "idv/jumio.go": {
       "hash": "1ae378147335c1a6",
@@ -791,9 +791,9 @@
       "relations": 11
     },
     "ip/ip.go": {
-      "hash": "f1c2f8f6795e09e8",
-      "nodes": 6,
-      "relations": 9
+      "hash": "00436ee9d66d05cd",
+      "nodes": 7,
+      "relations": 11
     },
     "ip/ip17mon.go": {
       "hash": "1c51d03b90412e76",
@@ -801,9 +801,9 @@
       "relations": 62
     },
     "ldap/server.go": {
-      "hash": "dd7d401b561f3c21",
-      "nodes": 33,
-      "relations": 50
+      "hash": "36f6fa893c7598b1",
+      "nodes": 34,
+      "relations": 53
     },
     "ldap/util.go": {
       "hash": "05c754fa43ba8324",
@@ -816,9 +816,9 @@
       "relations": 25
     },
     "log/agent_openclaw.go": {
-      "hash": "532440d8d6c64297",
-      "nodes": 26,
-      "relations": 29
+      "hash": "068a8c0e6f8074e1",
+      "nodes": 27,
+      "relations": 38
     },
     "log/casdoor_permission.go": {
       "hash": "64628b358afebac3",
@@ -861,19 +861,19 @@
       "relations": 48
     },
     "main.go": {
-      "hash": "61f9aecb06ddb331",
-      "nodes": 17,
-      "relations": 46
+      "hash": "9b104d84329aa503",
+      "nodes": 18,
+      "relations": 47
     },
     "mcp/util.go": {
-      "hash": "b9cbef37a3a1efef",
-      "nodes": 61,
-      "relations": 86
+      "hash": "628d5f9a80348784",
+      "nodes": 62,
+      "relations": 87
     },
     "mcpself/application.go": {
-      "hash": "121fe6500522129c",
-      "nodes": 22,
-      "relations": 29
+      "hash": "830c8add31660572",
+      "nodes": 23,
+      "relations": 34
     },
     "mcpself/auth.go": {
       "hash": "af163ccfb0220fc5",
@@ -896,9 +896,9 @@
       "relations": 28
     },
     "notification/bark.go": {
-      "hash": "78e597e9b3d3ff81",
-      "nodes": 5,
-      "relations": 8
+      "hash": "805c83c405c59f5d",
+      "nodes": 6,
+      "relations": 29
     },
     "notification/cucloud.go": {
       "hash": "01de34dcb92bc7e6",
@@ -1001,9 +1001,9 @@
       "relations": 35
     },
     "object/adapter.go": {
-      "hash": "183abe82b25ef308",
-      "nodes": 54,
-      "relations": 80
+      "hash": "87bf47e2643a8f80",
+      "nodes": 55,
+      "relations": 237
     },
     "object/adapter_safe.go": {
       "hash": "592d83d5c02ff904",
@@ -1786,9 +1786,9 @@
       "relations": 108
     },
     "pp/adyen.go": {
-      "hash": "a19dfdb853406aff",
-      "nodes": 29,
-      "relations": 42
+      "hash": "bba9f371e9236283",
+      "nodes": 30,
+      "relations": 57
     },
     "pp/airwallex.go": {
       "hash": "27f6c539e8ba2378",
@@ -1861,14 +1861,14 @@
       "relations": 50
     },
     "proxy/proxy.go": {
-      "hash": "e9d5fec87170d4ce",
-      "nodes": 17,
-      "relations": 32
+      "hash": "4885699b3fca832d",
+      "nodes": 18,
+      "relations": 33
     },
     "radius/server.go": {
-      "hash": "1a32e22a86c2f2c5",
-      "nodes": 25,
-      "relations": 45
+      "hash": "dec7ccffa9f6bd30",
+      "nodes": 26,
+      "relations": 48
     },
     "radius/server_test.go": {
       "hash": "3623f43ed4a8bb22",
@@ -1881,9 +1881,9 @@
       "relations": 27
     },
     "routers/authz_filter.go": {
-      "hash": "f4a05b7c1b07861f",
-      "nodes": 57,
-      "relations": 83
+      "hash": "3e680a879e93df8d",
+      "nodes": 58,
+      "relations": 98
     },
     "routers/auto_signin_filter.go": {
       "hash": "3123f90cddc1322b",
@@ -1956,9 +1956,9 @@
       "relations": 26
     },
     "rule/rule.go": {
-      "hash": "49ff48ead291c9c0",
-      "nodes": 16,
-      "relations": 27
+      "hash": "2ed9fd7028328cba",
+      "nodes": 17,
+      "relations": 34
     },
     "rule/rule_compound.go": {
       "hash": "e39508ea69638f81",
@@ -1991,9 +1991,9 @@
       "relations": 30
     },
     "scan/intranet_server.go": {
-      "hash": "eabf8399f313c017",
-      "nodes": 44,
-      "relations": 69
+      "hash": "1f8907156312cbcb",
+      "nodes": 45,
+      "relations": 73
     },
     "scan/provider.go": {
       "hash": "323e6e582eab3eec",
@@ -2011,9 +2011,9 @@
       "relations": 107
     },
     "scim/group_handler.go": {
-      "hash": "8c2ba3e75c4d9ed2",
-      "nodes": 58,
-      "relations": 71
+      "hash": "6eff1b1ce74586e4",
+      "nodes": 59,
+      "relations": 75
     },
     "scim/server.go": {
       "hash": "af50a6bd1008f942",
@@ -2031,9 +2031,9 @@
       "relations": 59
     },
     "service/oauth.go": {
-      "hash": "453325a82b78a8bb",
-      "nodes": 18,
-      "relations": 29
+      "hash": "fa907748b3075d7d",
+      "nodes": 19,
+      "relations": 32
     },
     "service/proxy.go": {
       "hash": "0117f36c3997d625",
@@ -2046,9 +2046,9 @@
       "relations": 51
     },
     "storage/aliyun_oss.go": {
-      "hash": "2e3052dff9b4fea9",
-      "nodes": 12,
-      "relations": 21
+      "hash": "51cd52d4c11aaba0",
+      "nodes": 13,
+      "relations": 33
     },
     "storage/aws_s3.go": {
       "hash": "2f4a476592c08b0a",
@@ -2106,9 +2106,9 @@
       "relations": 12
     },
     "sync/database.go": {
-      "hash": "e6b491649c4d3f00",
-      "nodes": 23,
-      "relations": 37
+      "hash": "6be9163fbe2bb062",
+      "nodes": 24,
+      "relations": 42
     },
     "sync/database_canal.go": {
       "hash": "b8104d92b3051a81",
@@ -2136,9 +2136,9 @@
       "relations": 19
     },
     "sync_v2/db.go": {
-      "hash": "c92ad8835a7acc76",
-      "nodes": 20,
-      "relations": 33
+      "hash": "9fc74c5d8e2f1e79",
+      "nodes": 21,
+      "relations": 38
     },
     "sync_v2/master.go": {
       "hash": "f349d3374ee56e56",
@@ -2156,9 +2156,9 @@
       "relations": 29
     },
     "util/casbin.go": {
-      "hash": "c775cecdc2dd1536",
-      "nodes": 10,
-      "relations": 11
+      "hash": "fec832b00155e186",
+      "nodes": 11,
+      "relations": 36
     },
     "util/cert.go": {
       "hash": "28a55eb38fc8ab11",
@@ -2281,9 +2281,9 @@
       "relations": 3
     },
     "xlsx/xlsx.go": {
-      "hash": "db9d708c2ca80e6f",
-      "nodes": 4,
-      "relations": 5
+      "hash": "9c86afb13f491aaa",
+      "nodes": 5,
+      "relations": 7
     },
     "xlsx/xlsx_test.go": {
       "hash": "52bf1492ad005b24",
@@ -2322,11 +2322,11 @@
   "ref": "v3.98.0",
   "resolution": {
     "metrics": {
-      "external": 17994,
-      "internal": 21576,
-      "queries": 53675,
-      "resolved": 53572,
-      "unresolved": 103
+      "external": 24356,
+      "internal": 28484,
+      "queries": 67011,
+      "resolved": 66870,
+      "unresolved": 141
     },
     "relations": {
       "calls": 19354,
@@ -2335,10 +2335,10 @@
       "declares": 16152,
       "depends_on": 309,
       "exposes": 2,
-      "has_type": 3134,
+      "has_type": 6446,
       "imports": 2394,
       "inherits_from": 28,
-      "references": 17058,
+      "references": 27016,
       "resolves_to": 2394
     },
     "status": "ok"

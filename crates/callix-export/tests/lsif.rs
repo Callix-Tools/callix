@@ -218,3 +218,13 @@ fn a_hover_carries_what_the_author_wrote() {
     // Undocumented: the kind and name alone.
     assert!(contents.iter().any(|c| c[0]["value"] == "function a.g" && c.as_array().unwrap().len() == 1));
 }
+
+#[test]
+fn a_go_package_graph_is_valid_lsif() {
+    let graph = Graph::from_json(common::GO_PACKAGE_GRAPH).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let elements = check_lsif(&String::from_utf8(out).unwrap());
+    // the package definition, the import path, the qualifier and `fmt`
+    assert!(labelled(&elements, "range").len() >= 4);
+}

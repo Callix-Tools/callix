@@ -25,6 +25,10 @@ A `MODULE` here is a **Go package** — a directory — and its qualified name i
 the import path. That is deliberate: an internal import can then be bound by
 looking the path up directly, with no name mangling in between.
 
+A package spans several files, so its `MODULE` has no `span`: it carries the
+`file_path` of its first non-test file and a `name_span` at that file's `package`
+clause, which is what lets an index format define it.
+
 ```
 module github.com/acme/svc     →  MODULE github.com/acme/svc
 internal/store/store.go        →  MODULE github.com/acme/svc/internal/store
@@ -47,6 +51,16 @@ constraints), `var` and `const` types, and function bodies (composite literals,
 closures, assertions, type switches, `make`/`new`, type arguments). Predeclared
 types, type parameters, types declared inside a function and the generic of an
 explicitly instantiated call `F[T](x)` get no edge.
+
+Package names are references too. In `util.Double(2)` or `t util.T`, the
+qualifier `util` becomes a `REFERENCES` edge to the package's `MODULE` (or, for a
+standard-library or third-party import, to the import's external symbol), with the
+span of the qualifier. The import path literal is the `span` of the import's
+`RESOLVES_TO`. A qualifier is accepted only when the type checker answers with the
+position of an import, so a local variable that shadows a package gets no edge.
+In expressions the candidate names are the import aliases and the name Go assumes
+from the path (`gopkg.in/yaml.v3` is `yaml`); an unaliased package that declares a
+different name is missed there. Dot and blank imports bind no qualifier.
 
 ## Dependency classification
 

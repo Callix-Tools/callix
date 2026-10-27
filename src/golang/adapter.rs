@@ -28,18 +28,22 @@ use crate::python::ResolvedRef;
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
+use crate::span::Span;
 use crate::span_index::SpanIndex;
 use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
 use super::deps::{go_roots, is_go, module_path, required_modules};
 use super::resolver::GoResolver;
-use super::visitor::GoExtractor;
+use super::visitor::{GoExtractor, ImportSite};
 
 const GO_EXTENSIONS: [&str; 1] = [".go"];
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
-type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
+/// `(file, line, col)` of the position go/types answers for a package name ->
+/// `(id of the node the import binds to, origin of the import)`.
+type ImportSites = HashMap<(String, u32, u32), (String, String)>;
+type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>, ImportSites);
 
 /// `testdata` is invisible to the Go toolchain at every depth, and its
 /// contents are frequently not even valid Go — they are fixtures for a parser
@@ -86,6 +90,7 @@ fn ensure_package(
     pkg_qname: &str,
     project_id: &str,
     packages: &mut IndexMap<String, String>,
+    file_rel: Option<String>,
 ) -> PyResult<String> {
     if let Some(id) = packages.get(pkg_qname) {
         return Ok(id.clone());
@@ -96,7 +101,9 @@ fn ensure_package(
         kind: NodeKind::Module,
         qualified_name: pkg_qname.to_string(),
         name: pkg_qname.rsplit('/').next().unwrap_or(pkg_qname).to_string(),
-        file_path: None,
+        // The first non-test file of the package (chosen from the paths before the
+        // walk). `span` stays None: a package spans several files.
+        file_path: file_rel,
         span: None,
         metadata: PyDict::new(py).unbind(),
     };
@@ -104,6 +111,45 @@ fn ensure_package(
     push_relation(py, graph, project_id.to_string(), id.clone(), RelationKind::Contains)?;
     packages.insert(pkg_qname.to_string(), id.clone());
     Ok(id)
+}
+
+/// A file's path relative to the project root (else the Go root).
+fn file_rel_of(project_root: &Path, go_root: &Path, file: &Path) -> String {
+    file.strip_prefix(project_root)
+        .or_else(|_| file.strip_prefix(go_root))
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_else(|_| file.to_string_lossy().into_owned())
+}
+
+fn is_test_file(file: &Path) -> bool {
+    file.file_name().is_some_and(|n| n.to_string_lossy().ends_with("_test.go"))
+}
+
+/// The file each package is placed at: its first file in walk order (which is
+/// sorted), preferring the first that is not a `_test.go`, so that an external
+/// test package does not win. Decided from the paths alone.
+fn placement_files(go_root: &Path, files: &[PathBuf], module: &str) -> HashMap<String, PathBuf> {
+    let mut placed: HashMap<String, PathBuf> = HashMap::new();
+    for file in files {
+        let qname = package_qname(file, go_root, module);
+        let replace = match placed.get(&qname) {
+            None => true,
+            Some(current) => is_test_file(current) && !is_test_file(file),
+        };
+        if replace {
+            placed.insert(qname, file.clone());
+        }
+    }
+    placed
+}
+
+/// The span of the identifier in a file's `package` clause.
+fn package_name_span(root: tree_sitter::Node<'_>) -> Option<Span> {
+    let clause = crate::ts::children(root).into_iter().find(|n| n.kind() == "package_clause")?;
+    crate::ts::children(clause)
+        .into_iter()
+        .find(|n| n.kind() == "package_identifier")
+        .map(crate::ts::span)
 }
 
 fn ensure_file(
@@ -115,11 +161,7 @@ fn ensure_file(
     file: &Path,
     module_id: &str,
 ) -> PyResult<(String, String)> {
-    let file_rel = file
-        .strip_prefix(project_root)
-        .or_else(|_| file.strip_prefix(go_root))
-        .map(|p| p.to_string_lossy().into_owned())
-        .unwrap_or_else(|_| file.to_string_lossy().into_owned());
+    let file_rel = file_rel_of(project_root, go_root, file);
 
     let file_id = node_id(project, &file_rel, NodeKind::File.as_str());
     if !graph.has_node(&file_id) {
@@ -189,6 +231,22 @@ fn push_relation(
     Ok(())
 }
 
+/// A structural edge that records where it was observed.
+fn push_relation_with_span(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    span: Span,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    let relation = Relation { source_id, target_id, kind, metadata: metadata.unbind() };
+    graph.push_relation(Py::new(py, relation)?);
+    Ok(())
+}
+
 /// Structure and imports for one Go module root.
 ///
 /// `declared` overrides the module paths read from `go.mod`; `None` means no
@@ -235,11 +293,17 @@ fn build_root_structure(
     let mut packages: IndexMap<String, String> = IndexMap::new();
     let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
-    let mut internal_imports: Vec<(String, String, String)> = Vec::new();
+    let mut internal_imports: Vec<(String, String, String, Span)> = Vec::new();
+    let mut pending_sites: Vec<(String, ImportSite)> = Vec::new();
+    let placed_files = placement_files(go_root, files, &module);
 
     for file in files {
         let pkg_qname = package_qname(file, go_root, &module);
-        let module_id = ensure_package(py, graph, &project, &pkg_qname, &project_id, &mut packages)?;
+        let placed = placed_files.get(&pkg_qname);
+        let placed_rel = placed.map(|p| file_rel_of(project_root, go_root, p));
+        let module_id = ensure_package(
+            py, graph, &project, &pkg_qname, &project_id, &mut packages, placed_rel,
+        )?;
         let (file_id, file_rel) =
             ensure_file(py, graph, &project, project_root, go_root, file, &module_id)?;
 
@@ -260,13 +324,22 @@ fn build_root_structure(
             &required,
         );
         extractor.extract(tree.root_node())?;
-        let (file_occurrences, file_imports) = extractor.into_parts();
+        let (file_occurrences, file_imports, file_sites) = extractor.into_parts();
+
+        // The package's name is placed at the package clause of its placement file.
+        if placed.is_some_and(|p| p == file)
+            && let Some(span) = package_name_span(tree.root_node())
+            && let Some(node) = graph.node_map().get(&module_id)
+        {
+            node.get().metadata.bind(py).set_item("name_span", span)?;
+        }
 
         let abs_path = file.to_string_lossy().into_owned();
         for occurrence in file_occurrences {
             occurrences.push((abs_path.clone(), occurrence));
         }
         internal_imports.extend(file_imports);
+        pending_sites.extend(file_sites.into_iter().map(|site| (file_rel.clone(), site)));
 
         let mut found = extract_boundaries(tree.root_node(), &source);
         found.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
@@ -279,16 +352,38 @@ fn build_root_structure(
     // equals the package's qualified name, so a direct lookup suffices.
     // Anything not found falls through to an EXTERNAL_SYMBOL so the edge is
     // never lost.
-    for (import_id, import_path, importer_file) in internal_imports {
+    for (import_id, import_path, importer_file, path_span) in internal_imports {
         let target_id = match packages.get(&import_path) {
             Some(id) => id.clone(),
             None => ensure_external_symbol(py, graph, &project, &import_path, "internal")?,
         };
         push_relation(py, graph, importer_file, target_id.clone(), RelationKind::Imports)?;
-        push_relation(py, graph, import_id, target_id, RelationKind::ResolvesTo)?;
+        push_relation_with_span(
+            py,
+            graph,
+            import_id,
+            target_id,
+            RelationKind::ResolvesTo,
+            path_span,
+        )?;
     }
 
-    Ok((project, occurrences, boundaries))
+    // Where each package name is declared (an alias, else the path literal), and
+    // the node it binds to: the same node the import edges above point at.
+    let mut import_sites = ImportSites::new();
+    for (file_rel, site) in pending_sites {
+        let target_id = if site.origin == "internal" {
+            match packages.get(&site.path) {
+                Some(id) => id.clone(),
+                None => ensure_external_symbol(py, graph, &project, &site.path, "internal")?,
+            }
+        } else {
+            node_id(&project, &site.path, NodeKind::ExternalSymbol.as_str())
+        };
+        import_sites.insert((file_rel, site.line, site.col), (target_id, site.origin.to_string()));
+    }
+
+    Ok((project, occurrences, boundaries, import_sites))
 }
 
 /// A resolver's absolute path → a path relative to the project root.
@@ -440,7 +535,7 @@ impl GoAdapter {
                 root_files.iter().flat_map(|(_, files)| files.clone()).collect();
             self.resolver.prepare(py, &project_root, &all_files)?;
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
-            for (project, occurrences, _boundaries) in &built {
+            for (project, occurrences, _boundaries, import_sites) in &built {
                 let pass = resolve_pass(
                     py,
                     &self.resolver,
@@ -449,6 +544,7 @@ impl GoAdapter {
                     project,
                     &project_root,
                     occurrences,
+                    import_sites,
                 )?;
                 metrics.merge(&pass);
             }
@@ -456,7 +552,7 @@ impl GoAdapter {
         }
 
         // Phase 3 — boundaries, after resolution.
-        for (_project, _occurrences, boundaries) in &built {
+        for (_project, _occurrences, boundaries, _sites) in &built {
             apply_boundaries(py, &mut graph, boundaries)?;
         }
 
@@ -482,6 +578,7 @@ impl GoAdapter {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn resolve_pass(
     py: Python<'_>,
     resolver: &ResolverSlot<GoResolver>,
@@ -490,6 +587,7 @@ fn resolve_pass(
     project: &str,
     project_root: &Path,
     occurrences: &[(String, OccurrenceRef)],
+    import_sites: &ImportSites,
 ) -> PyResult<ResolverMetrics> {
     let mut metrics = ResolverMetrics {
         queries: occurrences.len() as u64,
@@ -510,6 +608,50 @@ fn resolve_pass(
             continue;
         };
         metrics.resolved += 1;
+        // A package qualifier (`util` in `util.Double`). go/types answers a package
+        // name with the position of its import (the alias, else the path literal);
+        // anything else - a local that shadows the package, a cgo oddity - is not
+        // a use of the package and gets no edge. The origin comes from the import,
+        // not from the answer, which always lies in the importing file.
+        if occurrence.detail.as_deref() == Some("package") {
+            let Some(file_path) = reference.file_path.as_deref() else {
+                continue;
+            };
+            let key = (relative_to(file_path, project_root), reference.line, reference.col);
+            let Some((target, site_origin)) = import_sites.get(&key) else {
+                continue;
+            };
+            let bound = match graph.node_kind(target) {
+                Some(NodeKind::Module) => Some(NodeKind::Module),
+                _ => None,
+            };
+            let resolution = Resolution::classify(RelationKind::References, bound, site_origin);
+            if bound.is_some() {
+                metrics.internal += 1;
+            } else {
+                metrics.external += 1;
+            }
+            if matches!(resolution, Resolution::Unlocated) {
+                metrics.unlocated += 1;
+            }
+            let metadata = PyDict::new(py);
+            metadata.set_item("span", occurrence.span)?;
+            metadata.set_item(resolution::KEY, resolution.as_str())?;
+            metadata.set_item("access", "read")?;
+            graph.note_site_file(
+                &occurrence.enclosing_id,
+                &relative_to(path, project_root),
+                &metadata,
+            )?;
+            let relation = Relation {
+                source_id: occurrence.enclosing_id.clone(),
+                target_id: target.clone(),
+                kind: RelationKind::References,
+                metadata: metadata.unbind(),
+            };
+            graph.push_relation(Py::new(py, relation)?);
+            continue;
+        }
         let is_alias = occurrence.role == "alias";
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,

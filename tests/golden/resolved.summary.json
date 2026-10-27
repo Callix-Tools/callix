@@ -200,7 +200,7 @@
       "calls": 9,
       "contains": 4,
       "declares": 26,
-      "has_type": 13,
+      "has_type": 15,
       "imports": 2,
       "inherits_from": 1,
       "references": 3,
@@ -208,9 +208,9 @@
     },
     "resolver": {
       "external": 13,
-      "internal": 13,
-      "queries": 28,
-      "resolved": 28,
+      "internal": 15,
+      "queries": 30,
+      "resolved": 30,
       "unresolved": 0
     },
     "resolver_status": "ok"

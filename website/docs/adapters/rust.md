@@ -43,7 +43,15 @@ statics, `impl` blocks with their methods, and `use` declarations.
 `impl` blocks are dispatched in a **second pass**. Rust does not require a type
 to be declared above its `impl`, so an `impl Trait for Type` written before
 `struct Type` would otherwise find no type node and lose the `base`
-occurrence that becomes `INHERITS_FROM`.
+occurrence that becomes `INHERITS_FROM`. When `Type` is not declared in the
+project, the `INHERITS_FROM` comes from the file instead.
+
+Every type name in a type position becomes a `HAS_TYPE`: generic arguments
+(`Result<Matcher, Error>`), bounds and `where` clauses, `let`, alias, cast and
+closure types, tuple-struct fields and enum payloads. The self type of an `impl`
+and the generic arguments of its trait are `HAS_TYPE` edges from the file, not
+from a module, because a module has no file of its own to place the edge in.
+The name a generic parameter declares (`T` in `<T: Bound>`) is not a use.
 
 ## Dependency classification
 

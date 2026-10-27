@@ -114,9 +114,9 @@ def test_bare_annotations_become_one_has_type_edge_each(tmp_path):
 
     for name in BARE:
         assert counts[name] == 1, (name, dict(counts))
-    # Wrapped forms are not counted twice.
+    # Each type name is one edge per site: `&Foo` is one, `Option<Foo>` is two.
     assert counts["rust01::wrapped.r"] == 1, dict(counts)
-    assert counts["rust01::wrapped.o"] == 1, dict(counts)
+    assert counts["rust01::wrapped.o"] == 2, dict(counts)
 
 
 @needs_rust

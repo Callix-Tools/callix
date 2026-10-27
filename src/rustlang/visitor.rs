@@ -4,6 +4,12 @@
 //! require a type or trait to be declared above its `impl`, and without
 //! deferring, an `impl Trait for Type` written above `struct Type` would find
 //! no type node and lose the `base` occurrence.
+//!
+//! Every type name under a type (a generic argument, an `impl` self type, a bound,
+//! a `where` clause, a `let`, alias, cast or closure type, a tuple field) is an
+//! `annotation` occurrence. The header of an `impl` is enclosed by the FILE node,
+//! never the MODULE: a Rust MODULE has no `file_path`, so an edge from it could not
+//! be placed by the LSIF/SCIP exporters.
 
 use std::collections::{HashMap, HashSet};
 
@@ -114,6 +120,9 @@ pub struct RustExtractor<'a> {
     internal_imports: Vec<(String, String, String, String)>,
     /// The `macro_rules!` of this file, by name.
     macros: HashMap<String, super::macros::MacroRules>,
+    /// Start byte of every type identifier already recorded as an annotation or as
+    /// an impl's `base`: one site never yields two occurrences.
+    annotated: HashSet<usize>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -142,6 +151,7 @@ impl<'a> RustExtractor<'a> {
             occurrences: Vec::new(),
             internal_imports: Vec::new(),
             macros: HashMap::new(),
+            annotated: HashSet::new(),
         }
     }
 
@@ -182,6 +192,7 @@ impl<'a> RustExtractor<'a> {
                         && let Some(name_node) = child.child_by_field_name("name")
                     {
                         let qname = format!("{}::{}", self.module_qname, self.text(name_node));
+                        self.record_generics(child, &id);
                         self.collect_fields(child, &qname, &id)?;
                         if child.kind() == "trait_item" {
                             self.collect_trait_methods(child, &qname, &id)?;
@@ -189,7 +200,12 @@ impl<'a> RustExtractor<'a> {
                     }
                 }
                 "type_item" => {
-                    self.declare_named(child, NodeKind::TypeAlias)?;
+                    if let Some(id) = self.declare_named(child, NodeKind::TypeAlias)? {
+                        self.record_generics(child, &id);
+                        if let Some(type_node) = child.child_by_field_name("type") {
+                            self.record_annotation(type_node, &id);
+                        }
+                    }
                 }
                 "const_item" | "static_item" => {
                     if let Some(id) = self.declare_named(child, NodeKind::Variable)?
@@ -440,15 +456,120 @@ impl<'a> RustExtractor<'a> {
         }
     }
 
-    /// An `annotation` for the leading identifier of a type.
+    /// An `annotation` for every type name under a type, once per site.
     ///
-    /// `&dyn Labeled`, `Vec<Engine>` and `store::Engine` all reduce to the
-    /// leftmost `type_identifier`, which is the name the resolver can bind. A bare
-    /// `Foo` is its own leftmost identifier.
+    /// `&dyn Labeled` gives `Labeled`, `Result<Matcher, Error>` gives all three
+    /// names, `store::Engine` gives `Engine` (the last segment of a path: its
+    /// earlier segments are plain identifiers). A bare `Foo` is its own
+    /// `type_identifier`. A site already recorded is skipped.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
-        let idents = walk_type(type_node, "type_identifier");
-        if let Some(name_node) = leftmost(&idents) {
-            self.add_occurrence("annotation", name_node, enclosing_id);
+        let mut idents = walk_type(type_node, "type_identifier");
+        idents.sort_by_key(|n| n.start_byte());
+        for name_node in idents {
+            if self.annotated.insert(name_node.start_byte()) {
+                self.add_occurrence("annotation", name_node, enclosing_id);
+            }
+        }
+    }
+
+    /// The type names a generic list, a bounds list or a `where` clause uses.
+    ///
+    /// The name of a type parameter is its declaration, not a use, so only the
+    /// bounds and the default of a `type_parameter` are recorded, and the type of
+    /// a `const_parameter`. Lifetimes are skipped.
+    fn record_generics(&mut self, item: TsNode<'_>, enclosing_id: &str) {
+        if let Some(params) = item.child_by_field_name("type_parameters") {
+            for param in ts::children(params) {
+                match param.kind() {
+                    "type_parameter" => {
+                        for field in ["bounds", "default_type"] {
+                            if let Some(node) = param.child_by_field_name(field) {
+                                self.record_annotation(node, enclosing_id);
+                            }
+                        }
+                    }
+                    "const_parameter" => {
+                        if let Some(node) = param.child_by_field_name("type") {
+                            self.record_annotation(node, enclosing_id);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if let Some(bounds) = item.child_by_field_name("bounds") {
+            self.record_annotation(bounds, enclosing_id);
+        }
+        for child in ts::children(item) {
+            if child.kind() == "where_clause" {
+                self.record_annotation(child, enclosing_id);
+            }
+        }
+    }
+
+    /// The types written inside a function body: `let x: T`, `e as T`, and a
+    /// closure's parameter and return types. Nested `fn` items are not entered;
+    /// they are nodes of their own. Closures belong to the enclosing function.
+    fn collect_body_types(&mut self, body: TsNode<'_>, enclosing_id: &str) {
+        for node in owned_descendants(body) {
+            match node.kind() {
+                "let_declaration" | "type_cast_expression" => {
+                    if let Some(type_node) = node.child_by_field_name("type") {
+                        self.record_annotation(type_node, enclosing_id);
+                    }
+                }
+                "closure_expression" => {
+                    if let Some(params) = node.child_by_field_name("parameters") {
+                        for param in ts::children(params) {
+                            if param.kind() == "parameter"
+                                && let Some(type_node) = param.child_by_field_name("type")
+                            {
+                                self.record_annotation(type_node, enclosing_id);
+                            }
+                        }
+                    }
+                    if let Some(type_node) = node.child_by_field_name("return_type") {
+                        self.record_annotation(type_node, enclosing_id);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// The types of a tuple struct's (or tuple variant's) fields.
+    fn record_tuple_field_types(&mut self, list: TsNode<'_>, enclosing_id: &str) {
+        let mut cursor = list.walk();
+        let types: Vec<TsNode<'_>> = list.children_by_field_name("type", &mut cursor).collect();
+        for type_node in types {
+            self.record_annotation(type_node, enclosing_id);
+        }
+    }
+
+    /// The payload types of every variant of an enum, under the enum's node.
+    fn record_enum_payload_types(&mut self, variants: TsNode<'_>, enclosing_id: &str) {
+        for variant in ts::children(variants) {
+            if variant.kind() != "enum_variant" {
+                continue;
+            }
+            let Some(body) = variant.child_by_field_name("body") else {
+                continue;
+            };
+            match body.kind() {
+                "ordered_field_declaration_list" => {
+                    self.record_tuple_field_types(body, enclosing_id);
+                }
+                "field_declaration_list" => {
+                    for field in ts::children(body) {
+                        if field.kind() == "field_declaration"
+                            && let Some(type_node) = field.child_by_field_name("type")
+                        {
+                            self.record_annotation(type_node, enclosing_id);
+                        }
+                    }
+                }
+                _ => {}
+            }
         }
     }
 
@@ -515,6 +636,14 @@ impl<'a> RustExtractor<'a> {
         let Some(body) = type_node.child_by_field_name("body") else {
             return Ok(());
         };
+        if type_node.kind() == "enum_item" {
+            self.record_enum_payload_types(body, type_id);
+            return Ok(());
+        }
+        if body.kind() == "ordered_field_declaration_list" {
+            self.record_tuple_field_types(body, type_id);
+            return Ok(());
+        }
         if body.kind() != "field_declaration_list" {
             return Ok(());
         }
@@ -552,6 +681,10 @@ impl<'a> RustExtractor<'a> {
             return Ok(());
         };
         for item in ts::children(body) {
+            if item.kind() == "associated_type" {
+                self.record_generics(item, trait_id);
+                continue;
+            }
             if !matches!(item.kind(), "function_item" | "function_signature_item") {
                 continue;
             }
@@ -585,8 +718,12 @@ impl<'a> RustExtractor<'a> {
         id: &str,
     ) -> PyResult<()> {
         self.collect_parameters(node, qname, id)?;
+        self.record_generics(node, id);
         if let Some(return_type) = node.child_by_field_name("return_type") {
             self.record_annotation(return_type, id);
+        }
+        if let Some(body) = node.child_by_field_name("body") {
+            self.collect_body_types(body, id);
         }
         self.collect_calls(node, id);
         self.collect_references(node, id);
@@ -792,11 +929,25 @@ impl<'a> RustExtractor<'a> {
 
     fn on_impl_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let type_name = self.impl_type_name(node);
+        // The trait first: its leading name is the `base`, already marked as seen
+        // when the rest of the header is annotated.
         self.collect_impl_trait(node, &type_name)?;
+        let file_id = self.file_id;
+        if let Some(type_node) = node.child_by_field_name("type") {
+            self.record_annotation(type_node, file_id);
+        }
+        self.record_generics(node, file_id);
         let Some(body) = node.child_by_field_name("body") else {
             return Ok(());
         };
         for item in ts::children(body) {
+            if item.kind() == "type_item" {
+                self.record_generics(item, file_id);
+                if let Some(type_node) = item.child_by_field_name("type") {
+                    self.record_annotation(type_node, file_id);
+                }
+                continue;
+            }
             if item.kind() != "function_item" {
                 continue;
             }
@@ -818,6 +969,8 @@ impl<'a> RustExtractor<'a> {
 
     /// `impl Trait for Type` as a `base` occurrence.
     ///
+    /// The base is enclosed by the type's CLASS when the project declares it, else by the FILE.
+    ///
     /// Rust declares this relationship on a separate `impl` rather than on the
     /// type itself (unlike Python's and Go's base lists), so the implementing
     /// type's id has to be recomputed here instead of reused from
@@ -826,18 +979,24 @@ impl<'a> RustExtractor<'a> {
         let Some(trait_node) = impl_node.child_by_field_name("trait") else {
             return Ok(());
         };
-        if type_name.is_empty() {
-            return Ok(());
-        }
         let idents = walk_type(trait_node, "type_identifier");
         let trait_name_node = leftmost(&idents).unwrap_or(trait_node);
 
-        let type_qname = format!("{}::{type_name}", self.module_qname);
-        let type_id = node_id(self.project_name, &type_qname, NodeKind::Class.as_str());
-        if !self.graph.has_node(&type_id) {
-            return Ok(());
+        // The implementing type's class when the project declares it; otherwise
+        // the file, so `impl Trait for External` keeps its `base`.
+        let mut enclosing = self.file_id.to_string();
+        if !type_name.is_empty() {
+            let type_qname = format!("{}::{type_name}", self.module_qname);
+            let type_id = node_id(self.project_name, &type_qname, NodeKind::Class.as_str());
+            if self.graph.has_node(&type_id) {
+                enclosing = type_id;
+            }
         }
-        self.add_occurrence("base", trait_name_node, &type_id);
+        self.annotated.insert(trait_name_node.start_byte());
+        self.add_occurrence("base", trait_name_node, &enclosing);
+        // The trait's generic arguments (`From<Matcher>`) are uses of types.
+        let file_id = self.file_id;
+        self.record_annotation(trait_node, file_id);
         Ok(())
     }
 

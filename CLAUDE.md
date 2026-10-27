@@ -353,6 +353,7 @@ Things that are easy to get wrong:
   finds the repo's workspace from inside the fixture, refuses it, and
   rust-analyzer resolves nothing — as a quiet `unavailable`, which the golden run
   reports as a mismatch only when rust-analyzer is installed.
+- **A Rust annotation is every type name under the type**, the last segment of a path, once per site (`annotated` in `src/rustlang/visitor.rs`), and never the declaring name of a generic parameter. `Result<A, B>`, bounds, `where` clauses, `let`/alias/cast/closure types, tuple fields and enum payloads all count. An `impl` header's annotations, and the `base` of an `impl Trait for T` whose `T` is not a project class, are enclosed by the **FILE**, never the MODULE: a Rust MODULE has no `file_path`, so `note_site_file` records no `metadata["file"]` and `crates/callix-export/src/index.rs` drops an edge it cannot place.
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.

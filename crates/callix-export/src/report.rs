@@ -227,7 +227,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
              the calls in macro arguments are found and a `macro_rules!` of the same file is \
              expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
-             calls (`Drop`, operators, `for` over an iterator) are not edges",
+             calls (`Drop`, operators, `for` over an iterator) are not edges; every type name in a \
+             signature, field, bound or `where` clause, `let`, alias, cast, closure or `impl` header \
+             is a type annotation, and the self type and trait of an `impl` (and the trait of an \
+             impl for a type outside the project) are recorded on the file",
         ),
         "php" => (
             "symbol table, by names",

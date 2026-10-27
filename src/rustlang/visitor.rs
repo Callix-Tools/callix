@@ -10,6 +10,10 @@
 //! `annotation` occurrence. The header of an `impl` is enclosed by the FILE node,
 //! never the MODULE: a Rust MODULE has no `file_path`, so an edge from it could not
 //! be placed by the LSIF/SCIP exporters.
+//!
+//! Every segment of a path before the last (`Foo` in `Foo::new()`, `inner`, `crate`,
+//! `super`, the `crate` of `pub(crate)`) is a `read` occurrence, never an annotation:
+//! a module is not a type. `self` and primitive qualifiers are not recorded.
 
 use std::collections::{HashMap, HashSet};
 
@@ -71,6 +75,64 @@ fn callee_name<'tree>(call: TsNode<'tree>) -> Option<TsNode<'tree>> {
     call.child_by_field_name("function").and_then(plain_name)
 }
 
+/// Primitive type names: `u8::MAX` and `str::len` qualify with a type rust-analyzer
+/// has no definition for, so no query is made for them.
+const PRIMITIVES: [&str; 17] = [
+    "bool", "char", "str", "u8", "u16", "u32", "u64", "u128", "usize", "i8", "i16", "i32",
+    "i64", "i128", "isize", "f32", "f64",
+];
+
+/// The segment a path's `path` child ends in, when it is a name rust-analyzer can answer.
+fn prefix_segment<'tree>(path: TsNode<'tree>, source: &[u8]) -> Option<TsNode<'tree>> {
+    match path.kind() {
+        "identifier" | "type_identifier" => {
+            let name = ts::text(path, source);
+            if PRIMITIVES.contains(&name.as_ref()) {
+                None
+            } else {
+                Some(path)
+            }
+        }
+        "crate" | "super" => Some(path),
+        "scoped_identifier" | "scoped_type_identifier" => path.child_by_field_name("name"),
+        "generic_type" | "generic_type_with_turbofish" => path
+            .child_by_field_name("type")
+            .and_then(|inner| prefix_segment(inner, source)),
+        // `self`, `<T as Tr>::`, a macro metavariable: no answer.
+        _ => None,
+    }
+}
+
+/// The last segment of the `path` of every `scoped_identifier` / `scoped_type_identifier`
+/// at or under `node` (an outer path's own prefix is found when the walk reaches the
+/// inner path). Sorted by start byte, without repeats. The walk does not enter nested
+/// functions (they are nodes of their own), `use` declarations, visibility modifiers
+/// or `macro_rules!` definitions.
+fn path_prefix_segments<'tree>(node: TsNode<'tree>, source: &[u8]) -> Vec<TsNode<'tree>> {
+    let mut out: Vec<TsNode<'tree>> = Vec::new();
+    let mut stack = vec![node];
+    while let Some(current) = stack.pop() {
+        if current != node
+            && matches!(
+                current.kind(),
+                "function_item" | "use_declaration" | "visibility_modifier" | "macro_definition"
+            )
+        {
+            continue;
+        }
+        if matches!(current.kind(), "scoped_identifier" | "scoped_type_identifier")
+            && let Some(path) = current.child_by_field_name("path")
+            && let Some(segment) = prefix_segment(path, source)
+        {
+            out.push(segment);
+        }
+        stack.extend(ts::children(current));
+    }
+    out.sort_by_key(|n| n.start_byte());
+    out.dedup_by_key(|n| n.start_byte());
+    out
+}
+
 /// A scope's descendants, not entering the functions declared inside it: those
 /// are nodes of their own and own what they call.
 fn owned_descendants<'tree>(scope: TsNode<'tree>) -> Vec<TsNode<'tree>> {
@@ -120,9 +182,10 @@ pub struct RustExtractor<'a> {
     internal_imports: Vec<(String, String, String, String)>,
     /// The `macro_rules!` of this file, by name.
     macros: HashMap<String, super::macros::MacroRules>,
-    /// Start byte of every type identifier already recorded as an annotation or as
-    /// an impl's `base`: one site never yields two occurrences.
-    annotated: HashSet<usize>,
+    /// Start byte of every identifier already recorded as an annotation, an impl's `base` or a path prefix: one site never yields two occurrences.
+    recorded: HashSet<usize>,
+    /// `(qualified name, name span)` of every inline `mod foo { ... }` with a body.
+    inline_modules: Vec<(String, crate::span::Span)>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -151,13 +214,20 @@ impl<'a> RustExtractor<'a> {
             occurrences: Vec::new(),
             internal_imports: Vec::new(),
             macros: HashMap::new(),
-            annotated: HashSet::new(),
+            recorded: HashSet::new(),
+            inline_modules: Vec::new(),
         }
     }
 
     #[allow(clippy::type_complexity)]
-    pub fn into_parts(self) -> (Vec<OccurrenceRef>, Vec<(String, String, String, String)>) {
-        (self.occurrences, self.internal_imports)
+    pub fn into_parts(
+        self,
+    ) -> (
+        Vec<OccurrenceRef>,
+        Vec<(String, String, String, String)>,
+        Vec<(String, crate::span::Span)>,
+    ) {
+        (self.occurrences, self.internal_imports, self.inline_modules)
     }
 
     fn text(&self, node: TsNode<'_>) -> String {
@@ -229,7 +299,11 @@ impl<'a> RustExtractor<'a> {
     /// Without this, everything inside an inline module (idiomatic Rust, e.g.
     /// `#[cfg(test)] mod tests { ... }`) would be silently dropped. A bodyless
     /// `mod foo;` has nothing to walk.
+    /// An inline module is reported through `into_parts`, so the adapter can make its MODULE.
     fn on_mod_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        // A Rust MODULE has no file_path: the visibility is enclosed by the FILE.
+        let file_id = self.file_id;
+        self.record_visibility(node, file_id);
         let (Some(name_node), Some(body)) = (
             node.child_by_field_name("name"),
             node.child_by_field_name("body"),
@@ -237,6 +311,7 @@ impl<'a> RustExtractor<'a> {
             return Ok(());
         };
         let inner = format!("{}::{}", self.module_qname, self.text(name_node));
+        self.inline_modules.push((inner.clone(), ts::span(name_node)));
         let outer = std::mem::replace(&mut self.module_qname, inner);
         let result = self.dispatch(body);
         self.module_qname = outer;
@@ -252,6 +327,8 @@ impl<'a> RustExtractor<'a> {
         name_node: TsNode<'_>,
     ) -> PyResult<String> {
         let id = node_id(self.project_name, qname, kind.as_str());
+        // Per site, not per node: a second declaration still has its own visibility.
+        self.record_visibility(full_node, &id);
         if self.graph.has_node(&id) {
             return Ok(id);
         }
@@ -305,6 +382,46 @@ impl<'a> RustExtractor<'a> {
             span,
             detail,
         });
+    }
+
+    /// A `read` for every segment of a path before the last one, under `scope`, once
+    /// per site. A qualifier is never an `annotation`: a module is not a type.
+    fn record_path_prefixes(&mut self, scope: TsNode<'_>, enclosing_id: &str) {
+        for segment in path_prefix_segments(scope, self.source) {
+            if self.recorded.insert(segment.start_byte()) {
+                self.add_occurrence("read", segment, enclosing_id);
+            }
+        }
+    }
+
+    /// A `read` for the modules a visibility names: `crate` / `super` of `pub(crate)` /
+    /// `pub(super)`, and every segment of `pub(in path)`. `pub(self)` names nothing.
+    fn record_visibility_modifier(&mut self, modifier: TsNode<'_>, enclosing_id: &str) {
+        let mut segments: Vec<TsNode<'_>> = Vec::new();
+        for child in ts::children(modifier) {
+            match child.kind() {
+                "crate" | "super" | "identifier" => segments.push(child),
+                "scoped_identifier" => {
+                    segments.extend(path_prefix_segments(child, self.source));
+                    if let Some(name) = child.child_by_field_name("name") {
+                        segments.push(name);
+                    }
+                }
+                _ => {}
+            }
+        }
+        for segment in segments {
+            if self.recorded.insert(segment.start_byte()) {
+                self.add_occurrence("read", segment, enclosing_id);
+            }
+        }
+    }
+
+    /// The visibility of a declaration, if it has one.
+    fn record_visibility(&mut self, full_node: TsNode<'_>, enclosing_id: &str) {
+        if let Some(modifier) = ts::child_of_type(full_node, "visibility_modifier") {
+            self.record_visibility_modifier(modifier, enclosing_id);
+        }
     }
 
     /// A call site for every `call_expression` inside the scope.
@@ -459,17 +576,19 @@ impl<'a> RustExtractor<'a> {
     /// An `annotation` for every type name under a type, once per site.
     ///
     /// `&dyn Labeled` gives `Labeled`, `Result<Matcher, Error>` gives all three
-    /// names, `store::Engine` gives `Engine` (the last segment of a path: its
-    /// earlier segments are plain identifiers). A bare `Foo` is its own
-    /// `type_identifier`. A site already recorded is skipped.
+    /// names, `store::Engine` gives `Engine` as the annotation. The earlier segments
+    /// of a path (`store`, `crate`, `super`) are `read` occurrences enclosed the same
+    /// way (`record_path_prefixes`). A bare `Foo` is its own `type_identifier`. A site
+    /// already recorded is skipped.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         let mut idents = walk_type(type_node, "type_identifier");
         idents.sort_by_key(|n| n.start_byte());
         for name_node in idents {
-            if self.annotated.insert(name_node.start_byte()) {
+            if self.recorded.insert(name_node.start_byte()) {
                 self.add_occurrence("annotation", name_node, enclosing_id);
             }
         }
+        self.record_path_prefixes(type_node, enclosing_id);
     }
 
     /// The type names a generic list, a bounds list or a `where` clause uses.
@@ -539,6 +658,11 @@ impl<'a> RustExtractor<'a> {
 
     /// The types of a tuple struct's (or tuple variant's) fields.
     fn record_tuple_field_types(&mut self, list: TsNode<'_>, enclosing_id: &str) {
+        for child in ts::children(list) {
+            if child.kind() == "visibility_modifier" {
+                self.record_visibility_modifier(child, enclosing_id);
+            }
+        }
         let mut cursor = list.walk();
         let types: Vec<TsNode<'_>> = list.children_by_field_name("type", &mut cursor).collect();
         for type_node in types {
@@ -727,6 +851,9 @@ impl<'a> RustExtractor<'a> {
         }
         self.collect_calls(node, id);
         self.collect_references(node, id);
+        // Parameter and return types were claimed above; this sweeps the expression
+        // paths (`Foo::new()`, `inner::f()`, patterns, struct literals, macros).
+        self.record_path_prefixes(node, id);
         self.collect_flow(node, qname, id)?;
         // Functions declared inside this one are nodes of their own.
         if let Some(body) = node.child_by_field_name("body") {
@@ -930,7 +1057,7 @@ impl<'a> RustExtractor<'a> {
     fn on_impl_item(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let type_name = self.impl_type_name(node);
         // The trait first: its leading name is the `base`, already marked as seen
-        // when the rest of the header is annotated.
+        // when the rest of the header is recorded.
         self.collect_impl_trait(node, &type_name)?;
         let file_id = self.file_id;
         if let Some(type_node) = node.child_by_field_name("type") {
@@ -992,7 +1119,7 @@ impl<'a> RustExtractor<'a> {
                 enclosing = type_id;
             }
         }
-        self.annotated.insert(trait_name_node.start_byte());
+        self.recorded.insert(trait_name_node.start_byte());
         self.add_occurrence("base", trait_name_node, &enclosing);
         // The trait's generic arguments (`From<Matcher>`) are uses of types.
         let file_id = self.file_id;
@@ -1012,6 +1139,8 @@ impl<'a> RustExtractor<'a> {
     }
 
     fn on_use_declaration(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        let file_id = self.file_id;
+        self.record_visibility(node, file_id);
         let import_path = self.text_or_empty(node.child_by_field_name("argument"));
         if import_path.is_empty() {
             return Ok(());

@@ -39,7 +39,10 @@ use super::visitor::RustExtractor;
 const RUST_EXTENSIONS: [&str; 1] = [".rs"];
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
-type BuiltCrate = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
+/// `(file relative to the project root, line, col)` of a place a resolver may answer
+/// with for a module -> the MODULE's id.
+type ModuleSites = HashMap<(String, u32, u32), String>;
+type BuiltCrate = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>, ModuleSites);
 
 /// Cargo writes `target/` at the workspace root, `cargo vendor` writes
 /// `vendor/` beside it. Both are matched at the root only, so a crate keeps
@@ -271,6 +274,7 @@ fn build_crate_structure(
     let mut occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut boundaries: Vec<FileBoundaries> = Vec::new();
     let mut internal_imports: Vec<(String, String, String, String)> = Vec::new();
+    let mut module_sites: ModuleSites = HashMap::new();
 
     let mut project_macros: std::collections::HashSet<String> = std::collections::HashSet::new();
     for file in files {
@@ -283,6 +287,9 @@ fn build_crate_structure(
         let module_id = ensure_module(py, graph, &project, &module, &project_id, &mut modules)?;
         let (file_id, file_rel) =
             ensure_file(py, graph, &project, project_root, crate_root, file, &module_id)?;
+        // rust-analyzer answers a path segment that names a file module with the start
+        // of that file.
+        module_sites.insert((file_rel.clone(), 1, 1), module_id.clone());
 
         let Ok(source) = std::fs::read(file) else {
             continue;
@@ -307,7 +314,13 @@ fn build_crate_structure(
             &deps,
         );
         extractor.extract(tree.root_node())?;
-        let (file_occurrences, file_imports) = extractor.into_parts();
+        let (file_occurrences, file_imports, inline_modules) = extractor.into_parts();
+        // `mod foo { .. }` is a MODULE too; the resolver answers with the start of its name.
+        for (inline_qname, name_span) in inline_modules {
+            let inline_id =
+                ensure_module(py, graph, &project, &inline_qname, &project_id, &mut modules)?;
+            module_sites.insert((file_rel.clone(), name_span.start_line, name_span.start_col), inline_id);
+        }
 
         let abs_path = file.to_string_lossy().into_owned();
         for occurrence in file_occurrences {
@@ -337,7 +350,7 @@ fn build_crate_structure(
         push_relation(py, graph, import_id, target_id, RelationKind::ResolvesTo)?;
     }
 
-    Ok((project, occurrences, boundaries))
+    Ok((project, occurrences, boundaries, module_sites))
 }
 
 /// A resolver's absolute path → a path relative to the project root.
@@ -492,7 +505,11 @@ impl RustAdapter {
                 crate_files.iter().flat_map(|(_, files)| files.clone()).collect();
             self.resolver.prepare(py, &project_root, &all_files)?;
             let mut span_index = SpanIndex::from_graph(py, &graph)?;
-            for (project, occurrences, _boundaries) in &built {
+            let mut module_sites: ModuleSites = HashMap::new();
+            for (_, _, _, sites) in &built {
+                module_sites.extend(sites.iter().map(|(k, v)| (k.clone(), v.clone())));
+            }
+            for (project, occurrences, _boundaries, _sites) in &built {
                 let pass = resolve_pass(
                     py,
                     &self.resolver,
@@ -501,6 +518,7 @@ impl RustAdapter {
                     project,
                     &project_root,
                     occurrences,
+                    &module_sites,
                 )?;
                 metrics.merge(&pass);
             }
@@ -508,7 +526,7 @@ impl RustAdapter {
         }
 
         // Phase 3 — boundaries; independent of resolution.
-        for (_project, _occurrences, boundaries) in &built {
+        for (_project, _occurrences, boundaries, _sites) in &built {
             apply_boundaries(py, &mut graph, boundaries)?;
         }
 
@@ -534,6 +552,7 @@ impl RustAdapter {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn resolve_pass(
     py: Python<'_>,
     resolver: &ResolverSlot<RustResolver>,
@@ -542,6 +561,7 @@ fn resolve_pass(
     project: &str,
     project_root: &Path,
     occurrences: &[(String, OccurrenceRef)],
+    module_sites: &ModuleSites,
 ) -> PyResult<ResolverMetrics> {
     let mut metrics = ResolverMetrics {
         queries: occurrences.len() as u64,
@@ -605,6 +625,13 @@ fn resolve_pass(
         {
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+            // A module has no name span in the index: `crate`, `super` and a file
+            // module are answered with the start of the file, an inline `mod` with its name.
+            if target_id.is_none() {
+                target_id = module_sites
+                    .get(&(relative, reference.line, reference.col))
+                    .cloned();
+            }
         }
 
         // `iter.map(f)`: the library calls what it is given, unless the callee is a

@@ -198,8 +198,9 @@ documents rather than by touching the queries.
 Do not assume Python's shape elsewhere. `MODULE` is a dotted name in Python and
 TypeScript, a **package directory** in Go (its `qualified_name` equals the
 import path, so internal imports bind by direct lookup), and a Rust module path
-in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
-be declared below its `impl`.
+in `rustlang`; an inline `mod foo { ... }` is a MODULE too (without a `file_path`
+or span, like the file modules). Rust dispatches `impl` blocks in a second pass
+because a type may be declared below its `impl`.
 
 ### Resolvers: what is linked in and what is not
 
@@ -353,7 +354,8 @@ Things that are easy to get wrong:
   finds the repo's workspace from inside the fixture, refuses it, and
   rust-analyzer resolves nothing — as a quiet `unavailable`, which the golden run
   reports as a mismatch only when rust-analyzer is installed.
-- **A Rust annotation is every type name under the type**, the last segment of a path, once per site (`annotated` in `src/rustlang/visitor.rs`), and never the declaring name of a generic parameter. `Result<A, B>`, bounds, `where` clauses, `let`/alias/cast/closure types, tuple fields and enum payloads all count. An `impl` header's annotations, and the `base` of an `impl Trait for T` whose `T` is not a project class, are enclosed by the **FILE**, never the MODULE: a Rust MODULE has no `file_path`, so `note_site_file` records no `metadata["file"]` and `crates/callix-export/src/index.rs` drops an edge it cannot place.
+- **A Rust annotation is every type name under the type**, the last segment of a path, once per site (`recorded` in `src/rustlang/visitor.rs`), and never the declaring name of a generic parameter. `Result<A, B>`, bounds, `where` clauses, `let`/alias/cast/closure types, tuple fields and enum payloads all count. An `impl` header's annotations, and the `base` of an `impl Trait for T` whose `T` is not a project class, are enclosed by the **FILE**, never the MODULE: a Rust MODULE has no `file_path`, so `note_site_file` records no `metadata["file"]` and `crates/callix-export/src/index.rs` drops an edge it cannot place.
+- **A Rust path qualifier is a reference, never an annotation.** Every segment of a path before the last (`Foo` in `Foo::new()`, `inner`, `crate`, `super`, and every segment of `pub(in path)`, with the `crate`/`super` of `pub(crate)`/`pub(super)`) is a `read` occurrence, so the edge is a `REFERENCES` with `access: read`: a module is not a type and a `HAS_TYPE` to a MODULE would describe the answer as better than it is. It shares the one-site-one-occurrence set (`recorded`) with annotations. `self`, `<T as Trait>::` and primitive qualifiers (`u8::MAX`) are not recorded: no query that is certain to fail. A visibility is enclosed by the declaration, for a `mod` or a `use` by the FILE (a MODULE has no `file_path`). A module answer binds through `module_sites` in `src/rustlang/adapter.rs` (the start of a file, 1:1, maps to its file module; the name of an inline `mod` maps to its MODULE), because a MODULE has no span and the SpanIndex cannot see it.
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.

@@ -32,8 +32,9 @@ src/lib.rs        →  crate_name
 ```
 
 Trailing `lib`, `main` and `mod` are dropped — they name the enclosing module,
-not themselves. Inline `mod foo { … }` blocks add their own segment while the
-visitor is inside them.
+not themselves. An inline `mod foo { … }` block is a `MODULE` too (`crate_name::foo`),
+like a file module, with no file or span of its own; it also adds its segment while the
+visitor is inside it.
 
 ## What it extracts
 
@@ -52,6 +53,8 @@ closure types, tuple-struct fields and enum payloads. The self type of an `impl`
 and the generic arguments of its trait are `HAS_TYPE` edges from the file, not
 from a module, because a module has no file of its own to place the edge in.
 The name a generic parameter declares (`T` in `<T: Bound>`) is not a use.
+
+The qualifiers of a path are references: `Foo` in `Foo::new()` becomes a `REFERENCES` edge to the type, `inner`, `crate` and `super` in `inner::f()`, `crate::flags::X` or `super::g()` to the `MODULE`, and the modules named by `pub(crate)`, `pub(super)` and `pub(in path)` the same way. They are enclosed like the annotation of the same position (the function, the parameter, the field), and by the file for a `mod`, a `use` or an `impl` header. `self` in a path and `<T as Trait>::` qualifiers are not recorded. A reference to a `MODULE` is not exported to LSIF or SCIP, because a Rust `MODULE` has no file to define it in.
 
 ## Dependency classification
 

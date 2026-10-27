@@ -190,7 +190,7 @@
       "function": 4,
       "import": 2,
       "method": 4,
-      "module": 2,
+      "module": 3,
       "parameter": 4,
       "project": 1,
       "type_alias": 1,
@@ -198,19 +198,19 @@
     },
     "relations": {
       "calls": 9,
-      "contains": 4,
+      "contains": 5,
       "declares": 26,
       "has_type": 15,
       "imports": 2,
       "inherits_from": 1,
-      "references": 3,
+      "references": 6,
       "resolves_to": 2
     },
     "resolver": {
-      "external": 13,
-      "internal": 15,
-      "queries": 30,
-      "resolved": 30,
+      "external": 15,
+      "internal": 16,
+      "queries": 33,
+      "resolved": 33,
       "unresolved": 0
     },
     "resolver_status": "ok"

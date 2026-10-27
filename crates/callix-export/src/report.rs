@@ -230,7 +230,11 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              calls (`Drop`, operators, `for` over an iterator) are not edges; every type name in a \
              signature, field, bound or `where` clause, `let`, alias, cast, closure or `impl` header \
              is a type annotation, and the self type and trait of an `impl` (and the trait of an \
-             impl for a type outside the project) are recorded on the file",
+             impl for a type outside the project) are recorded on the file; every segment of a \
+             path before the last and every `pub(crate)` / `pub(super)` / `pub(in path)` is a \
+             reference to the type or MODULE it names, while `self` in a path and `<T as Trait>::` \
+             qualifiers are not recorded, and a reference to a MODULE is not exported to LSIF or \
+             SCIP (a MODULE has no file to define it in)",
         ),
         "php" => (
             "symbol table, by names",

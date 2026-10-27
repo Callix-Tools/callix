@@ -268,6 +268,15 @@
     },
     {
       "file_path": null,
+      "id": "6a4ebb69ec4d604f",
+      "kind": "module",
+      "metadata": {},
+      "name": "tests",
+      "qualified_name": "fixture::tests",
+      "span": null
+    },
+    {
+      "file_path": null,
       "id": "49e63763261229a2",
       "kind": "module",
       "metadata": {},
@@ -650,6 +659,12 @@
       "metadata": {},
       "source_id": "92461134c7015dc1",
       "target_id": "3222cbd4ecc4b28c"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "0f867cb0416ba557",
+      "target_id": "6a4ebb69ec4d604f"
     },
     {
       "kind": "contains",

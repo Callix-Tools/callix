@@ -633,6 +633,59 @@ fn resolve_with_table(
                 continue;
             }
 
+            // A type name (`type_use`) is asked of the class/typedef table only: a
+            // function or variable of the same name is not what a type position names.
+            // A speculative miss (a namespace component, `sizeof(variable)`) writes
+            // nothing; any other miss is an external symbol keyed by the site.
+            if occurrence.site.type_use {
+                let answer = index.resolve_type(
+                    &occurrence.name,
+                    &occurrence.site.qualifier,
+                    occurrence.site.tag,
+                    &file.file_rel,
+                );
+                match answer {
+                    Some((qualified_name, target_kind, ambiguous)) => {
+                        let target_id = node_id(project, &qualified_name, target_kind.as_str());
+                        if !graph.has_node(&target_id) {
+                            metrics.unresolved += 1;
+                            continue;
+                        }
+                        // `typedef S S;` must not make a node refer to itself.
+                        if target_id == enclosing_id {
+                            metrics.queries -= 1;
+                            continue;
+                        }
+                        metrics.resolved += 1;
+                        metrics.internal += 1;
+                        push_reference(
+                            py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                            Resolution::Name, ambiguous,
+                        )?;
+                    }
+                    None if occurrence.site.speculative => {
+                        metrics.queries -= 1;
+                    }
+                    None => {
+                        let key = format!(
+                            "{}@{}:{}:{}",
+                            occurrence.name,
+                            file.file_rel,
+                            occurrence.span.start_line,
+                            occurrence.span.start_col
+                        );
+                        let target_id = ensure_external_symbol(py, graph, project, &key, "unknown")?;
+                        metrics.resolved += 1;
+                        metrics.external += 1;
+                        push_reference(
+                            py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                            Resolution::External, false,
+                        )?;
+                    }
+                }
+                continue;
+            }
+
             // A bare name that is a parameter of the function it is written in means
             // that parameter, not whichever one of the project carries the name.
             let bare = occurrence.site.receiver_name.is_none()

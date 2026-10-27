@@ -246,7 +246,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              are invoked, macros of the project that expand to nothing, an attribute or a \
              storage keyword are erased before parsing, conditionals are not evaluated, and \
              a callback handed to a library function is followed only for a closed list of \
-             them",
+             them; a type name is bound by name to a class or typedef only, and a scope \
+             qualifier or `sizeof(name)` binds only when such a type is visible \
+             (namespaces are not nodes)",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

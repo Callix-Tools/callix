@@ -146,6 +146,16 @@ about which function it means, and the table reads it in the order C++ does:
   spelled (`1`, `1.0`, `"s"`, `'c'`, `true`, a local of a known type) against the
   parameter type. A tie takes the first declaration and the edge says
   `ambiguous`.
+- A **type name** is bound by name to a class or a typedef, never to a function or
+  variable of the same name. A type spelled in a body (a local declaration, a cast,
+  `sizeof`/`alignof`, a compound literal, a template argument, a lambda, `catch` or
+  function-pointer parameter) and each class in a written scope (`Impl::Get`) is a
+  `REFERENCES` from the enclosing function to the `CLASS` or `TYPE_ALIAS`. The type
+  of a declared node, its template arguments and its function-pointer signature
+  included, is its `HAS_TYPE`. An unadorned name prefers the typedef, and
+  `struct S` prefers the struct. A namespace, `std::string`-style library scopes and
+  `sizeof(variable)` write nothing; a library type written in a body becomes an
+  external symbol, except a construction of a library class, which writes nothing.
 
 Every edge the table writes has `metadata["resolution"] == "name"`, because that
 is how it was found, and `"ambiguous": true` when it had to choose between

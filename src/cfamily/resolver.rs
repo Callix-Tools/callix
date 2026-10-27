@@ -235,6 +235,71 @@ impl CFamilyIndex {
         Some((chosen.qualified_name.clone(), chosen.kind, visible.len() > 1))
     }
 
+    /// A written scope with a namespace alias in its first component expanded.
+    fn expand_qualifier(&self, qualifier: &[String]) -> Vec<String> {
+        match qualifier.first().and_then(|first| self.namespace_aliases.get(first)) {
+            Some(target) => {
+                let mut expanded: Vec<String> =
+                    target.split("::").filter(|c| !c.is_empty()).map(str::to_string).collect();
+                expanded.extend(qualifier.iter().skip(1).cloned());
+                expanded
+            }
+            None => qualifier.to_vec(),
+        }
+    }
+
+    /// The CLASS or TYPE_ALIAS a type name written in `from_file` means.
+    ///
+    /// Only types are candidates: a function or a variable of the same name is not
+    /// what a type position names. A written scope must match the candidate's
+    /// qualified name (`std::string` never binds a project `mine::string`; there is
+    /// no fallback to the bare name). Visibility is the same as `lookup`. An
+    /// unadorned name prefers the typedef (C's `typedef struct S {..} S`), a name
+    /// written after `struct`/`union`/`enum`/`class` (`tag`) prefers the class. The
+    /// flag says several candidates of the chosen kind remained.
+    pub fn resolve_type(
+        &self,
+        name: &str,
+        qualifier: &[String],
+        tag: bool,
+        from_file: &str,
+    ) -> Option<(String, NodeKind, bool)> {
+        let candidates = self.by_name.get(name)?;
+        let qualifier = self.expand_qualifier(qualifier);
+        let exact = format!("{}::{name}", qualifier.join("::"));
+        let tail = format!("::{exact}");
+        let fits: Vec<&Symbol> = candidates
+            .iter()
+            .filter(|s| matches!(s.kind, NodeKind::Class | NodeKind::TypeAlias))
+            .filter(|s| qualifier.is_empty() || s.qualified_name == exact || s.qualified_name.ends_with(&tail))
+            .collect();
+        let local: Vec<&Symbol> = fits
+            .iter()
+            .copied()
+            .filter(|s| s.internal && self.reachable(from_file, &s.file_rel))
+            .collect();
+        let visible: Vec<&Symbol> = if local.is_empty() {
+            fits.iter()
+                .copied()
+                .filter(|s| !s.internal && self.reachable(from_file, &s.file_rel))
+                .collect()
+        } else {
+            local
+        };
+        let order = if tag {
+            [NodeKind::Class, NodeKind::TypeAlias]
+        } else {
+            [NodeKind::TypeAlias, NodeKind::Class]
+        };
+        for kind in order {
+            let of_kind: Vec<&&Symbol> = visible.iter().filter(|s| s.kind == kind).collect();
+            if let Some(first) = of_kind.first() {
+                return Some((first.qualified_name.clone(), kind, of_kind.len() > 1));
+            }
+        }
+        None
+    }
+
     // -- classes and their members ----------------------------------------------
 
     /// Records a class the project declares.
@@ -693,5 +758,48 @@ mod tests {
             index.resolve("size", "call", &receiver("std::string"), "main.cpp"),
             Outcome::Outside
         ));
+    }
+
+    #[test]
+    fn resolve_type_ignores_functions_and_variables() {
+        let mut index = CFamilyIndex::new();
+        index.declare("S", "S", NodeKind::Function, "a.h", false);
+        index.declare("S", "S", NodeKind::Variable, "a.h", false);
+        assert!(index.resolve_type("S", &[], false, "a.h").is_none());
+    }
+
+    #[test]
+    fn an_unadorned_name_prefers_the_typedef_and_a_tag_prefers_the_class() {
+        let mut index = CFamilyIndex::new();
+        index.declare("S", "S", NodeKind::Class, "a.h", false);
+        index.declare("S", "S", NodeKind::TypeAlias, "a.h", false);
+        let (_, kind, ambiguous) = index.resolve_type("S", &[], false, "a.h").unwrap();
+        assert!(matches!(kind, NodeKind::TypeAlias));
+        assert!(!ambiguous);
+        let (_, kind, ambiguous) = index.resolve_type("S", &[], true, "a.h").unwrap();
+        assert!(matches!(kind, NodeKind::Class));
+        assert!(!ambiguous);
+    }
+
+    #[test]
+    fn a_written_scope_filters_candidates_without_a_bare_name_fallback() {
+        let mut index = CFamilyIndex::new();
+        index.declare("string", "mine::string", NodeKind::Class, "a.h", false);
+        let std = vec!["std".to_string()];
+        let mine = vec!["mine".to_string()];
+        assert!(index.resolve_type("string", &std, false, "a.h").is_none());
+        assert!(index.resolve_type("string", &mine, false, "a.h").is_some());
+        // No scope written: any visible type of the name.
+        assert!(index.resolve_type("string", &[], false, "a.h").is_some());
+    }
+
+    #[test]
+    fn a_type_must_be_reachable_by_include() {
+        let mut index = CFamilyIndex::new();
+        index.declare("S", "S", NodeKind::Class, "a.h", false);
+        assert!(index.resolve_type("S", &[], false, "main.c").is_none());
+        index.include("main.c", "a.h");
+        index.close_includes();
+        assert!(index.resolve_type("S", &[], false, "main.c").is_some());
     }
 }

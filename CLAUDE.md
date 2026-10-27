@@ -282,6 +282,14 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **`declared_at`** on a node lists extra name spans the type checker may answer
   with (overload signatures, a function-valued field); `SpanIndex::from_graph`
   reads it.
+- **C/C++ type uses are `read` occurrences with `CallSite.type_use`**, giving a
+  REFERENCES from the enclosing callable; a type in a declared position stays
+  `annotation` (HAS_TYPE). They resolve only to CLASS/TYPE_ALIAS through
+  `CFamilyIndex::resolve_type` (a written scope must match, no bare-name fallback).
+  Scope components and `sizeof(name)` are `speculative` (a miss writes nothing, so a
+  namespace makes no edge), and a local declaration's type yields to a construction
+  at the same span. The role is `read`, not a new one, so custom resolvers still
+  see it.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language

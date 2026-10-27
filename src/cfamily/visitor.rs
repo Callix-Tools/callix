@@ -330,6 +330,60 @@ fn type_name_node<'tree>(type_node: TsNode<'tree>) -> Option<TsNode<'tree>> {
     ts::children(type_node).into_iter().find_map(type_name_node)
 }
 
+/// The name a written type reduces to, with the scope written before it.
+struct TypeHead<'tree> {
+    /// The identifier node carrying the name.
+    node: TsNode<'tree>,
+    /// The scope as written: `std::vector<int>` is `["std"]`.
+    qualifier: Vec<String>,
+    /// Whether `struct`, `union`, `enum` or `class` came first.
+    tag: bool,
+}
+
+/// The head of a type: `S`, `struct S`, `ns::S`, `Box<T>`, a `type_descriptor`.
+///
+/// A built-in (`primitive_type`, `sized_type_specifier`, `auto`), `decltype` and
+/// anything else has none. With `uses_only`, a specifier that has a `body` is a
+/// definition, not a use, and has none either.
+fn type_head<'tree>(type_node: TsNode<'tree>, source: &[u8], uses_only: bool) -> Option<TypeHead<'tree>> {
+    match type_node.kind() {
+        "type_identifier" => Some(TypeHead { node: type_node, qualifier: Vec::new(), tag: false }),
+        "struct_specifier" | "union_specifier" | "enum_specifier" | "class_specifier" => {
+            if uses_only && type_node.child_by_field_name("body").is_some() {
+                return None;
+            }
+            let name = type_node.child_by_field_name("name")?;
+            let mut head = type_head(name, source, uses_only)?;
+            head.tag = true;
+            Some(head)
+        }
+        "qualified_identifier" => {
+            let (qualifier, leaf) = split_qualified(type_node, source);
+            let leaf = bare_name(leaf);
+            (leaf.kind() == "type_identifier").then_some(TypeHead { node: leaf, qualifier, tag: false })
+        }
+        "template_type" => type_node
+            .child_by_field_name("name")
+            .map(|node| TypeHead { node, qualifier: Vec::new(), tag: false }),
+        "type_descriptor" => type_node.child_by_field_name("type").and_then(|t| type_head(t, source, uses_only)),
+        _ => None,
+    }
+}
+
+/// The outermost `qualified_identifier` a leaf name sits in, if any.
+fn outermost_qualified<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let mut found = None;
+    let mut current = node.parent();
+    while let Some(parent) = current {
+        if parent.kind() != "qualified_identifier" {
+            break;
+        }
+        found = Some(parent);
+        current = parent.parent();
+    }
+    found
+}
+
 /// Whether the node is what an assignment or an increment writes through.
 fn is_write_target(node: TsNode<'_>) -> bool {
     node.parent().is_some_and(|parent| match parent.kind() {
@@ -513,6 +567,15 @@ pub struct CallSite {
     /// binds when the class declares one and says nothing otherwise, instead of
     /// becoming an external symbol for every `a + b` on a built-in type.
     pub speculative: bool,
+    /// The name is written as a TYPE (a local's type, a cast, `sizeof`, a template
+    /// argument, a scope component, a declared node's type): it binds only to a
+    /// CLASS or a TYPE_ALIAS, through `CFamilyIndex::resolve_type`, never to a
+    /// function or a variable of the same name. `speculative` keeps its meaning:
+    /// a miss writes nothing.
+    pub type_use: bool,
+    /// The type was written after `struct`, `union`, `enum` or `class`, so the
+    /// tag's class wins over a typedef of the same name.
+    pub tag: bool,
 }
 
 /// What a function's declarations say about the names its body uses.
@@ -527,6 +590,8 @@ struct BodyContext {
     objects: HashSet<String>,
     /// The qualified class of the method, for an unqualified call or `this`.
     class_scope: Option<String>,
+    /// Type parameters of the enclosing templates: a body's `T x;` names no class.
+    template_parameters: HashSet<String>,
 }
 
 /// A use-site, before it has a node id to hang off.
@@ -985,11 +1050,124 @@ impl<'a> Reader<'a> {
         });
     }
 
-    /// An `annotation` for the name a type reduces to.
+    /// An `annotation` for the name a type reduces to, for the head of every
+    /// template argument inside it, and a `read` for each class in a written scope.
     fn record_annotation(&mut self, type_node: TsNode<'_>, owner: &Owner) {
-        if let Some(name_node) = type_name_node(type_node) {
-            self.push_occurrence("annotation", name_node, owner);
+        match type_head(type_node, self.source, false) {
+            Some(head) => self.push_type("annotation", head, owner, false),
+            None => {
+                if let Some(name_node) = type_name_node(type_node) {
+                    self.push_occurrence("annotation", name_node, owner);
+                }
+            }
         }
+        // A definition written inline (`struct S { .. } s;`) is not walked: its
+        // members are declared by their own walk.
+        if type_node.child_by_field_name("body").is_some() {
+            return;
+        }
+        for node in descendants(type_node) {
+            match node.kind() {
+                "type_descriptor" if node.id() != type_node.id() => {
+                    if let Some(head) = type_head(node, self.source, false) {
+                        self.push_type("annotation", head, owner, false);
+                    }
+                }
+                "qualified_identifier" => self.push_scope_components(node, owner),
+                _ => {}
+            }
+        }
+    }
+
+    /// An occurrence of a type name: it binds only to a CLASS or a TYPE_ALIAS.
+    fn push_type(&mut self, role: &'static str, head: TypeHead<'_>, owner: &Owner, speculative: bool) {
+        let site = CallSite {
+            qualifier: head.qualifier,
+            tag: head.tag,
+            type_use: true,
+            speculative,
+            ..CallSite::default()
+        };
+        self.push_site(role, head.node, owner, site);
+    }
+
+    /// A `read` for each class in the scope of an OUTERMOST qualified name:
+    /// `Impl::Get`, `Outer::Inner::f`. A component that is a namespace binds
+    /// nothing and is dropped by the resolver (speculative).
+    fn push_scope_components(&mut self, qualified: TsNode<'_>, owner: &Owner) {
+        if qualified.kind() != "qualified_identifier"
+            || qualified.parent().is_some_and(|p| p.kind() == "qualified_identifier")
+        {
+            return;
+        }
+        let mut written: Vec<String> = Vec::new();
+        let mut current = qualified;
+        while current.kind() == "qualified_identifier" {
+            if let Some(part) = current.child_by_field_name("scope") {
+                let named = if part.kind() == "template_type" { part.child_by_field_name("name") } else { Some(part) };
+                if let Some(named) = named
+                    && matches!(named.kind(), "namespace_identifier" | "type_identifier")
+                {
+                    let text = self.text(named);
+                    if !text.is_empty() {
+                        let site = CallSite {
+                            qualifier: written.clone(),
+                            type_use: true,
+                            speculative: true,
+                            ..CallSite::default()
+                        };
+                        self.push_site("read", named, owner, site);
+                        written.push(text);
+                    }
+                }
+            }
+            match current.child_by_field_name("name") {
+                Some(name) => current = name,
+                None => break,
+            }
+        }
+    }
+
+    /// The types in a declarator's function-pointer parameter lists:
+    /// `int (*cb)(S *s)`, `S *(*handler)(struct T *t, S s)`. `skip` is the
+    /// callable's own function declarator, whose parameters `collect_parameters`
+    /// already handles.
+    fn record_signature_types(&mut self, declarator: TsNode<'_>, owner: &Owner, skip: Option<TsNode<'_>>) {
+        let mut current = Some(declarator);
+        for _ in 0..64 {
+            let Some(node) = current else { break };
+            if matches!(node.kind(), "function_declarator" | "abstract_function_declarator")
+                && skip.is_none_or(|s| s.id() != node.id())
+                && let Some(list) = node.child_by_field_name("parameters")
+            {
+                for param in ts::named_children(list) {
+                    if !matches!(param.kind(), "parameter_declaration" | "optional_parameter_declaration") {
+                        continue;
+                    }
+                    if let Some(type_node) = param.child_by_field_name("type") {
+                        self.record_annotation(type_node, owner);
+                    }
+                    if let Some(inner) = param.child_by_field_name("declarator") {
+                        self.record_signature_types(inner, owner, None);
+                    }
+                }
+            }
+            current = inner_declarator(node);
+        }
+    }
+
+    /// A type written in a body: a `read`, unless it names a template parameter.
+    fn push_body_type(&mut self, type_node: TsNode<'_>, owner: &Owner, context: &BodyContext) {
+        if let Some(head) = type_head(type_node, self.source, true) {
+            self.push_body_type_head(head, owner, context);
+        }
+    }
+
+    fn push_body_type_head(&mut self, head: TypeHead<'_>, owner: &Owner, context: &BodyContext) {
+        if head.qualifier.is_empty() && context.template_parameters.contains(&self.text(head.node)) {
+            return;
+        }
+        self.push_type("read", head, owner, false);
     }
 
     // -- dispatch -----------------------------------------------------------
@@ -1450,7 +1628,7 @@ impl<'a> Reader<'a> {
             let access = self.access();
             self.push_decl(FoundDecl {
                 kind: NodeKind::TypeAlias,
-                qualified_name: qname,
+                qualified_name: qname.clone(),
                 name,
                 span: ts::span(node),
                 doc: self.doc_for(node),
@@ -1467,6 +1645,14 @@ impl<'a> Reader<'a> {
                 type_text: type_text.clone(),
                 signature: String::new(),
             });
+            let alias_owner = Owner::Decl { qualified_name: qname, kind: NodeKind::TypeAlias };
+            // `typedef struct S {..} S;` defines S and is no use of it.
+            if let Some(type_node) = type_node
+                && type_node.child_by_field_name("body").is_none()
+            {
+                self.record_annotation(type_node, &alias_owner);
+            }
+            self.record_signature_types(declarator, &alias_owner, None);
         }
     }
 
@@ -1609,7 +1795,7 @@ impl<'a> Reader<'a> {
         }
         // `function_definition` is what the grammar produces for a body, for
         // `= default` and for `= delete`; every one of the three defines.
-        self.declare_callable(node, &found, true, identity);
+        self.declare_callable(node, &found, declarator, true, identity);
         if let Some(initializers) = ts::child_of_type(node, "field_initializer_list") {
             self.collect_initializers(initializers, &owner, &context);
         }
@@ -1848,6 +2034,7 @@ impl<'a> Reader<'a> {
                 }
             }
         }
+        context.template_parameters = template_parameters;
         context
     }
 
@@ -1954,7 +2141,7 @@ impl<'a> Reader<'a> {
                 if identity.name.is_empty() {
                     continue;
                 }
-                self.declare_callable(node, &found, false, identity);
+                self.declare_callable(node, &found, declarator, false, identity);
                 continue;
             }
             self.declare_data(node, &found, declarator, type_node);
@@ -2040,6 +2227,7 @@ impl<'a> Reader<'a> {
         &mut self,
         node: TsNode<'_>,
         found: &Declared<'_>,
+        declarator: TsNode<'_>,
         defines: bool,
         identity: CallableId,
     ) {
@@ -2076,6 +2264,12 @@ impl<'a> Reader<'a> {
         if let Some(return_type) = return_type {
             self.record_annotation(return_type, &callable_owner);
         }
+        // An out-of-line head `Impl::Get`: `Impl` is a class the definition refers to.
+        if found.name.kind() == "qualified_identifier" {
+            self.push_scope_components(found.name, &callable_owner);
+        }
+        // A function returning a function pointer: the pointer's own parameters.
+        self.record_signature_types(declarator, &callable_owner, found.function);
         if let Some(signature_owner) = found.signature_owner() {
             self.collect_parameters(
                 signature_owner,
@@ -2120,6 +2314,9 @@ impl<'a> Reader<'a> {
                 if let Some(type_node) = type_node {
                     self.record_annotation(type_node, callable_owner);
                 }
+                if let Some(inner) = param.child_by_field_name("declarator") {
+                    self.record_signature_types(inner, callable_owner, None);
+                }
                 continue;
             };
             let name = self.text(name_node);
@@ -2149,12 +2346,15 @@ impl<'a> Reader<'a> {
                 type_text,
                 signature: String::new(),
             });
+            let param_owner = Owner::Decl {
+                qualified_name: qname,
+                kind: NodeKind::Parameter,
+            };
             if let Some(type_node) = type_node {
-                let param_owner = Owner::Decl {
-                    qualified_name: qname,
-                    kind: NodeKind::Parameter,
-                };
                 self.record_annotation(type_node, &param_owner);
+            }
+            if let Some(inner) = param.child_by_field_name("declarator") {
+                self.record_signature_types(inner, &param_owner, None);
             }
         }
     }
@@ -2234,8 +2434,14 @@ impl<'a> Reader<'a> {
             type_text,
             signature: String::new(),
         });
+        let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
+        // `const char *Base::Label = ..`: `Base` is a class the definition refers to.
+        if let Some(outer) = outermost_qualified(name_node) {
+            self.push_scope_components(outer, &data_owner);
+        }
+        // `int (*cb)(S *s);` and a member `int (*open)(S *);`
+        self.record_signature_types(declarator, &data_owner, None);
         if let Some(type_node) = type_node {
-            let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
             self.record_annotation(type_node, &data_owner);
         }
         // `handler h = g;`, `struct ops o = { .fn = g };`, `table[] = { a, b }`: the
@@ -2609,7 +2815,66 @@ impl<'a> Reader<'a> {
                     }
                 }
                 // `Engine e;`, `Engine e(1);`, `Engine e{1};` construct an object.
-                "declaration" => self.constructions(node, owner, context),
+                "declaration" => {
+                    let before = self.facts.occurrences.len();
+                    self.constructions(node, owner, context);
+                    // The local's type is a REFERENCES, unless a construction already
+                    // stands at exactly that position (a construction is never doubled).
+                    if let Some(type_node) = node.child_by_field_name("type")
+                        && let Some(head) = type_head(type_node, self.source, true)
+                    {
+                        let at = ts::span(head.node);
+                        let constructed = self.facts.occurrences[before..]
+                            .iter()
+                            .any(|o| o.role == "call" && o.site.constructs && o.span == at);
+                        if !constructed {
+                            self.push_body_type_head(head, owner, context);
+                        }
+                    }
+                }
+                // Casts, sizeof/alignof/offsetof, compound literals, template arguments, `new`.
+                "type_descriptor" => self.push_body_type(node, owner, context),
+                // `Impl::make()`, `Outer::Inner x`, `Region::Europe`: each class in the scope.
+                "qualified_identifier" => self.push_scope_components(node, owner),
+                // C: `sizeof(S)` with a typedef'd S parses as an expression, not a type.
+                "sizeof_expression" => {
+                    if let Some(value) = node.child_by_field_name("value")
+                        && value.kind() == "parenthesized_expression"
+                        && let [only] = ts::named_children(value).as_slice()
+                        && only.kind() == "identifier"
+                    {
+                        let site = CallSite { type_use: true, speculative: true, ..CallSite::default() };
+                        self.push_site("read", *only, owner, site);
+                    }
+                }
+                // C++ `S{1}`: the type is a bare name, not a type_descriptor.
+                "compound_literal_expression" => {
+                    if let Some(type_node) = node.child_by_field_name("type")
+                        && type_node.kind() != "type_descriptor"
+                    {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
+                "for_range_loop" => {
+                    if let Some(type_node) = node.child_by_field_name("type") {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
+                // Parameters of a lambda, a catch clause or a local function pointer only:
+                // the vexing parse `T x(a, b)` and local prototypes hold argument names.
+                "parameter_declaration" | "optional_parameter_declaration" => {
+                    let holder = node.parent().and_then(|list| list.parent());
+                    let wanted = holder.is_some_and(|h| match h.kind() {
+                        "abstract_function_declarator" | "lambda_declarator" | "catch_clause" => true,
+                        "function_declarator" => h
+                            .child_by_field_name("declarator")
+                            .is_some_and(|d| d.kind() == "parenthesized_declarator"),
+                        _ => false,
+                    });
+                    if wanted && let Some(type_node) = node.child_by_field_name("type") {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
                 "field_expression" => {
                     // A field in callee position was already recorded as a call;
                     // one site must not yield two occurrences.

@@ -18,10 +18,12 @@ use crate::occurrence::OccurrenceRef;
 use crate::relation::{Relation, RelationKind};
 use crate::ts;
 
-/// Every descendant of the given kind; we do not descend into a match.
+/// The node itself, or every descendant of the given kind; we do not descend
+/// into a match. The node is tested first because a bare type name (`arg: Foo`,
+/// `-> Foo`, `-> Self`) is itself a childless `type_identifier`.
 fn walk_type<'tree>(node: TsNode<'tree>, kind: &str) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
-    let mut stack = ts::children(node);
+    let mut stack = vec![node];
     while let Some(current) = stack.pop() {
         if current.kind() == kind {
             out.push(current);
@@ -441,7 +443,8 @@ impl<'a> RustExtractor<'a> {
     /// An `annotation` for the leading identifier of a type.
     ///
     /// `&dyn Labeled`, `Vec<Engine>` and `store::Engine` all reduce to the
-    /// leftmost `type_identifier`, which is the name the resolver can bind.
+    /// leftmost `type_identifier`, which is the name the resolver can bind. A bare
+    /// `Foo` is its own leftmost identifier.
     fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
         let idents = walk_type(type_node, "type_identifier");
         if let Some(name_node) = leftmost(&idents) {

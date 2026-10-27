@@ -185,7 +185,7 @@
     "nodes": {
       "attribute": 3,
       "class": 3,
-      "external_symbol": 5,
+      "external_symbol": 7,
       "file": 2,
       "function": 4,
       "import": 2,
@@ -200,17 +200,17 @@
       "calls": 9,
       "contains": 4,
       "declares": 26,
-      "has_type": 1,
+      "has_type": 13,
       "imports": 2,
       "inherits_from": 1,
       "references": 3,
       "resolves_to": 2
     },
     "resolver": {
-      "external": 4,
-      "internal": 10,
-      "queries": 16,
-      "resolved": 16,
+      "external": 13,
+      "internal": 13,
+      "queries": 28,
+      "resolved": 28,
       "unresolved": 0
     },
     "resolver_status": "ok"

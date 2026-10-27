@@ -77,8 +77,9 @@ project.
 `tests/accuracy` holds a suite of small programs per language, each with the call
 graph a reader of the source would draw, and scores the graph callix builds
 against it. Python uses the [PyCG micro-benchmark](https://github.com/vitsalis/pycg-evaluation)
-(112 cases, vendored with its licence); the other languages have suites written
-for this repository from each language's rules, not from what callix answers.
+(112 cases, vendored with its licence) plus a small suite of its own for cases PyCG
+does not cover; the other languages have suites written for this repository from
+each language's rules, not from what callix answers.
 
 A case is **sound** when every expected edge is present and **complete** when no
 edge from a listed caller is unexpected. Edge **recall** and **precision** are
@@ -88,6 +89,7 @@ writing:
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
 | Python (PyCG) | 112 | 112 | 112 | 1.00 | 1.00 |
+| Python (micro) | 1 | 1 | 1 | 1.00 | 1.00 |
 | TypeScript | 65 | 65 | 65 | 1.00 | 1.00 |
 | Go | 58 | 58 | 58 | 1.00 | 1.00 |
 | Rust | 57 | 57 | 57 | 1.00 | 1.00 |

@@ -44,7 +44,7 @@ questions — a change to a visitor should be checked against the last three:
 | `task test:rust` | `#[test]`s across the workspace | enum wire values, `sort_paths`, the SCIP decoder, dependency parsers, the C family's overload picking |
 | `task unit` | pytest over `tests/unit`, `tests/api` and `tests/accuracy` | the public Python API that 1.0 freezes, and the accuracy floor below |
 | `task golden` | whole graphs of `tests/fixtures/*`, frozen in `tests/golden/` | any change to any visitor, exactly |
-| `task accuracy` | seven suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
+| `task accuracy` | eight suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
 | `task baseline` | fingerprints of 14 real repositories | what a three-file fixture cannot reach: scale, and the resolvers |
 
 `tests/accuracy` is the only layer that can say a change made resolution *worse*.

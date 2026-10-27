@@ -6681,9 +6681,9 @@
       "relations": 19
     },
     "tests/integration_tests/db_engine_specs/hive_tests.py": {
-      "hash": "6d5dc8fad86dab8a",
-      "nodes": 145,
-      "relations": 186
+      "hash": "5cba1df3b2d210db",
+      "nodes": 141,
+      "relations": 182
     },
     "tests/integration_tests/db_engine_specs/mysql_tests.py": {
       "hash": "4b775f2c6858b602",
@@ -9439,11 +9439,11 @@
       "dependency": 175,
       "external_symbol": 1119,
       "file": 1886,
-      "function": 6752,
+      "function": 6750,
       "import": 19936,
       "method": 6741,
       "module": 1905,
-      "parameter": 20845,
+      "parameter": 20843,
       "project": 5,
       "type_alias": 19,
       "variable": 36892
@@ -9451,7 +9451,7 @@
     "relations": {
       "consumes": 188,
       "contains": 3791,
-      "declares": 101759,
+      "declares": 101755,
       "depends_on": 175,
       "exposes": 230,
       "imports": 15178,
@@ -9462,30 +9462,30 @@
   "ref": "6.1.0",
   "resolution": {
     "metrics": {
-      "external": 94815,
-      "internal": 240399,
-      "queries": 538812,
-      "resolved": 418885,
-      "unresolved": 75715
+      "external": 105539,
+      "internal": 244358,
+      "queries": 583368,
+      "resolved": 433691,
+      "unresolved": 105409
     },
     "relations": {
-      "calls": 60626,
+      "calls": 60830,
       "consumes": 188,
       "contains": 3791,
-      "declares": 101759,
+      "declares": 101755,
       "depends_on": 175,
       "exposes": 230,
-      "has_type": 13906,
+      "has_type": 26229,
       "imports": 15178,
       "inherits_from": 2088,
-      "references": 248957,
+      "references": 251120,
       "resolves_to": 30912
     },
     "status": "ok"
   },
   "totals": {
     "files": 1886,
-    "nodes": 107002,
-    "relations": 141267
+    "nodes": 106998,
+    "relations": 141263
   }
 }

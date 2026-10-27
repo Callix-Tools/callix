@@ -894,7 +894,7 @@ impl<'a> PythonVisitor<'a> {
                         // The arguments of this call are bound to what it calls, which is
                         // found only after resolution: they are keyed by the place of
                         // the argument list.
-                        let site = ts::child_of_type(node, "argument_list").map(ts::span);
+                        let site = Self::call_arguments(node).0.map(ts::span);
                         let detail = match site {
                             Some(at) => format!("result:{depth}:{}:{}", at.start_line, at.start_col),
                             None => format!("result:{depth}"),
@@ -914,9 +914,9 @@ impl<'a> PythonVisitor<'a> {
                 _ => self.scan_value(callee, enclosing_id)?,
             }
         }
-        if let Some(arg_list) = ts::child_of_type(node, "argument_list") {
+        if let (Some(_), arguments) = Self::call_arguments(node) {
             let mut index = 0usize;
-            for child in ts::children(arg_list) {
+            for child in arguments {
                 if matches!(child.kind(), "(" | ")" | ",") {
                     continue;
                 }
@@ -943,6 +943,24 @@ impl<'a> PythonVisitor<'a> {
             }
         }
         Ok(())
+    }
+
+    /// The arguments of a call. tree-sitter stores `f(x for x in xs)` with the
+    /// generator expression in place of an `argument_list`: it is the call's single
+    /// positional argument.
+    ///
+    /// Returns the `arguments` node (its span keys `result:` sites) and the argument
+    /// nodes. For an `argument_list` these are its children, unfiltered, so every
+    /// caller keeps its own filtering of punctuation and comments.
+    fn call_arguments<'t>(call: TsNode<'t>) -> (Option<TsNode<'t>>, Vec<TsNode<'t>>) {
+        let Some(arguments) = call.child_by_field_name("arguments") else {
+            return (None, Vec::new());
+        };
+        match arguments.kind() {
+            "argument_list" => (Some(arguments), ts::children(arguments)),
+            "generator_expression" => (Some(arguments), vec![arguments]),
+            _ => (Some(arguments), Vec::new()),
+        }
     }
 
     /// The identifier a call's callee ends in.
@@ -975,11 +993,8 @@ impl<'a> PythonVisitor<'a> {
                 _ => return Vec::new(),
             }
         };
-        let Some(arguments) = call.child_by_field_name("arguments") else {
-            return Vec::new();
-        };
         let mut found = Vec::new();
-        for argument in ts::children(arguments) {
+        for argument in Self::call_arguments(call).1 {
             if argument.kind() == "keyword_argument" {
                 if let (Some(name), Some(value)) = (argument.child_by_field_name("name"), argument.child_by_field_name("value"))
                     && self.text(name) == "key"
@@ -1228,10 +1243,8 @@ impl<'a> PythonVisitor<'a> {
                 None => return Ok(()),
             },
         };
-        let Some(arg_list) = ts::child_of_type(call, "argument_list") else {
-            return Ok(());
-        };
-        let arguments: Vec<TsNode<'_>> = ts::children(arg_list)
+        let arguments: Vec<TsNode<'_>> = Self::call_arguments(call)
+            .1
             .into_iter()
             .filter(|a| a.is_named() && !matches!(a.kind(), "comment" | "keyword_argument"))
             .collect();

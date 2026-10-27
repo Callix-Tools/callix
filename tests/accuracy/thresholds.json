@@ -23,6 +23,12 @@
     "recall": 1.0,
     "sound": 62
   },
+  "python/micro": {
+    "complete": 1,
+    "precision": 1.0,
+    "recall": 1.0,
+    "sound": 1
+  },
   "python/pycg": {
     "complete": 112,
     "precision": 1.0,

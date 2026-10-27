@@ -642,17 +642,19 @@ impl PhpResolver {
             return Candidates { names, bound: true };
         }
 
-        // Only the FIRST segment can be an alias. A `use function` alias names
-        // a function and nothing else, but the head of a qualified name is
-        // always a class-or-namespace alias — `use App\Models; … Models\User`.
+        // Only the FIRST segment can be an alias. An unqualified function name
+        // goes through `use function` aliases only, an unqualified constant
+        // through `use const` only: PHP keeps classes in a separate table, so
+        // a `use Lib\Once;` says nothing about `once()`. The head of a
+        // qualified name is always a class-or-namespace alias —
+        // `use App\Models; … Models\User` — whatever the name is used as.
         let uses = &self.uses[doc as usize];
         let head = head.to_lowercase();
-        let alias = match kind {
-            NameKind::Function if rest.is_none() => uses.functions.get(&head),
-            NameKind::Value if rest.is_none() => uses.constants.get(&head),
-            _ => None,
-        }
-        .or_else(|| uses.classes.get(&head));
+        let alias = match (kind, rest) {
+            (NameKind::Function, None) => uses.functions.get(&head),
+            (NameKind::Value, None) => uses.constants.get(&head),
+            _ => uses.classes.get(&head),
+        };
         if let Some(target) = alias {
             let names = match rest {
                 Some(rest) => vec![format!("{target}\\{rest}")],
@@ -910,13 +912,12 @@ impl PhpResolver {
     fn name_answer(&self, name: &str, doc: u32, namespace: &str, kind: NameKind) -> Answer {
         let candidates = self.candidates(name, doc, namespace, kind);
         for candidate in &candidates.names {
-            // The order is the one the syntax implies: a call names a function
-            // first, a type a class, a bare read anything at all.
+            // The order is the one the syntax implies: a call names only a
+            // function (PHP never calls a class by `f()`), a type a class, a
+            // bare read anything at all.
             let found = match kind {
                 NameKind::Class => self.declared_class(candidate),
-                NameKind::Function => self
-                    .declared_function(candidate)
-                    .or_else(|| self.declared_class(candidate)),
+                NameKind::Function => self.declared_function(candidate),
                 NameKind::Value => self
                     .declared_class(candidate)
                     .or_else(|| self.declared_constant(candidate))

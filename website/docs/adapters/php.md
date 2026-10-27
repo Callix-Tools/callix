@@ -72,6 +72,11 @@ A promoted constructor parameter produces **both** a `parameter` and an
 
 The symbol table resolves a use-site through, in order: the file's `use` alias
 map, the enclosing namespace, the global namespace, then a PSR-4 prefix lookup.
+The alias map is per kind, as in PHP: an unqualified function call goes through
+`use function` aliases only and an unqualified constant through `use const`
+only. A class alias (`use Lib\Once;`) applies to class positions and to the
+head of a qualified name (`Models\User`), so it does not capture `once()`, and
+an unqualified call never binds to a class.
 Receiver types are inferred for the cases that are syntactically recoverable and
 overwhelmingly common — `$x = new Foo()` followed by `$x->m()`, promoted
 constructor properties, `$this->`, and `self::` / `static::` / `parent::`.

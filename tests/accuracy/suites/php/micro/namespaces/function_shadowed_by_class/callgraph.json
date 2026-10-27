@@ -1,0 +1,1 @@
+{"main.php": [], "once": [], "logger": [], "App\\Log\\viaAlias": ["once"], "App\\Log\\viaNamespace": ["logger"]}

@@ -13,10 +13,19 @@
       "span": null
     },
     {
-      "file_path": null,
+      "file_path": "service.go",
       "id": "2c598000ec1631d1",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            9,
+            1,
+            13
+          ]
+        }
+      },
       "name": "fixture",
       "qualified_name": "example.com/fixture",
       "span": null
@@ -29,23 +38,6 @@
       "name": "service.go",
       "qualified_name": "service.go",
       "span": null
-    },
-    {
-      "file_path": "service.go",
-      "id": "4d591b833e73aaa0",
-      "kind": "import",
-      "metadata": {
-        "import_path": "example.com/fixture/store",
-        "origin": "internal"
-      },
-      "name": "example.com/fixture/store",
-      "qualified_name": "service.go::example.com/fixture/store",
-      "span": [
-        6,
-        2,
-        6,
-        29
-      ]
     },
     {
       "file_path": "service.go",
@@ -74,6 +66,23 @@
       "name": "fmt",
       "qualified_name": "fmt",
       "span": null
+    },
+    {
+      "file_path": "service.go",
+      "id": "4d591b833e73aaa0",
+      "kind": "import",
+      "metadata": {
+        "import_path": "example.com/fixture/store",
+        "origin": "internal"
+      },
+      "name": "example.com/fixture/store",
+      "qualified_name": "service.go::example.com/fixture/store",
+      "span": [
+        6,
+        2,
+        6,
+        29
+      ]
     },
     {
       "file_path": "service.go",
@@ -221,10 +230,19 @@
       ]
     },
     {
-      "file_path": null,
+      "file_path": "store/store.go",
       "id": "1f7ac2ffecded4f8",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            2,
+            9,
+            2,
+            14
+          ]
+        }
+      },
       "name": "store",
       "qualified_name": "example.com/fixture/store",
       "span": null
@@ -422,6 +440,29 @@
     },
     {
       "file_path": "store/store.go",
+      "id": "39c8839d12526882",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            25,
+            2,
+            25,
+            6
+          ]
+        }
+      },
+      "name": "Base",
+      "qualified_name": "example.com/fixture/store.Engine.Base",
+      "span": [
+        25,
+        2,
+        25,
+        6
+      ]
+    },
+    {
+      "file_path": "store/store.go",
       "id": "5c3b9314b7f1bcf2",
       "kind": "attribute",
       "metadata": {
@@ -465,6 +506,122 @@
         31,
         2
       ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "849fb5fae24f1a31",
+      "kind": "class",
+      "metadata": {
+        "doc": "Limits bounds a request.",
+        "name_span": {
+          "__span__": [
+            34,
+            6,
+            34,
+            12
+          ]
+        }
+      },
+      "name": "Limits",
+      "qualified_name": "example.com/fixture/store.Limits",
+      "span": [
+        34,
+        6,
+        37,
+        2
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "fe00224e38013376",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            35,
+            2,
+            35,
+            5
+          ]
+        }
+      },
+      "name": "Min",
+      "qualified_name": "example.com/fixture/store.Limits.Min",
+      "span": [
+        35,
+        2,
+        35,
+        14
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "a0195eaadef2e416",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            35,
+            7,
+            35,
+            10
+          ]
+        }
+      },
+      "name": "Max",
+      "qualified_name": "example.com/fixture/store.Limits.Max",
+      "span": [
+        35,
+        2,
+        35,
+        14
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "303926f8f2d7c775",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            36,
+            2,
+            36,
+            7
+          ]
+        }
+      },
+      "name": "Retry",
+      "qualified_name": "example.com/fixture/store.Limits.Retry",
+      "span": [
+        36,
+        2,
+        36,
+        30
+      ]
+    },
+    {
+      "file_path": "store/store.go",
+      "id": "502c516a73959158",
+      "kind": "attribute",
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            36,
+            19,
+            36,
+            24
+          ]
+        }
+      },
+      "name": "Count",
+      "qualified_name": "example.com/fixture/store.Limits.Retry.<anon>.Count",
+      "span": [
+        36,
+        19,
+        36,
+        28
+      ]
     }
   ],
   "relations": [
@@ -484,12 +641,6 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "cec9e10a50622ace",
-      "target_id": "4d591b833e73aaa0"
-    },
-    {
-      "kind": "declares",
-      "metadata": {},
-      "source_id": "cec9e10a50622ace",
       "target_id": "33cc48716b1f4a0d"
     },
     {
@@ -500,9 +651,24 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            2,
+            4,
+            7
+          ]
+        }
+      },
       "source_id": "33cc48716b1f4a0d",
       "target_id": "13dc1513e51a2e31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cec9e10a50622ace",
+      "target_id": "4d591b833e73aaa0"
     },
     {
       "kind": "declares",
@@ -566,7 +732,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            8,
+            4,
+            13
+          ]
+        }
+      },
       "source_id": "f6cfce8b5540ec6e",
       "target_id": "13dc1513e51a2e31"
     },
@@ -628,6 +803,18 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "ddc88afd6510eaff",
+      "target_id": "39c8839d12526882"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "09e9175fa750828c",
+      "target_id": "39c8839d12526882"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
       "target_id": "5c3b9314b7f1bcf2"
     },
     {
@@ -643,6 +830,60 @@
       "target_id": "1e4f1fc8faccd845"
     },
     {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "849fb5fae24f1a31"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "fe00224e38013376"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "fe00224e38013376"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "a0195eaadef2e416"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "a0195eaadef2e416"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "303926f8f2d7c775"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "849fb5fae24f1a31",
+      "target_id": "303926f8f2d7c775"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "ddc88afd6510eaff",
+      "target_id": "502c516a73959158"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "303926f8f2d7c775",
+      "target_id": "502c516a73959158"
+    },
+    {
       "kind": "imports",
       "metadata": {},
       "source_id": "cec9e10a50622ace",
@@ -650,7 +891,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            6,
+            2,
+            6,
+            29
+          ]
+        }
+      },
       "source_id": "4d591b833e73aaa0",
       "target_id": "1f7ac2ffecded4f8"
     }

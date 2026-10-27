@@ -75,8 +75,8 @@
   },
   "go": {
     "nodes": {
-      "attribute": 2,
-      "class": 3,
+      "attribute": 7,
+      "class": 4,
       "external_symbol": 3,
       "file": 2,
       "function": 3,
@@ -91,18 +91,18 @@
     "relations": {
       "calls": 6,
       "contains": 4,
-      "declares": 21,
-      "has_type": 2,
+      "declares": 32,
+      "has_type": 6,
       "imports": 3,
       "inherits_from": 1,
-      "references": 3,
+      "references": 9,
       "resolves_to": 3
     },
     "resolver": {
-      "external": 2,
-      "internal": 10,
-      "queries": 15,
-      "resolved": 15,
+      "external": 4,
+      "internal": 18,
+      "queries": 25,
+      "resolved": 25,
       "unresolved": 0
     },
     "resolver_status": "ok"

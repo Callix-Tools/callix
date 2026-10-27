@@ -41,6 +41,7 @@ GitLab reads it as a code-navigation report.
 | kind and qualified name, then the definition's `metadata["doc"]` | `hoverResult` |
 | an external symbol | `hoverResult` named after the text at the site, `(external, stdlib)` |
 | a named external symbol | `moniker`, kind `import` |
+| a Go package (`MODULE` with a `name_span`) | a definition at its package clause; qualifiers and import paths are references to it |
 
 Positions are converted properly: callix counts bytes from 1, LSIF wants UTF-16
 units from 0. Give the exporter the sources (the directory you analysed, or
@@ -87,6 +88,10 @@ callable, `.` for a term, `(…)` for a parameter. rust-analyzer's own symbols,
 which the graph keeps verbatim for Rust's external references, are used as they
 are, and the definitions callix indexes for the Rust fixture sit at exactly the
 ranges rust-analyzer's index puts them (a test checks it against a real index).
+
+A Go package is a definition too, at the identifier of its `package` clause in its
+first non-test file; a package qualifier (`util` in `util.Double`) and an import
+path are references to it.
 
 Left out, with a warning: a reference whose target the resolver could not name
 (an external symbol keyed by the call site it was met at) — it has no identity to

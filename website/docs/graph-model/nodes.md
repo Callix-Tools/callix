@@ -41,7 +41,7 @@ node.metadata        # dict[str, object]
 | Language | A `MODULE` is |
 |---|---|
 | Python, TypeScript | a dotted name — `app.services.billing` |
-| Go | a package directory, whose `qualified_name` **is** the import path |
+| Go | a package directory, whose `qualified_name` **is** the import path; it carries the `file_path` of its first non-test file and a `name_span` at the package clause, and no `span` |
 | Rust | a module path — `crate::net::http` |
 | PHP | a namespace — `App\Service` |
 | C, C++ | the directory; a C++ namespace lives in the qualified names instead |

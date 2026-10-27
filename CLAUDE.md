@@ -201,6 +201,14 @@ import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
 be declared below its `impl`.
 
+In Go every name of a multi-name field (`a, b int`) is its own ATTRIBUTE, and the fields of an anonymous struct field type (also behind `*`, `[]`, `[N]`, a map value, a chan) are ATTRIBUTEs `T.F.<anon>.G`, DECLARED by the ATTRIBUTE `F`. There is no node for `<anon>`, and no `base`/`INHERITS_FROM` for types embedded in such a struct.
+
+A Go MODULE is placed by `file_path` (its first non-`_test.go` file) plus
+`metadata["name_span"]` (that file's `package` clause identifier) and has **no
+`span`**, because a package spans several files: `SpanIndex::from_graph` skips
+span-less nodes, so a package never steals a real name. The placement file is
+chosen from the paths before the walk (`placement_files`).
+
 ### Resolvers: what is linked in and what is not
 
 | Language | Backend | External requirement |
@@ -259,8 +267,34 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **A decorator is called by the scope the definition sits in**, not by the
   definition; the definition only `REFERENCES` it. Calls in a closure belong to the
   function that contains it. Both conventions are what the accuracy suites assume.
+- **Go package-level `var`/`const` initializers are scanned with the VARIABLE as
+  the enclosing definition** (`GoExtractor::scan_initializer`). A func literal that
+  is the whole value is the variable's body: its parameters are PARAMETERs
+  `<var>.<p>` and its called locals are nodes under the variable. A literal nested
+  deeper in the value is a closure and has no PARAMETERs. In `var a, b = f()` the
+  first name owns the call, so no site gets two occurrences.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
+- **A Go bare identifier** (`limit` in `n := limit`, `counter = n + limit`, a return
+  value, a case, a composite element, a range operand, a selector operand such as
+  `quoteEscaper` in `quoteEscaper.Replace(s)`) is a `read`/`write` occurrence with
+  detail `name:<ident>` (`GoExtractor::record_identifier`). `build_root_structure`
+  keeps it only when `{package}.{name}` is a package-level VARIABLE or FUNCTION of
+  the file's package and rewrites the detail to `name:<node id>`; `resolve_pass`
+  writes the `REFERENCES` edge only when go/types binds the use to exactly that
+  node. Locals, parameters, predeclared names and dot-imported names are dropped
+  without an EXTERNAL_SYMBOL. One site, one edge occurrence: `GoExtractor::sites`
+  holds the positions that already have a call/read/write.
+- **A Go package qualifier** (`pkg.X` operand, `pkg.T` in a type) is a `read`
+  occurrence with detail `package`. The pass binds it only when go/types answers
+  with the declaring position of one of the file's import specs (the alias, else
+  the path literal), so a local that shadows a package gets no edge. The edge is a
+  `REFERENCES` to the MODULE, or to the import path's EXTERNAL_SYMBOL, classified
+  with the import's own origin. The import path literal is the `span` of the
+  structural `RESOLVES_TO`; `IMPORTS` stays unpositioned. Selector operands are
+  filtered by the alias or the gopls assumed name (`assumed_package_name`), so an
+  unaliased import whose package name differs from its last path element is missed
+  in expressions; types are not filtered.
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
@@ -373,6 +407,26 @@ Things that are easy to get wrong:
   have been written elsewhere; `Graph::note_site_file` records the file then and
   only then. Placing a reference by the source node's file alone put eight gin
   references in an eleven-line file.
+- **Go annotations cover every `type_identifier` of a type, root included.**
+  `src/golang/visitor.rs::walk_type` seeds its stack with the node itself and
+  reads in source order; `record_annotation` emits one `annotation` per named
+  type (`map[K]V` depends on both) and skips predeclared names and type
+  parameters in scope in the visitor, because neither is a node and a type
+  parameter would become a per-site `annotation@` external. Interface method
+  results are annotated too. `src/rustlang/visitor.rs::walk_type` has the same
+  root-skip, tracked separately (RUST-01).
+  Annotations are recorded at: receivers (enclosed by the method), the
+  right-hand side and the constraints of type specs and aliases (enclosed by the
+  TYPE_ALIAS or CLASS), `var`/`const` types (enclosed by the VARIABLE, one per
+  name), and every `type_identifier` in a function body (enclosed by the
+  callable, closures included; `collect_body_types`). Two exclusions: a type
+  declared inside a function is not a node and would become an unlocated
+  external, so its name is skipped (scope-insensitively); and `F[T](x)` parses
+  as `type_conversion_expression{generic_type}`, so the base `F` would become a
+  HAS_TYPE edge to a function — only its type arguments are annotated.
+  A `call` occurrence that go/types binds to a CLASS/TYPE_ALIAS is a conversion
+  `T(x)`: `resolve_pass` re-kinds it to REFERENCES (access read), never CALLS and
+  never dropped.
 - **Decorators, parameter defaults and a call's receiver are values the definition
   depends on, and `scan_value` must reach them.** The Python and TypeScript
   visitors once skipped all three — a bare `@deco` recorded nothing, a default was

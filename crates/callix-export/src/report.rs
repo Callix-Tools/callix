@@ -216,10 +216,34 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
-            "static calls and concrete methods; a function value is followed by a flow pass and \
+            "static calls and concrete methods (also those in a package-level var or const initializer, which belong to that variable); a function value is followed by a flow pass and \
              marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
              standard-library callbacks); a call through an interface lands on the interface's \
-             method, never on an implementation",
+             method, never on an implementation; every named type in a receiver, parameter, \
+             result, field, type declaration (right-hand side and constraints), var or const \
+             type or initializer, or anywhere in a function body (literals, closures, assertions, type \
+             switches, make and new, type arguments) is a `has_type`, except predeclared \
+             types, type parameters, types declared inside a function, and the generic in an \
+             explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion; a \
+             package qualifier (`pkg.X`, `pkg.T`) and an import path bind to the package's \
+             `MODULE`, placed at the package clause of its first non-test file, or to the \
+             import's external symbol; a local that shadows a package gets no edge, and an \
+             unaliased package whose name differs from the last element of its import path is \
+             not found in expressions; a field selector (an embedded field is named after its type), and the key of a keyed struct literal \
+             (`T{F: v}`, `&T{..}` and the elided `[]T{{F: v}}` included), is a `references` \
+             edge with access read or write to the field, while the keys of map, slice and \
+             array literals and fields of types declared inside a function, of a package-level \
+             `var x struct{..}` and of a literal's own struct type get none (every name of a \
+             multi-name field and the fields of an anonymous struct field type, `T.F.<anon>.G`, \
+             through `*`, `[]`, `[N]`, map values and chan, are covered); a bare \
+             use of a package-level const, var or function (an assignment side, an operand, a \
+             return value, a case, a composite element, a range operand, `v` in `v.M`) is a \
+             `references` edge with access read or write, while locals, parameters, predeclared \
+             names and dot-imported names get none; a conversion `T(x)` or `pkg.T(x)` to a type \
+             of the project is a `references` edge with access read to the type, never a call, \
+             but a parenthesised conversion `(*T)(p)`, a generic type conversion `G[int](x)` \
+             and a conversion to a standard-library or third-party type (still an external \
+             call) are not",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",

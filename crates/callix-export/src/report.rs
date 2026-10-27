@@ -213,7 +213,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              unions, quoted forward references, annotated variables and fields) is a HAS_TYPE, \
              while `Literal` arguments and `Annotated` metadata are not, a `Literal` imported \
              under another name is not recognised, and a string annotation that does not parse \
-             as one expression is skipped",
+             as one expression is skipped; a write through an attribute (`obj.x = v`, \
+             `self.x = v`) references the class attribute and declares no local, and a value \
+             assigned through a receiver other than `self`/`cls` is not followed by the flow \
+             pass",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",

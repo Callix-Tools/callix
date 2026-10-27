@@ -415,7 +415,7 @@
     },
     {
       "file_path": "pkg/models.py",
-      "id": "6e3ff566f2180332",
+      "id": "a0aab695d7f0b6fe",
       "kind": "attribute",
       "metadata": {
         "declared_at": [
@@ -439,7 +439,7 @@
         }
       },
       "name": "region",
-      "qualified_name": "pkg.models.Engine.__init__.region",
+      "qualified_name": "pkg.models.Engine.region",
       "span": [
         22,
         9,
@@ -970,8 +970,8 @@
     {
       "kind": "declares",
       "metadata": {},
-      "source_id": "e86ccccefa632fb2",
-      "target_id": "6e3ff566f2180332"
+      "source_id": "7f60ae75b77ce17c",
+      "target_id": "a0aab695d7f0b6fe"
     },
     {
       "kind": "declares",

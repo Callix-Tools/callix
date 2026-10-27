@@ -22,7 +22,7 @@ PythonAdapter(resolve=False).analyze(root)      # structure only
 ## What it extracts
 
 Modules as dotted names, classes, functions and methods, module- and
-class-level variables, attributes assigned through `self`, type aliases,
+class-level variables, attributes assigned through `self` or `cls` (one `ATTRIBUTE` of the class, however many methods assign it), type aliases,
 parameters, and imports — absolute and relative alike, with `from . import x`
 resolved against the importing module's package, wherever they are written: in a
 function body, or under `if TYPE_CHECKING:` or `try:`.
@@ -34,7 +34,12 @@ parameters are `PARAMETER` nodes and its body belongs to it, so what a lambda
 calls is its own edge. A lambda that is assigned, passed as an argument or
 returned is followed to where it is called (`resolution: "flow"`).
 
-A loop variable is a `VARIABLE` node only when the body of the loop calls it
+`obj.x = v` declares no local: it reads `obj` and writes the attribute `x`, which
+resolves to the class that defines it. Every target of a chained assignment
+(`a = b = v`) is declared. At module level the targets of `for` and
+`except ... as` are module variables, because other modules can import them.
+
+Inside a function, a loop variable is a `VARIABLE` node only when the body of the loop calls it
 (`for f in handlers: f()`): a node per loop counter would bury the graph. That
 call is followed to what the iterable hands out: the elements of a container, what
 a generator `yield`s (read like a `return`), what an iterator's `__next__` returns.

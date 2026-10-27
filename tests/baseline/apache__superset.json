@@ -1,14 +1,14 @@
 {
   "files": {
     "RELEASING/changelog.py": {
-      "hash": "a7e5efc2af09911e",
-      "nodes": 161,
-      "relations": 190
+      "hash": "0d66b06c7f2ebd46",
+      "nodes": 158,
+      "relations": 187
     },
     "RELEASING/generate_email.py": {
-      "hash": "aa9b95ed53f122b8",
-      "nodes": 47,
-      "relations": 54
+      "hash": "760d9d134898b1af",
+      "nodes": 46,
+      "relations": 53
     },
     "RELEASING/verify_release.py": {
       "hash": "eafae835d5303151",
@@ -41,9 +41,9 @@
       "relations": 110
     },
     "scripts/benchmark_migration.py": {
-      "hash": "2cc036189d9be00b",
-      "nodes": 74,
-      "relations": 117
+      "hash": "193c32b7af78c0e5",
+      "nodes": 73,
+      "relations": 116
     },
     "scripts/cancel_github_workflows.py": {
       "hash": "c0447fd2b82e4638",
@@ -56,7 +56,7 @@
       "relations": 63
     },
     "scripts/check-env.py": {
-      "hash": "8702999464ff9a75",
+      "hash": "559d21252e30d79e",
       "nodes": 66,
       "relations": 87
     },
@@ -66,9 +66,9 @@
       "relations": 52
     },
     "scripts/erd/erd.py": {
-      "hash": "77ab751718789029",
-      "nodes": 45,
-      "relations": 64
+      "hash": "dc6db1bd114e6fe4",
+      "nodes": 48,
+      "relations": 67
     },
     "scripts/extract_feature_flags.py": {
       "hash": "937d92317a2fca7b",
@@ -76,9 +76,9 @@
       "relations": 57
     },
     "scripts/permissions_cleanup.py": {
-      "hash": "7b1fe00b3546c29a",
-      "nodes": 13,
-      "relations": 18
+      "hash": "bef4cf83f5a48a78",
+      "nodes": 11,
+      "relations": 16
     },
     "setup.py": {
       "hash": "74784123ff96ea7d",
@@ -201,9 +201,9 @@
       "relations": 6
     },
     "superset-extensions-cli/src/superset_extensions_cli/cli.py": {
-      "hash": "68b472c400fa942d",
-      "nodes": 194,
-      "relations": 249
+      "hash": "d252aaccf7cba2a2",
+      "nodes": 193,
+      "relations": 248
     },
     "superset-extensions-cli/src/superset_extensions_cli/constants.py": {
       "hash": "b5f138fd07c56ae8",
@@ -236,19 +236,19 @@
       "relations": 38
     },
     "superset-extensions-cli/tests/test_cli_build.py": {
-      "hash": "80d3f71c84aa0a50",
-      "nodes": 144,
-      "relations": 166
+      "hash": "87f6c4c9bee15d1c",
+      "nodes": 138,
+      "relations": 160
     },
     "superset-extensions-cli/tests/test_cli_bundle.py": {
-      "hash": "ff4cf80f87fbd92b",
-      "nodes": 80,
-      "relations": 91
+      "hash": "ba9dd3f95e4f0e14",
+      "nodes": 72,
+      "relations": 83
     },
     "superset-extensions-cli/tests/test_cli_dev.py": {
-      "hash": "d8c9ef68035967e4",
-      "nodes": 63,
-      "relations": 79
+      "hash": "c4c9381f7a8ed132",
+      "nodes": 57,
+      "relations": 73
     },
     "superset-extensions-cli/tests/test_cli_init.py": {
       "hash": "07297505e5d56159",
@@ -256,9 +256,9 @@
       "relations": 155
     },
     "superset-extensions-cli/tests/test_cli_validate.py": {
-      "hash": "656ec300278fd69d",
-      "nodes": 56,
-      "relations": 66
+      "hash": "60653e2e4e3f18c2",
+      "nodes": 45,
+      "relations": 55
     },
     "superset-extensions-cli/tests/test_name_transformations.py": {
       "hash": "6e2af1908ed162b6",
@@ -361,9 +361,9 @@
       "relations": 20
     },
     "superset/app.py": {
-      "hash": "0fff4c04aa232282",
-      "nodes": 61,
-      "relations": 109
+      "hash": "1c7a665009b79464",
+      "nodes": 60,
+      "relations": 108
     },
     "superset/async_events/__init__.py": {
       "hash": "286c5cdc464bf06f",
@@ -376,17 +376,17 @@
       "relations": 44
     },
     "superset/async_events/async_query_manager.py": {
-      "hash": "cf4d75856e9e0eb9",
-      "nodes": 127,
-      "relations": 163
+      "hash": "2aa5d0555cd88d23",
+      "nodes": 116,
+      "relations": 152
     },
     "superset/async_events/async_query_manager_factory.py": {
-      "hash": "607e6bea2c96679e",
-      "nodes": 15,
-      "relations": 20
+      "hash": "eb82a5650e8f9028",
+      "nodes": 14,
+      "relations": 19
     },
     "superset/async_events/cache_backend.py": {
-      "hash": "4f1a2bde2c73aa4b",
+      "hash": "08438dbc6a8bf393",
       "nodes": 108,
       "relations": 117
     },
@@ -431,9 +431,9 @@
       "relations": 398
     },
     "superset/charts/client_processing.py": {
-      "hash": "47999ce6641ebf36",
-      "nodes": 94,
-      "relations": 125
+      "hash": "95f26d14b37e3e83",
+      "nodes": 90,
+      "relations": 121
     },
     "superset/charts/data/__init__.py": {
       "hash": "cbded24ec2090c91",
@@ -441,9 +441,9 @@
       "relations": 3
     },
     "superset/charts/data/api.py": {
-      "hash": "06e750bb0a69a09e",
-      "nodes": 180,
-      "relations": 264
+      "hash": "4d939f360eb6bf84",
+      "nodes": 178,
+      "relations": 262
     },
     "superset/charts/data/query_context_cache_loader.py": {
       "hash": "032d393ea66f0fbb",
@@ -456,9 +456,9 @@
       "relations": 108
     },
     "superset/charts/schemas.py": {
-      "hash": "c9b319602d06b5af",
-      "nodes": 388,
-      "relations": 435
+      "hash": "3caa06b948daa188",
+      "nodes": 387,
+      "relations": 434
     },
     "superset/cli/__init__.py": {
       "hash": "424bd6ab11dfb8b4",
@@ -471,19 +471,19 @@
       "relations": 53
     },
     "superset/cli/export_example.py": {
-      "hash": "9893dc57c634ff60",
-      "nodes": 36,
-      "relations": 58
+      "hash": "ccc421865f5f758a",
+      "nodes": 35,
+      "relations": 57
     },
     "superset/cli/importexport.py": {
-      "hash": "0d22cf6db7b3e480",
-      "nodes": 89,
-      "relations": 142
+      "hash": "12dc23314c73dfd8",
+      "nodes": 85,
+      "relations": 138
     },
     "superset/cli/main.py": {
-      "hash": "741f3db09c363f83",
-      "nodes": 27,
-      "relations": 57
+      "hash": "8b78040c7e07188b",
+      "nodes": 31,
+      "relations": 61
     },
     "superset/cli/mcp.py": {
       "hash": "95dd6e944261c711",
@@ -501,7 +501,7 @@
       "relations": 34
     },
     "superset/cli/test_db.py": {
-      "hash": "ffe6f4722ba8ec5f",
+      "hash": "ff389ca1580e0614",
       "nodes": 92,
       "relations": 144
     },
@@ -546,14 +546,14 @@
       "relations": 5
     },
     "superset/commands/annotation_layer/annotation/create.py": {
-      "hash": "ea3a98ceed537d5c",
+      "hash": "bd81151bb3a6d4c2",
       "nodes": 35,
       "relations": 63
     },
     "superset/commands/annotation_layer/annotation/delete.py": {
-      "hash": "095eefac32a734a8",
-      "nodes": 24,
-      "relations": 41
+      "hash": "475151d0007a85b0",
+      "nodes": 23,
+      "relations": 40
     },
     "superset/commands/annotation_layer/annotation/exceptions.py": {
       "hash": "13fd1f37a6c6d915",
@@ -561,19 +561,19 @@
       "relations": 32
     },
     "superset/commands/annotation_layer/annotation/update.py": {
-      "hash": "433c8a7b82bf1189",
-      "nodes": 41,
-      "relations": 72
+      "hash": "9b55b4f5de10e367",
+      "nodes": 40,
+      "relations": 71
     },
     "superset/commands/annotation_layer/create.py": {
-      "hash": "7c559b2b7800b11b",
+      "hash": "e2e70726d3b8f84e",
       "nodes": 26,
       "relations": 46
     },
     "superset/commands/annotation_layer/delete.py": {
-      "hash": "7461901198baccc9",
-      "nodes": 25,
-      "relations": 43
+      "hash": "0ab73d931f6741dc",
+      "nodes": 24,
+      "relations": 42
     },
     "superset/commands/annotation_layer/exceptions.py": {
       "hash": "9650c020e878e52a",
@@ -581,9 +581,9 @@
       "relations": 30
     },
     "superset/commands/annotation_layer/update.py": {
-      "hash": "fc6dba193440a735",
-      "nodes": 33,
-      "relations": 58
+      "hash": "7c5ed25b0434aa58",
+      "nodes": 32,
+      "relations": 57
     },
     "superset/commands/base.py": {
       "hash": "d9e1d8a66262efa8",
@@ -596,7 +596,7 @@
       "relations": 11
     },
     "superset/commands/chart/create.py": {
-      "hash": "b0f38ecbda56af0a",
+      "hash": "6596dad6b7724cc7",
       "nodes": 40,
       "relations": 74
     },
@@ -606,24 +606,24 @@
       "relations": 4
     },
     "superset/commands/chart/data/create_async_job_command.py": {
-      "hash": "5272773718425538",
-      "nodes": 18,
-      "relations": 27
+      "hash": "ffc9978cc13f4c5e",
+      "nodes": 17,
+      "relations": 26
     },
     "superset/commands/chart/data/get_data_command.py": {
-      "hash": "1c4fd4cd191e97d4",
-      "nodes": 26,
-      "relations": 42
+      "hash": "8aa059ef8fb38046",
+      "nodes": 25,
+      "relations": 41
     },
     "superset/commands/chart/data/streaming_export_command.py": {
-      "hash": "210f6815cb9b048d",
+      "hash": "0ba4aa6047958247",
       "nodes": 21,
       "relations": 28
     },
     "superset/commands/chart/delete.py": {
-      "hash": "3174aace9ffce336",
-      "nodes": 31,
-      "relations": 58
+      "hash": "b9504061ee50ac8d",
+      "nodes": 30,
+      "relations": 57
     },
     "superset/commands/chart/exceptions.py": {
       "hash": "0405eca806c47e5e",
@@ -631,14 +631,14 @@
       "relations": 72
     },
     "superset/commands/chart/export.py": {
-      "hash": "1f6e321e615b42a0",
-      "nodes": 42,
-      "relations": 71
+      "hash": "873183b4f9bcc2f3",
+      "nodes": 40,
+      "relations": 69
     },
     "superset/commands/chart/fave.py": {
-      "hash": "121b52ac0635e409",
-      "nodes": 24,
-      "relations": 39
+      "hash": "37e3173e79fe2b5e",
+      "nodes": 23,
+      "relations": 38
     },
     "superset/commands/chart/importers/__init__.py": {
       "hash": "51f0a3ba708a83a7",
@@ -646,7 +646,7 @@
       "relations": 3
     },
     "superset/commands/chart/importers/dispatcher.py": {
-      "hash": "13305ad19c0b5e99",
+      "hash": "7bb940bea573db0a",
       "nodes": 24,
       "relations": 37
     },
@@ -661,19 +661,19 @@
       "relations": 55
     },
     "superset/commands/chart/unfave.py": {
-      "hash": "6a4d3bd1409c032e",
-      "nodes": 24,
-      "relations": 39
+      "hash": "329f367a32dcc727",
+      "nodes": 23,
+      "relations": 38
     },
     "superset/commands/chart/update.py": {
-      "hash": "7c9a20ed5d79fb2f",
-      "nodes": 64,
-      "relations": 110
+      "hash": "94352c23f118500f",
+      "nodes": 63,
+      "relations": 109
     },
     "superset/commands/chart/warm_up_cache.py": {
-      "hash": "9502ae2233c49fc1",
-      "nodes": 58,
-      "relations": 91
+      "hash": "6c6da0c6842dbdb5",
+      "nodes": 55,
+      "relations": 88
     },
     "superset/commands/css/__init__.py": {
       "hash": "fd1960c431478474",
@@ -681,9 +681,9 @@
       "relations": 3
     },
     "superset/commands/css/delete.py": {
-      "hash": "86ca639442df8d78",
-      "nodes": 24,
-      "relations": 41
+      "hash": "61d0476e0684309b",
+      "nodes": 23,
+      "relations": 40
     },
     "superset/commands/css/exceptions.py": {
       "hash": "b2c17f6d550d9eed",
@@ -696,19 +696,19 @@
       "relations": 14
     },
     "superset/commands/dashboard/copy.py": {
-      "hash": "09aab2095c822b50",
+      "hash": "b2ce2aca6c23556e",
       "nodes": 27,
       "relations": 48
     },
     "superset/commands/dashboard/create.py": {
-      "hash": "90d78be1d06e60d6",
+      "hash": "eb4d31efa1f25d40",
       "nodes": 33,
       "relations": 58
     },
     "superset/commands/dashboard/delete.py": {
-      "hash": "b49363e43d708227",
-      "nodes": 42,
-      "relations": 71
+      "hash": "94575bde0426bce4",
+      "nodes": 41,
+      "relations": 70
     },
     "superset/commands/dashboard/embedded/__init__.py": {
       "hash": "1ddab86dc3be9033",
@@ -731,14 +731,14 @@
       "relations": 113
     },
     "superset/commands/dashboard/export_example.py": {
-      "hash": "9e7b9679393ad55d",
-      "nodes": 147,
-      "relations": 181
+      "hash": "40f59fddb1813dfc",
+      "nodes": 146,
+      "relations": 180
     },
     "superset/commands/dashboard/fave.py": {
-      "hash": "7ecc46bd1e5740ed",
-      "nodes": 23,
-      "relations": 37
+      "hash": "b00eab6901b6160a",
+      "nodes": 22,
+      "relations": 36
     },
     "superset/commands/dashboard/filter_state/__init__.py": {
       "hash": "92716197cab1d3b4",
@@ -756,7 +756,7 @@
       "relations": 37
     },
     "superset/commands/dashboard/filter_state/get.py": {
-      "hash": "b33ac9fc3cb90c89",
+      "hash": "c7c02701188f3165",
       "nodes": 20,
       "relations": 33
     },
@@ -776,14 +776,14 @@
       "relations": 4
     },
     "superset/commands/dashboard/importers/dispatcher.py": {
-      "hash": "fcdb92c316a172a6",
+      "hash": "081db6dcc402db85",
       "nodes": 25,
       "relations": 40
     },
     "superset/commands/dashboard/importers/v0.py": {
-      "hash": "2aad804f0120b86c",
-      "nodes": 91,
-      "relations": 131
+      "hash": "de955509283e4c12",
+      "nodes": 87,
+      "relations": 127
     },
     "superset/commands/dashboard/importers/v1/__init__.py": {
       "hash": "a233d5bebf8dbc17",
@@ -806,24 +806,24 @@
       "relations": 25
     },
     "superset/commands/dashboard/permalink/create.py": {
-      "hash": "f0cf1e9a79a31915",
+      "hash": "9b52b6376fe284de",
       "nodes": 39,
       "relations": 69
     },
     "superset/commands/dashboard/permalink/get.py": {
-      "hash": "abf51c4925dd5c21",
+      "hash": "82a9a018cb52f508",
       "nodes": 27,
       "relations": 50
     },
     "superset/commands/dashboard/unfave.py": {
-      "hash": "941ccfc943a66d57",
-      "nodes": 23,
-      "relations": 37
+      "hash": "b9204378dbdb1d96",
+      "nodes": 22,
+      "relations": 36
     },
     "superset/commands/dashboard/update.py": {
-      "hash": "ffe2142d0562db04",
-      "nodes": 111,
-      "relations": 164
+      "hash": "f2e98da3ecc6fb9e",
+      "nodes": 109,
+      "relations": 162
     },
     "superset/commands/database/__init__.py": {
       "hash": "833c0036081545b7",
@@ -831,14 +831,14 @@
       "relations": 16
     },
     "superset/commands/database/create.py": {
-      "hash": "73dcfba93a6a8980",
+      "hash": "2424185637394d78",
       "nodes": 50,
       "relations": 94
     },
     "superset/commands/database/delete.py": {
-      "hash": "a277b318211830a7",
-      "nodes": 29,
-      "relations": 52
+      "hash": "c1daeea5e1e50704",
+      "nodes": 28,
+      "relations": 51
     },
     "superset/commands/database/exceptions.py": {
       "hash": "2bb2fccce5b54d4d",
@@ -856,7 +856,7 @@
       "relations": 3
     },
     "superset/commands/database/importers/dispatcher.py": {
-      "hash": "6a898bd006096a90",
+      "hash": "acf9c0e72e4b3016",
       "nodes": 24,
       "relations": 37
     },
@@ -866,14 +866,14 @@
       "relations": 44
     },
     "superset/commands/database/importers/v1/utils.py": {
-      "hash": "4412dcf3eff52787",
-      "nodes": 32,
-      "relations": 59
+      "hash": "07b27f2f4968ce7b",
+      "nodes": 31,
+      "relations": 58
     },
     "superset/commands/database/oauth2.py": {
-      "hash": "b97591a2b66943a7",
-      "nodes": 43,
-      "relations": 77
+      "hash": "828aaa2fe6b158ab",
+      "nodes": 39,
+      "relations": 73
     },
     "superset/commands/database/ssh_tunnel/__init__.py": {
       "hash": "191aed2bd34b4879",
@@ -886,24 +886,24 @@
       "relations": 41
     },
     "superset/commands/database/sync_permissions.py": {
-      "hash": "60fc41853585f9d1",
-      "nodes": 85,
-      "relations": 124
+      "hash": "85401a18cffe5936",
+      "nodes": 80,
+      "relations": 119
     },
     "superset/commands/database/tables.py": {
-      "hash": "7b739bb83814a013",
-      "nodes": 44,
-      "relations": 71
+      "hash": "480cead723a038f6",
+      "nodes": 42,
+      "relations": 69
     },
     "superset/commands/database/test_connection.py": {
-      "hash": "15a2b66f986a433a",
-      "nodes": 60,
-      "relations": 102
+      "hash": "25cc5710a238a45e",
+      "nodes": 57,
+      "relations": 99
     },
     "superset/commands/database/update.py": {
-      "hash": "078976c273088e49",
-      "nodes": 60,
-      "relations": 99
+      "hash": "f70009d982c43d03",
+      "nodes": 58,
+      "relations": 97
     },
     "superset/commands/database/uploaders/__init__.py": {
       "hash": "89e42f7a3a65871e",
@@ -911,9 +911,9 @@
       "relations": 5
     },
     "superset/commands/database/uploaders/base.py": {
-      "hash": "46d0941d9bf444f6",
-      "nodes": 88,
-      "relations": 132
+      "hash": "15fa14ee7f7dea66",
+      "nodes": 87,
+      "relations": 131
     },
     "superset/commands/database/uploaders/columnar_reader.py": {
       "hash": "5f49c6141459d524",
@@ -921,9 +921,9 @@
       "relations": 80
     },
     "superset/commands/database/uploaders/csv_reader.py": {
-      "hash": "98495639c3a38428",
-      "nodes": 128,
-      "relations": 153
+      "hash": "45e7717e28078662",
+      "nodes": 127,
+      "relations": 152
     },
     "superset/commands/database/uploaders/excel_reader.py": {
       "hash": "56682a039c25f26c",
@@ -931,19 +931,19 @@
       "relations": 55
     },
     "superset/commands/database/utils.py": {
-      "hash": "a5ea6f45816d6f7c",
-      "nodes": 43,
-      "relations": 70
+      "hash": "e0b81c844568c678",
+      "nodes": 41,
+      "relations": 68
     },
     "superset/commands/database/validate.py": {
-      "hash": "13e181c9dd2f6e5f",
-      "nodes": 43,
-      "relations": 73
+      "hash": "48885ed534d28e7a",
+      "nodes": 42,
+      "relations": 72
     },
     "superset/commands/database/validate_sql.py": {
-      "hash": "7ef8b96fae5c083c",
-      "nodes": 54,
-      "relations": 93
+      "hash": "63f0377a43cf13d0",
+      "nodes": 52,
+      "relations": 91
     },
     "superset/commands/dataset/__init__.py": {
       "hash": "c92f824682d4e3d0",
@@ -956,9 +956,9 @@
       "relations": 3
     },
     "superset/commands/dataset/columns/delete.py": {
-      "hash": "4f71571bdd645bec",
-      "nodes": 30,
-      "relations": 53
+      "hash": "ebc4d1faa7a491e7",
+      "nodes": 29,
+      "relations": 52
     },
     "superset/commands/dataset/columns/exceptions.py": {
       "hash": "ed90b98ca4374a0e",
@@ -966,19 +966,19 @@
       "relations": 13
     },
     "superset/commands/dataset/create.py": {
-      "hash": "493f010afbc114fe",
+      "hash": "386470adf9aaf284",
       "nodes": 44,
       "relations": 77
     },
     "superset/commands/dataset/delete.py": {
-      "hash": "1f75de64ff8a1bc0",
-      "nodes": 27,
-      "relations": 49
+      "hash": "b2a86c7128c47356",
+      "nodes": 26,
+      "relations": 48
     },
     "superset/commands/dataset/duplicate.py": {
-      "hash": "d297d231dc0749eb",
-      "nodes": 64,
-      "relations": 106
+      "hash": "e7109fd3a24a12e4",
+      "nodes": 55,
+      "relations": 97
     },
     "superset/commands/dataset/exceptions.py": {
       "hash": "a11d8c66519de5bf",
@@ -996,14 +996,14 @@
       "relations": 4
     },
     "superset/commands/dataset/importers/dispatcher.py": {
-      "hash": "7bf3575d5e63c75d",
+      "hash": "67fb60e955ebee60",
       "nodes": 25,
       "relations": 40
     },
     "superset/commands/dataset/importers/v0.py": {
-      "hash": "7dc47ce0a7bfcaf0",
-      "nodes": 80,
-      "relations": 116
+      "hash": "c30aed20690dd506",
+      "nodes": 75,
+      "relations": 111
     },
     "superset/commands/dataset/importers/v1/__init__.py": {
       "hash": "5a5a39223481ad8c",
@@ -1021,9 +1021,9 @@
       "relations": 3
     },
     "superset/commands/dataset/metrics/delete.py": {
-      "hash": "5a238acf820fb487",
-      "nodes": 30,
-      "relations": 53
+      "hash": "985b64b3d3950bf5",
+      "nodes": 29,
+      "relations": 52
     },
     "superset/commands/dataset/metrics/exceptions.py": {
       "hash": "5c1d6b301f81c71e",
@@ -1031,19 +1031,19 @@
       "relations": 13
     },
     "superset/commands/dataset/refresh.py": {
-      "hash": "6540a97fdc00b00a",
-      "nodes": 31,
-      "relations": 59
+      "hash": "4ff055da45fed3e1",
+      "nodes": 30,
+      "relations": 58
     },
     "superset/commands/dataset/update.py": {
-      "hash": "b48d495277149f83",
-      "nodes": 114,
-      "relations": 170
+      "hash": "fda6ddf20695d810",
+      "nodes": 110,
+      "relations": 166
     },
     "superset/commands/dataset/warm_up_cache.py": {
-      "hash": "908d0c7e53bfde37",
-      "nodes": 29,
-      "relations": 46
+      "hash": "7e01fe89140048d9",
+      "nodes": 28,
+      "relations": 45
     },
     "superset/commands/distributed_lock/__init__.py": {
       "hash": "69993b9da29ffdd9",
@@ -1051,14 +1051,14 @@
       "relations": 11
     },
     "superset/commands/distributed_lock/acquire.py": {
-      "hash": "6aa0fac2ca02d61a",
-      "nodes": 37,
-      "relations": 68
+      "hash": "820bdc9c81112a38",
+      "nodes": 36,
+      "relations": 67
     },
     "superset/commands/distributed_lock/base.py": {
-      "hash": "7a16e2fba876d675",
-      "nodes": 33,
-      "relations": 53
+      "hash": "db1d2c14cad3683e",
+      "nodes": 31,
+      "relations": 51
     },
     "superset/commands/distributed_lock/release.py": {
       "hash": "28757ec3f0b6e78f",
@@ -1066,7 +1066,7 @@
       "relations": 44
     },
     "superset/commands/exceptions.py": {
-      "hash": "87cdfef886fd7ff1",
+      "hash": "3eb446d7b85f18ff",
       "nodes": 79,
       "relations": 88
     },
@@ -1081,17 +1081,17 @@
       "relations": 8
     },
     "superset/commands/explore/form_data/create.py": {
-      "hash": "d8aca93f682927e3",
+      "hash": "5d6c462ef1c62cf5",
       "nodes": 36,
       "relations": 62
     },
     "superset/commands/explore/form_data/delete.py": {
-      "hash": "5d4d86ba3afc0ed2",
+      "hash": "40e085d13a166734",
       "nodes": 34,
       "relations": 61
     },
     "superset/commands/explore/form_data/get.py": {
-      "hash": "ec341f286e5869f9",
+      "hash": "b3795f1f124f1548",
       "nodes": 27,
       "relations": 50
     },
@@ -1106,7 +1106,7 @@
       "relations": 16
     },
     "superset/commands/explore/form_data/update.py": {
-      "hash": "d46338427abd5156",
+      "hash": "0d273e47dc8a35fb",
       "nodes": 39,
       "relations": 70
     },
@@ -1116,9 +1116,9 @@
       "relations": 29
     },
     "superset/commands/explore/get.py": {
-      "hash": "dc4e1f3d844b64b0",
-      "nodes": 63,
-      "relations": 115
+      "hash": "c871da75eeafb622",
+      "nodes": 61,
+      "relations": 113
     },
     "superset/commands/explore/parameters.py": {
       "hash": "8db23655b4fdfb6f",
@@ -1136,12 +1136,12 @@
       "relations": 25
     },
     "superset/commands/explore/permalink/create.py": {
-      "hash": "828f9ed12ab32456",
+      "hash": "b0e6883d20d435e3",
       "nodes": 37,
       "relations": 66
     },
     "superset/commands/explore/permalink/get.py": {
-      "hash": "035362cff0c24d4a",
+      "hash": "3f8ee1ead254b58b",
       "nodes": 31,
       "relations": 56
     },
@@ -1156,9 +1156,9 @@
       "relations": 49
     },
     "superset/commands/export/models.py": {
-      "hash": "238c36851e1cd32e",
-      "nodes": 38,
-      "relations": 57
+      "hash": "872689a15df09c89",
+      "nodes": 37,
+      "relations": 56
     },
     "superset/commands/importers/__init__.py": {
       "hash": "79fa5a58c4bbe151",
@@ -1171,24 +1171,24 @@
       "relations": 13
     },
     "superset/commands/importers/v1/__init__.py": {
-      "hash": "cf5bfdd6839df0a2",
-      "nodes": 57,
-      "relations": 90
+      "hash": "886536db1b72d497",
+      "nodes": 56,
+      "relations": 89
     },
     "superset/commands/importers/v1/assets.py": {
-      "hash": "09c78bb4a1a4cbd2",
-      "nodes": 75,
-      "relations": 137
+      "hash": "5e446fbd02f6891e",
+      "nodes": 74,
+      "relations": 136
     },
     "superset/commands/importers/v1/examples.py": {
-      "hash": "a65c9631c281b587",
-      "nodes": 69,
-      "relations": 124
+      "hash": "1b4a643d5ea59fae",
+      "nodes": 68,
+      "relations": 123
     },
     "superset/commands/importers/v1/utils.py": {
-      "hash": "1ae6daf81fa00635",
-      "nodes": 111,
-      "relations": 167
+      "hash": "c0d3fadf3c53de37",
+      "nodes": 108,
+      "relations": 164
     },
     "superset/commands/logs/__init__.py": {
       "hash": "f66c7ceb4b612771",
@@ -1196,7 +1196,7 @@
       "relations": 2
     },
     "superset/commands/logs/prune.py": {
-      "hash": "c40f3c761a63ecf0",
+      "hash": "7ff18d0bc9e20505",
       "nodes": 36,
       "relations": 51
     },
@@ -1206,9 +1206,9 @@
       "relations": 5
     },
     "superset/commands/query/delete.py": {
-      "hash": "5a17eb7ba4d1f5af",
-      "nodes": 24,
-      "relations": 41
+      "hash": "717dbc296790c735",
+      "nodes": 23,
+      "relations": 40
     },
     "superset/commands/query/exceptions.py": {
       "hash": "fd81cef8f240aec8",
@@ -1226,7 +1226,7 @@
       "relations": 3
     },
     "superset/commands/query/importers/dispatcher.py": {
-      "hash": "f3df199192b0937e",
+      "hash": "7c072bc78d7dfa9c",
       "nodes": 24,
       "relations": 37
     },
@@ -1246,9 +1246,9 @@
       "relations": 9
     },
     "superset/commands/report/alert.py": {
-      "hash": "d5876df4e0af6168",
-      "nodes": 90,
-      "relations": 145
+      "hash": "c235964e9260045e",
+      "nodes": 82,
+      "relations": 137
     },
     "superset/commands/report/base.py": {
       "hash": "c22090cf13cc26da",
@@ -1256,14 +1256,14 @@
       "relations": 106
     },
     "superset/commands/report/create.py": {
-      "hash": "d3e71e8a2392c3df",
+      "hash": "a1ef0ce922601c9b",
       "nodes": 50,
       "relations": 87
     },
     "superset/commands/report/delete.py": {
-      "hash": "ab0abc5febc6ec04",
-      "nodes": 27,
-      "relations": 49
+      "hash": "db4931ed5ec925f8",
+      "nodes": 26,
+      "relations": 48
     },
     "superset/commands/report/exceptions.py": {
       "hash": "71c3eed1e390a969",
@@ -1271,9 +1271,9 @@
       "relations": 156
     },
     "superset/commands/report/execute.py": {
-      "hash": "c825be5f957dffd3",
-      "nodes": 289,
-      "relations": 397
+      "hash": "59077b797b652d20",
+      "nodes": 281,
+      "relations": 389
     },
     "superset/commands/report/log_prune.py": {
       "hash": "b0916101a276693c",
@@ -1281,9 +1281,9 @@
       "relations": 40
     },
     "superset/commands/report/update.py": {
-      "hash": "9c86ad0d3756e851",
-      "nodes": 50,
-      "relations": 91
+      "hash": "3765379ae68726ea",
+      "nodes": 49,
+      "relations": 90
     },
     "superset/commands/security/__init__.py": {
       "hash": "5877a8a5a086ade5",
@@ -1291,14 +1291,14 @@
       "relations": 6
     },
     "superset/commands/security/create.py": {
-      "hash": "c586612c842fd9da",
+      "hash": "ff685ce3a16911b7",
       "nodes": 25,
       "relations": 42
     },
     "superset/commands/security/delete.py": {
-      "hash": "9a2fd05242968285",
-      "nodes": 23,
-      "relations": 38
+      "hash": "4934380ed05dca65",
+      "nodes": 22,
+      "relations": 37
     },
     "superset/commands/security/exceptions.py": {
       "hash": "bf561ed373d8927f",
@@ -1306,14 +1306,14 @@
       "relations": 14
     },
     "superset/commands/security/reset.py": {
-      "hash": "b85473493a4f1d53",
+      "hash": "a9d86e6079dd0f99",
       "nodes": 35,
       "relations": 57
     },
     "superset/commands/security/update.py": {
-      "hash": "82a9fd750361e1a7",
-      "nodes": 32,
-      "relations": 54
+      "hash": "a76b80c0a8a2ff36",
+      "nodes": 31,
+      "relations": 53
     },
     "superset/commands/sql_lab/__init__.py": {
       "hash": "d63ad957924c603f",
@@ -1321,19 +1321,19 @@
       "relations": 8
     },
     "superset/commands/sql_lab/estimate.py": {
-      "hash": "d110549556442520",
-      "nodes": 53,
-      "relations": 80
+      "hash": "c4db8edaa80643a9",
+      "nodes": 47,
+      "relations": 74
     },
     "superset/commands/sql_lab/execute.py": {
-      "hash": "2cf76912d6502015",
-      "nodes": 108,
-      "relations": 154
+      "hash": "d60f507097c596aa",
+      "nodes": 97,
+      "relations": 143
     },
     "superset/commands/sql_lab/export.py": {
-      "hash": "9959c0328a83a7ea",
-      "nodes": 50,
-      "relations": 88
+      "hash": "e2409558bac3c4f0",
+      "nodes": 48,
+      "relations": 86
     },
     "superset/commands/sql_lab/permalink/__init__.py": {
       "hash": "22de8d7b49ba9e24",
@@ -1346,29 +1346,29 @@
       "relations": 25
     },
     "superset/commands/sql_lab/permalink/create.py": {
-      "hash": "c694a2c0b1d5aa25",
+      "hash": "855155b29c36522d",
       "nodes": 27,
       "relations": 50
     },
     "superset/commands/sql_lab/permalink/get.py": {
-      "hash": "fbe8f43f8aa647ea",
+      "hash": "623511de77cb37ff",
       "nodes": 31,
       "relations": 58
     },
     "superset/commands/sql_lab/query.py": {
-      "hash": "fe1a967c9481b456",
+      "hash": "b44295c1142ec2fb",
       "nodes": 33,
       "relations": 48
     },
     "superset/commands/sql_lab/results.py": {
-      "hash": "d824987db60e28ff",
-      "nodes": 45,
-      "relations": 78
+      "hash": "5651abb4e689f489",
+      "nodes": 41,
+      "relations": 74
     },
     "superset/commands/sql_lab/streaming_export_command.py": {
-      "hash": "cb5ebebb70e0b099",
-      "nodes": 39,
-      "relations": 59
+      "hash": "59d3c1f7133b9639",
+      "nodes": 38,
+      "relations": 58
     },
     "superset/commands/streaming_export/__init__.py": {
       "hash": "57fb17dc3ecad13e",
@@ -1376,7 +1376,7 @@
       "relations": 2
     },
     "superset/commands/streaming_export/base.py": {
-      "hash": "4379d81552df3794",
+      "hash": "52923e43a2ee6e6b",
       "nodes": 74,
       "relations": 105
     },
@@ -1386,12 +1386,12 @@
       "relations": 7
     },
     "superset/commands/tag/create.py": {
-      "hash": "42e75509feee6eea",
-      "nodes": 53,
-      "relations": 79
+      "hash": "297d9236f15c2f12",
+      "nodes": 52,
+      "relations": 78
     },
     "superset/commands/tag/delete.py": {
-      "hash": "2475f7ce00e0e465",
+      "hash": "eaff6ac0d8db7afe",
       "nodes": 45,
       "relations": 67
     },
@@ -1406,9 +1406,9 @@
       "relations": 62
     },
     "superset/commands/tag/update.py": {
-      "hash": "c9a06b6a8c5e89fa",
-      "nodes": 33,
-      "relations": 56
+      "hash": "fba03beaf79a4028",
+      "nodes": 30,
+      "relations": 53
     },
     "superset/commands/tag/utils.py": {
       "hash": "f5b21cf3aa4e9a35",
@@ -1421,34 +1421,34 @@
       "relations": 20
     },
     "superset/commands/tasks/cancel.py": {
-      "hash": "f779de46eb23cd87",
-      "nodes": 76,
-      "relations": 118
+      "hash": "d352db9161464100",
+      "nodes": 73,
+      "relations": 115
     },
     "superset/commands/tasks/exceptions.py": {
-      "hash": "dea0f3af722a3b81",
+      "hash": "e38090034449bbcb",
       "nodes": 32,
       "relations": 39
     },
     "superset/commands/tasks/internal_update.py": {
-      "hash": "fd765d1c6dea2aa1",
+      "hash": "8b629b775b332687",
       "nodes": 47,
       "relations": 67
     },
     "superset/commands/tasks/prune.py": {
-      "hash": "297118fe5ecc92b6",
+      "hash": "1cf0dc39899defb1",
       "nodes": 37,
       "relations": 54
     },
     "superset/commands/tasks/submit.py": {
-      "hash": "8d99d2504683b78c",
+      "hash": "79491331e91479d7",
       "nodes": 48,
       "relations": 85
     },
     "superset/commands/tasks/update.py": {
-      "hash": "39b110f686c057cf",
-      "nodes": 54,
-      "relations": 89
+      "hash": "a1c2f5a2f1b56ba6",
+      "nodes": 50,
+      "relations": 85
     },
     "superset/commands/temporary_cache/__init__.py": {
       "hash": "c9d188143c2a5262",
@@ -1456,12 +1456,12 @@
       "relations": 8
     },
     "superset/commands/temporary_cache/create.py": {
-      "hash": "a8f930694ec521f6",
+      "hash": "e5a981edacff9bb9",
       "nodes": 24,
       "relations": 40
     },
     "superset/commands/temporary_cache/delete.py": {
-      "hash": "77d340f3d810b45f",
+      "hash": "e47e1f645daec326",
       "nodes": 24,
       "relations": 40
     },
@@ -1476,7 +1476,7 @@
       "relations": 27
     },
     "superset/commands/temporary_cache/get.py": {
-      "hash": "cc54137af864f20d",
+      "hash": "5a07f47aa1279ef3",
       "nodes": 23,
       "relations": 38
     },
@@ -1486,7 +1486,7 @@
       "relations": 16
     },
     "superset/commands/temporary_cache/update.py": {
-      "hash": "8f54b020922538be",
+      "hash": "c6ca607f1eca7335",
       "nodes": 25,
       "relations": 43
     },
@@ -1496,9 +1496,9 @@
       "relations": 9
     },
     "superset/commands/theme/delete.py": {
-      "hash": "2275c1a6af784036",
-      "nodes": 42,
-      "relations": 66
+      "hash": "fbdc2ed10cfc51ee",
+      "nodes": 40,
+      "relations": 64
     },
     "superset/commands/theme/exceptions.py": {
       "hash": "ce89ce583c899fe3",
@@ -1511,9 +1511,9 @@
       "relations": 50
     },
     "superset/commands/theme/import_themes.py": {
-      "hash": "50c724134b6418e4",
-      "nodes": 35,
-      "relations": 60
+      "hash": "3911feb6264cbd38",
+      "nodes": 33,
+      "relations": 58
     },
     "superset/commands/theme/importers/__init__.py": {
       "hash": "ae9e7a47a3e6af5e",
@@ -1521,7 +1521,7 @@
       "relations": 2
     },
     "superset/commands/theme/importers/dispatcher.py": {
-      "hash": "222340573dd5e0c5",
+      "hash": "9d767e663c847533",
       "nodes": 24,
       "relations": 37
     },
@@ -1531,14 +1531,14 @@
       "relations": 45
     },
     "superset/commands/theme/set_system_theme.py": {
-      "hash": "5f3e7bf0ef4fae76",
-      "nodes": 48,
-      "relations": 68
+      "hash": "a3253aa1807afd5a",
+      "nodes": 44,
+      "relations": 64
     },
     "superset/commands/theme/update.py": {
-      "hash": "2e4a91b21d3b33ff",
-      "nodes": 28,
-      "relations": 47
+      "hash": "8134e4fc8159d751",
+      "nodes": 27,
+      "relations": 46
     },
     "superset/commands/utils.py": {
       "hash": "b7c082cf374793b5",
@@ -1561,39 +1561,39 @@
       "relations": 13
     },
     "superset/common/not_authorized_object.py": {
-      "hash": "6f6358c49cb2e8f6",
+      "hash": "672cb330708de22c",
       "nodes": 21,
       "relations": 26
     },
     "superset/common/query_actions.py": {
-      "hash": "72ec0158546479bf",
-      "nodes": 104,
-      "relations": 138
-    },
-    "superset/common/query_context.py": {
-      "hash": "98f027c144f870a4",
-      "nodes": 72,
-      "relations": 96
-    },
-    "superset/common/query_context_factory.py": {
-      "hash": "bd1c144449e1164d",
-      "nodes": 100,
+      "hash": "af185629eaed6c48",
+      "nodes": 92,
       "relations": 126
     },
+    "superset/common/query_context.py": {
+      "hash": "262d8cbf1d30c099",
+      "nodes": 62,
+      "relations": 86
+    },
+    "superset/common/query_context_factory.py": {
+      "hash": "63eb634cc07c692f",
+      "nodes": 97,
+      "relations": 123
+    },
     "superset/common/query_context_processor.py": {
-      "hash": "0d995c59192dc5ba",
-      "nodes": 152,
-      "relations": 229
+      "hash": "a07f7d8937642d1a",
+      "nodes": 144,
+      "relations": 221
     },
     "superset/common/query_object.py": {
-      "hash": "43ad1bcadfbd16b8",
-      "nodes": 201,
-      "relations": 256
+      "hash": "5863e039b917a61b",
+      "nodes": 174,
+      "relations": 229
     },
     "superset/common/query_object_factory.py": {
-      "hash": "af831310f0fcf69c",
-      "nodes": 64,
-      "relations": 90
+      "hash": "afbd0e14435d0552",
+      "nodes": 62,
+      "relations": 88
     },
     "superset/common/tags.py": {
       "hash": "167814aab5f0d83f",
@@ -1611,9 +1611,9 @@
       "relations": 39
     },
     "superset/common/utils/query_cache_manager.py": {
-      "hash": "2d0c5faf5236281e",
-      "nodes": 110,
-      "relations": 142
+      "hash": "297cbbc917388198",
+      "nodes": 85,
+      "relations": 117
     },
     "superset/common/utils/time_range_utils.py": {
       "hash": "e525055c434d0be8",
@@ -1621,9 +1621,9 @@
       "relations": 29
     },
     "superset/config.py": {
-      "hash": "d4f4b4e6c84f3c58",
-      "nodes": 438,
-      "relations": 541
+      "hash": "40973df6a1dfe05f",
+      "nodes": 440,
+      "relations": 543
     },
     "superset/connectors/__init__.py": {
       "hash": "846a8155674edf97",
@@ -1636,9 +1636,9 @@
       "relations": 3
     },
     "superset/connectors/sqla/models.py": {
-      "hash": "fdc81126e54d9f5f",
-      "nodes": 703,
-      "relations": 880
+      "hash": "53d5dc7e8b3f125a",
+      "nodes": 686,
+      "relations": 863
     },
     "superset/connectors/sqla/utils.py": {
       "hash": "5fb004630c2cbd4a",
@@ -1661,9 +1661,9 @@
       "relations": 2
     },
     "superset/core/api/core_api_injection.py": {
-      "hash": "94423ce23ac90ec2",
-      "nodes": 103,
-      "relations": 189
+      "hash": "e5617c51a1112d2e",
+      "nodes": 74,
+      "relations": 160
     },
     "superset/core/mcp/__init__.py": {
       "hash": "03c86f87e18bc56a",
@@ -1671,9 +1671,9 @@
       "relations": 2
     },
     "superset/core/mcp/core_mcp_injection.py": {
-      "hash": "3b2df9420afebc7c",
-      "nodes": 75,
-      "relations": 102
+      "hash": "c2412bf4b537fc61",
+      "nodes": 73,
+      "relations": 100
     },
     "superset/css_templates/__init__.py": {
       "hash": "b9eb7906a3704794",
@@ -1711,9 +1711,9 @@
       "relations": 35
     },
     "superset/daos/base.py": {
-      "hash": "d4a8ee695cf50205",
-      "nodes": 254,
-      "relations": 323
+      "hash": "27fe1280f560ec2e",
+      "nodes": 253,
+      "relations": 322
     },
     "superset/daos/chart.py": {
       "hash": "f47fb0887113e656",
@@ -1726,14 +1726,14 @@
       "relations": 8
     },
     "superset/daos/dashboard.py": {
-      "hash": "076435525b3f487c",
-      "nodes": 178,
-      "relations": 233
+      "hash": "77bc3c5e742bd9f6",
+      "nodes": 166,
+      "relations": 221
     },
     "superset/daos/database.py": {
-      "hash": "53ab0c3cc35b07f2",
-      "nodes": 81,
-      "relations": 113
+      "hash": "2d0bdb4b69b46d33",
+      "nodes": 80,
+      "relations": 112
     },
     "superset/daos/dataset.py": {
       "hash": "dbba070accf3f282",
@@ -1751,9 +1751,9 @@
       "relations": 23
     },
     "superset/daos/key_value.py": {
-      "hash": "951b6c1c84124145",
-      "nodes": 64,
-      "relations": 90
+      "hash": "6351208757074abb",
+      "nodes": 54,
+      "relations": 80
     },
     "superset/daos/log.py": {
       "hash": "f087878f6d0b2e15",
@@ -1761,9 +1761,9 @@
       "relations": 58
     },
     "superset/daos/query.py": {
-      "hash": "b95df82ff7f13fc2",
-      "nodes": 35,
-      "relations": 64
+      "hash": "ad9dd3b809234df3",
+      "nodes": 33,
+      "relations": 62
     },
     "superset/daos/report.py": {
       "hash": "9ad4b3a66e37259c",
@@ -1791,9 +1791,9 @@
       "relations": 27
     },
     "superset/daos/user.py": {
-      "hash": "3cb47f1c055b85d4",
-      "nodes": 18,
-      "relations": 28
+      "hash": "298ff0947764c2cd",
+      "nodes": 16,
+      "relations": 26
     },
     "superset/dashboards/__init__.py": {
       "hash": "5a032827274c9b4c",
@@ -1921,9 +1921,9 @@
       "relations": 56
     },
     "superset/datasets/datetime_format_detector.py": {
-      "hash": "45fe3f47ab8c049e",
-      "nodes": 37,
-      "relations": 51
+      "hash": "5e76fed9d8e48877",
+      "nodes": 36,
+      "relations": 50
     },
     "superset/datasets/filters.py": {
       "hash": "bded0c94f392ba59",
@@ -1986,19 +1986,19 @@
       "relations": 160
     },
     "superset/db_engine_specs/base.py": {
-      "hash": "6bb55d11bdf1b6ec",
-      "nodes": 769,
-      "relations": 932
+      "hash": "9227eac063cb1911",
+      "nodes": 765,
+      "relations": 928
     },
     "superset/db_engine_specs/bigquery.py": {
-      "hash": "5c44c3275596fc7d",
-      "nodes": 254,
-      "relations": 348
+      "hash": "2f87d7255568be83",
+      "nodes": 256,
+      "relations": 350
     },
     "superset/db_engine_specs/clickhouse.py": {
-      "hash": "470dd85daf610ac0",
-      "nodes": 126,
-      "relations": 186
+      "hash": "808ae95bf36c6215",
+      "nodes": 125,
+      "relations": 185
     },
     "superset/db_engine_specs/cockroachdb.py": {
       "hash": "08c2246ce18da5ee",
@@ -2011,9 +2011,9 @@
       "relations": 123
     },
     "superset/db_engine_specs/crate.py": {
-      "hash": "57fb0a480ac57006",
-      "nodes": 29,
-      "relations": 43
+      "hash": "986c36737c8ad610",
+      "nodes": 28,
+      "relations": 42
     },
     "superset/db_engine_specs/d1.py": {
       "hash": "23162bd99cc29b18",
@@ -2021,19 +2021,19 @@
       "relations": 12
     },
     "superset/db_engine_specs/databend.py": {
-      "hash": "94b3ccb1a09a29af",
-      "nodes": 117,
-      "relations": 167
+      "hash": "7f66ab8df17ec1d0",
+      "nodes": 115,
+      "relations": 165
     },
     "superset/db_engine_specs/databricks.py": {
-      "hash": "fe4b31beae5713ba",
-      "nodes": 229,
-      "relations": 288
+      "hash": "d0ebf9ad3fe5dd99",
+      "nodes": 231,
+      "relations": 290
     },
     "superset/db_engine_specs/datastore.py": {
-      "hash": "ccbc770b520c5e1c",
-      "nodes": 172,
-      "relations": 252
+      "hash": "577fa4a67e599aa1",
+      "nodes": 174,
+      "relations": 254
     },
     "superset/db_engine_specs/db2.py": {
       "hash": "1d632c4a3879d127",
@@ -2046,9 +2046,9 @@
       "relations": 68
     },
     "superset/db_engine_specs/doris.py": {
-      "hash": "6d4c2a7c7130b788",
-      "nodes": 96,
-      "relations": 137
+      "hash": "32a5fe4b0841aad5",
+      "nodes": 97,
+      "relations": 138
     },
     "superset/db_engine_specs/dremio.py": {
       "hash": "f475bf60e4099475",
@@ -2061,14 +2061,14 @@
       "relations": 79
     },
     "superset/db_engine_specs/druid.py": {
-      "hash": "7f78731accf5d9e4",
-      "nodes": 51,
-      "relations": 82
+      "hash": "aa72aefa08a6bc74",
+      "nodes": 50,
+      "relations": 81
     },
     "superset/db_engine_specs/duckdb.py": {
-      "hash": "cf8e4df97256788c",
-      "nodes": 145,
-      "relations": 192
+      "hash": "bff6497c74f2c7ce",
+      "nodes": 144,
+      "relations": 191
     },
     "superset/db_engine_specs/dynamodb.py": {
       "hash": "ed120dccff528265",
@@ -2116,9 +2116,9 @@
       "relations": 39
     },
     "superset/db_engine_specs/hive.py": {
-      "hash": "efdbc71dc493cd77",
-      "nodes": 219,
-      "relations": 303
+      "hash": "69f8bcd938cb4bb9",
+      "nodes": 216,
+      "relations": 300
     },
     "superset/db_engine_specs/hologres.py": {
       "hash": "d388d0520a4c5bd0",
@@ -2181,9 +2181,9 @@
       "relations": 82
     },
     "superset/db_engine_specs/mysql.py": {
-      "hash": "184342d1580b1562",
-      "nodes": 109,
-      "relations": 176
+      "hash": "fb51b054c8698f4e",
+      "nodes": 108,
+      "relations": 175
     },
     "superset/db_engine_specs/netezza.py": {
       "hash": "6eaeaa96feceb021",
@@ -2196,9 +2196,9 @@
       "relations": 73
     },
     "superset/db_engine_specs/ocient.py": {
-      "hash": "16e25e63b0e50119",
-      "nodes": 104,
-      "relations": 144
+      "hash": "96f9b49b11095923",
+      "nodes": 103,
+      "relations": 143
     },
     "superset/db_engine_specs/oracle.py": {
       "hash": "da988cf13b8e1955",
@@ -2206,9 +2206,9 @@
       "relations": 44
     },
     "superset/db_engine_specs/parseable.py": {
-      "hash": "2322aaa48e1a2949",
-      "nodes": 36,
-      "relations": 54
+      "hash": "bfe8ef6c58073b3b",
+      "nodes": 34,
+      "relations": 52
     },
     "superset/db_engine_specs/phoenix.py": {
       "hash": "8d0394e8245d5228",
@@ -2226,9 +2226,9 @@
       "relations": 228
     },
     "superset/db_engine_specs/presto.py": {
-      "hash": "2ca4419d2b9c45f1",
-      "nodes": 367,
-      "relations": 470
+      "hash": "061ba5402c4c9433",
+      "nodes": 368,
+      "relations": 471
     },
     "superset/db_engine_specs/redshift.py": {
       "hash": "5ed5aa5968479ed7",
@@ -2251,9 +2251,9 @@
       "relations": 112
     },
     "superset/db_engine_specs/snowflake.py": {
-      "hash": "e5907a51368f5dcb",
-      "nodes": 158,
-      "relations": 220
+      "hash": "fcbc6294dce3b488",
+      "nodes": 160,
+      "relations": 222
     },
     "superset/db_engine_specs/solr.py": {
       "hash": "30c026bcb254a4d8",
@@ -2271,9 +2271,9 @@
       "relations": 64
     },
     "superset/db_engine_specs/starrocks.py": {
-      "hash": "d70b248ea3c8f878",
-      "nodes": 103,
-      "relations": 138
+      "hash": "31af7b2219f1992a",
+      "nodes": 105,
+      "relations": 140
     },
     "superset/db_engine_specs/superset.py": {
       "hash": "c5987db6c479c48a",
@@ -2301,9 +2301,9 @@
       "relations": 12
     },
     "superset/db_engine_specs/trino.py": {
-      "hash": "0e2b2738a485abc9",
-      "nodes": 175,
-      "relations": 258
+      "hash": "f4ef8ff5c51aa4f1",
+      "nodes": 172,
+      "relations": 255
     },
     "superset/db_engine_specs/vertica.py": {
       "hash": "fbacc44f2a10e28a",
@@ -2356,9 +2356,9 @@
       "relations": 1
     },
     "superset/errors.py": {
-      "hash": "98547f2890ead7dc",
-      "nodes": 79,
-      "relations": 88
+      "hash": "bfd4bc90430c7d45",
+      "nodes": 78,
+      "relations": 87
     },
     "superset/examples/__init__.py": {
       "hash": "c77bb9a706796d01",
@@ -2366,14 +2366,14 @@
       "relations": 9
     },
     "superset/examples/birth_names.py": {
-      "hash": "0cf7261f916dd75e",
-      "nodes": 87,
-      "relations": 132
+      "hash": "d9f1f7977e46b913",
+      "nodes": 76,
+      "relations": 121
     },
     "superset/examples/countries.py": {
-      "hash": "cc200583af08369c",
-      "nodes": 10,
-      "relations": 13
+      "hash": "9bdac37e0e15ff55",
+      "nodes": 12,
+      "relations": 15
     },
     "superset/examples/css_templates.py": {
       "hash": "615e863427678b9f",
@@ -2386,9 +2386,9 @@
       "relations": 67
     },
     "superset/examples/generic_loader.py": {
-      "hash": "bae761a284ccf860",
-      "nodes": 59,
-      "relations": 88
+      "hash": "5fc829fdbdd8a44b",
+      "nodes": 55,
+      "relations": 84
     },
     "superset/examples/helpers.py": {
       "hash": "d69ca58bab382537",
@@ -2401,14 +2401,14 @@
       "relations": 102
     },
     "superset/examples/world_bank.py": {
-      "hash": "ed92d9869ebef732",
-      "nodes": 62,
-      "relations": 103
+      "hash": "5310e78d0cc561b9",
+      "nodes": 54,
+      "relations": 95
     },
     "superset/exceptions.py": {
-      "hash": "1c930ff46d9b454b",
-      "nodes": 203,
-      "relations": 216
+      "hash": "c67de6bb18f35821",
+      "nodes": 202,
+      "relations": 215
     },
     "superset/explorables/__init__.py": {
       "hash": "efceddc35591b8b1",
@@ -2431,7 +2431,7 @@
       "relations": 74
     },
     "superset/explore/exceptions.py": {
-      "hash": "87dd04e834311069",
+      "hash": "aa1961d46662f94c",
       "nodes": 25,
       "relations": 32
     },
@@ -2486,9 +2486,9 @@
       "relations": 53
     },
     "superset/extensions/__init__.py": {
-      "hash": "75e462112f34eee0",
-      "nodes": 108,
-      "relations": 171
+      "hash": "fb5978c3629ef878",
+      "nodes": 103,
+      "relations": 166
     },
     "superset/extensions/api.py": {
       "hash": "29be3cbbf9c9788a",
@@ -2496,12 +2496,12 @@
       "relations": 73
     },
     "superset/extensions/context.py": {
-      "hash": "52d0891198e81f6f",
-      "nodes": 33,
-      "relations": 42
+      "hash": "22d7cb6453d50ffa",
+      "nodes": 31,
+      "relations": 40
     },
     "superset/extensions/contributions.py": {
-      "hash": "245d75f32d83eb67",
+      "hash": "df6e923d3d6a8fc3",
       "nodes": 27,
       "relations": 32
     },
@@ -2516,17 +2516,17 @@
       "relations": 24
     },
     "superset/extensions/local_extensions_watcher.py": {
-      "hash": "d4e1a39179df9f85",
-      "nodes": 35,
-      "relations": 52
+      "hash": "66baaa4f1fc402b7",
+      "nodes": 34,
+      "relations": 51
     },
     "superset/extensions/metadb.py": {
-      "hash": "f2100d7565a7f5f8",
-      "nodes": 155,
-      "relations": 234
+      "hash": "3d05fb97c25d8942",
+      "nodes": 153,
+      "relations": 232
     },
     "superset/extensions/metastore_cache.py": {
-      "hash": "538627038c0c9bed",
+      "hash": "55fecf647b809e62",
       "nodes": 70,
       "relations": 110
     },
@@ -2536,14 +2536,14 @@
       "relations": 41
     },
     "superset/extensions/ssh.py": {
-      "hash": "0b6c8f714f7c9373",
-      "nodes": 45,
-      "relations": 66
+      "hash": "7f34eb33442379e9",
+      "nodes": 42,
+      "relations": 63
     },
     "superset/extensions/stats_logger.py": {
-      "hash": "50d3001a9a166a8f",
-      "nodes": 14,
-      "relations": 17
+      "hash": "8e22ce74f95c945f",
+      "nodes": 13,
+      "relations": 16
     },
     "superset/extensions/types.py": {
       "hash": "6716194c21ed57a3",
@@ -2551,9 +2551,9 @@
       "relations": 18
     },
     "superset/extensions/utils.py": {
-      "hash": "1c873c7fe0354f4c",
-      "nodes": 107,
-      "relations": 145
+      "hash": "551bd5198d297e2d",
+      "nodes": 104,
+      "relations": 142
     },
     "superset/extensions/view.py": {
       "hash": "cf8bfcf48cf752fd",
@@ -2561,9 +2561,9 @@
       "relations": 25
     },
     "superset/forms.py": {
-      "hash": "7e3e2efcc483f127",
-      "nodes": 28,
-      "relations": 37
+      "hash": "d0ad39da8b5a23b0",
+      "nodes": 26,
+      "relations": 35
     },
     "superset/importexport/__init__.py": {
       "hash": "f57460ad92e64da4",
@@ -2576,12 +2576,12 @@
       "relations": 85
     },
     "superset/initialization/__init__.py": {
-      "hash": "fc673172ced0086f",
-      "nodes": 297,
-      "relations": 556
+      "hash": "34193f3306457a18",
+      "nodes": 292,
+      "relations": 551
     },
     "superset/jinja_context.py": {
-      "hash": "6d57c427866ed16b",
+      "hash": "1f530b404daa4d02",
       "nodes": 312,
       "relations": 417
     },
@@ -2606,7 +2606,7 @@
       "relations": 53
     },
     "superset/key_value/types.py": {
-      "hash": "1244cea1249394c0",
+      "hash": "5a025af94aea8004",
       "nodes": 66,
       "relations": 90
     },
@@ -2626,19 +2626,19 @@
       "relations": 27
     },
     "superset/mcp_service/__main__.py": {
-      "hash": "1d2045d696e794f1",
-      "nodes": 35,
-      "relations": 58
+      "hash": "4c59e361862eefee",
+      "nodes": 32,
+      "relations": 55
     },
     "superset/mcp_service/app.py": {
-      "hash": "2d5a80d07ec57756",
-      "nodes": 99,
-      "relations": 161
+      "hash": "dd4c183bfd61285f",
+      "nodes": 95,
+      "relations": 157
     },
     "superset/mcp_service/auth.py": {
-      "hash": "483e7b3c96843db9",
-      "nodes": 101,
-      "relations": 156
+      "hash": "6cfb0b602699ac22",
+      "nodes": 96,
+      "relations": 151
     },
     "superset/mcp_service/caching.py": {
       "hash": "063d8f6969e4a990",
@@ -2681,9 +2681,9 @@
       "relations": 19
     },
     "superset/mcp_service/chart/schemas.py": {
-      "hash": "1c4b2f067b485061",
-      "nodes": 526,
-      "relations": 598
+      "hash": "8b1eec5020ba88ed",
+      "nodes": 525,
+      "relations": 597
     },
     "superset/mcp_service/chart/tool/__init__.py": {
       "hash": "e8c1c66f96ae2057",
@@ -2691,24 +2691,24 @@
       "relations": 27
     },
     "superset/mcp_service/chart/tool/generate_chart.py": {
-      "hash": "69cc287420028cbf",
-      "nodes": 120,
-      "relations": 214
+      "hash": "f29ed42a14f7c2fd",
+      "nodes": 119,
+      "relations": 213
     },
     "superset/mcp_service/chart/tool/get_chart_data.py": {
-      "hash": "386366043f1d8f39",
-      "nodes": 215,
-      "relations": 292
+      "hash": "294403320f4c4f2d",
+      "nodes": 214,
+      "relations": 291
     },
     "superset/mcp_service/chart/tool/get_chart_info.py": {
-      "hash": "15fb109ae2a98d01",
-      "nodes": 44,
-      "relations": 77
+      "hash": "af55b4150d7b9d28",
+      "nodes": 40,
+      "relations": 73
     },
     "superset/mcp_service/chart/tool/get_chart_preview.py": {
-      "hash": "4f5ca6b36dc07e8b",
-      "nodes": 566,
-      "relations": 634
+      "hash": "d13073974a5d22a2",
+      "nodes": 559,
+      "relations": 627
     },
     "superset/mcp_service/chart/tool/get_chart_type_schema.py": {
       "hash": "f49a05de82f87f10",
@@ -2741,7 +2741,7 @@
       "relations": 121
     },
     "superset/mcp_service/chart/validation/pipeline.py": {
-      "hash": "ba465d24d299372d",
+      "hash": "bc31bca4186f2cdb",
       "nodes": 97,
       "relations": 126
     },
@@ -2841,14 +2841,14 @@
       "relations": 161
     },
     "superset/mcp_service/dashboard/tool/generate_dashboard.py": {
-      "hash": "f4184a6d69da4ad4",
-      "nodes": 73,
-      "relations": 122
+      "hash": "930bb9558604f1eb",
+      "nodes": 68,
+      "relations": 117
     },
     "superset/mcp_service/dashboard/tool/get_dashboard_info.py": {
-      "hash": "a5e4292bf0067b75",
-      "nodes": 38,
-      "relations": 72
+      "hash": "caff074eaaae3c6e",
+      "nodes": 35,
+      "relations": 69
     },
     "superset/mcp_service/dashboard/tool/list_dashboards.py": {
       "hash": "29de76b05fb26c1f",
@@ -2936,7 +2936,7 @@
       "relations": 54
     },
     "superset/mcp_service/flask_singleton.py": {
-      "hash": "adebf7810894be5d",
+      "hash": "2791d5d6c3085f6b",
       "nodes": 17,
       "relations": 32
     },
@@ -2951,14 +2951,14 @@
       "relations": 68
     },
     "superset/mcp_service/mcp_core.py": {
-      "hash": "1ea61c46f95800bd",
-      "nodes": 216,
-      "relations": 269
+      "hash": "0a9eb65bf54d02ec",
+      "nodes": 215,
+      "relations": 268
     },
     "superset/mcp_service/middleware.py": {
-      "hash": "f8efc5507dd824b0",
-      "nodes": 263,
-      "relations": 332
+      "hash": "5477c6f8449efe16",
+      "nodes": 262,
+      "relations": 331
     },
     "superset/mcp_service/screenshot/__init__.py": {
       "hash": "8931262039a5c1df",
@@ -2966,7 +2966,7 @@
       "relations": 18
     },
     "superset/mcp_service/screenshot/pooled_screenshot.py": {
-      "hash": "0d4b37b60044db3b",
+      "hash": "ee41654a6b8cc385",
       "nodes": 112,
       "relations": 148
     },
@@ -2976,9 +2976,9 @@
       "relations": 24
     },
     "superset/mcp_service/screenshot/webdriver_pool.py": {
-      "hash": "04d02729ab3ccfcb",
-      "nodes": 106,
-      "relations": 138
+      "hash": "b0d47c95868f7056",
+      "nodes": 101,
+      "relations": 133
     },
     "superset/mcp_service/server.py": {
       "hash": "4640fefbcede2427",
@@ -3071,9 +3071,9 @@
       "relations": 12
     },
     "superset/mcp_service/system/tool/get_instance_info.py": {
-      "hash": "1849f00ba9d86879",
-      "nodes": 38,
-      "relations": 77
+      "hash": "5c2e8618c9e41eac",
+      "nodes": 36,
+      "relations": 75
     },
     "superset/mcp_service/system/tool/get_schema.py": {
       "hash": "24675ad59541d928",
@@ -3106,19 +3106,19 @@
       "relations": 8
     },
     "superset/mcp_service/utils/permissions_utils.py": {
-      "hash": "748086c8fe2764a1",
+      "hash": "2565f18396a41c8e",
       "nodes": 66,
       "relations": 83
     },
     "superset/mcp_service/utils/response_utils.py": {
-      "hash": "e548da7e4ff427df",
+      "hash": "e45567172c0ebc22",
       "nodes": 26,
       "relations": 27
     },
     "superset/mcp_service/utils/retry_utils.py": {
-      "hash": "e58e964813635b5a",
-      "nodes": 87,
-      "relations": 110
+      "hash": "c572c67960f7012e",
+      "nodes": 86,
+      "relations": 109
     },
     "superset/mcp_service/utils/sanitization.py": {
       "hash": "a9c92d85bc2dd459",
@@ -3126,9 +3126,9 @@
       "relations": 38
     },
     "superset/mcp_service/utils/schema_utils.py": {
-      "hash": "2d29ab54035bfc92",
-      "nodes": 157,
-      "relations": 204
+      "hash": "5f9c4a5268d75559",
+      "nodes": 147,
+      "relations": 194
     },
     "superset/mcp_service/utils/token_utils.py": {
       "hash": "a5c4e6ae45dae2db",
@@ -3161,9 +3161,9 @@
       "relations": 7
     },
     "superset/migrations/shared/catalogs.py": {
-      "hash": "af34958e5b753d37",
-      "nodes": 169,
-      "relations": 200
+      "hash": "1c9432d6e96d9f6d",
+      "nodes": 165,
+      "relations": 196
     },
     "superset/migrations/shared/constraints.py": {
       "hash": "806743116173518a",
@@ -3176,24 +3176,24 @@
       "relations": 7
     },
     "superset/migrations/shared/migrate_viz/base.py": {
-      "hash": "a078494203e94ecd",
-      "nodes": 92,
-      "relations": 122
+      "hash": "9fd04514de04e186",
+      "nodes": 87,
+      "relations": 117
     },
     "superset/migrations/shared/migrate_viz/processors.py": {
-      "hash": "9b1ec421e75467df",
-      "nodes": 230,
-      "relations": 260
+      "hash": "90dc37e09193205a",
+      "nodes": 229,
+      "relations": 259
     },
     "superset/migrations/shared/migrate_viz/query_functions.py": {
-      "hash": "4783bbca2a8d5bb1",
+      "hash": "28ff5a9b745c082b",
       "nodes": 340,
       "relations": 355
     },
     "superset/migrations/shared/native_filters.py": {
-      "hash": "4a134ebcf79e43c4",
-      "nodes": 38,
-      "relations": 53
+      "hash": "40a09f3db870ff16",
+      "nodes": 37,
+      "relations": 52
     },
     "superset/migrations/shared/security_converge.py": {
       "hash": "84df926e63b9c67f",
@@ -3201,9 +3201,9 @@
       "relations": 127
     },
     "superset/migrations/shared/utils.py": {
-      "hash": "db37006d77dff9f0",
-      "nodes": 146,
-      "relations": 201
+      "hash": "fb03aa4b6763248f",
+      "nodes": 145,
+      "relations": 200
     },
     "superset/migrations/versions/2015-09-21_17-30_4e6a06bad7a8_init.py": {
       "hash": "6d0fc0e1157a6fb2",
@@ -3336,9 +3336,9 @@
       "relations": 14
     },
     "superset/migrations/versions/2016-04-25_08-54_c3a8f8611885_materializing_permission.py": {
-      "hash": "0e60aaf56a36fe3b",
-      "nodes": 25,
-      "relations": 40
+      "hash": "863bc185ca4935e0",
+      "nodes": 24,
+      "relations": 39
     },
     "superset/migrations/versions/2016-05-01_12-21_f0fbf6129e13_adding_verbose_name_to_tablecolumn.py": {
       "hash": "3dd89d7937c63969",
@@ -3356,9 +3356,9 @@
       "relations": 24
     },
     "superset/migrations/versions/2016-06-07_12-33_d8bc074f7aad_add_new_field_is_restricted_to_.py": {
-      "hash": "098827d7c3f63a2d",
-      "nodes": 25,
-      "relations": 38
+      "hash": "22b0acd8385fa7ae",
+      "nodes": 24,
+      "relations": 37
     },
     "superset/migrations/versions/2016-06-16_14-15_960c69cb1f5b_.py": {
       "hash": "c76d2e34c6ffc56e",
@@ -3391,9 +3391,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2016-09-07_23-50_33d996bcc382_update_slice_model.py": {
-      "hash": "e68fa17ab58d7a74",
-      "nodes": 28,
-      "relations": 41
+      "hash": "9f34ce745fb2763d",
+      "nodes": 25,
+      "relations": 38
     },
     "superset/migrations/versions/2016-09-09_17-39_5e4a03ef0bf0_add_request_access_model.py": {
       "hash": "62373377126c978e",
@@ -3421,9 +3421,9 @@
       "relations": 27
     },
     "superset/migrations/versions/2016-09-22_11-31_eca4694defa7_sqllab_setting_defaults.py": {
-      "hash": "55d80bdc7e474775",
-      "nodes": 20,
-      "relations": 31
+      "hash": "8fefc9a19f223611",
+      "nodes": 19,
+      "relations": 30
     },
     "superset/migrations/versions/2016-09-30_18-01_ab3d66c4246e_add_cache_timeout_to_druid_cluster.py": {
       "hash": "9e2202c80e58938e",
@@ -3486,9 +3486,9 @@
       "relations": 14
     },
     "superset/migrations/versions/2017-01-24_12-31_db0c65b146bd_update_slice_model_json.py": {
-      "hash": "a787b18562d0a9a5",
-      "nodes": 27,
-      "relations": 42
+      "hash": "82a134cdd7b2f81f",
+      "nodes": 26,
+      "relations": 41
     },
     "superset/migrations/versions/2017-01-24_12-40_f18570e03440_add_query_result_key_index.py": {
       "hash": "bdad0189b2c9863d",
@@ -3496,9 +3496,9 @@
       "relations": 8
     },
     "superset/migrations/versions/2017-02-08_14-16_a99f2f7c195a_rewriting_url_from_shortner_with_new_.py": {
-      "hash": "c33d2d2056223698",
-      "nodes": 28,
-      "relations": 39
+      "hash": "95324153c8b53f8a",
+      "nodes": 27,
+      "relations": 38
     },
     "superset/migrations/versions/2017-02-10_17-58_d6db5a5cdb5d_.py": {
       "hash": "5555214bbdb567b7",
@@ -3596,9 +3596,9 @@
       "relations": 47
     },
     "superset/migrations/versions/2018-02-13_08-07_e866bd2d4976_smaller_grid.py": {
-      "hash": "8f117ff607c126f1",
-      "nodes": 28,
-      "relations": 37
+      "hash": "9fdb642399df0a8b",
+      "nodes": 26,
+      "relations": 35
     },
     "superset/migrations/versions/2018-03-06_12-24_e68c4473c581_allow_multi_schema_metadata_fetch.py": {
       "hash": "988d58571bb4dc9d",
@@ -3616,9 +3616,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2018-04-03_08-19_130915240929_is_sqllab_viz_flow.py": {
-      "hash": "5e30b01989ba8e4e",
-      "nodes": 19,
-      "relations": 26
+      "hash": "f0251af27c837ee2",
+      "nodes": 18,
+      "relations": 25
     },
     "superset/migrations/versions/2018-04-08_07-34_30bb17c0dc76_.py": {
       "hash": "27cd1aaabbcd0677",
@@ -3851,9 +3851,9 @@
       "relations": 116
     },
     "superset/migrations/versions/2019-04-09_16-27_80aa3f04bc82_add_parent_ids_in_dashboard_layout.py": {
-      "hash": "66119e01f37dd9e7",
-      "nodes": 36,
-      "relations": 51
+      "hash": "2aef092e7b9319f9",
+      "nodes": 34,
+      "relations": 49
     },
     "superset/migrations/versions/2019-05-06_14-30_afc69274c25a_alter_sql_column_data_type_in_query_mysql_table.py": {
       "hash": "faa91cc78e6d6cb4",
@@ -3891,9 +3891,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2019-09-11_21-49_5afa9079866a_serialize_schema_permissions_py.py": {
-      "hash": "e07bc813797ab279",
-      "nodes": 39,
-      "relations": 54
+      "hash": "6a4e7e187c46329b",
+      "nodes": 38,
+      "relations": 53
     },
     "superset/migrations/versions/2019-09-19_13-40_258b5280a45e_form_strip_leading_and_trailing_whitespace.py": {
       "hash": "1a57d33d0a8d825d",
@@ -3911,9 +3911,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2019-10-10_13-52_1495eb914ad3_time_range.py": {
-      "hash": "91662bb4a8cf107e",
-      "nodes": 30,
-      "relations": 47
+      "hash": "b005fc32b91b7999",
+      "nodes": 28,
+      "relations": 45
     },
     "superset/migrations/versions/2019-11-01_09-18_c2acd2cf3df2_alter_type_of_dbs_encrypted_extra.py": {
       "hash": "e6980a7b509ad419",
@@ -3921,9 +3921,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2019-11-06_15-23_78ee127d0d1d_reconvert_legacy_filters_into_adhoc.py": {
-      "hash": "d10bf898fdfa857c",
-      "nodes": 27,
-      "relations": 46
+      "hash": "596fd43c6935e9fd",
+      "nodes": 26,
+      "relations": 45
     },
     "superset/migrations/versions/2019-11-13_11-05_db4b49eb0782_add_tables_for_sql_lab_state.py": {
       "hash": "c608e64cae3db761",
@@ -4011,9 +4011,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2020-08-12_00-24_978245563a02_migrate_iframe_to_dash_markdown.py": {
-      "hash": "6e727ce230f0f2a6",
-      "nodes": 57,
-      "relations": 84
+      "hash": "3e05d69dff8ae0cd",
+      "nodes": 55,
+      "relations": 82
     },
     "superset/migrations/versions/2020-08-12_10-01_f120347acb39_add_extra_column_to_tables_and_metrics.py": {
       "hash": "90cdeba3f55d695b",
@@ -4046,9 +4046,9 @@
       "relations": 18
     },
     "superset/migrations/versions/2020-09-24_12-04_3fbbc6e8d654_fix_data_access_permissions_for_virtual_.py": {
-      "hash": "d593a114dde8aa1f",
-      "nodes": 81,
-      "relations": 108
+      "hash": "84a807a0eade6392",
+      "nodes": 80,
+      "relations": 107
     },
     "superset/migrations/versions/2020-09-25_10-56_18532d70ab98_fix_table_unique_constraint_in_mysql.py": {
       "hash": "e0fbe5ea2735b615",
@@ -4056,14 +4056,14 @@
       "relations": 19
     },
     "superset/migrations/versions/2020-09-28_17-57_b56500de1855_add_uuid_column_to_import_mixin.py": {
-      "hash": "527db8b92617eb94",
-      "nodes": 43,
-      "relations": 64
+      "hash": "5ce83160081d86dc",
+      "nodes": 41,
+      "relations": 62
     },
     "superset/migrations/versions/2020-10-05_18-10_af30ca79208f_collapse_alerting_models_into_a_single_.py": {
-      "hash": "102c9ca5c4399218",
-      "nodes": 59,
-      "relations": 80
+      "hash": "4573e6b1360a4482",
+      "nodes": 55,
+      "relations": 76
     },
     "superset/migrations/versions/2020-10-20_17-28_585b0b1a7b18_add_exec_info_to_saved_queries.py": {
       "hash": "d14fc76a61faadbe",
@@ -4176,9 +4176,9 @@
       "relations": 50
     },
     "superset/migrations/versions/2021-02-14_11-46_1412ec1e5a7b_legacy_force_directed_to_echart.py": {
-      "hash": "9c83b4a6f591441c",
-      "nodes": 31,
-      "relations": 46
+      "hash": "ba127e130620ef31",
+      "nodes": 29,
+      "relations": 44
     },
     "superset/migrations/versions/2021-02-18_09-13_c501b7c653a3_add_missing_uuid_column.py": {
       "hash": "5ad89e3c88b462a9",
@@ -4286,9 +4286,9 @@
       "relations": 31
     },
     "superset/migrations/versions/2021-08-09_17-32_07071313dd52_change_fetch_values_predicate_to_text.py": {
-      "hash": "f2b640eeb4009fc4",
-      "nodes": 18,
-      "relations": 29
+      "hash": "191a2d22c3cb1ebf",
+      "nodes": 17,
+      "relations": 28
     },
     "superset/migrations/versions/2021-08-24_23-27_181091c0ef16_add_extra_column_to_columns_model.py": {
       "hash": "124d142a3fec18b1",
@@ -4296,9 +4296,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2021-08-31_11-37_021b81fe4fbb_add_type_to_native_filter_configuration.py": {
-      "hash": "71ea85c0ab32a795",
-      "nodes": 26,
-      "relations": 37
+      "hash": "3a9621e5a141e813",
+      "nodes": 24,
+      "relations": 35
     },
     "superset/migrations/versions/2021-09-19_14-42_b92d69a6643c_rename_csv_to_file.py": {
       "hash": "0e008ff6b2f84971",
@@ -4346,9 +4346,9 @@
       "relations": 22
     },
     "superset/migrations/versions/2021-12-10_19-25_bb38f40aa3ff_add_force_screenshot_to_alerts_reports.py": {
-      "hash": "05fcd999a06b7a0b",
-      "nodes": 20,
-      "relations": 27
+      "hash": "beb11aa01f5dc364",
+      "nodes": 19,
+      "relations": 26
     },
     "superset/migrations/versions/2021-12-13_14-06_fe23025b9441_rename_big_viz_total_form_data_fields.py": {
       "hash": "472daf02a9ebb540",
@@ -4381,9 +4381,9 @@
       "relations": 5
     },
     "superset/migrations/versions/2022-03-02_09-20_b5a422d8e252_fix_query_and_saved_query_null_schema.py": {
-      "hash": "c2a6ddf4c6f0aedc",
-      "nodes": 24,
-      "relations": 35
+      "hash": "5eadcc4d2ccecd77",
+      "nodes": 23,
+      "relations": 34
     },
     "superset/migrations/versions/2022-03-02_16-41_7293b0ca7944_change_adhoc_filter_b_from_none_to_.py": {
       "hash": "e64c95b83186c886",
@@ -4436,9 +4436,9 @@
       "relations": 34
     },
     "superset/migrations/versions/2022-05-03_19-39_cbe71abde154_fix_report_schedule_and_log.py": {
-      "hash": "354101da0c107bd2",
-      "nodes": 34,
-      "relations": 51
+      "hash": "37be5a226cbc886b",
+      "nodes": 30,
+      "relations": 47
     },
     "superset/migrations/versions/2022-05-18_16-07_e786798587de_delete_none_permissions.py": {
       "hash": "1788066a306d4c4d",
@@ -4451,9 +4451,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2022-06-19_16-17_f3afaf1f11f0_add_unique_name_desc_rls.py": {
-      "hash": "995c17bd2f5bea54",
-      "nodes": 19,
-      "relations": 26
+      "hash": "c35f4a1edffa4f39",
+      "nodes": 18,
+      "relations": 25
     },
     "superset/migrations/versions/2022-06-27_14-59_7fb8bca906d2_permalink_rename_filterstate.py": {
       "hash": "59b41783defdcf0e",
@@ -4511,9 +4511,9 @@
       "relations": 23
     },
     "superset/migrations/versions/2022-11-28_17-51_4ce1d9b25135_remove_filter_bar_orientation.py": {
-      "hash": "869152734d781332",
-      "nodes": 22,
-      "relations": 31
+      "hash": "417a7181977f0cbe",
+      "nodes": 21,
+      "relations": 30
     },
     "superset/migrations/versions/2023-02-28_14-46_c0a3ea245b61_remove_show_native_filters.py": {
       "hash": "9c479a67a9e1882f",
@@ -4531,9 +4531,9 @@
       "relations": 46
     },
     "superset/migrations/versions/2023-03-27_12-30_7e67aecbf3f1_chart_ds_constraint.py": {
-      "hash": "36b16a995786a152",
-      "nodes": 28,
-      "relations": 39
+      "hash": "58aaa3a5a64a147f",
+      "nodes": 26,
+      "relations": 37
     },
     "superset/migrations/versions/2023-03-29_20-30_07f9a902af1b_drop_postgres_enum_constrains_for_tags.py": {
       "hash": "8305283b7ed98b8a",
@@ -4626,9 +4626,9 @@
       "relations": 44
     },
     "superset/migrations/versions/2023-08-02_15-23_0769ef90fddd_fix_schema_perm_for_datasets.py": {
-      "hash": "3100626f27382ffa",
-      "nodes": 35,
-      "relations": 44
+      "hash": "0eaecf7cd0db715a",
+      "nodes": 33,
+      "relations": 42
     },
     "superset/migrations/versions/2023-08-08_14-14_2e826adca42c_log_json.py": {
       "hash": "30f6ba350152f8b3",
@@ -4646,9 +4646,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2023-08-14_09-38_9f4a086c2676_add_normalize_columns_to_sqla_model.py": {
-      "hash": "e343779403fa2a85",
-      "nodes": 19,
-      "relations": 28
+      "hash": "2b09fa37db97bf91",
+      "nodes": 18,
+      "relations": 27
     },
     "superset/migrations/versions/2023-08-22_11-09_ec54aca4c8a2_increase_ab_user_email_field_size.py": {
       "hash": "1c684aefea716488",
@@ -4656,9 +4656,9 @@
       "relations": 11
     },
     "superset/migrations/versions/2023-09-06_13-18_317970b4400c_added_time_secondary_column_to_.py": {
-      "hash": "ac693b6adb1c7541",
-      "nodes": 20,
-      "relations": 30
+      "hash": "7b295fb08b010014",
+      "nodes": 19,
+      "relations": 29
     },
     "superset/migrations/versions/2023-09-15_12-58_4b85906e5b91_add_on_delete_cascade_for_dashboard_roles.py": {
       "hash": "0572cfd1897ba0fb",
@@ -4881,9 +4881,9 @@
       "relations": 10
     },
     "superset/migrations/versions/2025-06-06_00-39_363a9b1e8992_convert_metric_currencies_from_str_to_json.py": {
-      "hash": "7da9a6adccb6a2c6",
-      "nodes": 30,
-      "relations": 49
+      "hash": "6e6b8294ba719808",
+      "nodes": 29,
+      "relations": 48
     },
     "superset/migrations/versions/2025-07-15_16-40_3fd555e76e3d_theme_crud.py": {
       "hash": "876f1b943c111d8a",
@@ -4946,14 +4946,14 @@
       "relations": 26
     },
     "superset/models/core.py": {
-      "hash": "ed43d7ff01347353",
-      "nodes": 510,
-      "relations": 668
+      "hash": "e4b5f7f62530eea1",
+      "nodes": 507,
+      "relations": 665
     },
     "superset/models/dashboard.py": {
-      "hash": "b66e223da6f6d0c9",
-      "nodes": 173,
-      "relations": 252
+      "hash": "a1330a303a70bc81",
+      "nodes": 171,
+      "relations": 250
     },
     "superset/models/dynamic_plugins.py": {
       "hash": "5394074c7c182c6e",
@@ -4966,19 +4966,19 @@
       "relations": 36
     },
     "superset/models/helpers.py": {
-      "hash": "0a0d5872b88149df",
-      "nodes": 955,
-      "relations": 1152
+      "hash": "ebd175abd5be5f98",
+      "nodes": 939,
+      "relations": 1136
     },
     "superset/models/slice.py": {
-      "hash": "37f20fc0910cb8ad",
-      "nodes": 163,
-      "relations": 237
+      "hash": "27c916b37b1e93bd",
+      "nodes": 158,
+      "relations": 232
     },
     "superset/models/sql_lab.py": {
-      "hash": "86d181325637f5b0",
-      "nodes": 250,
-      "relations": 354
+      "hash": "68a10f66eeca2ff9",
+      "nodes": 249,
+      "relations": 353
     },
     "superset/models/sql_types/__init__.py": {
       "hash": "6529b3f28c45f3ee",
@@ -5006,9 +5006,9 @@
       "relations": 45
     },
     "superset/models/tasks.py": {
-      "hash": "c3b34cdd38fff98c",
-      "nodes": 98,
-      "relations": 142
+      "hash": "4d00d0a11c4797df",
+      "nodes": 92,
+      "relations": 136
     },
     "superset/models/user_attributes.py": {
       "hash": "201a4d47268ec960",
@@ -5036,9 +5036,9 @@
       "relations": 4
     },
     "superset/queries/saved_queries/api.py": {
-      "hash": "916e2514dcb17d70",
-      "nodes": 105,
-      "relations": 179
+      "hash": "2742b652ecc45045",
+      "nodes": 104,
+      "relations": 178
     },
     "superset/queries/saved_queries/filters.py": {
       "hash": "1283c6eaae40d55a",
@@ -5096,7 +5096,7 @@
       "relations": 32
     },
     "superset/reports/notifications/base.py": {
-      "hash": "ac937f31499405ad",
+      "hash": "08925462b86fb48f",
       "nodes": 32,
       "relations": 44
     },
@@ -5116,9 +5116,9 @@
       "relations": 94
     },
     "superset/reports/notifications/slack_mixin.py": {
-      "hash": "c124ede86f14e4d0",
-      "nodes": 26,
-      "relations": 31
+      "hash": "93281fff26db3412",
+      "nodes": 24,
+      "relations": 29
     },
     "superset/reports/notifications/slackv2.py": {
       "hash": "3176cbd90d05b585",
@@ -5141,7 +5141,7 @@
       "relations": 9
     },
     "superset/result_set.py": {
-      "hash": "aff3e182338e9242",
+      "hash": "5c0fe987c6b7cc07",
       "nodes": 89,
       "relations": 115
     },
@@ -5181,14 +5181,14 @@
       "relations": 160
     },
     "superset/security/guest_token.py": {
-      "hash": "78c2349f770e0bca",
-      "nodes": 48,
-      "relations": 61
+      "hash": "56b707c9ef6f392d",
+      "nodes": 49,
+      "relations": 62
     },
     "superset/security/manager.py": {
-      "hash": "9f36fd6f702dc1aa",
-      "nodes": 739,
-      "relations": 917
+      "hash": "5e58fabadf4ac3d3",
+      "nodes": 719,
+      "relations": 897
     },
     "superset/sql/__init__.py": {
       "hash": "bfb42dd951f1043f",
@@ -5226,24 +5226,24 @@
       "relations": 7
     },
     "superset/sql/execution/celery_task.py": {
-      "hash": "5dc63a495f7e989d",
-      "nodes": 136,
-      "relations": 193
+      "hash": "e49eec7ee620821f",
+      "nodes": 123,
+      "relations": 180
     },
     "superset/sql/execution/executor.py": {
-      "hash": "f40359c1680035d8",
-      "nodes": 284,
-      "relations": 387
+      "hash": "e94911bf1b440a42",
+      "nodes": 278,
+      "relations": 381
     },
     "superset/sql/parse.py": {
-      "hash": "c7da067c875fe41e",
-      "nodes": 395,
-      "relations": 455
+      "hash": "a24b41222f0c752f",
+      "nodes": 389,
+      "relations": 449
     },
     "superset/sql_lab.py": {
-      "hash": "b21f4654a7f056c9",
-      "nodes": 193,
-      "relations": 289
+      "hash": "101534ceeb00918f",
+      "nodes": 175,
+      "relations": 271
     },
     "superset/sql_validators/__init__.py": {
       "hash": "9da033ae1b5d6b1f",
@@ -5251,7 +5251,7 @@
       "relations": 18
     },
     "superset/sql_validators/base.py": {
-      "hash": "2c7874ec32d0a3f4",
+      "hash": "b6d2bba7d40e973b",
       "nodes": 25,
       "relations": 28
     },
@@ -5271,9 +5271,9 @@
       "relations": 13
     },
     "superset/sqllab/api.py": {
-      "hash": "142dc7ac73f167be",
-      "nodes": 174,
-      "relations": 276
+      "hash": "044914a108ba4b93",
+      "nodes": 173,
+      "relations": 275
     },
     "superset/sqllab/command_status.py": {
       "hash": "d5b3ff00f32e8bf2",
@@ -5281,14 +5281,14 @@
       "relations": 9
     },
     "superset/sqllab/exceptions.py": {
-      "hash": "8214ee9cbf0ada40",
-      "nodes": 37,
-      "relations": 49
+      "hash": "70163b0a53c485d8",
+      "nodes": 34,
+      "relations": 46
     },
     "superset/sqllab/execution_context_convertor.py": {
-      "hash": "565caa10f4f65c52",
-      "nodes": 26,
-      "relations": 39
+      "hash": "37ce597bdc8e9831",
+      "nodes": 23,
+      "relations": 36
     },
     "superset/sqllab/limiting_factor.py": {
       "hash": "1f5f5e5a604ae30f",
@@ -5321,9 +5321,9 @@
       "relations": 15
     },
     "superset/sqllab/query_render.py": {
-      "hash": "b24bcb7f7e97cef1",
-      "nodes": 70,
-      "relations": 100
+      "hash": "c58df60f0be76cf4",
+      "nodes": 68,
+      "relations": 98
     },
     "superset/sqllab/schemas.py": {
       "hash": "a275ae93454b4ef8",
@@ -5331,14 +5331,14 @@
       "relations": 101
     },
     "superset/sqllab/sql_json_executer.py": {
-      "hash": "02ebd267c87e180b",
-      "nodes": 88,
-      "relations": 121
+      "hash": "5ab7979c17ef7521",
+      "nodes": 82,
+      "relations": 115
     },
     "superset/sqllab/sqllab_execution_context.py": {
-      "hash": "8757f17c6bc4e3d5",
-      "nodes": 120,
-      "relations": 153
+      "hash": "e0ec7aaed07e3bb4",
+      "nodes": 95,
+      "relations": 128
     },
     "superset/sqllab/utils.py": {
       "hash": "fc42541630ebea42",
@@ -5351,9 +5351,9 @@
       "relations": 24
     },
     "superset/stats_logger.py": {
-      "hash": "c5d87d1ef59f1c1e",
-      "nodes": 69,
-      "relations": 80
+      "hash": "d0b42a32e8b3abc5",
+      "nodes": 70,
+      "relations": 81
     },
     "superset/superset_typing.py": {
       "hash": "cb78bbbd34edb9f6",
@@ -5416,12 +5416,12 @@
       "relations": 174
     },
     "superset/tasks/async_queries.py": {
-      "hash": "ad50b3c84db052a0",
-      "nodes": 66,
-      "relations": 110
+      "hash": "48ab33133a1163f7",
+      "nodes": 65,
+      "relations": 109
     },
     "superset/tasks/cache.py": {
-      "hash": "898d47fd81be2aac",
+      "hash": "826a28d07c2a9ce0",
       "nodes": 102,
       "relations": 154
     },
@@ -5436,9 +5436,9 @@
       "relations": 8
     },
     "superset/tasks/context.py": {
-      "hash": "08cc126c5791f174",
-      "nodes": 152,
-      "relations": 196
+      "hash": "265096324f52ca95",
+      "nodes": 130,
+      "relations": 174
     },
     "superset/tasks/cron_util.py": {
       "hash": "a09c1f94db631dbc",
@@ -5446,9 +5446,9 @@
       "relations": 37
     },
     "superset/tasks/decorators.py": {
-      "hash": "c00c3b65fcb4296f",
-      "nodes": 108,
-      "relations": 161
+      "hash": "0c9ac9b9f643049f",
+      "nodes": 105,
+      "relations": 158
     },
     "superset/tasks/exceptions.py": {
       "hash": "3fc68399f01237be",
@@ -5466,9 +5466,9 @@
       "relations": 17
     },
     "superset/tasks/manager.py": {
-      "hash": "15b260e5eb60464e",
-      "nodes": 163,
-      "relations": 203
+      "hash": "0151f3bb52d6b5d0",
+      "nodes": 160,
+      "relations": 200
     },
     "superset/tasks/registry.py": {
       "hash": "5610b660aa9fb397",
@@ -5476,9 +5476,9 @@
       "relations": 28
     },
     "superset/tasks/scheduler.py": {
-      "hash": "57c3c9e5914fd7fb",
-      "nodes": 91,
-      "relations": 153
+      "hash": "31383526da8cc808",
+      "nodes": 90,
+      "relations": 152
     },
     "superset/tasks/schemas.py": {
       "hash": "cdd4f25611c19af4",
@@ -5586,14 +5586,14 @@
       "relations": 11
     },
     "superset/utils/cache.py": {
-      "hash": "8fd27892413c7771",
-      "nodes": 75,
-      "relations": 112
+      "hash": "de4fe38a79c7211b",
+      "nodes": 68,
+      "relations": 105
     },
     "superset/utils/cache_manager.py": {
-      "hash": "3cbda3eef007329c",
-      "nodes": 104,
-      "relations": 132
+      "hash": "e582e6e6fc906518",
+      "nodes": 103,
+      "relations": 131
     },
     "superset/utils/class_utils.py": {
       "hash": "e9cd63bff56a98bf",
@@ -5601,14 +5601,14 @@
       "relations": 13
     },
     "superset/utils/core.py": {
-      "hash": "de9c75477e2f0152",
-      "nodes": 657,
-      "relations": 846
+      "hash": "e87da790130d7caf",
+      "nodes": 653,
+      "relations": 842
     },
     "superset/utils/csv.py": {
-      "hash": "b39def5a31d34c92",
-      "nodes": 43,
-      "relations": 64
+      "hash": "fba2e1cd3963614c",
+      "nodes": 41,
+      "relations": 62
     },
     "superset/utils/currency.py": {
       "hash": "f6246d834be9d3d0",
@@ -5631,7 +5631,7 @@
       "relations": 36
     },
     "superset/utils/date_parser.py": {
-      "hash": "c19f487d1b3800b3",
+      "hash": "66820094c9327242",
       "nodes": 260,
       "relations": 315
     },
@@ -5641,9 +5641,9 @@
       "relations": 13
     },
     "superset/utils/decorators.py": {
-      "hash": "39716b57fd809c54",
-      "nodes": 71,
-      "relations": 104
+      "hash": "017710e968010838",
+      "nodes": 69,
+      "relations": 102
     },
     "superset/utils/dict_import_export.py": {
       "hash": "52331d746c648fd4",
@@ -5651,9 +5651,9 @@
       "relations": 27
     },
     "superset/utils/encrypt.py": {
-      "hash": "e3f9d4dda56e7b13",
-      "nodes": 77,
-      "relations": 104
+      "hash": "086e69e3e4919964",
+      "nodes": 75,
+      "relations": 102
     },
     "superset/utils/excel.py": {
       "hash": "b8273ad46e6682b4",
@@ -5661,9 +5661,9 @@
       "relations": 27
     },
     "superset/utils/feature_flag_manager.py": {
-      "hash": "2af73c8546f623a2",
-      "nodes": 24,
-      "relations": 27
+      "hash": "6bfc138622434e3e",
+      "nodes": 21,
+      "relations": 24
     },
     "superset/utils/file.py": {
       "hash": "853acfa6dc4c86a9",
@@ -5681,12 +5681,12 @@
       "relations": 44
     },
     "superset/utils/jinja_template_validator.py": {
-      "hash": "6f3c5a93fa0d65f4",
+      "hash": "6e1bf3452a222f69",
       "nodes": 27,
       "relations": 38
     },
     "superset/utils/json.py": {
-      "hash": "632b25be9b13194e",
+      "hash": "9a2fe9ec1a9652fb",
       "nodes": 90,
       "relations": 132
     },
@@ -5696,7 +5696,7 @@
       "relations": 47
     },
     "superset/utils/log.py": {
-      "hash": "413e7dce6ec503ef",
+      "hash": "a178599b1608eed9",
       "nodes": 157,
       "relations": 209
     },
@@ -5706,9 +5706,9 @@
       "relations": 28
     },
     "superset/utils/machine_auth.py": {
-      "hash": "85d1e4cc3f7ba5f8",
-      "nodes": 58,
-      "relations": 91
+      "hash": "7f5cfa3c0dc1b665",
+      "nodes": 57,
+      "relations": 90
     },
     "superset/utils/mock_data.py": {
       "hash": "6caa9a30c4ea667a",
@@ -5721,9 +5721,9 @@
       "relations": 26
     },
     "superset/utils/oauth2.py": {
-      "hash": "7e5cb308cbe658f5",
-      "nodes": 91,
-      "relations": 148
+      "hash": "58d00db4296c524a",
+      "nodes": 88,
+      "relations": 145
     },
     "superset/utils/pandas.py": {
       "hash": "fc4477e5fe5ff8b8",
@@ -5766,19 +5766,19 @@
       "relations": 18
     },
     "superset/utils/pandas_postprocessing/flatten.py": {
-      "hash": "322ed640d5369c72",
-      "nodes": 20,
-      "relations": 33
+      "hash": "b5b4b62557273cbc",
+      "nodes": 19,
+      "relations": 32
     },
     "superset/utils/pandas_postprocessing/geography.py": {
-      "hash": "4dc56b276d4245d1",
-      "nodes": 35,
-      "relations": 48
+      "hash": "401f398f817e21e4",
+      "nodes": 34,
+      "relations": 47
     },
     "superset/utils/pandas_postprocessing/histogram.py": {
-      "hash": "4112a288de391854",
-      "nodes": 25,
-      "relations": 32
+      "hash": "7f2e5b10fb4fa293",
+      "nodes": 24,
+      "relations": 31
     },
     "superset/utils/pandas_postprocessing/pivot.py": {
       "hash": "1b42306ff2be172b",
@@ -5786,9 +5786,9 @@
       "relations": 41
     },
     "superset/utils/pandas_postprocessing/prophet.py": {
-      "hash": "459b38d542de5220",
-      "nodes": 42,
-      "relations": 63
+      "hash": "1390451810c04797",
+      "nodes": 41,
+      "relations": 62
     },
     "superset/utils/pandas_postprocessing/rank.py": {
       "hash": "304e200a6d32f406",
@@ -5831,7 +5831,7 @@
       "relations": 19
     },
     "superset/utils/profiler.py": {
-      "hash": "687cb657e6ef644b",
+      "hash": "c5fe43d0aa11a461",
       "nodes": 21,
       "relations": 32
     },
@@ -5861,9 +5861,9 @@
       "relations": 48
     },
     "superset/utils/screenshots.py": {
-      "hash": "5c257db0cdf04485",
-      "nodes": 192,
-      "relations": 235
+      "hash": "1c8f211aedbb94ec",
+      "nodes": 181,
+      "relations": 224
     },
     "superset/utils/slack.py": {
       "hash": "df56a0575f5a56f2",
@@ -5876,7 +5876,7 @@
       "relations": 18
     },
     "superset/utils/url_map_converters.py": {
-      "hash": "198bb9ff29b58109",
+      "hash": "f33b22fb632da64e",
       "nodes": 18,
       "relations": 25
     },
@@ -5891,9 +5891,9 @@
       "relations": 24
     },
     "superset/utils/webdriver.py": {
-      "hash": "5a1e386df39740fd",
-      "nodes": 158,
-      "relations": 221
+      "hash": "858d35fd92d7f9fa",
+      "nodes": 157,
+      "relations": 220
     },
     "superset/views/__init__.py": {
       "hash": "374513905ceecb75",
@@ -5916,9 +5916,9 @@
       "relations": 24
     },
     "superset/views/api.py": {
-      "hash": "1ed885df05971bd5",
-      "nodes": 45,
-      "relations": 82
+      "hash": "35faab28fdf5414e",
+      "nodes": 44,
+      "relations": 81
     },
     "superset/views/auth.py": {
       "hash": "4e76068142f48456",
@@ -5926,14 +5926,14 @@
       "relations": 51
     },
     "superset/views/base.py": {
-      "hash": "dacd34a2261192c1",
-      "nodes": 195,
-      "relations": 298
+      "hash": "c5e01b8348b30c0b",
+      "nodes": 194,
+      "relations": 297
     },
     "superset/views/base_api.py": {
-      "hash": "502089c8da5168ea",
-      "nodes": 253,
-      "relations": 328
+      "hash": "bd9bcbcdf02ced39",
+      "nodes": 249,
+      "relations": 324
     },
     "superset/views/chart/__init__.py": {
       "hash": "d4acdc9431991ca8",
@@ -5951,9 +5951,9 @@
       "relations": 24
     },
     "superset/views/core.py": {
-      "hash": "23950a5377edbc08",
-      "nodes": 274,
-      "relations": 423
+      "hash": "3e92e2053df1a86a",
+      "nodes": 266,
+      "relations": 415
     },
     "superset/views/css_templates.py": {
       "hash": "3c9f8665a791d601",
@@ -5961,9 +5961,9 @@
       "relations": 33
     },
     "superset/views/custom_tags_api_mixin.py": {
-      "hash": "70c2a799f4e5001b",
-      "nodes": 26,
-      "relations": 35
+      "hash": "b983c8a3a444a1b6",
+      "nodes": 24,
+      "relations": 33
     },
     "superset/views/dashboard/__init__.py": {
       "hash": "74063bd71bd7e4e2",
@@ -6136,9 +6136,9 @@
       "relations": 3
     },
     "superset/views/users/api.py": {
-      "hash": "8076d46b697ea366",
-      "nodes": 66,
-      "relations": 116
+      "hash": "aa08d335a78b0cda",
+      "nodes": 63,
+      "relations": 113
     },
     "superset/views/users/schemas.py": {
       "hash": "b0594e8d5b54a672",
@@ -6151,14 +6151,14 @@
       "relations": 21
     },
     "superset/views/utils.py": {
-      "hash": "946ca9970f424d38",
+      "hash": "3d2ab7eccb97a771",
       "nodes": 188,
       "relations": 276
     },
     "superset/viz.py": {
-      "hash": "73ed4cbe799f44dd",
-      "nodes": 974,
-      "relations": 1079
+      "hash": "4755a522a0fe956e",
+      "nodes": 946,
+      "relations": 1051
     },
     "tests/__init__.py": {
       "hash": "067dddb7ac07c374",
@@ -6181,9 +6181,9 @@
       "relations": 55
     },
     "tests/conftest.py": {
-      "hash": "86e4e17919ff1d32",
-      "nodes": 47,
-      "relations": 79
+      "hash": "210bce8771581ec5",
+      "nodes": 46,
+      "relations": 78
     },
     "tests/consts/__init__.py": {
       "hash": "9aef4f430b6769c9",
@@ -6221,14 +6221,14 @@
       "relations": 3
     },
     "tests/example_data/data_generator/birth_names/birth_names_generator.py": {
-      "hash": "a437be4bb11df92b",
-      "nodes": 46,
-      "relations": 73
+      "hash": "5ee40afe4dce4f42",
+      "nodes": 42,
+      "relations": 69
     },
     "tests/example_data/data_generator/birth_names/birth_names_generator_factory.py": {
-      "hash": "2afc8d6ba7ccdf6a",
-      "nodes": 28,
-      "relations": 35
+      "hash": "1fd34af3451fdc01",
+      "nodes": 26,
+      "relations": 33
     },
     "tests/example_data/data_generator/consts.py": {
       "hash": "6ea88a6a2aed9246",
@@ -6236,9 +6236,9 @@
       "relations": 2
     },
     "tests/example_data/data_generator/string_generator.py": {
-      "hash": "9c3f9dce08c092e3",
-      "nodes": 20,
-      "relations": 23
+      "hash": "7acf36c9938c6a86",
+      "nodes": 17,
+      "relations": 20
     },
     "tests/example_data/data_generator/string_generator_factory.py": {
       "hash": "91b115835bfba8e2",
@@ -6251,9 +6251,9 @@
       "relations": 2
     },
     "tests/example_data/data_generator/tests/test_string_generator.py": {
-      "hash": "662851a4f4dd8ea4",
-      "nodes": 14,
-      "relations": 19
+      "hash": "eed4ee9e01686484",
+      "nodes": 13,
+      "relations": 18
     },
     "tests/example_data/data_loading/__init__.py": {
       "hash": "2f7a62515c50358d",
@@ -6271,9 +6271,9 @@
       "relations": 3
     },
     "tests/example_data/data_loading/data_definitions/birth_names.py": {
-      "hash": "5e5e50feb88be3c1",
-      "nodes": 25,
-      "relations": 42
+      "hash": "97abf4206a0e1896",
+      "nodes": 24,
+      "relations": 41
     },
     "tests/example_data/data_loading/data_definitions/types.py": {
       "hash": "6e58edd0eaf3ac57",
@@ -6286,19 +6286,19 @@
       "relations": 4
     },
     "tests/example_data/data_loading/pandas/pandas_data_loader.py": {
-      "hash": "02174873d9fbe4fe",
-      "nodes": 41,
-      "relations": 60
+      "hash": "6e651a27e52f17f0",
+      "nodes": 38,
+      "relations": 57
     },
     "tests/example_data/data_loading/pandas/pands_data_loading_conf.py": {
-      "hash": "c638aa09b3b55691",
-      "nodes": 31,
-      "relations": 32
+      "hash": "1f755518a522d9d0",
+      "nodes": 25,
+      "relations": 26
     },
     "tests/example_data/data_loading/pandas/table_df_convertor.py": {
-      "hash": "f0d7b6265b4fa84f",
-      "nodes": 23,
-      "relations": 32
+      "hash": "6974e06df8d749fa",
+      "nodes": 20,
+      "relations": 29
     },
     "tests/fixtures/__init__.py": {
       "hash": "ab96858d50a4baf2",
@@ -6316,9 +6316,9 @@
       "relations": 72
     },
     "tests/integration_tests/access_tests.py": {
-      "hash": "9ee2b7d5312afcb7",
-      "nodes": 50,
-      "relations": 82
+      "hash": "9b420cb7c53234c7",
+      "nodes": 48,
+      "relations": 80
     },
     "tests/integration_tests/advanced_data_type/__init__.py": {
       "hash": "b580300c018b5a82",
@@ -6351,9 +6351,9 @@
       "relations": 2
     },
     "tests/integration_tests/async_events/api_tests.py": {
-      "hash": "e8a40eac9c48db64",
-      "nodes": 61,
-      "relations": 84
+      "hash": "5d67dddf5dac00a9",
+      "nodes": 57,
+      "relations": 80
     },
     "tests/integration_tests/available_domains/__init__.py": {
       "hash": "44ec8a38fe26b55a",
@@ -6371,9 +6371,9 @@
       "relations": 180
     },
     "tests/integration_tests/base_tests.py": {
-      "hash": "a316101f1f5fa0aa",
-      "nodes": 291,
-      "relations": 371
+      "hash": "b8f9e981bd04c562",
+      "nodes": 270,
+      "relations": 350
     },
     "tests/integration_tests/cache_tests.py": {
       "hash": "94a4c13d920b3ffc",
@@ -6401,14 +6401,14 @@
       "relations": 5
     },
     "tests/integration_tests/charts/api_tests.py": {
-      "hash": "278f9923497c0fd3",
-      "nodes": 722,
-      "relations": 815
+      "hash": "202e70c2755add2a",
+      "nodes": 708,
+      "relations": 801
     },
     "tests/integration_tests/charts/commands_tests.py": {
-      "hash": "e3538733e41a6c4a",
-      "nodes": 219,
-      "relations": 285
+      "hash": "ff857b07d6f984bd",
+      "nodes": 203,
+      "relations": 269
     },
     "tests/integration_tests/charts/data/__init__.py": {
       "hash": "0f905163c326a61f",
@@ -6416,9 +6416,9 @@
       "relations": 2
     },
     "tests/integration_tests/charts/data/api_tests.py": {
-      "hash": "20d858a343471bcb",
-      "nodes": 494,
-      "relations": 602
+      "hash": "9a394a9aba60f3dd",
+      "nodes": 466,
+      "relations": 574
     },
     "tests/integration_tests/charts/schema_tests.py": {
       "hash": "8c5166eb7145149a",
@@ -6426,19 +6426,19 @@
       "relations": 37
     },
     "tests/integration_tests/cli_tests.py": {
-      "hash": "4d8a6a584cb305fe",
-      "nodes": 90,
-      "relations": 135
+      "hash": "8761c299ceea33b5",
+      "nodes": 89,
+      "relations": 134
     },
     "tests/integration_tests/commands_test.py": {
-      "hash": "fe09a1031f7b2c2c",
+      "hash": "567fa8ab5e9dfa59",
       "nodes": 51,
       "relations": 79
     },
     "tests/integration_tests/conftest.py": {
-      "hash": "719a031d7ff7f031",
-      "nodes": 112,
-      "relations": 170
+      "hash": "6cb137be78643eaf",
+      "nodes": 111,
+      "relations": 169
     },
     "tests/integration_tests/constants.py": {
       "hash": "af054582ea4f6cb8",
@@ -6446,9 +6446,9 @@
       "relations": 7
     },
     "tests/integration_tests/core_tests.py": {
-      "hash": "e34a82488418710d",
-      "nodes": 322,
-      "relations": 427
+      "hash": "7463c50852bbd507",
+      "nodes": 315,
+      "relations": 420
     },
     "tests/integration_tests/css_templates/__init__.py": {
       "hash": "d3c6df658fddd5c5",
@@ -6461,24 +6461,24 @@
       "relations": 155
     },
     "tests/integration_tests/dao/base_dao_test.py": {
-      "hash": "5f00e8a1cb614b6c",
-      "nodes": 388,
-      "relations": 434
+      "hash": "388fa7225a7677cd",
+      "nodes": 381,
+      "relations": 427
     },
     "tests/integration_tests/dao/conftest.py": {
-      "hash": "c513041a52bda4bc",
-      "nodes": 30,
-      "relations": 52
+      "hash": "c11f09344dd0b3f0",
+      "nodes": 28,
+      "relations": 50
     },
     "tests/integration_tests/dashboard_tests.py": {
-      "hash": "cc0a62fac24664d5",
-      "nodes": 118,
-      "relations": 166
+      "hash": "de62907edd3d53d6",
+      "nodes": 103,
+      "relations": 151
     },
     "tests/integration_tests/dashboard_utils.py": {
-      "hash": "ca3badd540db5ef1",
-      "nodes": 45,
-      "relations": 63
+      "hash": "74675f066240d186",
+      "nodes": 38,
+      "relations": 56
     },
     "tests/integration_tests/dashboards/__init__.py": {
       "hash": "bd14f1c3568d520c",
@@ -6486,9 +6486,9 @@
       "relations": 14
     },
     "tests/integration_tests/dashboards/api_tests.py": {
-      "hash": "d80209140abf3c1b",
-      "nodes": 1195,
-      "relations": 1282
+      "hash": "0f8579e8e8c56e88",
+      "nodes": 1182,
+      "relations": 1269
     },
     "tests/integration_tests/dashboards/base_case.py": {
       "hash": "0210f58a8eb138e2",
@@ -6496,9 +6496,9 @@
       "relations": 70
     },
     "tests/integration_tests/dashboards/commands_tests.py": {
-      "hash": "fcd40eb219d1917e",
-      "nodes": 195,
-      "relations": 263
+      "hash": "4e51ae3f66c878fa",
+      "nodes": 186,
+      "relations": 254
     },
     "tests/integration_tests/dashboards/consts.py": {
       "hash": "5c6adeabcf01f162",
@@ -6506,9 +6506,9 @@
       "relations": 16
     },
     "tests/integration_tests/dashboards/dao_tests.py": {
-      "hash": "d1e6d0dc927d344f",
-      "nodes": 54,
-      "relations": 77
+      "hash": "618946f89c1f2ec7",
+      "nodes": 49,
+      "relations": 72
     },
     "tests/integration_tests/dashboards/dashboard_test_utils.py": {
       "hash": "51bbdb8ea60b54a8",
@@ -6546,14 +6546,14 @@
       "relations": 32
     },
     "tests/integration_tests/dashboards/security/security_dataset_tests.py": {
-      "hash": "13ed4ff2c44b8e69",
-      "nodes": 68,
-      "relations": 93
+      "hash": "7b51f1a335dee0c1",
+      "nodes": 62,
+      "relations": 87
     },
     "tests/integration_tests/dashboards/security/security_rbac_tests.py": {
-      "hash": "d87b4dbcc63812f6",
-      "nodes": 166,
-      "relations": 205
+      "hash": "b69e0006ee3a4e9b",
+      "nodes": 164,
+      "relations": 203
     },
     "tests/integration_tests/dashboards/superset_factory_util.py": {
       "hash": "74f4669857d68ece",
@@ -6561,12 +6561,12 @@
       "relations": 139
     },
     "tests/integration_tests/dashboards/test_theme_integration.py": {
-      "hash": "3c6a12c4c0c133d8",
-      "nodes": 126,
-      "relations": 162
+      "hash": "cd6d5700507d9420",
+      "nodes": 111,
+      "relations": 147
     },
     "tests/integration_tests/dashboards/test_update_emoji.py": {
-      "hash": "4281811a3a9239e0",
+      "hash": "9aee23d4f8b6208b",
       "nodes": 27,
       "relations": 36
     },
@@ -6581,9 +6581,9 @@
       "relations": 5
     },
     "tests/integration_tests/databases/api_tests.py": {
-      "hash": "c21eaa57316a8ba1",
-      "nodes": 1156,
-      "relations": 1343
+      "hash": "3d28fc3232200bba",
+      "nodes": 1128,
+      "relations": 1315
     },
     "tests/integration_tests/databases/commands/__init__.py": {
       "hash": "664736dd51561eed",
@@ -6591,14 +6591,14 @@
       "relations": 2
     },
     "tests/integration_tests/databases/commands/upload_test.py": {
-      "hash": "7eb1dab2511f2875",
-      "nodes": 57,
-      "relations": 87
+      "hash": "d920fcc006eabf34",
+      "nodes": 55,
+      "relations": 85
     },
     "tests/integration_tests/databases/commands_tests.py": {
-      "hash": "3079c682e5f024ab",
-      "nodes": 367,
-      "relations": 442
+      "hash": "cc70274ae6ef3bb7",
+      "nodes": 321,
+      "relations": 396
     },
     "tests/integration_tests/databases/ssh_tunnel/__init__.py": {
       "hash": "3df6c0297de210cd",
@@ -6611,14 +6611,14 @@
       "relations": 3
     },
     "tests/integration_tests/datasets/api_tests.py": {
-      "hash": "14fac7a59eab3b29",
-      "nodes": 1017,
-      "relations": 1097
+      "hash": "a44a28b017170d9d",
+      "nodes": 941,
+      "relations": 1021
     },
     "tests/integration_tests/datasets/commands_tests.py": {
-      "hash": "2c56e33a1652384b",
-      "nodes": 165,
-      "relations": 228
+      "hash": "b77eb0c5f3570165",
+      "nodes": 155,
+      "relations": 218
     },
     "tests/integration_tests/datasource/__init__.py": {
       "hash": "a74bd3bb39ff96c4",
@@ -6626,19 +6626,19 @@
       "relations": 3
     },
     "tests/integration_tests/datasource/api_tests.py": {
-      "hash": "9d0ca9c3dd9a595b",
-      "nodes": 94,
-      "relations": 115
+      "hash": "38169e8832093b84",
+      "nodes": 89,
+      "relations": 110
     },
     "tests/integration_tests/datasource/test_validate_expression_api.py": {
-      "hash": "2f1453ea2d2ebd90",
-      "nodes": 75,
-      "relations": 96
+      "hash": "d8159e84e4432199",
+      "nodes": 69,
+      "relations": 90
     },
     "tests/integration_tests/datasource_tests.py": {
-      "hash": "3bf13c73972491b2",
-      "nodes": 259,
-      "relations": 328
+      "hash": "25427fdc76003fc6",
+      "nodes": 254,
+      "relations": 323
     },
     "tests/integration_tests/db_engine_specs/__init__.py": {
       "hash": "9423b239d23fba51",
@@ -6651,29 +6651,29 @@
       "relations": 11
     },
     "tests/integration_tests/db_engine_specs/base_engine_spec_tests.py": {
-      "hash": "5662fd9f9ce0443b",
-      "nodes": 122,
-      "relations": 165
+      "hash": "3b8a8eccc78bdabb",
+      "nodes": 115,
+      "relations": 158
     },
     "tests/integration_tests/db_engine_specs/bigquery_tests.py": {
-      "hash": "7ed23836ed2181a8",
-      "nodes": 82,
-      "relations": 113
+      "hash": "7c43f5bd861692da",
+      "nodes": 74,
+      "relations": 105
     },
     "tests/integration_tests/db_engine_specs/databricks_tests.py": {
-      "hash": "d03c2b407c0f33f9",
-      "nodes": 24,
-      "relations": 35
+      "hash": "4381e9dcfec5bfef",
+      "nodes": 20,
+      "relations": 31
     },
     "tests/integration_tests/db_engine_specs/datastore_tests.py": {
-      "hash": "8c16dc9b756eafcb",
-      "nodes": 118,
-      "relations": 155
+      "hash": "3c46499a59b1fb16",
+      "nodes": 115,
+      "relations": 152
     },
     "tests/integration_tests/db_engine_specs/elasticsearch_tests.py": {
-      "hash": "d11c4653b254bae7",
-      "nodes": 15,
-      "relations": 24
+      "hash": "d991cb7ad3c6b531",
+      "nodes": 14,
+      "relations": 23
     },
     "tests/integration_tests/db_engine_specs/gsheets_tests.py": {
       "hash": "0753f8e735950678",
@@ -6681,9 +6681,9 @@
       "relations": 19
     },
     "tests/integration_tests/db_engine_specs/hive_tests.py": {
-      "hash": "5cba1df3b2d210db",
-      "nodes": 141,
-      "relations": 182
+      "hash": "0896e79cda595781",
+      "nodes": 112,
+      "relations": 153
     },
     "tests/integration_tests/db_engine_specs/mysql_tests.py": {
       "hash": "4b775f2c6858b602",
@@ -6696,19 +6696,19 @@
       "relations": 49
     },
     "tests/integration_tests/db_engine_specs/postgres_tests.py": {
-      "hash": "03f48895a326bc92",
-      "nodes": 127,
-      "relations": 163
+      "hash": "01a334cfe48c01b4",
+      "nodes": 115,
+      "relations": 151
     },
     "tests/integration_tests/db_engine_specs/presto_tests.py": {
-      "hash": "ac27a717db140f47",
-      "nodes": 284,
-      "relations": 325
+      "hash": "7e37429af0006cc4",
+      "nodes": 254,
+      "relations": 295
     },
     "tests/integration_tests/db_engine_specs/redshift_tests.py": {
-      "hash": "0519f94728d0753b",
-      "nodes": 40,
-      "relations": 61
+      "hash": "580d6699adef5b88",
+      "nodes": 36,
+      "relations": 57
     },
     "tests/integration_tests/dict_import_export_tests.py": {
       "hash": "e7f0fb38752efb60",
@@ -6721,9 +6721,9 @@
       "relations": 19
     },
     "tests/integration_tests/email_tests.py": {
-      "hash": "62801ffe2b224fb3",
-      "nodes": 101,
-      "relations": 141
+      "hash": "7c3b608424b66da1",
+      "nodes": 96,
+      "relations": 136
     },
     "tests/integration_tests/embedded/__init__.py": {
       "hash": "44d21960e206bad5",
@@ -6731,7 +6731,7 @@
       "relations": 4
     },
     "tests/integration_tests/embedded/api_tests.py": {
-      "hash": "b5f001027faaa600",
+      "hash": "6753bf5d8dff88bf",
       "nodes": 23,
       "relations": 39
     },
@@ -6746,9 +6746,9 @@
       "relations": 49
     },
     "tests/integration_tests/event_logger_tests.py": {
-      "hash": "3992507f4ad9581f",
-      "nodes": 118,
-      "relations": 146
+      "hash": "9e0ae5625c1ac523",
+      "nodes": 115,
+      "relations": 143
     },
     "tests/integration_tests/explore/__init__.py": {
       "hash": "98d77f1829405860",
@@ -6756,9 +6756,9 @@
       "relations": 4
     },
     "tests/integration_tests/explore/api_tests.py": {
-      "hash": "1c373ae5a55fa98e",
-      "nodes": 141,
-      "relations": 167
+      "hash": "e2577757b533c08d",
+      "nodes": 137,
+      "relations": 163
     },
     "tests/integration_tests/explore/form_data/__init__.py": {
       "hash": "ef018b3af3e868df",
@@ -6766,14 +6766,14 @@
       "relations": 3
     },
     "tests/integration_tests/explore/form_data/api_tests.py": {
-      "hash": "181d497adb0c7d56",
-      "nodes": 219,
-      "relations": 247
+      "hash": "8c527dd52a8fac70",
+      "nodes": 218,
+      "relations": 246
     },
     "tests/integration_tests/explore/form_data/commands_tests.py": {
-      "hash": "dfff49be6ab5f202",
-      "nodes": 121,
-      "relations": 156
+      "hash": "822fa8c1a9cad3c6",
+      "nodes": 113,
+      "relations": 148
     },
     "tests/integration_tests/explore/permalink/__init__.py": {
       "hash": "26456b17f68cefd8",
@@ -6786,9 +6786,9 @@
       "relations": 110
     },
     "tests/integration_tests/explore/permalink/commands_tests.py": {
-      "hash": "0b0ea5190cecb03c",
-      "nodes": 57,
-      "relations": 82
+      "hash": "b6663919e714854a",
+      "nodes": 53,
+      "relations": 78
     },
     "tests/integration_tests/extensions/__init__.py": {
       "hash": "0c1cb8935fdc798b",
@@ -6831,9 +6831,9 @@
       "relations": 2
     },
     "tests/integration_tests/fixtures/datasource.py": {
-      "hash": "a444dcb017028383",
-      "nodes": 30,
-      "relations": 64
+      "hash": "8176a4310393981f",
+      "nodes": 29,
+      "relations": 63
     },
     "tests/integration_tests/fixtures/energy_dashboard.py": {
       "hash": "2605205e64135270",
@@ -6846,12 +6846,12 @@
       "relations": 33
     },
     "tests/integration_tests/fixtures/public_role.py": {
-      "hash": "3988e7b2b755d9ab",
-      "nodes": 17,
-      "relations": 25
+      "hash": "b60695035d6eff12",
+      "nodes": 14,
+      "relations": 22
     },
     "tests/integration_tests/fixtures/pyodbcRow.py": {
-      "hash": "b91b4bab19d56972",
+      "hash": "f87c3b21cff6e0d7",
       "nodes": 11,
       "relations": 10
     },
@@ -6881,9 +6881,9 @@
       "relations": 62
     },
     "tests/integration_tests/fixtures/world_bank_dashboard.py": {
-      "hash": "e2f4924d4690fa70",
-      "nodes": 82,
-      "relations": 133
+      "hash": "158bd033c8e8aff1",
+      "nodes": 80,
+      "relations": 131
     },
     "tests/integration_tests/form_tests.py": {
       "hash": "e217229b90749e40",
@@ -6891,9 +6891,9 @@
       "relations": 18
     },
     "tests/integration_tests/import_export_tests.py": {
-      "hash": "230e4ce7407e57db",
-      "nodes": 261,
-      "relations": 307
+      "hash": "cc6b261dcab4be47",
+      "nodes": 252,
+      "relations": 298
     },
     "tests/integration_tests/importexport/__init__.py": {
       "hash": "b1b7a4c4e1334ab2",
@@ -6901,9 +6901,9 @@
       "relations": 2
     },
     "tests/integration_tests/importexport/commands_tests.py": {
-      "hash": "4002ded249c9af70",
-      "nodes": 18,
-      "relations": 31
+      "hash": "cca97771cc4cca10",
+      "nodes": 17,
+      "relations": 30
     },
     "tests/integration_tests/insert_chart_mixin.py": {
       "hash": "c6e30c0e2062b874",
@@ -6911,19 +6911,19 @@
       "relations": 33
     },
     "tests/integration_tests/log_api_tests.py": {
-      "hash": "e8a6024a40d85b48",
-      "nodes": 115,
-      "relations": 148
+      "hash": "5a15d4fcdc070e8c",
+      "nodes": 114,
+      "relations": 147
     },
     "tests/integration_tests/logging_configurator_tests.py": {
-      "hash": "21ca4c076c65ede3",
-      "nodes": 32,
-      "relations": 39
+      "hash": "43b3f5a929c0eae0",
+      "nodes": 29,
+      "relations": 36
     },
     "tests/integration_tests/migrations/0769ef90fddd_fix_schema_perm_for_datasets__tests.py": {
-      "hash": "5f8e5ffacaf671da",
-      "nodes": 18,
-      "relations": 33
+      "hash": "2532cea8695bf5da",
+      "nodes": 17,
+      "relations": 32
     },
     "tests/integration_tests/migrations/7e67aecbf3f1_chart_ds_constraint__tests.py": {
       "hash": "66edefc05dd5722d",
@@ -6966,9 +6966,9 @@
       "relations": 22
     },
     "tests/integration_tests/model_tests.py": {
-      "hash": "a2134d77e6baaa11",
-      "nodes": 209,
-      "relations": 261
+      "hash": "6014e91a3dffb8a9",
+      "nodes": 197,
+      "relations": 249
     },
     "tests/integration_tests/queries/__init__.py": {
       "hash": "dcfca1f2b8839cac",
@@ -6976,9 +6976,9 @@
       "relations": 3
     },
     "tests/integration_tests/queries/api_tests.py": {
-      "hash": "fb643e8c9555c90e",
-      "nodes": 169,
-      "relations": 205
+      "hash": "575d557979020e97",
+      "nodes": 168,
+      "relations": 204
     },
     "tests/integration_tests/queries/saved_queries/__init__.py": {
       "hash": "d19a26466335af2c",
@@ -6991,14 +6991,14 @@
       "relations": 354
     },
     "tests/integration_tests/queries/saved_queries/commands_tests.py": {
-      "hash": "acbda4531cfdb21d",
-      "nodes": 85,
-      "relations": 116
+      "hash": "c2be13fc64749ff3",
+      "nodes": 78,
+      "relations": 109
     },
     "tests/integration_tests/query_context_tests.py": {
-      "hash": "9082cc4cee6ca282",
-      "nodes": 354,
-      "relations": 420
+      "hash": "08da88f99a733524",
+      "nodes": 352,
+      "relations": 418
     },
     "tests/integration_tests/reports/__init__.py": {
       "hash": "fa4bf7eb2f209c6a",
@@ -7006,14 +7006,14 @@
       "relations": 7
     },
     "tests/integration_tests/reports/alert_tests.py": {
-      "hash": "817c74610af614e2",
-      "nodes": 110,
-      "relations": 155
+      "hash": "d67fb6a437c18e8e",
+      "nodes": 103,
+      "relations": 148
     },
     "tests/integration_tests/reports/api_tests.py": {
-      "hash": "7ee09b6be91a13c5",
-      "nodes": 619,
-      "relations": 671
+      "hash": "338625d55c4eca49",
+      "nodes": 607,
+      "relations": 659
     },
     "tests/integration_tests/reports/commands/create_dashboard_report_tests.py": {
       "hash": "9feebdb5ba7fe240",
@@ -7021,19 +7021,19 @@
       "relations": 32
     },
     "tests/integration_tests/reports/commands/execute_dashboard_report_tests.py": {
-      "hash": "8405e835840c0a30",
-      "nodes": 43,
-      "relations": 72
+      "hash": "e939ded9300e20d7",
+      "nodes": 39,
+      "relations": 68
     },
     "tests/integration_tests/reports/commands_tests.py": {
-      "hash": "d35e327fa58b89fe",
-      "nodes": 505,
-      "relations": 627
+      "hash": "64645e4088a770f7",
+      "nodes": 452,
+      "relations": 574
     },
     "tests/integration_tests/reports/scheduler_tests.py": {
-      "hash": "68c14f96fea62be3",
-      "nodes": 69,
-      "relations": 98
+      "hash": "0d72d5bc640ac6ac",
+      "nodes": 63,
+      "relations": 92
     },
     "tests/integration_tests/reports/utils.py": {
       "hash": "812a7889e253852a",
@@ -7056,29 +7056,29 @@
       "relations": 20
     },
     "tests/integration_tests/security/api_tests.py": {
-      "hash": "4b6d3cfca83a438e",
-      "nodes": 150,
-      "relations": 178
+      "hash": "93c5784f82d364a0",
+      "nodes": 149,
+      "relations": 177
     },
     "tests/integration_tests/security/guest_token_security_tests.py": {
-      "hash": "9e6e54f55c51f4e1",
-      "nodes": 162,
-      "relations": 197
+      "hash": "55679154ea2d65ac",
+      "nodes": 131,
+      "relations": 166
     },
     "tests/integration_tests/security/migrate_roles_tests.py": {
-      "hash": "740278ae07a04b89",
-      "nodes": 32,
-      "relations": 51
+      "hash": "464cb947ffdb48d8",
+      "nodes": 31,
+      "relations": 50
     },
     "tests/integration_tests/security/row_level_security_tests.py": {
-      "hash": "aff89ad80f648ce2",
-      "nodes": 273,
-      "relations": 334
+      "hash": "462ae9e31562c0a6",
+      "nodes": 255,
+      "relations": 316
     },
     "tests/integration_tests/security_tests.py": {
-      "hash": "2ec25857f21565d0",
-      "nodes": 549,
-      "relations": 635
+      "hash": "23cf47935caa6e1f",
+      "nodes": 502,
+      "relations": 588
     },
     "tests/integration_tests/sql_lab/__init__.py": {
       "hash": "957a65d790327ac0",
@@ -7086,19 +7086,19 @@
       "relations": 6
     },
     "tests/integration_tests/sql_lab/api_tests.py": {
-      "hash": "24d57471e8bbf740",
-      "nodes": 162,
-      "relations": 234
+      "hash": "25893761f54276e2",
+      "nodes": 148,
+      "relations": 220
     },
     "tests/integration_tests/sql_lab/commands_tests.py": {
-      "hash": "e515a9b1103647ce",
-      "nodes": 163,
-      "relations": 212
+      "hash": "349911084d75967b",
+      "nodes": 136,
+      "relations": 185
     },
     "tests/integration_tests/sql_lab/conftest.py": {
-      "hash": "388c1fea0c474e28",
-      "nodes": 25,
-      "relations": 42
+      "hash": "980885ebe4a1da76",
+      "nodes": 24,
+      "relations": 41
     },
     "tests/integration_tests/sql_lab/permalink/__init__.py": {
       "hash": "493d65c79440395a",
@@ -7111,24 +7111,24 @@
       "relations": 83
     },
     "tests/integration_tests/sql_lab/test_execute_sql_statements.py": {
-      "hash": "d3ff952fa598a8a7",
-      "nodes": 38,
-      "relations": 59
+      "hash": "723c53b67d7cf3b2",
+      "nodes": 35,
+      "relations": 56
     },
     "tests/integration_tests/sql_validator_tests.py": {
-      "hash": "ee24baaa7c58c52b",
-      "nodes": 63,
-      "relations": 79
+      "hash": "16262b6ae93b467d",
+      "nodes": 55,
+      "relations": 71
     },
     "tests/integration_tests/sqla_models_tests.py": {
-      "hash": "4298b5a1d31e2a94",
-      "nodes": 259,
-      "relations": 339
+      "hash": "c389f3697bdf3017",
+      "nodes": 253,
+      "relations": 333
     },
     "tests/integration_tests/sqllab_tests.py": {
-      "hash": "613e1f3406f71fdd",
-      "nodes": 198,
-      "relations": 269
+      "hash": "039dfc7a184d7fe6",
+      "nodes": 184,
+      "relations": 255
     },
     "tests/integration_tests/stats_logger_tests.py": {
       "hash": "2e657ee3b3a79172",
@@ -7161,9 +7161,9 @@
       "relations": 47
     },
     "tests/integration_tests/tagging_tests.py": {
-      "hash": "8268cc45ce453a6f",
-      "nodes": 55,
-      "relations": 80
+      "hash": "084589e833c210c6",
+      "nodes": 49,
+      "relations": 74
     },
     "tests/integration_tests/tags/__init__.py": {
       "hash": "efa50bc4a94c2d79",
@@ -7171,9 +7171,9 @@
       "relations": 5
     },
     "tests/integration_tests/tags/api_tests.py": {
-      "hash": "357277421bf09273",
-      "nodes": 224,
-      "relations": 272
+      "hash": "1b5d9abd34ba1e9d",
+      "nodes": 222,
+      "relations": 270
     },
     "tests/integration_tests/tags/commands_tests.py": {
       "hash": "45872f0d14fe237b",
@@ -7196,14 +7196,14 @@
       "relations": 11
     },
     "tests/integration_tests/tasks/api_tests.py": {
-      "hash": "55fedc5bce259536",
-      "nodes": 158,
-      "relations": 180
+      "hash": "cbb57201588ccbd6",
+      "nodes": 157,
+      "relations": 179
     },
     "tests/integration_tests/tasks/async_queries_tests.py": {
-      "hash": "901809592b7df6a6",
-      "nodes": 99,
-      "relations": 140
+      "hash": "8f5ea19bf233ff64",
+      "nodes": 85,
+      "relations": 126
     },
     "tests/integration_tests/tasks/commands/__init__.py": {
       "hash": "40d91d74bafa825a",
@@ -7211,19 +7211,19 @@
       "relations": 6
     },
     "tests/integration_tests/tasks/commands/test_cancel.py": {
-      "hash": "09688deb2ab4ce26",
-      "nodes": 123,
-      "relations": 149
+      "hash": "16873fb6ecaf642c",
+      "nodes": 112,
+      "relations": 138
     },
     "tests/integration_tests/tasks/commands/test_internal_update.py": {
-      "hash": "681f6d40168bab88",
-      "nodes": 89,
-      "relations": 101
+      "hash": "496d7df5ee8770eb",
+      "nodes": 80,
+      "relations": 92
     },
     "tests/integration_tests/tasks/commands/test_prune.py": {
-      "hash": "ae90b5876481f00a",
-      "nodes": 79,
-      "relations": 98
+      "hash": "87e2326255a0cdfb",
+      "nodes": 68,
+      "relations": 87
     },
     "tests/integration_tests/tasks/commands/test_submit.py": {
       "hash": "b9f54153147b6495",
@@ -7231,19 +7231,19 @@
       "relations": 69
     },
     "tests/integration_tests/tasks/commands/test_update.py": {
-      "hash": "25b0374ba12c5dc9",
-      "nodes": 61,
-      "relations": 77
+      "hash": "a0234ca204911354",
+      "nodes": 56,
+      "relations": 72
     },
     "tests/integration_tests/tasks/test_cache.py": {
-      "hash": "4ad48ebd5989064a",
-      "nodes": 22,
-      "relations": 33
+      "hash": "e9772add5a3866a5",
+      "nodes": 20,
+      "relations": 31
     },
     "tests/integration_tests/tasks/test_event_handlers.py": {
-      "hash": "80f79ca2107b35ea",
-      "nodes": 96,
-      "relations": 123
+      "hash": "0f5e3cffa0c9fa33",
+      "nodes": 92,
+      "relations": 119
     },
     "tests/integration_tests/tasks/test_subscription_visibility.py": {
       "hash": "1ca157a86cc9ff3e",
@@ -7251,9 +7251,9 @@
       "relations": 63
     },
     "tests/integration_tests/tasks/test_sync_join_wait.py": {
-      "hash": "ca2f32ba8cf050a6",
-      "nodes": 37,
-      "relations": 52
+      "hash": "4148853ec352f726",
+      "nodes": 36,
+      "relations": 51
     },
     "tests/integration_tests/tasks/test_throttling.py": {
       "hash": "421d21348676efed",
@@ -7266,9 +7266,9 @@
       "relations": 82
     },
     "tests/integration_tests/tasks/test_utils.py": {
-      "hash": "2576c482012fcf52",
-      "nodes": 18,
-      "relations": 27
+      "hash": "23199b3d8360c516",
+      "nodes": 16,
+      "relations": 25
     },
     "tests/integration_tests/test_app.py": {
       "hash": "e7efa4f826787f9b",
@@ -7276,14 +7276,14 @@
       "relations": 24
     },
     "tests/integration_tests/test_jinja_context.py": {
-      "hash": "b98d19358c6a6c80",
-      "nodes": 136,
-      "relations": 151
+      "hash": "eff6ff9d3a166041",
+      "nodes": 124,
+      "relations": 139
     },
     "tests/integration_tests/test_subdirectory_deployments.py": {
-      "hash": "a7e8a4d74ff8ed0d",
-      "nodes": 57,
-      "relations": 70
+      "hash": "c00fbcc085f44315",
+      "nodes": 55,
+      "relations": 68
     },
     "tests/integration_tests/themes/__init__.py": {
       "hash": "77462f82c90f226b",
@@ -7301,14 +7301,14 @@
       "relations": 195
     },
     "tests/integration_tests/themes/test_theme_api_permissions.py": {
-      "hash": "7a204744d00706d9",
-      "nodes": 59,
-      "relations": 84
+      "hash": "a18e72fb2f18a1d8",
+      "nodes": 56,
+      "relations": 81
     },
     "tests/integration_tests/thumbnails_tests.py": {
-      "hash": "f48e32d18fe3ea9d",
-      "nodes": 191,
-      "relations": 243
+      "hash": "dba6423f73aab268",
+      "nodes": 185,
+      "relations": 237
     },
     "tests/integration_tests/users/__init__.py": {
       "hash": "d38f6e55fa32ebd4",
@@ -7316,9 +7316,9 @@
       "relations": 2
     },
     "tests/integration_tests/users/api_tests.py": {
-      "hash": "42405a438aedc628",
-      "nodes": 61,
-      "relations": 84
+      "hash": "45b882f68226a779",
+      "nodes": 59,
+      "relations": 82
     },
     "tests/integration_tests/utils/__init__.py": {
       "hash": "89f56945d807d1ca",
@@ -7351,19 +7351,19 @@
       "relations": 49
     },
     "tests/integration_tests/utils/machine_auth_tests.py": {
-      "hash": "6dca63859b812cb4",
-      "nodes": 23,
-      "relations": 32
+      "hash": "0b7f4d3db1cf8563",
+      "nodes": 21,
+      "relations": 30
     },
     "tests/integration_tests/utils/public_interfaces_test.py": {
-      "hash": "2117e6d2d25e7da2",
+      "hash": "8b9120fb6a0f5c85",
       "nodes": 35,
       "relations": 43
     },
     "tests/integration_tests/utils_tests.py": {
-      "hash": "20eabaeadd35464a",
-      "nodes": 171,
-      "relations": 258
+      "hash": "33897cb85ec29631",
+      "nodes": 170,
+      "relations": 257
     },
     "tests/integration_tests/views/test_redirect_view.py": {
       "hash": "24ac7c2df3422a47",
@@ -7371,9 +7371,9 @@
       "relations": 32
     },
     "tests/integration_tests/viz_tests.py": {
-      "hash": "059500688b5c45f9",
-      "nodes": 816,
-      "relations": 848
+      "hash": "27580771f4840dfd",
+      "nodes": 760,
+      "relations": 792
     },
     "tests/unit_tests/__init__.py": {
       "hash": "b1dd3a3e66e1aa3e",
@@ -7411,9 +7411,9 @@
       "relations": 2
     },
     "tests/unit_tests/async_events/async_query_manager_tests.py": {
-      "hash": "0fdda5e8d99956da",
-      "nodes": 56,
-      "relations": 81
+      "hash": "4f172348e3114888",
+      "nodes": 44,
+      "relations": 69
     },
     "tests/unit_tests/charts/__init__.py": {
       "hash": "cd1168568cb5927d",
@@ -7431,9 +7431,9 @@
       "relations": 2
     },
     "tests/unit_tests/charts/commands/data/test_get_data_command.py": {
-      "hash": "e7b9f2fbbf3f489e",
-      "nodes": 86,
-      "relations": 111
+      "hash": "96138c3726047298",
+      "nodes": 61,
+      "relations": 86
     },
     "tests/unit_tests/charts/commands/importers/__init__.py": {
       "hash": "b772a2ec505f48a7",
@@ -7491,14 +7491,14 @@
       "relations": 3
     },
     "tests/unit_tests/commands/chart/streaming_export_command_test.py": {
-      "hash": "ad527ffb954c3fd7",
-      "nodes": 106,
-      "relations": 111
+      "hash": "7e133eaaa4c50e84",
+      "nodes": 92,
+      "relations": 97
     },
     "tests/unit_tests/commands/chart/warm_up_cache_test.py": {
-      "hash": "263960a45ac8489e",
-      "nodes": 123,
-      "relations": 134
+      "hash": "99176f24e24d78b3",
+      "nodes": 94,
+      "relations": 105
     },
     "tests/unit_tests/commands/dashboard/__init__.py": {
       "hash": "4de1c97462c73b8d",
@@ -7511,9 +7511,9 @@
       "relations": 56
     },
     "tests/unit_tests/commands/dashboard/export_example_test.py": {
-      "hash": "d17cbbf09e7563c8",
-      "nodes": 170,
-      "relations": 188
+      "hash": "a0f2e815e82a1c77",
+      "nodes": 53,
+      "relations": 71
     },
     "tests/unit_tests/commands/databases/__init__.py": {
       "hash": "cfe59950fe611ec2",
@@ -7526,19 +7526,19 @@
       "relations": 66
     },
     "tests/unit_tests/commands/databases/conftest.py": {
-      "hash": "73e66ec3b1415957",
-      "nodes": 33,
-      "relations": 44
+      "hash": "55ad78a1f5e097d7",
+      "nodes": 18,
+      "relations": 29
     },
     "tests/unit_tests/commands/databases/create_test.py": {
-      "hash": "85841880834454e5",
-      "nodes": 39,
-      "relations": 50
+      "hash": "2f5526dd79d936de",
+      "nodes": 29,
+      "relations": 40
     },
     "tests/unit_tests/commands/databases/csv_reader_test.py": {
-      "hash": "04f78ab92fc0d910",
-      "nodes": 261,
-      "relations": 299
+      "hash": "062ba6da2e325977",
+      "nodes": 241,
+      "relations": 279
     },
     "tests/unit_tests/commands/databases/excel_reader_test.py": {
       "hash": "9f297f8f5b0d3bc6",
@@ -7561,44 +7561,44 @@
       "relations": 52
     },
     "tests/unit_tests/commands/databases/oauth2_test.py": {
-      "hash": "24bd297a5b058380",
-      "nodes": 52,
-      "relations": 74
+      "hash": "4bcf4afa2b2501ef",
+      "nodes": 51,
+      "relations": 73
     },
     "tests/unit_tests/commands/databases/sync_permissions_test.py": {
-      "hash": "2a2d71202360c69d",
-      "nodes": 102,
-      "relations": 124
+      "hash": "005f089c6593a7b7",
+      "nodes": 87,
+      "relations": 109
     },
     "tests/unit_tests/commands/databases/tables_test.py": {
-      "hash": "af4fd892145ea8a5",
-      "nodes": 40,
-      "relations": 51
-    },
-    "tests/unit_tests/commands/databases/test_connection_test.py": {
-      "hash": "9abbde0a193c9a3f",
+      "hash": "d428b5ce1fd83d7d",
       "nodes": 30,
       "relations": 41
     },
+    "tests/unit_tests/commands/databases/test_connection_test.py": {
+      "hash": "2f702206d635f1f7",
+      "nodes": 23,
+      "relations": 34
+    },
     "tests/unit_tests/commands/databases/update_test.py": {
-      "hash": "aad3759d2cf725f0",
-      "nodes": 154,
-      "relations": 169
+      "hash": "b158b53daa3b523f",
+      "nodes": 119,
+      "relations": 134
     },
     "tests/unit_tests/commands/databases/utils_test.py": {
-      "hash": "428862531082e423",
-      "nodes": 101,
-      "relations": 125
+      "hash": "e546da058a630bd9",
+      "nodes": 86,
+      "relations": 110
     },
     "tests/unit_tests/commands/databases/validate_sql_test.py": {
-      "hash": "573b972e3d80dfeb",
-      "nodes": 96,
-      "relations": 115
+      "hash": "93147ed020c921f9",
+      "nodes": 84,
+      "relations": 103
     },
     "tests/unit_tests/commands/databases/validate_test.py": {
-      "hash": "1be04b99504cdf9c",
-      "nodes": 58,
-      "relations": 71
+      "hash": "9e40d21c9833e2e7",
+      "nodes": 46,
+      "relations": 59
     },
     "tests/unit_tests/commands/dataset/__init__.py": {
       "hash": "d3cff11850bc863e",
@@ -7606,14 +7606,14 @@
       "relations": 3
     },
     "tests/unit_tests/commands/dataset/test_create.py": {
-      "hash": "d98ea04dc91c088e",
-      "nodes": 34,
-      "relations": 55
+      "hash": "3bccb815966fdb9e",
+      "nodes": 26,
+      "relations": 47
     },
     "tests/unit_tests/commands/dataset/update_test.py": {
-      "hash": "8c36e39e735375d6",
-      "nodes": 218,
-      "relations": 265
+      "hash": "72a47213983ee0b1",
+      "nodes": 177,
+      "relations": 224
     },
     "tests/unit_tests/commands/explore/__init__.py": {
       "hash": "a36583bf04f5626e",
@@ -7626,14 +7626,14 @@
       "relations": 2
     },
     "tests/unit_tests/commands/explore/form_data/test_create.py": {
-      "hash": "076ecde87e09c33b",
-      "nodes": 17,
-      "relations": 24
+      "hash": "9217fbf42e170efb",
+      "nodes": 16,
+      "relations": 23
     },
     "tests/unit_tests/commands/export_test.py": {
-      "hash": "c3151c03ddaf738b",
-      "nodes": 47,
-      "relations": 60
+      "hash": "f9827b9053bd4526",
+      "nodes": 45,
+      "relations": 58
     },
     "tests/unit_tests/commands/importers/__init__.py": {
       "hash": "455fabb89dc44b09",
@@ -7651,9 +7651,9 @@
       "relations": 89
     },
     "tests/unit_tests/commands/importers/v1/examples_test.py": {
-      "hash": "ac9555ed6749e01a",
-      "nodes": 112,
-      "relations": 122
+      "hash": "5d4c5e0b3f7267c7",
+      "nodes": 90,
+      "relations": 100
     },
     "tests/unit_tests/commands/report/__init__.py": {
       "hash": "37665bdbb9962c51",
@@ -7661,9 +7661,9 @@
       "relations": 6
     },
     "tests/unit_tests/commands/report/alert_test.py": {
-      "hash": "6a45f773d68d84d8",
-      "nodes": 199,
-      "relations": 217
+      "hash": "7bdbdfb773504259",
+      "nodes": 159,
+      "relations": 177
     },
     "tests/unit_tests/commands/report/base_test.py": {
       "hash": "cda86d9eba4aa4c3",
@@ -7671,19 +7671,19 @@
       "relations": 70
     },
     "tests/unit_tests/commands/report/execute_test.py": {
-      "hash": "de484cafdebc2aff",
-      "nodes": 228,
-      "relations": 265
+      "hash": "6ac72d828afc7413",
+      "nodes": 135,
+      "relations": 172
     },
     "tests/unit_tests/commands/report/test_create_recipients.py": {
-      "hash": "60c81c39a418f763",
-      "nodes": 44,
-      "relations": 54
+      "hash": "cfb28f35a4358401",
+      "nodes": 31,
+      "relations": 41
     },
     "tests/unit_tests/commands/report/update_test.py": {
-      "hash": "292ad238a9bfaec7",
-      "nodes": 85,
-      "relations": 96
+      "hash": "937cce33f2df3fa8",
+      "nodes": 79,
+      "relations": 90
     },
     "tests/unit_tests/commands/sql_lab/__init__.py": {
       "hash": "dcbce6338c7323ce",
@@ -7691,24 +7691,24 @@
       "relations": 3
     },
     "tests/unit_tests/commands/sql_lab/streaming_export_command_test.py": {
-      "hash": "1bd0acfbe011e888",
-      "nodes": 242,
-      "relations": 260
+      "hash": "4f4f75e737086551",
+      "nodes": 188,
+      "relations": 206
     },
     "tests/unit_tests/commands/sql_lab/test_estimate.py": {
-      "hash": "497f656d826e8ffb",
-      "nodes": 41,
-      "relations": 56
+      "hash": "a2427078f0554cc2",
+      "nodes": 35,
+      "relations": 50
     },
     "tests/unit_tests/commands/test_utils.py": {
-      "hash": "fbae144c296da0c9",
-      "nodes": 163,
-      "relations": 183
+      "hash": "4cbf45608c5a040d",
+      "nodes": 138,
+      "relations": 158
     },
     "tests/unit_tests/commands/theme/test_set_system_theme.py": {
-      "hash": "9629ee1c58c91234",
-      "nodes": 78,
-      "relations": 92
+      "hash": "18b8450535d98164",
+      "nodes": 66,
+      "relations": 80
     },
     "tests/unit_tests/common/__init__.py": {
       "hash": "05c9e68889d30612",
@@ -7726,24 +7726,24 @@
       "relations": 10
     },
     "tests/unit_tests/common/test_query_actions_currency.py": {
-      "hash": "57e651571f29d2fb",
-      "nodes": 113,
-      "relations": 122
+      "hash": "e220d1909c7b4609",
+      "nodes": 90,
+      "relations": 99
     },
     "tests/unit_tests/common/test_query_context_factory.py": {
-      "hash": "fbc9e4ab8f93e5aa",
-      "nodes": 247,
-      "relations": 256
+      "hash": "ae4bd85df73f8c61",
+      "nodes": 181,
+      "relations": 190
     },
     "tests/unit_tests/common/test_query_context_processor.py": {
-      "hash": "81736fecaf255ad3",
-      "nodes": 454,
-      "relations": 495
+      "hash": "b9cf430b7ea6021f",
+      "nodes": 303,
+      "relations": 344
     },
     "tests/unit_tests/common/test_query_object_factory.py": {
-      "hash": "38874018dadfac63",
-      "nodes": 48,
-      "relations": 58
+      "hash": "d765069292be3e3c",
+      "nodes": 46,
+      "relations": 56
     },
     "tests/unit_tests/common/test_time_range_utils.py": {
       "hash": "e2afdb0d9097de69",
@@ -7751,19 +7751,19 @@
       "relations": 20
     },
     "tests/unit_tests/common/test_time_shifts.py": {
-      "hash": "7cf3e32fd100f9c4",
-      "nodes": 80,
-      "relations": 104
+      "hash": "27ab08ee80fecf88",
+      "nodes": 72,
+      "relations": 96
     },
     "tests/unit_tests/config_test.py": {
-      "hash": "14e217e08b6b58d0",
-      "nodes": 51,
-      "relations": 72
+      "hash": "11574be0a0d4a1bd",
+      "nodes": 47,
+      "relations": 68
     },
     "tests/unit_tests/conftest.py": {
-      "hash": "ab657b415d0c30ad",
-      "nodes": 65,
-      "relations": 109
+      "hash": "e22a524dda5c24ba",
+      "nodes": 61,
+      "relations": 105
     },
     "tests/unit_tests/connectors/__init__.py": {
       "hash": "526be7ba7f0de281",
@@ -7776,24 +7776,24 @@
       "relations": 4
     },
     "tests/unit_tests/connectors/sqla/models_test.py": {
-      "hash": "37a8205a00c71341",
-      "nodes": 225,
-      "relations": 258
+      "hash": "6c4333e8edc2d5f1",
+      "nodes": 183,
+      "relations": 216
     },
     "tests/unit_tests/connectors/sqla/test_utils.py": {
-      "hash": "7b5d5a1099e8102a",
-      "nodes": 44,
-      "relations": 60
+      "hash": "a66e2985df666166",
+      "nodes": 27,
+      "relations": 43
     },
     "tests/unit_tests/connectors/sqla/utils_test.py": {
-      "hash": "9156df8dac30892f",
-      "nodes": 34,
-      "relations": 42
+      "hash": "931a1846511afccd",
+      "nodes": 24,
+      "relations": 32
     },
     "tests/unit_tests/core_tests.py": {
-      "hash": "b4c8767a22ac12b9",
-      "nodes": 43,
-      "relations": 60
+      "hash": "b68f9fa8d5403fec",
+      "nodes": 42,
+      "relations": 59
     },
     "tests/unit_tests/dao/__init__.py": {
       "hash": "be2316e10ef250cd",
@@ -7801,9 +7801,9 @@
       "relations": 7
     },
     "tests/unit_tests/dao/base_dao_test.py": {
-      "hash": "614d92ba6b7fcda1",
-      "nodes": 70,
-      "relations": 94
+      "hash": "858897d05f7701a3",
+      "nodes": 60,
+      "relations": 84
     },
     "tests/unit_tests/dao/dataset_test.py": {
       "hash": "b98804132c297a32",
@@ -7821,14 +7821,14 @@
       "relations": 132
     },
     "tests/unit_tests/dao/tag_test.py": {
-      "hash": "26d4e50d373cfcd3",
-      "nodes": 60,
-      "relations": 74
+      "hash": "b71300ff5ed74d28",
+      "nodes": 48,
+      "relations": 62
     },
     "tests/unit_tests/dao/user_test.py": {
-      "hash": "baf9e60b1b04d288",
-      "nodes": 34,
-      "relations": 50
+      "hash": "475e53b28bb067fd",
+      "nodes": 33,
+      "relations": 49
     },
     "tests/unit_tests/daos/test_report_dao.py": {
       "hash": "e1acaa9febd4b6b5",
@@ -7836,14 +7836,14 @@
       "relations": 38
     },
     "tests/unit_tests/daos/test_tasks.py": {
-      "hash": "28b10763acdc1d1d",
-      "nodes": 137,
-      "relations": 181
+      "hash": "153732bb9e786744",
+      "nodes": 135,
+      "relations": 179
     },
     "tests/unit_tests/daos/test_theme_dao.py": {
-      "hash": "10c3f4c0a153f1b0",
-      "nodes": 69,
-      "relations": 76
+      "hash": "2e4bac34d493ebc1",
+      "nodes": 57,
+      "relations": 64
     },
     "tests/unit_tests/dashboards/__init__.py": {
       "hash": "156d8960f5125812",
@@ -7851,9 +7851,9 @@
       "relations": 5
     },
     "tests/unit_tests/dashboards/api_test.py": {
-      "hash": "12c4ba3515552142",
-      "nodes": 47,
-      "relations": 52
+      "hash": "a3eacae37a85ffe3",
+      "nodes": 22,
+      "relations": 27
     },
     "tests/unit_tests/dashboards/commands/__init__.py": {
       "hash": "352ea32a580d0f89",
@@ -7901,9 +7901,9 @@
       "relations": 8
     },
     "tests/unit_tests/databases/api_test.py": {
-      "hash": "3b1df21d9432afc8",
-      "nodes": 460,
-      "relations": 620
+      "hash": "08e9d15c36c70586",
+      "nodes": 433,
+      "relations": 593
     },
     "tests/unit_tests/databases/commands/__init__.py": {
       "hash": "4e7452703a42686f",
@@ -7931,9 +7931,9 @@
       "relations": 15
     },
     "tests/unit_tests/databases/commands/utils_test.py": {
-      "hash": "57ca3a427925133e",
-      "nodes": 30,
-      "relations": 33
+      "hash": "5a1eaa779256e350",
+      "nodes": 16,
+      "relations": 19
     },
     "tests/unit_tests/databases/dao/__init__.py": {
       "hash": "67520621285060bf",
@@ -7951,9 +7951,9 @@
       "relations": 45
     },
     "tests/unit_tests/databases/schema_tests.py": {
-      "hash": "897bba98d3f463fe",
-      "nodes": 90,
-      "relations": 124
+      "hash": "e03ed635b1cf99a2",
+      "nodes": 87,
+      "relations": 121
     },
     "tests/unit_tests/databases/ssh_tunnel/__init__.py": {
       "hash": "99ba3d2c524071c3",
@@ -7976,9 +7976,9 @@
       "relations": 7
     },
     "tests/unit_tests/datasets/api_tests.py": {
-      "hash": "cea9da53719e2095",
-      "nodes": 27,
-      "relations": 44
+      "hash": "63ade53999c0ca63",
+      "nodes": 26,
+      "relations": 43
     },
     "tests/unit_tests/datasets/commands/__init__.py": {
       "hash": "5896032c26a18a74",
@@ -8001,9 +8001,9 @@
       "relations": 2
     },
     "tests/unit_tests/datasets/commands/importers/v1/import_test.py": {
-      "hash": "31a584dde2bfc418",
-      "nodes": 114,
-      "relations": 162
+      "hash": "d997e7085cfadd4e",
+      "nodes": 113,
+      "relations": 161
     },
     "tests/unit_tests/datasets/conftest.py": {
       "hash": "b892927c4a2babea",
@@ -8026,9 +8026,9 @@
       "relations": 53
     },
     "tests/unit_tests/datasets/test_datetime_format_detector.py": {
-      "hash": "92b25cadf933470a",
-      "nodes": 106,
-      "relations": 116
+      "hash": "616fb9b02e8562ac",
+      "nodes": 71,
+      "relations": 81
     },
     "tests/unit_tests/datasource/__init__.py": {
       "hash": "30b3e06b795fc613",
@@ -8041,7 +8041,7 @@
       "relations": 74
     },
     "tests/unit_tests/datasource/utils/test_replace_verbose_with_column.py": {
-      "hash": "7d9b72968b2ff9ea",
+      "hash": "285fc0797552eb60",
       "nodes": 28,
       "relations": 31
     },
@@ -8056,29 +8056,29 @@
       "relations": 70
     },
     "tests/unit_tests/db_engine_specs/test_aurora.py": {
-      "hash": "5aefe5445ea13777",
-      "nodes": 72,
-      "relations": 107
+      "hash": "d78d58e976de5797",
+      "nodes": 60,
+      "relations": 95
     },
     "tests/unit_tests/db_engine_specs/test_aws_iam.py": {
-      "hash": "1966644481de8329",
-      "nodes": 209,
-      "relations": 279
+      "hash": "197433b970cd978d",
+      "nodes": 177,
+      "relations": 247
     },
     "tests/unit_tests/db_engine_specs/test_base.py": {
-      "hash": "0d990d0269a70bb4",
-      "nodes": 276,
-      "relations": 344
+      "hash": "e8d128b3e170adbd",
+      "nodes": 266,
+      "relations": 334
     },
     "tests/unit_tests/db_engine_specs/test_bigquery.py": {
-      "hash": "feaecad4b8e8d9ec",
-      "nodes": 104,
-      "relations": 150
+      "hash": "e959ec82e6a263ee",
+      "nodes": 96,
+      "relations": 142
     },
     "tests/unit_tests/db_engine_specs/test_clickhouse.py": {
-      "hash": "2dae3c624d36fc6e",
-      "nodes": 51,
-      "relations": 97
+      "hash": "058b65f45362b470",
+      "nodes": 50,
+      "relations": 96
     },
     "tests/unit_tests/db_engine_specs/test_couchbase.py": {
       "hash": "6228a9f1ce328d6c",
@@ -8096,24 +8096,24 @@
       "relations": 23
     },
     "tests/unit_tests/db_engine_specs/test_databend.py": {
-      "hash": "5db6150aa8362979",
-      "nodes": 44,
-      "relations": 87
+      "hash": "1ab18cc0bdd94e04",
+      "nodes": 43,
+      "relations": 86
     },
     "tests/unit_tests/db_engine_specs/test_databricks.py": {
-      "hash": "e6adaeee6d9b0731",
-      "nodes": 47,
-      "relations": 74
+      "hash": "a6de2069b35742a3",
+      "nodes": 46,
+      "relations": 73
     },
     "tests/unit_tests/db_engine_specs/test_datastore.py": {
-      "hash": "80c64536e93a31c4",
-      "nodes": 207,
-      "relations": 250
+      "hash": "7ea0ad414b265093",
+      "nodes": 193,
+      "relations": 236
     },
     "tests/unit_tests/db_engine_specs/test_db2.py": {
-      "hash": "ca138510e948808e",
-      "nodes": 34,
-      "relations": 52
+      "hash": "f12d8c745782688a",
+      "nodes": 32,
+      "relations": 50
     },
     "tests/unit_tests/db_engine_specs/test_denodo.py": {
       "hash": "2e9eb90e1d8f38d6",
@@ -8121,14 +8121,14 @@
       "relations": 58
     },
     "tests/unit_tests/db_engine_specs/test_doris.py": {
-      "hash": "5d18614420264538",
-      "nodes": 65,
-      "relations": 104
+      "hash": "b08945e26adb30ba",
+      "nodes": 63,
+      "relations": 102
     },
     "tests/unit_tests/db_engine_specs/test_dremio.py": {
-      "hash": "38560ec418267971",
-      "nodes": 18,
-      "relations": 32
+      "hash": "41a5bd08258ad304",
+      "nodes": 17,
+      "relations": 31
     },
     "tests/unit_tests/db_engine_specs/test_drill.py": {
       "hash": "4ebb3f3c448f43c8",
@@ -8136,14 +8136,14 @@
       "relations": 81
     },
     "tests/unit_tests/db_engine_specs/test_druid.py": {
-      "hash": "373f2e973c95fef6",
-      "nodes": 34,
-      "relations": 57
+      "hash": "e79bd4dc73131178",
+      "nodes": 30,
+      "relations": 53
     },
     "tests/unit_tests/db_engine_specs/test_duckdb.py": {
-      "hash": "9c3698566e24be5b",
-      "nodes": 39,
-      "relations": 65
+      "hash": "8e7381ffc9aa1b9a",
+      "nodes": 38,
+      "relations": 64
     },
     "tests/unit_tests/db_engine_specs/test_dynamodb.py": {
       "hash": "329afbbbad7ed23f",
@@ -8166,9 +8166,9 @@
       "relations": 26
     },
     "tests/unit_tests/db_engine_specs/test_gsheets.py": {
-      "hash": "188ee13999973794",
-      "nodes": 247,
-      "relations": 322
+      "hash": "44ae80790e998da7",
+      "nodes": 212,
+      "relations": 287
     },
     "tests/unit_tests/db_engine_specs/test_hana.py": {
       "hash": "6b6477e2e89cff00",
@@ -8181,9 +8181,9 @@
       "relations": 48
     },
     "tests/unit_tests/db_engine_specs/test_impala.py": {
-      "hash": "d96569f1d2fa402f",
-      "nodes": 44,
-      "relations": 63
+      "hash": "f0ba2bc8814a7125",
+      "nodes": 38,
+      "relations": 57
     },
     "tests/unit_tests/db_engine_specs/test_init.py": {
       "hash": "62c5568c1a9cb3c1",
@@ -8206,19 +8206,19 @@
       "relations": 38
     },
     "tests/unit_tests/db_engine_specs/test_mssql.py": {
-      "hash": "a6453a11ae9ae62e",
-      "nodes": 90,
-      "relations": 152
+      "hash": "f83a88adab07e1a5",
+      "nodes": 89,
+      "relations": 151
     },
     "tests/unit_tests/db_engine_specs/test_mysql.py": {
-      "hash": "f3024eea3086cf42",
-      "nodes": 80,
-      "relations": 140
+      "hash": "ee99aa76b0e5252f",
+      "nodes": 77,
+      "relations": 137
     },
     "tests/unit_tests/db_engine_specs/test_mysql_iam.py": {
-      "hash": "4735172c0691a169",
-      "nodes": 55,
-      "relations": 79
+      "hash": "3c230f7aeb511aed",
+      "nodes": 46,
+      "relations": 70
     },
     "tests/unit_tests/db_engine_specs/test_oceanbase.py": {
       "hash": "86440c396f79685d",
@@ -8231,9 +8231,9 @@
       "relations": 56
     },
     "tests/unit_tests/db_engine_specs/test_oracle.py": {
-      "hash": "647dc48b2f145e25",
-      "nodes": 48,
-      "relations": 83
+      "hash": "78107a40294821f7",
+      "nodes": 46,
+      "relations": 81
     },
     "tests/unit_tests/db_engine_specs/test_parseable.py": {
       "hash": "480c956e8ac029fe",
@@ -8241,19 +8241,19 @@
       "relations": 43
     },
     "tests/unit_tests/db_engine_specs/test_pinot.py": {
-      "hash": "e3b0a71b38f2aa4a",
-      "nodes": 17,
-      "relations": 27
+      "hash": "0e8583054159c773",
+      "nodes": 15,
+      "relations": 25
     },
     "tests/unit_tests/db_engine_specs/test_postgres.py": {
-      "hash": "784e1b92bd279372",
-      "nodes": 58,
-      "relations": 96
+      "hash": "6f7df217fd874a16",
+      "nodes": 56,
+      "relations": 94
     },
     "tests/unit_tests/db_engine_specs/test_presto.py": {
-      "hash": "0731d7c8c1d90e10",
-      "nodes": 67,
-      "relations": 114
+      "hash": "1063a60132ebf8b6",
+      "nodes": 66,
+      "relations": 113
     },
     "tests/unit_tests/db_engine_specs/test_redshift.py": {
       "hash": "f6dda6d44fcfd7ba",
@@ -8261,19 +8261,19 @@
       "relations": 32
     },
     "tests/unit_tests/db_engine_specs/test_redshift_iam.py": {
-      "hash": "eaaa546fe20cb1aa",
-      "nodes": 73,
-      "relations": 102
-    },
-    "tests/unit_tests/db_engine_specs/test_singlestore.py": {
-      "hash": "0458efbb1416e1e6",
-      "nodes": 59,
+      "hash": "b32a0f44a87221f5",
+      "nodes": 60,
       "relations": 89
     },
+    "tests/unit_tests/db_engine_specs/test_singlestore.py": {
+      "hash": "7846fcf8a1da8832",
+      "nodes": 53,
+      "relations": 83
+    },
     "tests/unit_tests/db_engine_specs/test_snowflake.py": {
-      "hash": "229fb0fa40cacf75",
-      "nodes": 86,
-      "relations": 140
+      "hash": "c8a67cf91f27922d",
+      "nodes": 84,
+      "relations": 138
     },
     "tests/unit_tests/db_engine_specs/test_sqlite.py": {
       "hash": "5d9fad63ef811331",
@@ -8281,9 +8281,9 @@
       "relations": 40
     },
     "tests/unit_tests/db_engine_specs/test_starrocks.py": {
-      "hash": "b667833b41b3ff2f",
-      "nodes": 83,
-      "relations": 118
+      "hash": "87ac939a692f4826",
+      "nodes": 77,
+      "relations": 112
     },
     "tests/unit_tests/db_engine_specs/test_tdengine.py": {
       "hash": "0454106ccea76530",
@@ -8291,14 +8291,14 @@
       "relations": 11
     },
     "tests/unit_tests/db_engine_specs/test_trino.py": {
-      "hash": "9b05e6570c180a84",
-      "nodes": 461,
-      "relations": 601
+      "hash": "b6eed624f7abf4ef",
+      "nodes": 377,
+      "relations": 517
     },
     "tests/unit_tests/db_engine_specs/test_ydb.py": {
-      "hash": "d3a4207d330e3790",
-      "nodes": 31,
-      "relations": 51
+      "hash": "fa629235e7a56b80",
+      "nodes": 29,
+      "relations": 49
     },
     "tests/unit_tests/db_engine_specs/utils.py": {
       "hash": "134b35f382c17266",
@@ -8311,9 +8311,9 @@
       "relations": 2
     },
     "tests/unit_tests/distributed_lock/distributed_lock_tests.py": {
-      "hash": "8b7cb4b8e83f2f80",
-      "nodes": 58,
-      "relations": 96
+      "hash": "8fecec052f1166a4",
+      "nodes": 53,
+      "relations": 91
     },
     "tests/unit_tests/examples/__init__.py": {
       "hash": "e0b5b07749fefd05",
@@ -8321,19 +8321,19 @@
       "relations": 4
     },
     "tests/unit_tests/examples/data_loading_test.py": {
-      "hash": "d1318d28d788c2af",
-      "nodes": 51,
-      "relations": 67
+      "hash": "9d3d7c2554737bed",
+      "nodes": 50,
+      "relations": 66
     },
     "tests/unit_tests/examples/generic_loader_test.py": {
-      "hash": "a8f5fe421087eca8",
-      "nodes": 75,
-      "relations": 85
+      "hash": "ad6d03936da3e322",
+      "nodes": 51,
+      "relations": 61
     },
     "tests/unit_tests/examples/utils_test.py": {
-      "hash": "6efee5b06dbb1350",
-      "nodes": 43,
-      "relations": 57
+      "hash": "7f9624d7554d04e6",
+      "nodes": 39,
+      "relations": 53
     },
     "tests/unit_tests/explore/__init__.py": {
       "hash": "4b63dab12126bfa5",
@@ -8346,9 +8346,9 @@
       "relations": 9
     },
     "tests/unit_tests/explore/utils_test.py": {
-      "hash": "bff7c20c2d2339e1",
-      "nodes": 83,
-      "relations": 136
+      "hash": "e674bcc35731234f",
+      "nodes": 82,
+      "relations": 135
     },
     "tests/unit_tests/extension_tests.py": {
       "hash": "f93b2ea9246e34ea",
@@ -8361,14 +8361,14 @@
       "relations": 4
     },
     "tests/unit_tests/extensions/ssh_test.py": {
-      "hash": "a77ecfa733191cb6",
-      "nodes": 9,
-      "relations": 14
+      "hash": "802c0d845186a48a",
+      "nodes": 8,
+      "relations": 13
     },
     "tests/unit_tests/extensions/test_sqlalchemy.py": {
-      "hash": "d0562198ae963983",
-      "nodes": 98,
-      "relations": 137
+      "hash": "f0a3f7034c256a8c",
+      "nodes": 86,
+      "relations": 125
     },
     "tests/unit_tests/extensions/test_types.py": {
       "hash": "0ebf71185c7e3dcc",
@@ -8406,9 +8406,9 @@
       "relations": 22
     },
     "tests/unit_tests/fixtures/datasets.py": {
-      "hash": "4290fb168926d7e3",
-      "nodes": 43,
-      "relations": 46
+      "hash": "fb3c666dd9145389",
+      "nodes": 12,
+      "relations": 15
     },
     "tests/unit_tests/importexport/__init__.py": {
       "hash": "1571af34c450d1fb",
@@ -8416,19 +8416,19 @@
       "relations": 2
     },
     "tests/unit_tests/importexport/api_test.py": {
-      "hash": "e113ae60d1edef83",
-      "nodes": 74,
-      "relations": 98
+      "hash": "50cfd6ad8969dc07",
+      "nodes": 73,
+      "relations": 97
     },
     "tests/unit_tests/initialization_test.py": {
-      "hash": "93e7af78e054263e",
-      "nodes": 82,
-      "relations": 95
+      "hash": "8ef80006602dd180",
+      "nodes": 74,
+      "relations": 87
     },
     "tests/unit_tests/jinja_context_test.py": {
-      "hash": "68d5867cbca5f48e",
-      "nodes": 363,
-      "relations": 434
+      "hash": "64ee04fb3dbbab2b",
+      "nodes": 313,
+      "relations": 384
     },
     "tests/unit_tests/key_value/__init__.py": {
       "hash": "a5dc77f483b6b96d",
@@ -8441,14 +8441,14 @@
       "relations": 44
     },
     "tests/unit_tests/key_value/test_shared_entries_migration.py": {
-      "hash": "dd3ee5326bd3a586",
-      "nodes": 48,
-      "relations": 64
+      "hash": "684fce4d0983a166",
+      "nodes": 42,
+      "relations": 58
     },
     "tests/unit_tests/key_value/utils_test.py": {
-      "hash": "2cdc4d5d1a18b947",
-      "nodes": 72,
-      "relations": 94
+      "hash": "fd1fb477645709cd",
+      "nodes": 67,
+      "relations": 89
     },
     "tests/unit_tests/legacy_tests.py": {
       "hash": "e82838f7381a1ac5",
@@ -8471,9 +8471,9 @@
       "relations": 216
     },
     "tests/unit_tests/mcp_service/chart/test_chart_utils.py": {
-      "hash": "208d589006e5f1af",
-      "nodes": 604,
-      "relations": 647
+      "hash": "83d0dfc4c821446e",
+      "nodes": 551,
+      "relations": 594
     },
     "tests/unit_tests/mcp_service/chart/test_handlebars_chart.py": {
       "hash": "cffb17392e8a515a",
@@ -8481,9 +8481,9 @@
       "relations": 221
     },
     "tests/unit_tests/mcp_service/chart/test_new_chart_types.py": {
-      "hash": "72ed1915d3a33c59",
-      "nodes": 289,
-      "relations": 309
+      "hash": "3908e5afcdbaf5be",
+      "nodes": 278,
+      "relations": 298
     },
     "tests/unit_tests/mcp_service/chart/test_preview_utils.py": {
       "hash": "23afadd15a459b92",
@@ -8496,14 +8496,14 @@
       "relations": 8
     },
     "tests/unit_tests/mcp_service/chart/tool/test_generate_chart.py": {
-      "hash": "c7b423f7dc7610b8",
-      "nodes": 154,
-      "relations": 181
+      "hash": "4140d58c8808e992",
+      "nodes": 122,
+      "relations": 149
     },
     "tests/unit_tests/mcp_service/chart/tool/test_get_chart_data.py": {
-      "hash": "23d3c9f2294c4544",
-      "nodes": 280,
-      "relations": 312
+      "hash": "908c5e8734be4037",
+      "nodes": 270,
+      "relations": 302
     },
     "tests/unit_tests/mcp_service/chart/tool/test_get_chart_preview.py": {
       "hash": "f34733a854a6613d",
@@ -8516,14 +8516,14 @@
       "relations": 45
     },
     "tests/unit_tests/mcp_service/chart/tool/test_list_charts.py": {
-      "hash": "1c8390e6ae4d927e",
-      "nodes": 76,
-      "relations": 88
+      "hash": "f98c7403e21ab6eb",
+      "nodes": 55,
+      "relations": 67
     },
     "tests/unit_tests/mcp_service/chart/tool/test_update_chart.py": {
-      "hash": "bb556659445e2b59",
-      "nodes": 344,
-      "relations": 372
+      "hash": "15a9bce98ee38318",
+      "nodes": 270,
+      "relations": 298
     },
     "tests/unit_tests/mcp_service/chart/tool/test_update_chart_preview.py": {
       "hash": "314311b5195b4d4c",
@@ -8536,14 +8536,14 @@
       "relations": 3
     },
     "tests/unit_tests/mcp_service/chart/validation/test_column_name_normalization.py": {
-      "hash": "294e7790a2272011",
-      "nodes": 213,
-      "relations": 229
+      "hash": "16aae829b7732587",
+      "nodes": 195,
+      "relations": 211
     },
     "tests/unit_tests/mcp_service/chart/validation/test_runtime_validator.py": {
-      "hash": "e4ef5c650551d13a",
-      "nodes": 50,
-      "relations": 58
+      "hash": "6e009c18e53f3c91",
+      "nodes": 44,
+      "relations": 52
     },
     "tests/unit_tests/mcp_service/common/__init__.py": {
       "hash": "82312e7c26d91d6a",
@@ -8561,9 +8561,9 @@
       "relations": 3
     },
     "tests/unit_tests/mcp_service/dashboard/test_dashboard_schemas.py": {
-      "hash": "586794b79a7fc3dc",
-      "nodes": 155,
-      "relations": 169
+      "hash": "28488b8185460fd3",
+      "nodes": 114,
+      "relations": 128
     },
     "tests/unit_tests/mcp_service/dashboard/tool/__init__.py": {
       "hash": "dd852045163168aa",
@@ -8571,19 +8571,19 @@
       "relations": 4
     },
     "tests/unit_tests/mcp_service/dashboard/tool/test_add_chart_to_existing_dashboard.py": {
-      "hash": "ca58aa72568afb6d",
-      "nodes": 106,
-      "relations": 125
+      "hash": "3381b61ac7587cef",
+      "nodes": 67,
+      "relations": 86
     },
     "tests/unit_tests/mcp_service/dashboard/tool/test_dashboard_generation.py": {
-      "hash": "cb03cc3c22ec3acb",
-      "nodes": 482,
-      "relations": 508
+      "hash": "22d3125e86d2c517",
+      "nodes": 393,
+      "relations": 419
     },
     "tests/unit_tests/mcp_service/dashboard/tool/test_dashboard_tools.py": {
-      "hash": "59e14632a4923436",
-      "nodes": 342,
-      "relations": 365
+      "hash": "b5f0f2f485f9d4b8",
+      "nodes": 122,
+      "relations": 145
     },
     "tests/unit_tests/mcp_service/database/__init__.py": {
       "hash": "3bc161eaa4785364",
@@ -8596,9 +8596,9 @@
       "relations": 2
     },
     "tests/unit_tests/mcp_service/database/tool/test_database_tools.py": {
-      "hash": "da8cb66013b87d37",
-      "nodes": 100,
-      "relations": 120
+      "hash": "1ac74f885f19d811",
+      "nodes": 63,
+      "relations": 83
     },
     "tests/unit_tests/mcp_service/dataset/__init__.py": {
       "hash": "b6146d1ef7416fa9",
@@ -8611,9 +8611,9 @@
       "relations": 2
     },
     "tests/unit_tests/mcp_service/dataset/tool/test_dataset_tools.py": {
-      "hash": "8b11f065d105a9e9",
-      "nodes": 784,
-      "relations": 828
+      "hash": "6d6a0d28c35faca4",
+      "nodes": 293,
+      "relations": 337
     },
     "tests/unit_tests/mcp_service/explore/__init__.py": {
       "hash": "d84a4e0f7d70c5c4",
@@ -8626,9 +8626,9 @@
       "relations": 2
     },
     "tests/unit_tests/mcp_service/explore/tool/test_generate_explore_link.py": {
-      "hash": "865c5ab2ba8554ae",
-      "nodes": 263,
-      "relations": 296
+      "hash": "e9e597999249f937",
+      "nodes": 227,
+      "relations": 260
     },
     "tests/unit_tests/mcp_service/sql_lab/__init__.py": {
       "hash": "45548a90dfe3fc02",
@@ -8646,24 +8646,24 @@
       "relations": 3
     },
     "tests/unit_tests/mcp_service/sql_lab/tool/test_execute_sql.py": {
-      "hash": "9519526aff742daa",
-      "nodes": 307,
-      "relations": 346
+      "hash": "0ff9164969147dc6",
+      "nodes": 280,
+      "relations": 319
     },
     "tests/unit_tests/mcp_service/sql_lab/tool/test_save_sql_query.py": {
-      "hash": "f88e43113a60b112",
-      "nodes": 156,
-      "relations": 177
+      "hash": "dd7a0a123c1b46c6",
+      "nodes": 118,
+      "relations": 139
     },
     "tests/unit_tests/mcp_service/system/test_serialize_user_object.py": {
-      "hash": "c7a6351b5eb11c54",
-      "nodes": 58,
-      "relations": 63
+      "hash": "f0ed1a6a4c3b93f4",
+      "nodes": 36,
+      "relations": 41
     },
     "tests/unit_tests/mcp_service/system/test_system_utils.py": {
-      "hash": "603305665fab9b43",
-      "nodes": 17,
-      "relations": 22
+      "hash": "71d8e3de7f6d9969",
+      "nodes": 14,
+      "relations": 19
     },
     "tests/unit_tests/mcp_service/system/tool/__init__.py": {
       "hash": "7792152deaef88d7",
@@ -8671,14 +8671,14 @@
       "relations": 5
     },
     "tests/unit_tests/mcp_service/system/tool/test_get_current_user.py": {
-      "hash": "4fb09a0bac9275a4",
-      "nodes": 101,
-      "relations": 135
+      "hash": "c0c943e7040e2a0b",
+      "nodes": 85,
+      "relations": 119
     },
     "tests/unit_tests/mcp_service/system/tool/test_get_schema.py": {
-      "hash": "691701de1ab4d2f2",
-      "nodes": 117,
-      "relations": 141
+      "hash": "c02fa3991ee7e7d7",
+      "nodes": 108,
+      "relations": 132
     },
     "tests/unit_tests/mcp_service/system/tool/test_health_check.py": {
       "hash": "874f746e88c63e36",
@@ -8691,29 +8691,29 @@
       "relations": 133
     },
     "tests/unit_tests/mcp_service/test_auth_rbac.py": {
-      "hash": "96ea50a77251903e",
-      "nodes": 77,
-      "relations": 90
+      "hash": "925c990db433d86f",
+      "nodes": 68,
+      "relations": 81
     },
     "tests/unit_tests/mcp_service/test_g_user_race_condition.py": {
-      "hash": "ff4b22031fcc9a6d",
-      "nodes": 49,
-      "relations": 58
+      "hash": "28c7320bdb944934",
+      "nodes": 44,
+      "relations": 53
     },
     "tests/unit_tests/mcp_service/test_jwt_verifier.py": {
-      "hash": "55a39b65975293ee",
-      "nodes": 183,
-      "relations": 212
+      "hash": "2300679cebd00dc7",
+      "nodes": 174,
+      "relations": 203
     },
     "tests/unit_tests/mcp_service/test_mcp_caching.py": {
-      "hash": "9998f76259eb73cc",
-      "nodes": 51,
-      "relations": 60
+      "hash": "30cc42ecc4837552",
+      "nodes": 47,
+      "relations": 56
     },
     "tests/unit_tests/mcp_service/test_mcp_config.py": {
-      "hash": "7eb06944a94f61c1",
-      "nodes": 37,
-      "relations": 43
+      "hash": "fd20c25123924ea0",
+      "nodes": 32,
+      "relations": 38
     },
     "tests/unit_tests/mcp_service/test_mcp_server.py": {
       "hash": "615beacf2fd534ed",
@@ -8721,9 +8721,9 @@
       "relations": 48
     },
     "tests/unit_tests/mcp_service/test_mcp_storage.py": {
-      "hash": "4390669daf9e5767",
-      "nodes": 64,
-      "relations": 77
+      "hash": "2b15f08ab1afe9d8",
+      "nodes": 61,
+      "relations": 74
     },
     "tests/unit_tests/mcp_service/test_mcp_tool_registration.py": {
       "hash": "053f6654ccd02eb2",
@@ -8731,19 +8731,19 @@
       "relations": 28
     },
     "tests/unit_tests/mcp_service/test_middleware.py": {
-      "hash": "40f6607c8ae03696",
-      "nodes": 162,
-      "relations": 176
+      "hash": "eb43d1e3bf213aa5",
+      "nodes": 133,
+      "relations": 147
     },
     "tests/unit_tests/mcp_service/test_middleware_logging.py": {
-      "hash": "cfe823d5e2446f18",
-      "nodes": 148,
-      "relations": 175
+      "hash": "a22e23b1e84daebb",
+      "nodes": 143,
+      "relations": 170
     },
     "tests/unit_tests/mcp_service/test_tool_search_transform.py": {
-      "hash": "03def632ff5b3fef",
-      "nodes": 193,
-      "relations": 213
+      "hash": "e4398c127fcfe928",
+      "nodes": 190,
+      "relations": 210
     },
     "tests/unit_tests/mcp_service/utils/__init__.py": {
       "hash": "50ab6a5400b154a2",
@@ -8776,14 +8776,14 @@
       "relations": 3
     },
     "tests/unit_tests/migrations/shared/catalogs_test.py": {
-      "hash": "b5f855e9313d9e48",
-      "nodes": 99,
-      "relations": 149
+      "hash": "13e06ecca5196f96",
+      "nodes": 95,
+      "relations": 145
     },
     "tests/unit_tests/migrations/shared/utils_test.py": {
-      "hash": "99fc7ac553f6cd35",
-      "nodes": 78,
-      "relations": 80
+      "hash": "b67cddcb3420a52b",
+      "nodes": 74,
+      "relations": 76
     },
     "tests/unit_tests/migrations/viz/__init__.py": {
       "hash": "69b70fea935a03fe",
@@ -8846,19 +8846,19 @@
       "relations": 11
     },
     "tests/unit_tests/models/core_test.py": {
-      "hash": "cb6a60609ee7b94b",
-      "nodes": 299,
-      "relations": 368
+      "hash": "2d47c4bf04d89c6d",
+      "nodes": 262,
+      "relations": 331
     },
     "tests/unit_tests/models/helpers_test.py": {
-      "hash": "1f42e6638a5c4448",
-      "nodes": 439,
-      "relations": 573
+      "hash": "c69777e618b708f0",
+      "nodes": 432,
+      "relations": 566
     },
     "tests/unit_tests/models/slice_test.py": {
-      "hash": "5ec91c87977ff406",
-      "nodes": 49,
-      "relations": 61
+      "hash": "180c8c8679564d85",
+      "nodes": 41,
+      "relations": 53
     },
     "tests/unit_tests/models/sql_lab_test.py": {
       "hash": "1308a68ab82f36fa",
@@ -8876,9 +8876,9 @@
       "relations": 62
     },
     "tests/unit_tests/models/test_double_rls_virtual_dataset.py": {
-      "hash": "25d93b8673c21f72",
-      "nodes": 67,
-      "relations": 78
+      "hash": "df8c888475192a98",
+      "nodes": 52,
+      "relations": 63
     },
     "tests/unit_tests/models/test_no_filter_time_range.py": {
       "hash": "8e7dea32ac646b1a",
@@ -8891,14 +8891,14 @@
       "relations": 63
     },
     "tests/unit_tests/models/test_validate_expression.py": {
-      "hash": "d2c60a90e700cd93",
-      "nodes": 64,
-      "relations": 71
+      "hash": "4f0c40ebb0e237c4",
+      "nodes": 45,
+      "relations": 52
     },
     "tests/unit_tests/models/test_virtual_dataset_format.py": {
-      "hash": "9d31080efbdd461c",
-      "nodes": 128,
-      "relations": 147
+      "hash": "4f660e5754ff4b94",
+      "nodes": 114,
+      "relations": 133
     },
     "tests/unit_tests/pandas_postprocessing/__init__.py": {
       "hash": "cbd36ca2a2550e8e",
@@ -8916,9 +8916,9 @@
       "relations": 29
     },
     "tests/unit_tests/pandas_postprocessing/test_compare.py": {
-      "hash": "fb2cf779378e6fa8",
-      "nodes": 40,
-      "relations": 54
+      "hash": "79b0d45c223af7b7",
+      "nodes": 38,
+      "relations": 52
     },
     "tests/unit_tests/pandas_postprocessing/test_contribution.py": {
       "hash": "37a52e90e8f6477a",
@@ -8936,9 +8936,9 @@
       "relations": 20
     },
     "tests/unit_tests/pandas_postprocessing/test_flatten.py": {
-      "hash": "b89ca0fa5a209a73",
-      "nodes": 38,
-      "relations": 45
+      "hash": "680749c3dcb4e8b9",
+      "nodes": 32,
+      "relations": 39
     },
     "tests/unit_tests/pandas_postprocessing/test_geography.py": {
       "hash": "0b0cc91f28327054",
@@ -9006,9 +9006,9 @@
       "relations": 18
     },
     "tests/unit_tests/queries/query_object_test.py": {
-      "hash": "d2284eb613b515ab",
-      "nodes": 94,
-      "relations": 107
+      "hash": "45e342ab98a6338b",
+      "nodes": 79,
+      "relations": 92
     },
     "tests/unit_tests/reports/__init__.py": {
       "hash": "ef0bfb928779def0",
@@ -9016,9 +9016,9 @@
       "relations": 4
     },
     "tests/unit_tests/reports/model_test.py": {
-      "hash": "af5b7c41d1f6a74f",
-      "nodes": 85,
-      "relations": 86
+      "hash": "bb7645558eee091d",
+      "nodes": 77,
+      "relations": 78
     },
     "tests/unit_tests/reports/notifications/email_tests.py": {
       "hash": "c09f5c13213c1666",
@@ -9026,9 +9026,9 @@
       "relations": 40
     },
     "tests/unit_tests/reports/notifications/slack_tests.py": {
-      "hash": "267fa41647bd6a7c",
-      "nodes": 91,
-      "relations": 136
+      "hash": "a684ea28a4a66825",
+      "nodes": 84,
+      "relations": 129
     },
     "tests/unit_tests/reports/notifications/webhook_tests.py": {
       "hash": "6af734ef962b05d5",
@@ -9061,19 +9061,19 @@
       "relations": 9
     },
     "tests/unit_tests/security/exclude_users_filter_test.py": {
-      "hash": "1dcede6d772e533a",
-      "nodes": 64,
-      "relations": 77
+      "hash": "54f5d5c0dccd96b6",
+      "nodes": 54,
+      "relations": 67
     },
     "tests/unit_tests/security/guest_rls_test.py": {
-      "hash": "f4128a86fad7e6ee",
-      "nodes": 90,
-      "relations": 115
+      "hash": "78cd034466f15543",
+      "nodes": 82,
+      "relations": 107
     },
     "tests/unit_tests/security/manager_test.py": {
-      "hash": "e6eb352f9aa1db8e",
-      "nodes": 346,
-      "relations": 383
+      "hash": "7ceed09acf05b705",
+      "nodes": 258,
+      "relations": 295
     },
     "tests/unit_tests/sql/__init__.py": {
       "hash": "a860dae60876d9c3",
@@ -9111,24 +9111,24 @@
       "relations": 4
     },
     "tests/unit_tests/sql/execution/conftest.py": {
-      "hash": "d69eb36e2edf6b28",
-      "nodes": 115,
-      "relations": 136
+      "hash": "67ded3c3be0874f9",
+      "nodes": 67,
+      "relations": 88
     },
     "tests/unit_tests/sql/execution/test_celery_task.py": {
-      "hash": "75ddcee730e08b80",
-      "nodes": 345,
-      "relations": 421
+      "hash": "5c25e7aa0e1db4c1",
+      "nodes": 317,
+      "relations": 393
     },
     "tests/unit_tests/sql/execution/test_executor.py": {
-      "hash": "e6003700812f0b3a",
-      "nodes": 741,
-      "relations": 839
+      "hash": "9c021bd2a4595c04",
+      "nodes": 631,
+      "relations": 729
     },
     "tests/unit_tests/sql/parse_tests.py": {
-      "hash": "f3a485ac82c3f8e2",
-      "nodes": 258,
-      "relations": 296
+      "hash": "552be0bc6317d6e5",
+      "nodes": 255,
+      "relations": 293
     },
     "tests/unit_tests/sql/test_firebolt_dialect.py": {
       "hash": "469b12312ab9cadd",
@@ -9146,9 +9146,9 @@
       "relations": 8
     },
     "tests/unit_tests/sql/transpile_to_dialect_test.py": {
-      "hash": "3f6c57d133f13516",
-      "nodes": 80,
-      "relations": 91
+      "hash": "cd91bcd810571ac7",
+      "nodes": 79,
+      "relations": 90
     },
     "tests/unit_tests/sql_lab_execution_context.py": {
       "hash": "2c6d84b16baf3241",
@@ -9156,9 +9156,9 @@
       "relations": 31
     },
     "tests/unit_tests/sql_lab_test.py": {
-      "hash": "69f6c486dd6a5201",
-      "nodes": 100,
-      "relations": 143
+      "hash": "7718079373d4a135",
+      "nodes": 76,
+      "relations": 119
     },
     "tests/unit_tests/tables/__init__.py": {
       "hash": "d2972a2c91d1e5bc",
@@ -9181,14 +9181,14 @@
       "relations": 131
     },
     "tests/unit_tests/tags/filters_test.py": {
-      "hash": "899063f7399cbb93",
-      "nodes": 34,
-      "relations": 50
+      "hash": "4b8101b434f34b8c",
+      "nodes": 33,
+      "relations": 49
     },
     "tests/unit_tests/tags/models_test.py": {
-      "hash": "88354bb4f78483ca",
-      "nodes": 61,
-      "relations": 70
+      "hash": "4601f300d818f571",
+      "nodes": 52,
+      "relations": 61
     },
     "tests/unit_tests/tasks/__init__.py": {
       "hash": "9db9cef2fa9ee37e",
@@ -9196,9 +9196,9 @@
       "relations": 8
     },
     "tests/unit_tests/tasks/test_async_queries.py": {
-      "hash": "7ea009feab14edf0",
-      "nodes": 58,
-      "relations": 85
+      "hash": "ac1aac177525fa04",
+      "nodes": 49,
+      "relations": 76
     },
     "tests/unit_tests/tasks/test_cron_util.py": {
       "hash": "c0bd011d2d70b11b",
@@ -9206,24 +9206,24 @@
       "relations": 38
     },
     "tests/unit_tests/tasks/test_decorators.py": {
-      "hash": "f7f0e33f162564fd",
-      "nodes": 193,
-      "relations": 211
+      "hash": "a50668378de1cb85",
+      "nodes": 168,
+      "relations": 186
     },
     "tests/unit_tests/tasks/test_handlers.py": {
-      "hash": "27a8558d1844a182",
-      "nodes": 268,
-      "relations": 301
+      "hash": "1677da63056d8da2",
+      "nodes": 207,
+      "relations": 240
     },
     "tests/unit_tests/tasks/test_manager.py": {
-      "hash": "8f532c2aa96d944f",
-      "nodes": 235,
-      "relations": 252
+      "hash": "39e89f978f72f975",
+      "nodes": 163,
+      "relations": 180
     },
     "tests/unit_tests/tasks/test_timeout.py": {
-      "hash": "7496a5ce26ec718a",
-      "nodes": 189,
-      "relations": 213
+      "hash": "19f3e19fb86ce474",
+      "nodes": 136,
+      "relations": 160
     },
     "tests/unit_tests/tasks/test_utils.py": {
       "hash": "8c0ba7cf1744bf22",
@@ -9241,14 +9241,14 @@
       "relations": 43
     },
     "tests/unit_tests/themes/commands_test.py": {
-      "hash": "3c87402c36d48aaf",
-      "nodes": 83,
-      "relations": 99
+      "hash": "fc65220808ee03c9",
+      "nodes": 67,
+      "relations": 83
     },
     "tests/unit_tests/themes/dao_test.py": {
-      "hash": "c0480ba40d009208",
-      "nodes": 21,
-      "relations": 28
+      "hash": "6f5f55ff63dc696e",
+      "nodes": 18,
+      "relations": 25
     },
     "tests/unit_tests/themes/model_test.py": {
       "hash": "cde31fbecefb1544",
@@ -9256,9 +9256,9 @@
       "relations": 21
     },
     "tests/unit_tests/themes/test_utils.py": {
-      "hash": "b967cab2948ecef0",
-      "nodes": 100,
-      "relations": 115
+      "hash": "d47811e508c79dde",
+      "nodes": 87,
+      "relations": 102
     },
     "tests/unit_tests/thumbnails/__init__.py": {
       "hash": "3221ff39b670c443",
@@ -9266,9 +9266,9 @@
       "relations": 2
     },
     "tests/unit_tests/thumbnails/test_digest.py": {
-      "hash": "855282138ce63878",
-      "nodes": 113,
-      "relations": 163
+      "hash": "050d74de5548ac73",
+      "nodes": 101,
+      "relations": 151
     },
     "tests/unit_tests/utils/__init__.py": {
       "hash": "f33dd6ea0599aeb5",
@@ -9276,9 +9276,9 @@
       "relations": 28
     },
     "tests/unit_tests/utils/cache_test.py": {
-      "hash": "b2d2263aeb26047a",
-      "nodes": 17,
-      "relations": 20
+      "hash": "f7687f68682fcb9e",
+      "nodes": 15,
+      "relations": 18
     },
     "tests/unit_tests/utils/csv_tests.py": {
       "hash": "5316083ef642242f",
@@ -9286,14 +9286,14 @@
       "relations": 90
     },
     "tests/unit_tests/utils/currency_test.py": {
-      "hash": "7703e2924518940f",
-      "nodes": 120,
-      "relations": 131
+      "hash": "0486f56a21ae059e",
+      "nodes": 98,
+      "relations": 109
     },
     "tests/unit_tests/utils/date_parser_tests.py": {
-      "hash": "0d24ad7967a036eb",
-      "nodes": 71,
-      "relations": 103
+      "hash": "4b00fb37aa315893",
+      "nodes": 67,
+      "relations": 99
     },
     "tests/unit_tests/utils/db.py": {
       "hash": "feaaa30dc582acb3",
@@ -9326,39 +9326,39 @@
       "relations": 43
     },
     "tests/unit_tests/utils/oauth2_tests.py": {
-      "hash": "43583a872dded0e8",
-      "nodes": 123,
-      "relations": 152
+      "hash": "31548b5dd7e2ab97",
+      "nodes": 99,
+      "relations": 128
     },
     "tests/unit_tests/utils/screenshot_test.py": {
-      "hash": "5538c21a06865c80",
-      "nodes": 190,
-      "relations": 208
+      "hash": "589a7ef81e82d2d9",
+      "nodes": 174,
+      "relations": 192
     },
     "tests/unit_tests/utils/slack_test.py": {
-      "hash": "47c16b63fdfc27bf",
-      "nodes": 80,
-      "relations": 88
+      "hash": "7042982ea52c4888",
+      "nodes": 72,
+      "relations": 80
     },
     "tests/unit_tests/utils/test_cache_manager.py": {
-      "hash": "a642c235b78891d4",
-      "nodes": 61,
-      "relations": 72
+      "hash": "32a5c2cf939c7f18",
+      "nodes": 57,
+      "relations": 68
     },
     "tests/unit_tests/utils/test_core.py": {
-      "hash": "ab1c4cf5cc542836",
-      "nodes": 264,
-      "relations": 314
+      "hash": "613a00aee287f0f1",
+      "nodes": 245,
+      "relations": 295
     },
     "tests/unit_tests/utils/test_date_parsing.py": {
-      "hash": "e5e2cf00eb789018",
+      "hash": "e1c44e56692f2a05",
       "nodes": 68,
       "relations": 78
     },
     "tests/unit_tests/utils/test_decorators.py": {
-      "hash": "e52a5521540c26cb",
-      "nodes": 93,
-      "relations": 118
+      "hash": "9a3d13fff27ca52d",
+      "nodes": 90,
+      "relations": 115
     },
     "tests/unit_tests/utils/test_file.py": {
       "hash": "b59fcdb1edc75efe",
@@ -9381,24 +9381,24 @@
       "relations": 63
     },
     "tests/unit_tests/utils/test_playwright_migration_working.py": {
-      "hash": "0f79ff11137bfa1f",
-      "nodes": 30,
-      "relations": 39
+      "hash": "947d2990fc6744d3",
+      "nodes": 28,
+      "relations": 37
     },
     "tests/unit_tests/utils/test_screenshot_cache_fix.py": {
-      "hash": "1fd8d69d317faaa5",
-      "nodes": 159,
-      "relations": 174
+      "hash": "dba0c966110b66d0",
+      "nodes": 144,
+      "relations": 159
     },
     "tests/unit_tests/utils/test_screenshot_exception_handling.py": {
-      "hash": "1406208ff3ae5cca",
-      "nodes": 43,
-      "relations": 56
+      "hash": "1f7a561a10a98cfd",
+      "nodes": 39,
+      "relations": 52
     },
     "tests/unit_tests/utils/test_screenshot_utils.py": {
-      "hash": "dd6e2024c4208849",
-      "nodes": 108,
-      "relations": 121
+      "hash": "c4913fd1ea574483",
+      "nodes": 100,
+      "relations": 113
     },
     "tests/unit_tests/utils/urls_tests.py": {
       "hash": "f98551f84ab3cb23",
@@ -9406,9 +9406,9 @@
       "relations": 12
     },
     "tests/unit_tests/utils/webdriver_test.py": {
-      "hash": "056c0513450a58ea",
-      "nodes": 240,
-      "relations": 260
+      "hash": "827f754babfec8af",
+      "nodes": 185,
+      "relations": 205
     },
     "tests/unit_tests/views/datasource/__init__.py": {
       "hash": "2f35631808827798",
@@ -9416,24 +9416,24 @@
       "relations": 3
     },
     "tests/unit_tests/views/datasource/utils_test.py": {
-      "hash": "14d8720714f8ac18",
-      "nodes": 46,
-      "relations": 61
+      "hash": "b16251d44826247e",
+      "nodes": 31,
+      "relations": 46
     },
     "tests/unit_tests/views/datasource/views_test.py": {
-      "hash": "7e1f7ebafb25f22a",
-      "nodes": 90,
-      "relations": 113
+      "hash": "0bbc979a97455c61",
+      "nodes": 72,
+      "relations": 95
     },
     "tests/unit_tests/views/test_base_theme_helpers.py": {
-      "hash": "cc9569013b38f8f0",
-      "nodes": 290,
-      "relations": 310
+      "hash": "5b3b854548dec03d",
+      "nodes": 236,
+      "relations": 256
     }
   },
   "kinds": {
     "nodes": {
-      "attribute": 8223,
+      "attribute": 7831,
       "boundary": 153,
       "class": 2351,
       "dependency": 175,
@@ -9446,12 +9446,12 @@
       "parameter": 20843,
       "project": 5,
       "type_alias": 19,
-      "variable": 36892
+      "variable": 31611
     },
     "relations": {
       "consumes": 188,
       "contains": 3791,
-      "declares": 101755,
+      "declares": 96082,
       "depends_on": 175,
       "exposes": 230,
       "imports": 15178,
@@ -9462,30 +9462,30 @@
   "ref": "6.1.0",
   "resolution": {
     "metrics": {
-      "external": 105539,
-      "internal": 244358,
-      "queries": 583368,
-      "resolved": 433691,
-      "unresolved": 105409
+      "external": 105998,
+      "internal": 250582,
+      "queries": 587405,
+      "resolved": 437671,
+      "unresolved": 106956
     },
     "relations": {
-      "calls": 60830,
+      "calls": 60776,
       "consumes": 188,
       "contains": 3791,
-      "declares": 101755,
+      "declares": 96082,
       "depends_on": 175,
       "exposes": 230,
       "has_type": 26229,
       "imports": 15178,
       "inherits_from": 2088,
-      "references": 251120,
+      "references": 257794,
       "resolves_to": 30912
     },
     "status": "ok"
   },
   "totals": {
     "files": 1886,
-    "nodes": 106998,
-    "relations": 141263
+    "nodes": 101325,
+    "relations": 135590
   }
 }

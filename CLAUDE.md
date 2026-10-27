@@ -442,6 +442,16 @@ Things that are easy to get wrong:
   it no moniker.
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
+- **An assignment target is declared where Python binds it.** `self.x` / `cls.x`
+  is ONE `ATTRIBUTE` of the nearest enclosing class (`Class.x`, not
+  `Class.method.x`), declared by the class, with every write site in `declared_at`
+  so the resolver's answer at any of them lands on the node. `obj.x = v` declares
+  nothing: it reads the receiver and records a `write` of `x`, which the resolver
+  binds to the real attribute (it has no holder, so the flow pass does not follow
+  the value). Every target of `a = b = v` is declared and `v` is scanned once.
+  Module-level `for` and `except ... as` targets are module `VARIABLE`s (declared
+  on their own span, never the whole statement); a function's loop variable stays
+  a node only when it is called.
 
 The Docker images (`Dockerfile`, `docker/smoke.sh`) are plain Debian: `slim`
 (callix) and `full` (+ Go, Rust with rust-analyzer and rust-src, Node, Python+pip).

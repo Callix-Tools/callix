@@ -24,7 +24,8 @@ PythonAdapter(resolve=False).analyze(root)      # structure only
 Modules as dotted names, classes, functions and methods, module- and
 class-level variables, attributes assigned through `self`, type aliases,
 parameters, and imports — absolute and relative alike, with `from . import x`
-resolved against the importing module's package.
+resolved against the importing module's package, wherever they are written: in a
+function body, or under `if TYPE_CHECKING:` or `try:`.
 
 A `lambda` is a function nobody named: a `FUNCTION` node called `<lambdaN>` in the
 scope it is written in, numbered in the order that scope meets them

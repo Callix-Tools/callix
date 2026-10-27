@@ -1339,10 +1339,15 @@ impl<'a> PythonVisitor<'a> {
     /// Handling one statement (or clause) inside a body.
     ///
     /// Assignments and returns go to their own handlers, nested definitions
-    /// to `visit`, blocks and block clauses (else/except/elif/finally)
-    /// recursively, and everything else is a value expression.
+    /// and imports to `visit` (an import is an import wherever it is written:
+    /// in a function body or under `if TYPE_CHECKING:` / `try:`), blocks and
+    /// block clauses (else/except/elif/finally) recursively, and everything
+    /// else is a value expression.
     fn walk_statement(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if NESTED_DEF_TYPES.contains(&node.kind()) {
+            return self.visit(node);
+        }
+        if matches!(node.kind(), "import_statement" | "import_from_statement") {
             return self.visit(node);
         }
         if node.kind() == "expression_statement" {

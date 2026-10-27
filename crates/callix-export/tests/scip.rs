@@ -215,3 +215,39 @@ fn a_placed_module_is_a_definition_and_a_reference_target() {
         assert!(!warnings.iter().any(|w| w.code == code), "unexpected warning {code}");
     }
 }
+
+const IMPORT_GRAPH: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+  "nodes":[
+   {"id":"p","kind":"project","qualified_name":"proj","name":"proj","file_path":null,"span":null,"metadata":{}},
+   {"id":"fa","kind":"file","qualified_name":"app.py","name":"app.py","file_path":"app.py","span":null,"metadata":{}},
+   {"id":"fl","kind":"file","qualified_name":"pkg/lib.py","name":"lib.py","file_path":"pkg/lib.py","span":null,"metadata":{}},
+   {"id":"w","kind":"class","qualified_name":"pkg.lib.Widget","name":"Widget","file_path":"pkg/lib.py","span":[1,1,2,9],"metadata":{"name_span":{"__span__":[1,7,1,13]}}},
+   {"id":"i","kind":"import","qualified_name":"app.Widget","name":"Widget","file_path":"app.py","span":null,"metadata":{}}],
+  "relations":[
+   {"source_id":"i","target_id":"w","kind":"resolves_to","metadata":{"span":{"__span__":[1,21,1,27]},"resolution":"definition"}},
+   {"source_id":"i","target_id":"w","kind":"resolves_to","metadata":{}}]}"#;
+
+#[test]
+fn scip_exports_resolves_to_with_span() {
+    let (bytes, _) = export(&Graph::from_json(IMPORT_GRAPH).unwrap());
+    let index = decode_scip(&bytes);
+    let app = index.documents.iter().find(|d| d.path == "app.py").expect("app.py document");
+    let refs: Vec<_> = app.occurrences.iter().filter(|o| o.roles & 1 == 0).collect();
+    assert_eq!(refs.len(), 1, "{refs:?}");
+    assert_eq!(refs[0].range, [0, 20, 26]);
+    assert!(refs[0].symbol.contains("pkg.lib.Widget"), "{}", refs[0].symbol);
+
+    // Only the structural edge: nothing placed, nothing reported as unplaced.
+    let bare = IMPORT_GRAPH.replace(
+        r#"{"source_id":"i","target_id":"w","kind":"resolves_to","metadata":{"span":{"__span__":[1,21,1,27]},"resolution":"definition"}},"#,
+        "",
+    );
+    let (bytes, warnings) = export(&Graph::from_json(&bare).unwrap());
+    let index = decode_scip(&bytes);
+    let app = index.documents.iter().find(|d| d.path == "app.py");
+    assert!(app.is_none_or(|d| d.occurrences.iter().all(|o| o.roles & 1 != 0)));
+    assert!(
+        warnings.iter().all(|w| !w.code.contains("unplaced") && !w.code.contains("unsupported-reference")),
+        "{warnings:?}"
+    );
+}

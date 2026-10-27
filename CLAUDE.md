@@ -321,7 +321,11 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   no pyo3, no Python — and writes LSIF, SCIP, CycloneDX, CSV, DOT, Mermaid and the
   text/Markdown/JSON reports. `index.rs` reads the graph as an index (documents,
   placed definitions and references, symbols) once for both LSIF and SCIP; `ops.rs`
-  writes the model back as `json.dumps` would and does merge and diff. The SCIP
+  writes the model back as `json.dumps` would and does merge and diff. The index
+  places what `Relation::is_placed_reference` accepts: the four reference kinds plus
+  a RESOLVES_TO that records `metadata["span"]` (the name an import brings in); a
+  structural RESOLVES_TO is neither placed nor counted, and
+  `RelationKind::is_reference` (reports, counts) stays the four kinds. The SCIP
   encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
@@ -409,6 +413,13 @@ Things that are easy to get wrong:
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
   resolver adds a `RESOLVES_TO` from the import to the definition.
+- **An import statement is an import wherever it is written.** `walk_statement`
+  hands `import`/`from ... import` to `visit`, so an import in a function body or
+  inside a module-level `if TYPE_CHECKING:`/`try:` is an IMPORT node
+  `{scope}.{local}` declared by its container, with the same IMPORTS/RESOLVES_TO
+  edges and an `import` occurrence on the imported name only. They once fell to
+  `scan_value`, which recorded every name, the alias included, as a `read` and
+  left no IMPORT node or IMPORTS edge.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

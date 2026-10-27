@@ -218,6 +218,16 @@ impl Relation {
         Span::from_value(self.metadata.get("span")?)
     }
 
+    /// An edge the index places at a use-site: the four reference kinds, and a
+    /// `RESOLVES_TO` that carries `metadata["span"]` (the name an import brings
+    /// in, as the resolver answered it). A structural `RESOLVES_TO` has no span
+    /// and is neither placed nor counted. `RelationKind::is_reference` stays
+    /// the four kinds, for reports and counts.
+    pub fn is_placed_reference(&self) -> bool {
+        self.kind.is_reference()
+            || (matches!(self.kind, RelationKind::ResolvesTo) && self.span().is_some())
+    }
+
     /// The file the edge was written in (`metadata["file"]`), recorded only
     /// when it is not the file of the edge's source node — see
     /// `Graph.note_site_file` in the engine for when that happens.

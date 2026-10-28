@@ -43,6 +43,7 @@ use crate::span::Span;
 use crate::ts;
 
 use super::Dialect;
+use super::erase::{self, Erasable};
 use super::headers::{
     DeclKey, DeclLedger, DeclSite, Linkage, MEMBER_SEPARATOR, SCOPE_SEPARATOR, qualify,
     resolve_include,
@@ -149,6 +150,46 @@ fn misparsed_pointer_name<'tree>(left: TsNode<'tree>) -> Option<TsNode<'tree>> {
     ts::named_children(*pointer).first().copied().filter(|n| n.kind() == "identifier")
 }
 
+/// Whether a declarator declares an object itself: no pointer, array or function
+/// declarator between it and the name. References and `init_declarator` are looked
+/// through (a reference to a pointer is a pointer).
+fn declarator_holds_object(declarator: TsNode<'_>) -> bool {
+    let mut current = declarator;
+    loop {
+        if matches!(current.kind(), "pointer_declarator" | "array_declarator" | "function_declarator") {
+            return false;
+        }
+        let next = current.child_by_field_name("declarator").or_else(|| {
+            if matches!(current.kind(), "reference_declarator" | "parenthesized_declarator") {
+                ts::named_children(current).first().copied()
+            } else {
+                None
+            }
+        });
+        match next {
+            Some(inner) => current = inner,
+            None => return true,
+        }
+    }
+}
+
+/// The spelling an operator function is named by: the alternative tokens are the
+/// symbols they stand for (`and_eq` is `operator&=`).
+fn operator_spelling(token: &str) -> &str {
+    match token {
+        "and_eq" => "&=",
+        "or_eq" => "|=",
+        "xor_eq" => "^=",
+        "not_eq" => "!=",
+        "and" => "&&",
+        "or" => "||",
+        "bitand" => "&",
+        "bitor" => "|",
+        "xor" => "^",
+        other => other,
+    }
+}
+
 /// A node's descendants, itself included, depth-first.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
@@ -156,6 +197,25 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     while let Some(current) = stack.pop() {
         out.push(current);
         stack.extend(ts::children(current));
+    }
+    out
+}
+
+/// Like `descendants`, but a `struct`, `union` or `class` specifier that has a
+/// body (other than `node` itself) is yielded and NOT entered: the members of a
+/// class defined in a function body are walked by their own definitions, so
+/// their calls and locals must not be attributed to the enclosing function.
+fn body_nodes<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = vec![node];
+    while let Some(current) = stack.pop() {
+        out.push(current);
+        let record = matches!(current.kind(), "struct_specifier" | "union_specifier" | "class_specifier")
+            && current.child_by_field_name("body").is_some()
+            && current.id() != node.id();
+        if !record {
+            stack.extend(ts::children(current));
+        }
     }
     out
 }
@@ -270,6 +330,39 @@ fn terminal_declarator<'tree>(declarator: TsNode<'tree>) -> Option<Declared<'tre
     None
 }
 
+/// The identifier a `typedef` gives an ANONYMOUS struct, union or class.
+///
+/// `typedef struct { .. } T, *PT;` declares two names; the record is named after
+/// the first declarator that is directly a `type_identifier` (`T`), else after the
+/// first declarator that has any name. None unless the typedef's type is a
+/// record specifier with a body and no name of its own.
+fn anonymous_typedef_name<'tree>(typedef: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let type_node = typedef.child_by_field_name("type")?;
+    if !matches!(type_node.kind(), "struct_specifier" | "union_specifier" | "class_specifier")
+        || type_node.child_by_field_name("body").is_none()
+        || type_node.child_by_field_name("name").is_some()
+    {
+        return None;
+    }
+    let mut cursor = typedef.walk();
+    let declarators: Vec<TsNode<'tree>> =
+        typedef.children_by_field_name("declarator", &mut cursor).collect();
+    let mut first_named = None;
+    for declarator in declarators {
+        let Some(found) = terminal_declarator(declarator) else {
+            continue;
+        };
+        let leaf = bare_name(found.name);
+        if declarator.kind() == "type_identifier" {
+            return Some(leaf);
+        }
+        if first_named.is_none() {
+            first_named = Some(leaf);
+        }
+    }
+    first_named
+}
+
 /// The scope a declarator spells, and the bare name at the end of it.
 ///
 /// `qualified_identifier` NESTS: `n::C<int>::f` is
@@ -327,6 +420,60 @@ fn type_name_node<'tree>(type_node: TsNode<'tree>) -> Option<TsNode<'tree>> {
         return Some(type_node);
     }
     ts::children(type_node).into_iter().find_map(type_name_node)
+}
+
+/// The name a written type reduces to, with the scope written before it.
+struct TypeHead<'tree> {
+    /// The identifier node carrying the name.
+    node: TsNode<'tree>,
+    /// The scope as written: `std::vector<int>` is `["std"]`.
+    qualifier: Vec<String>,
+    /// Whether `struct`, `union`, `enum` or `class` came first.
+    tag: bool,
+}
+
+/// The head of a type: `S`, `struct S`, `ns::S`, `Box<T>`, a `type_descriptor`.
+///
+/// A built-in (`primitive_type`, `sized_type_specifier`, `auto`), `decltype` and
+/// anything else has none. With `uses_only`, a specifier that has a `body` is a
+/// definition, not a use, and has none either.
+fn type_head<'tree>(type_node: TsNode<'tree>, source: &[u8], uses_only: bool) -> Option<TypeHead<'tree>> {
+    match type_node.kind() {
+        "type_identifier" => Some(TypeHead { node: type_node, qualifier: Vec::new(), tag: false }),
+        "struct_specifier" | "union_specifier" | "enum_specifier" | "class_specifier" => {
+            if uses_only && type_node.child_by_field_name("body").is_some() {
+                return None;
+            }
+            let name = type_node.child_by_field_name("name")?;
+            let mut head = type_head(name, source, uses_only)?;
+            head.tag = true;
+            Some(head)
+        }
+        "qualified_identifier" => {
+            let (qualifier, leaf) = split_qualified(type_node, source);
+            let leaf = bare_name(leaf);
+            (leaf.kind() == "type_identifier").then_some(TypeHead { node: leaf, qualifier, tag: false })
+        }
+        "template_type" => type_node
+            .child_by_field_name("name")
+            .map(|node| TypeHead { node, qualifier: Vec::new(), tag: false }),
+        "type_descriptor" => type_node.child_by_field_name("type").and_then(|t| type_head(t, source, uses_only)),
+        _ => None,
+    }
+}
+
+/// The outermost `qualified_identifier` a leaf name sits in, if any.
+fn outermost_qualified<'tree>(node: TsNode<'tree>) -> Option<TsNode<'tree>> {
+    let mut found = None;
+    let mut current = node.parent();
+    while let Some(parent) = current {
+        if parent.kind() != "qualified_identifier" {
+            break;
+        }
+        found = Some(parent);
+        current = parent.parent();
+    }
+    found
 }
 
 /// Whether the node is what an assignment or an increment writes through.
@@ -470,6 +617,9 @@ pub struct FoundDecl {
     /// The normalized parameter list of a C++ callable, already folded into
     /// `qualified_name`; empty in C, which has no overloading.
     pub signature: String,
+    /// A variable or field that holds an object itself: its declarator chain has no
+    /// pointer, array or function declarator. `a = b` calls an operator only for these.
+    pub holds_object: bool,
 }
 
 /// What a call site says about which function it means, beyond the name.
@@ -486,6 +636,11 @@ pub struct CallSite {
     pub receiver_type: Option<String>,
     /// The identifier `obj` itself, for a member of the enclosing class (`obj_->f()`).
     pub receiver_name: Option<String>,
+    /// The name follows `.` or `->`: it is a member of some receiver, read, written or called.
+    pub member: bool,
+    /// The fields between the root receiver and the name: for `a->b->c`, the site of
+    /// `c` has `["b"]`. The root is `receiver_type` / `receiver_name`.
+    pub receiver_path: Vec<String>,
     /// The qualified class of the method this site is in: what an unqualified
     /// `f()` in a method means first.
     pub class_scope: Option<String>,
@@ -512,6 +667,20 @@ pub struct CallSite {
     /// binds when the class declares one and says nothing otherwise, instead of
     /// becoming an external symbol for every `a + b` on a built-in type.
     pub speculative: bool,
+    /// The site is a use of an overloaded operator (`a = b`, `a == b`, `a[i]`). The
+    /// `receiver_*` fields describe the LEFT operand, which must hold an object, and
+    /// `arg_kinds[0]` is the right operand. Always set together with `speculative`: a
+    /// miss writes nothing. The resolver never falls back to a bare name for these.
+    pub overloaded_operator: bool,
+    /// The name is written as a TYPE (a local's type, a cast, `sizeof`, a template
+    /// argument, a scope component, a declared node's type): it binds only to a
+    /// CLASS or a TYPE_ALIAS, through `CFamilyIndex::resolve_type`, never to a
+    /// function or a variable of the same name. `speculative` keeps its meaning:
+    /// a miss writes nothing.
+    pub type_use: bool,
+    /// The type was written after `struct`, `union`, `enum` or `class`, so the
+    /// tag's class wins over a typedef of the same name.
+    pub tag: bool,
 }
 
 /// What a function's declarations say about the names its body uses.
@@ -526,6 +695,11 @@ struct BodyContext {
     objects: HashSet<String>,
     /// The qualified class of the method, for an unqualified call or `this`.
     class_scope: Option<String>,
+    /// Type parameters of the enclosing templates: a body's `T x;` names no class.
+    template_parameters: HashSet<String>,
+    /// Every parameter and local name, typed or not: an identifier in here is never a
+    /// global or a field of the class, even when its type is unknown.
+    bound: HashSet<String>,
 }
 
 /// A use-site, before it has a node id to hang off.
@@ -549,6 +723,10 @@ pub struct FoundInclude {
     /// `system` for `<…>`, `quoted` for `"…"`, `computed` for a macro.
     pub style: &'static str,
     pub span: Span,
+    /// The path literal including its `""` or `<>` delimiters (or the macro's
+    /// text when computed). It is the IMPORT's `name_span` and the span of the
+    /// RESOLVES_TO to the header.
+    pub path_span: Span,
 }
 
 /// Everything one file contributes, as plain data.
@@ -744,6 +922,15 @@ fn collect_scopes(
                 {
                     collect_record_scope(inner, source, namespace, found);
                 }
+                // `typedef struct { .. } T;` is a class named `T`.
+                if node.kind() == "type_definition"
+                    && let Some(leaf) = anonymous_typedef_name(node)
+                {
+                    let text = ts::text(leaf, source).into_owned();
+                    if !text.is_empty() && !found.records.contains(&text) {
+                        found.records.push(text);
+                    }
+                }
             }
             _ => {}
         }
@@ -757,7 +944,9 @@ fn collect_record_scope(
     found: &mut DeclaredScopes,
 ) {
     if let Some(name) = node.child_by_field_name("name") {
-        let text = ts::text(name, source).into_owned();
+        // `class Outer::Inner {` declares `Inner`.
+        let (_, leaf) = split_qualified(name, source);
+        let text = ts::text(bare_name(leaf), source).into_owned();
         if !text.is_empty() && !found.records.contains(&text) {
             found.records.push(text);
         }
@@ -819,6 +1008,8 @@ struct Reader<'a> {
     file_rel: &'a str,
     records: &'a HashSet<String>,
     macros: &'a MacroTable,
+    /// The project macros that expand to nothing, an attribute or a storage keyword.
+    erasable: &'a Erasable,
     /// How many macro declarations deep this reader is.
     macro_depth: usize,
     /// The qualified-name prefix, without the file component `qualify` adds for
@@ -836,6 +1027,7 @@ pub fn read_file(
     file_rel: &str,
     records: &HashSet<String>,
     macros: &MacroTable,
+    erasable: &Erasable,
 ) -> FileFacts {
     let mut reader = Reader {
         source,
@@ -843,6 +1035,7 @@ pub fn read_file(
         file_rel,
         records,
         macros,
+        erasable,
         macro_depth: 0,
         parts: Vec::new(),
         frames: vec![Frame {
@@ -980,11 +1173,124 @@ impl<'a> Reader<'a> {
         });
     }
 
-    /// An `annotation` for the name a type reduces to.
+    /// An `annotation` for the name a type reduces to, for the head of every
+    /// template argument inside it, and a `read` for each class in a written scope.
     fn record_annotation(&mut self, type_node: TsNode<'_>, owner: &Owner) {
-        if let Some(name_node) = type_name_node(type_node) {
-            self.push_occurrence("annotation", name_node, owner);
+        match type_head(type_node, self.source, false) {
+            Some(head) => self.push_type("annotation", head, owner, false),
+            None => {
+                if let Some(name_node) = type_name_node(type_node) {
+                    self.push_occurrence("annotation", name_node, owner);
+                }
+            }
         }
+        // A definition written inline (`struct S { .. } s;`) is not walked: its
+        // members are declared by their own walk.
+        if type_node.child_by_field_name("body").is_some() {
+            return;
+        }
+        for node in descendants(type_node) {
+            match node.kind() {
+                "type_descriptor" if node.id() != type_node.id() => {
+                    if let Some(head) = type_head(node, self.source, false) {
+                        self.push_type("annotation", head, owner, false);
+                    }
+                }
+                "qualified_identifier" => self.push_scope_components(node, owner),
+                _ => {}
+            }
+        }
+    }
+
+    /// An occurrence of a type name: it binds only to a CLASS or a TYPE_ALIAS.
+    fn push_type(&mut self, role: &'static str, head: TypeHead<'_>, owner: &Owner, speculative: bool) {
+        let site = CallSite {
+            qualifier: head.qualifier,
+            tag: head.tag,
+            type_use: true,
+            speculative,
+            ..CallSite::default()
+        };
+        self.push_site(role, head.node, owner, site);
+    }
+
+    /// A `read` for each class in the scope of an OUTERMOST qualified name:
+    /// `Impl::Get`, `Outer::Inner::f`. A component that is a namespace binds
+    /// nothing and is dropped by the resolver (speculative).
+    fn push_scope_components(&mut self, qualified: TsNode<'_>, owner: &Owner) {
+        if qualified.kind() != "qualified_identifier"
+            || qualified.parent().is_some_and(|p| p.kind() == "qualified_identifier")
+        {
+            return;
+        }
+        let mut written: Vec<String> = Vec::new();
+        let mut current = qualified;
+        while current.kind() == "qualified_identifier" {
+            if let Some(part) = current.child_by_field_name("scope") {
+                let named = if part.kind() == "template_type" { part.child_by_field_name("name") } else { Some(part) };
+                if let Some(named) = named
+                    && matches!(named.kind(), "namespace_identifier" | "type_identifier")
+                {
+                    let text = self.text(named);
+                    if !text.is_empty() {
+                        let site = CallSite {
+                            qualifier: written.clone(),
+                            type_use: true,
+                            speculative: true,
+                            ..CallSite::default()
+                        };
+                        self.push_site("read", named, owner, site);
+                        written.push(text);
+                    }
+                }
+            }
+            match current.child_by_field_name("name") {
+                Some(name) => current = name,
+                None => break,
+            }
+        }
+    }
+
+    /// The types in a declarator's function-pointer parameter lists:
+    /// `int (*cb)(S *s)`, `S *(*handler)(struct T *t, S s)`. `skip` is the
+    /// callable's own function declarator, whose parameters `collect_parameters`
+    /// already handles.
+    fn record_signature_types(&mut self, declarator: TsNode<'_>, owner: &Owner, skip: Option<TsNode<'_>>) {
+        let mut current = Some(declarator);
+        for _ in 0..64 {
+            let Some(node) = current else { break };
+            if matches!(node.kind(), "function_declarator" | "abstract_function_declarator")
+                && skip.is_none_or(|s| s.id() != node.id())
+                && let Some(list) = node.child_by_field_name("parameters")
+            {
+                for param in ts::named_children(list) {
+                    if !matches!(param.kind(), "parameter_declaration" | "optional_parameter_declaration") {
+                        continue;
+                    }
+                    if let Some(type_node) = param.child_by_field_name("type") {
+                        self.record_annotation(type_node, owner);
+                    }
+                    if let Some(inner) = param.child_by_field_name("declarator") {
+                        self.record_signature_types(inner, owner, None);
+                    }
+                }
+            }
+            current = inner_declarator(node);
+        }
+    }
+
+    /// A type written in a body: a `read`, unless it names a template parameter.
+    fn push_body_type(&mut self, type_node: TsNode<'_>, owner: &Owner, context: &BodyContext) {
+        if let Some(head) = type_head(type_node, self.source, true) {
+            self.push_body_type_head(head, owner, context);
+        }
+    }
+
+    fn push_body_type_head(&mut self, head: TypeHead<'_>, owner: &Owner, context: &BodyContext) {
+        if head.qualifier.is_empty() && context.template_parameters.contains(&self.text(head.node)) {
+            return;
+        }
+        self.push_type("read", head, owner, false);
     }
 
     // -- dispatch -----------------------------------------------------------
@@ -1016,7 +1322,7 @@ impl<'a> Reader<'a> {
             "declaration" | "field_declaration" => self.on_declaration(node),
             "type_definition" => self.on_typedef(node),
             "struct_specifier" | "union_specifier" | "class_specifier" => {
-                self.on_record(node);
+                self.on_record(node, None);
             }
             "enum_specifier" => self.on_enum(node),
             "alias_declaration" => self.on_alias(node),
@@ -1095,6 +1401,7 @@ impl<'a> Reader<'a> {
                 pairs.push(("__VA_ARGS__".to_string(), rest.join(", ")));
             }
             let body = collapse_pastes(&replace_identifiers(&def.body, &pairs));
+            let body = erase::blank_string(&body, self.erasable);
             let bytes = body.as_bytes();
             let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
                 continue;
@@ -1109,6 +1416,7 @@ impl<'a> Reader<'a> {
                 file_rel: self.file_rel,
                 records: self.records,
                 macros,
+                erasable: self.erasable,
                 macro_depth: self.macro_depth + 1,
                 parts: self.parts.clone(),
                 frames: vec![Frame {
@@ -1154,6 +1462,7 @@ impl<'a> Reader<'a> {
     /// same header. A macro path — an `identifier` or a `call_expression` — is
     /// recorded verbatim and never resolved: expanding it is a preprocessor's
     /// job, and an unresolved include still becomes an EXTERNAL_SYMBOL.
+    /// The path literal (delimiters included) is kept as `path_span`.
     fn on_include(&mut self, node: TsNode<'_>) {
         let Some(path_node) = node.child_by_field_name("path") else {
             return;
@@ -1183,6 +1492,7 @@ impl<'a> Reader<'a> {
             path,
             style,
             span: ts::span(node),
+            path_span: ts::span(path_node),
         });
     }
 
@@ -1231,11 +1541,17 @@ impl<'a> Reader<'a> {
     /// body — a declaration — while `struct S { … };` has both, and that is the
     /// whole test for `defines`.
     ///
-    /// An ANONYMOUS record inside another record's body is C's anonymous member:
-    /// its fields are reached through the enclosing record, so no scope is
-    /// pushed and its members land in the enclosing one. An anonymous record at
-    /// file scope names nothing anything could refer to and is skipped whole.
-    fn on_record(&mut self, node: TsNode<'_>) {
+    /// `typedef` is Some((alias identifier, the `type_definition`)) when the
+    /// record is the type of a typedef (`typedef struct { .. } T;`). An
+    /// anonymous record with a body is then a class NAMED BY THE ALIAS: its name
+    /// span is the alias identifier and its span and doc are the typedef's, so
+    /// the span contains the name span.
+    ///
+    /// An ANONYMOUS record with no such name inside another record's body is C's
+    /// anonymous member: its fields are reached through the enclosing record, so
+    /// no scope is pushed and its members land in the enclosing one. Any other
+    /// anonymous record (`struct { int x; } g;`) names nothing and is skipped.
+    fn on_record(&mut self, node: TsNode<'_>, typedef: Option<(TsNode<'_>, TsNode<'_>)>) {
         let record_kind = match node.kind() {
             "union_specifier" => "union",
             "class_specifier" => "class",
@@ -1243,18 +1559,31 @@ impl<'a> Reader<'a> {
         };
         let body = node.child_by_field_name("body");
 
-        let Some(name_node) = node.child_by_field_name("name") else {
-            if let Some(body) = body
-                && self.in_member_scope()
-            {
-                self.walk(body);
+        let (simple, name_span, span, doc, extra) = match (node.child_by_field_name("name"), typedef) {
+            (Some(name_node), _) => {
+                // `class Outer::Inner {` names `Inner`, inside the scope `Outer`.
+                let (extra, leaf) = split_qualified(name_node, self.source);
+                (self.text(leaf), ts::span(bare_name(leaf)), ts::span(node), self.doc_for(node), extra)
             }
-            return;
+            (None, Some((leaf, definition))) if body.is_some() => (
+                self.text(leaf),
+                ts::span(leaf),
+                ts::span(definition),
+                self.doc_for(definition),
+                Vec::<String>::new(),
+            ),
+            _ => {
+                if let Some(body) = body
+                    && self.in_member_scope()
+                {
+                    self.walk(body);
+                }
+                return;
+            }
         };
 
         let linkage = self.frame_linkage();
-        let simple = self.text(name_node);
-        let qname = self.qualify_in(&[], &simple, linkage);
+        let qname = self.qualify_in(&extra, &simple, linkage);
         let modifiers = Modifiers::read(node, self.source);
         let owner = self.owner();
         let access = self.access();
@@ -1262,9 +1591,9 @@ impl<'a> Reader<'a> {
             kind: NodeKind::Class,
             qualified_name: qname.clone(),
             name: simple.clone(),
-            span: ts::span(node),
-            doc: self.doc_for(node),
-            name_span: ts::span(name_node),
+            span,
+            doc,
+            name_span,
             defines: body.is_some(),
             linkage,
             owner,
@@ -1276,6 +1605,7 @@ impl<'a> Reader<'a> {
             is_template: modifiers.is_template,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
 
         let record_owner = Owner::Decl {
@@ -1305,8 +1635,10 @@ impl<'a> Reader<'a> {
         let Some(body) = body else { return };
         // `class` members default to private, `struct` and `union` to public.
         let member_access = if record_kind == "class" { "private" } else { "public" };
+        let mut components = extra;
+        components.push(simple);
         self.push_frame(
-            vec![simple],
+            components,
             Frame {
                 parts: 0,
                 owner: record_owner,
@@ -1357,6 +1689,7 @@ impl<'a> Reader<'a> {
                     is_template: false,
                     type_text: String::new(),
                     signature: String::new(),
+                    holds_object: false,
                 });
                 (
                     Owner::Decl { qualified_name: qname, kind: NodeKind::Class },
@@ -1408,6 +1741,7 @@ impl<'a> Reader<'a> {
             is_template: false,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
     }
 
@@ -1421,7 +1755,8 @@ impl<'a> Reader<'a> {
     fn on_typedef(&mut self, node: TsNode<'_>) {
         let type_node = node.child_by_field_name("type");
         if let Some(type_node) = type_node {
-            self.declare_inline_type(type_node);
+            let fallback = anonymous_typedef_name(node).map(|leaf| (leaf, node));
+            self.declare_inline_type(type_node, fallback);
         }
         let type_text = type_node.map(|n| self.text(n)).unwrap_or_default();
         let linkage = self.frame_linkage();
@@ -1443,7 +1778,7 @@ impl<'a> Reader<'a> {
             let access = self.access();
             self.push_decl(FoundDecl {
                 kind: NodeKind::TypeAlias,
-                qualified_name: qname,
+                qualified_name: qname.clone(),
                 name,
                 span: ts::span(node),
                 doc: self.doc_for(node),
@@ -1459,7 +1794,16 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text: type_text.clone(),
                 signature: String::new(),
+                holds_object: false,
             });
+            let alias_owner = Owner::Decl { qualified_name: qname, kind: NodeKind::TypeAlias };
+            // `typedef struct S {..} S;` defines S and is no use of it.
+            if let Some(type_node) = type_node
+                && type_node.child_by_field_name("body").is_none()
+            {
+                self.record_annotation(type_node, &alias_owner);
+            }
+            self.record_signature_types(declarator, &alias_owner, None);
         }
     }
 
@@ -1494,6 +1838,7 @@ impl<'a> Reader<'a> {
             is_template,
             type_text,
             signature: String::new(),
+            holds_object: false,
         });
         if let Some(type_node) = type_node {
             let alias_owner = Owner::Decl {
@@ -1535,6 +1880,7 @@ impl<'a> Reader<'a> {
             is_template: true,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
     }
 
@@ -1561,19 +1907,50 @@ impl<'a> Reader<'a> {
 
     // -- functions and data -------------------------------------------------
 
+    /// A class, struct or union defined in a function body.
+    ///
+    /// It is a CLASS qualified by the callable's full qualified name
+    /// (`run()::State`; in C `run::State`), owned by the callable so the callable
+    /// DECLARES it. The scope is replaced by that name for the duration of
+    /// `on_record`, whose ordinary member frame then qualifies the fields,
+    /// methods, constructors and nested classes under it. The linkage is External
+    /// because the callable's name already carries the file for an internal one;
+    /// `qualify` must not add it a second time.
+    fn declare_local_record(&mut self, node: TsNode<'_>, owner: &Owner) {
+        let Owner::Decl { qualified_name, .. } = owner else {
+            return;
+        };
+        let saved = std::mem::replace(&mut self.parts, vec![qualified_name.clone()]);
+        self.frames.push(Frame {
+            parts: 0,
+            owner: owner.clone(),
+            linkage: Linkage::External,
+            access: "",
+            member: false,
+        });
+        self.on_record(node, None);
+        self.frames.pop();
+        self.parts = saved;
+    }
+
     /// A record definition written inline as a declaration's type.
     ///
     /// `struct engine { … } e;` at file scope and `class In { … };` inside
     /// another class both reach the walk as the `type` of a declaration rather
     /// than as a declaration of their own. Only a definition is declared here:
     /// `enum region region;` has a name and no body and is a use of the type.
-    fn declare_inline_type(&mut self, type_node: TsNode<'_>) {
+    /// `typedef` names an anonymous record; see `on_record`.
+    fn declare_inline_type(
+        &mut self,
+        type_node: TsNode<'_>,
+        typedef: Option<(TsNode<'_>, TsNode<'_>)>,
+    ) {
         if type_node.child_by_field_name("body").is_none() {
             return;
         }
         match type_node.kind() {
             "struct_specifier" | "union_specifier" | "class_specifier" => {
-                self.on_record(type_node);
+                self.on_record(type_node, typedef);
             }
             "enum_specifier" => self.on_enum(type_node),
             _ => {}
@@ -1602,7 +1979,7 @@ impl<'a> Reader<'a> {
         }
         // `function_definition` is what the grammar produces for a body, for
         // `= default` and for `= delete`; every one of the three defines.
-        self.declare_callable(node, &found, true, identity);
+        self.declare_callable(node, &found, declarator, true, identity);
         if let Some(initializers) = ts::child_of_type(node, "field_initializer_list") {
             self.collect_initializers(initializers, &owner, &context);
         }
@@ -1615,7 +1992,7 @@ impl<'a> Reader<'a> {
     /// land on one and the flow pass can follow what it holds. Nothing else needs a
     /// node for a local, and a node per local would multiply the graph.
     fn declare_called_locals(&mut self, body: TsNode<'_>, owner: &Owner, function_qname: &str) {
-        let nodes = descendants(body);
+        let nodes = body_nodes(body);
         let mut called: HashSet<String> = HashSet::new();
         for node in &nodes {
             if node.kind() != "call_expression" {
@@ -1679,6 +2056,7 @@ impl<'a> Reader<'a> {
                     is_template: false,
                     type_text: type_node.map(|n| self.text(n)).unwrap_or_default(),
                     signature: String::new(),
+                    holds_object: false,
                 });
                 if let Some(value) = value {
                     let holder = Owner::Decl { qualified_name: qname, kind: NodeKind::Variable };
@@ -1718,6 +2096,7 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text: String::new(),
                 signature: String::new(),
+                holds_object: false,
             });
         }
         // `fp = g;` inside the function.
@@ -1793,6 +2172,9 @@ impl<'a> Reader<'a> {
                 ) else {
                     continue;
                 };
+                if let Some(name) = terminal_declarator(declarator) {
+                    context.bound.insert(self.text(name.name));
+                }
                 if let (Some(key), Some(name)) = (self.type_key(type_node), terminal_declarator(declarator))
                     && !template_parameters.contains(&key)
                 {
@@ -1804,7 +2186,7 @@ impl<'a> Reader<'a> {
             }
         }
         if let Some(body) = node.child_by_field_name("body") {
-            for declaration in descendants(body) {
+            for declaration in body_nodes(body) {
                 if declaration.kind() != "declaration" {
                     continue;
                 }
@@ -1823,6 +2205,7 @@ impl<'a> Reader<'a> {
                     let Some(name) = inner.and_then(terminal_declarator) else {
                         continue;
                     };
+                    context.bound.insert(self.text(name.name));
                     let key = if self.text(type_node) == "auto" {
                         value.and_then(|v| self.constructed_type(v))
                     } else {
@@ -1841,6 +2224,7 @@ impl<'a> Reader<'a> {
                 }
             }
         }
+        context.template_parameters = template_parameters;
         context
     }
 
@@ -1900,28 +2284,210 @@ impl<'a> Reader<'a> {
     fn argument_kinds(&self, arguments: TsNode<'_>, context: &BodyContext) -> Vec<String> {
         ts::named_children(arguments)
             .into_iter()
-            .map(|argument| match argument.kind() {
-                "number_literal" => {
-                    let text = self.text(argument).to_ascii_lowercase();
-                    let hex = text.starts_with("0x");
-                    if text.contains('.') || (!hex && (text.contains('e') || text.ends_with('f'))) {
-                        "float".to_string()
-                    } else {
-                        "int".to_string()
-                    }
-                }
-                "string_literal" | "raw_string_literal" | "concatenated_string" => "string".to_string(),
-                "char_literal" => "char".to_string(),
-                "true" | "false" => "bool".to_string(),
-                "null" | "nullptr" => "null".to_string(),
-                "identifier" => context.locals.get(&self.text(argument)).cloned().unwrap_or_else(|| "?".to_string()),
-                "pointer_expression" => ts::named_children(argument)
-                    .first()
-                    .and_then(|inner| context.locals.get(&self.text(*inner)).cloned())
-                    .unwrap_or_else(|| "?".to_string()),
-                _ => "?".to_string(),
-            })
+            .map(|argument| self.argument_kind(argument, context))
             .collect()
+    }
+
+    /// What one argument is, as far as its spelling shows.
+    fn argument_kind(&self, argument: TsNode<'_>, context: &BodyContext) -> String {
+        match argument.kind() {
+            "number_literal" => {
+                let text = self.text(argument).to_ascii_lowercase();
+                let hex = text.starts_with("0x");
+                if text.contains('.') || (!hex && (text.contains('e') || text.ends_with('f'))) {
+                    "float".to_string()
+                } else {
+                    "int".to_string()
+                }
+            }
+            "string_literal" | "raw_string_literal" | "concatenated_string" => "string".to_string(),
+            "char_literal" => "char".to_string(),
+            "true" | "false" => "bool".to_string(),
+            "null" | "nullptr" => "null".to_string(),
+            "identifier" => context.locals.get(&self.text(argument)).cloned().unwrap_or_else(|| "?".to_string()),
+            "pointer_expression" => ts::named_children(argument)
+                .first()
+                .and_then(|inner| context.locals.get(&self.text(*inner)).cloned())
+                .unwrap_or_else(|| "?".to_string()),
+            _ => "?".to_string(),
+        }
+    }
+
+    /// What the right operand of an overloaded operator is. A temporary (a call
+    /// result, `std::move(x)`, `T(..)`, `T{..}`) is `&&` followed by its class when the
+    /// spelling shows it; an object local is its class; a pointer is `?`.
+    fn operand_kind(&self, node: TsNode<'_>, context: &BodyContext) -> String {
+        match node.kind() {
+            "number_literal" | "string_literal" | "raw_string_literal" | "concatenated_string"
+            | "char_literal" | "true" | "false" | "null" | "nullptr" => self.argument_kind(node, context),
+            "identifier" => {
+                let name = self.text(node);
+                if context.objects.contains(&name) {
+                    context.locals.get(&name).cloned().unwrap_or_else(|| "?".to_string())
+                } else {
+                    "?".to_string()
+                }
+            }
+            "pointer_expression" => {
+                let deref = node.child_by_field_name("operator").is_some_and(|o| self.text(o) == "*");
+                let inner = node.child_by_field_name("argument").filter(|i| i.kind() == "identifier");
+                match inner {
+                    Some(inner) if deref => {
+                        let name = self.text(inner);
+                        if context.objects.contains(&name) {
+                            "?".to_string()
+                        } else {
+                            context.locals.get(&name).cloned().unwrap_or_else(|| "?".to_string())
+                        }
+                    }
+                    _ => "?".to_string(),
+                }
+            }
+            "parenthesized_expression" => ts::named_children(node)
+                .first()
+                .map(|inner| self.operand_kind(*inner, context))
+                .unwrap_or_else(|| "?".to_string()),
+            "call_expression" => {
+                let function = node.child_by_field_name("function");
+                let mut class = function
+                    .filter(|f| matches!(f.kind(), "type_identifier" | "template_type"))
+                    .and_then(|f| self.type_key(f));
+                if class.is_none()
+                    && function.is_some_and(|f| self.text(f) == "std::move")
+                    && let Some(arguments) = node.child_by_field_name("arguments")
+                    && let Some(first) = ts::named_children(arguments).first().copied()
+                    && first.kind() == "identifier"
+                {
+                    class = context.locals.get(&self.text(first)).cloned();
+                }
+                format!("&&{}", class.unwrap_or_default())
+            }
+            "compound_literal_expression" => {
+                let class = node.child_by_field_name("type").and_then(|t| self.type_key(t));
+                format!("&&{}", class.unwrap_or_default())
+            }
+            _ => "?".to_string(),
+        }
+    }
+
+    /// Fills the receiver fields of `site` from the LEFT operand of an operator and
+    /// says whether the operand can hold an object. A pointer local, an untyped
+    /// local and an expression result give nothing.
+    fn operand_receiver(&self, node: TsNode<'_>, context: &BodyContext, site: &mut CallSite) -> bool {
+        match node.kind() {
+            "identifier" => {
+                let name = self.text(node);
+                if context.objects.contains(&name)
+                    && let Some(class) = context.locals.get(&name)
+                {
+                    site.receiver_type = Some(class.clone());
+                    site.receiver_name = Some(name);
+                    true
+                } else if context.bound.contains(&name) {
+                    false
+                } else {
+                    // A field of the class or a global: the resolver checks that it holds an object.
+                    site.receiver_name = Some(name);
+                    true
+                }
+            }
+            "pointer_expression" => {
+                let deref = node.child_by_field_name("operator").is_some_and(|o| self.text(o) == "*");
+                let Some(inner) = node.child_by_field_name("argument").filter(|_| deref) else {
+                    return false;
+                };
+                match inner.kind() {
+                    "this" => {
+                        site.receiver_type = context.class_scope.clone();
+                        site.receiver_type.is_some()
+                    }
+                    "identifier" => {
+                        let name = self.text(inner);
+                        if !context.objects.contains(&name)
+                            && let Some(class) = context.locals.get(&name)
+                        {
+                            site.receiver_type = Some(class.clone());
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    _ => false,
+                }
+            }
+            "field_expression" => {
+                let (Some(argument), Some(field)) =
+                    (node.child_by_field_name("argument"), node.child_by_field_name("field"))
+                else {
+                    return false;
+                };
+                let mut root = CallSite::default();
+                self.scan_receiver(argument, context, &mut root);
+                if root.receiver_type.is_none() && root.receiver_name.is_none() {
+                    return false;
+                }
+                root.receiver_path.push(self.text(bare_name(field)));
+                site.receiver_type = root.receiver_type;
+                site.receiver_name = root.receiver_name;
+                site.receiver_path = root.receiver_path;
+                true
+            }
+            "parenthesized_expression" => match ts::named_children(node).first().copied() {
+                Some(inner) => self.operand_receiver(inner, context, site),
+                None => false,
+            },
+            // `p[i]` with `p` a pointer local: an element of the class `p` points to.
+            "subscript_expression" => {
+                let Some(argument) = node.child_by_field_name("argument").filter(|a| a.kind() == "identifier") else {
+                    return false;
+                };
+                let name = self.text(argument);
+                if !context.objects.contains(&name)
+                    && let Some(class) = context.locals.get(&name)
+                {
+                    site.receiver_type = Some(class.clone());
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    /// A speculative `call` of `operator<spelled>` positioned at the operator token.
+    /// `=` and `[]` are member-only: with no receiver they could never bind, so no
+    /// occurrence is made. Any other operator is kept without a receiver, because the
+    /// right operand can still select a namespace-scope operator.
+    fn push_operator(
+        &mut self,
+        owner: &Owner,
+        context: &BodyContext,
+        token: TsNode<'_>,
+        spelled: &str,
+        left: Option<TsNode<'_>>,
+        right: Option<TsNode<'_>>,
+    ) {
+        let member_only = matches!(spelled, "=" | "[]");
+        let mut site = CallSite {
+            class_scope: context.class_scope.clone(),
+            arity: Some(1),
+            arg_kinds: vec![right.map(|r| self.operand_kind(r, context)).unwrap_or_else(|| "?".to_string())],
+            overloaded_operator: true,
+            speculative: true,
+            ..CallSite::default()
+        };
+        let has_receiver = left.is_some_and(|l| self.operand_receiver(l, context, &mut site));
+        if member_only && !has_receiver {
+            return;
+        }
+        self.facts.occurrences.push(FoundOccurrence {
+            role: "call",
+            span: ts::span(token),
+            owner: owner.clone(),
+            site,
+            name: format!("operator{}", operator_spelling(spelled)),
+        });
     }
 
     /// A `declaration` or a `field_declaration`, which may declare several
@@ -1932,7 +2498,7 @@ impl<'a> Reader<'a> {
     fn on_declaration(&mut self, node: TsNode<'_>) {
         let type_node = node.child_by_field_name("type");
         if let Some(type_node) = type_node {
-            self.declare_inline_type(type_node);
+            self.declare_inline_type(type_node, None);
         }
 
         let mut cursor = node.walk();
@@ -1947,7 +2513,7 @@ impl<'a> Reader<'a> {
                 if identity.name.is_empty() {
                     continue;
                 }
-                self.declare_callable(node, &found, false, identity);
+                self.declare_callable(node, &found, declarator, false, identity);
                 continue;
             }
             self.declare_data(node, &found, declarator, type_node);
@@ -2033,6 +2599,7 @@ impl<'a> Reader<'a> {
         &mut self,
         node: TsNode<'_>,
         found: &Declared<'_>,
+        declarator: TsNode<'_>,
         defines: bool,
         identity: CallableId,
     ) {
@@ -2058,6 +2625,7 @@ impl<'a> Reader<'a> {
             is_template: identity.modifiers.is_template,
             type_text,
             signature: identity.signature,
+            holds_object: false,
         });
 
         let callable_owner = Owner::Decl {
@@ -2069,6 +2637,12 @@ impl<'a> Reader<'a> {
         if let Some(return_type) = return_type {
             self.record_annotation(return_type, &callable_owner);
         }
+        // An out-of-line head `Impl::Get`: `Impl` is a class the definition refers to.
+        if found.name.kind() == "qualified_identifier" {
+            self.push_scope_components(found.name, &callable_owner);
+        }
+        // A function returning a function pointer: the pointer's own parameters.
+        self.record_signature_types(declarator, &callable_owner, found.function);
         if let Some(signature_owner) = found.signature_owner() {
             self.collect_parameters(
                 signature_owner,
@@ -2113,6 +2687,9 @@ impl<'a> Reader<'a> {
                 if let Some(type_node) = type_node {
                     self.record_annotation(type_node, callable_owner);
                 }
+                if let Some(inner) = param.child_by_field_name("declarator") {
+                    self.record_signature_types(inner, callable_owner, None);
+                }
                 continue;
             };
             let name = self.text(name_node);
@@ -2141,13 +2718,17 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text,
                 signature: String::new(),
+                holds_object: false,
             });
+            let param_owner = Owner::Decl {
+                qualified_name: qname,
+                kind: NodeKind::Parameter,
+            };
             if let Some(type_node) = type_node {
-                let param_owner = Owner::Decl {
-                    qualified_name: qname,
-                    kind: NodeKind::Parameter,
-                };
                 self.record_annotation(type_node, &param_owner);
+            }
+            if let Some(inner) = param.child_by_field_name("declarator") {
+                self.record_signature_types(inner, &param_owner, None);
             }
         }
     }
@@ -2226,9 +2807,16 @@ impl<'a> Reader<'a> {
             is_template: modifiers.is_template,
             type_text,
             signature: String::new(),
+            holds_object: declarator_holds_object(declarator),
         });
+        let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
+        // `const char *Base::Label = ..`: `Base` is a class the definition refers to.
+        if let Some(outer) = outermost_qualified(name_node) {
+            self.push_scope_components(outer, &data_owner);
+        }
+        // `int (*cb)(S *s);` and a member `int (*open)(S *);`
+        self.record_signature_types(declarator, &data_owner, None);
         if let Some(type_node) = type_node {
-            let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
             self.record_annotation(type_node, &data_owner);
         }
         // `handler h = g;`, `struct ops o = { .fn = g };`, `table[] = { a, b }`: the
@@ -2425,7 +3013,7 @@ impl<'a> Reader<'a> {
     /// of a file-scope variable, which C spells with a bare identifier and
     /// nothing else, is invisible — a member access through `.` or `->` is not.
     fn collect_body(&mut self, scope: TsNode<'_>, owner: &Owner, context: &BodyContext) {
-        for node in descendants(scope) {
+        for node in body_nodes(scope) {
             match node.kind() {
                 "call_expression" => {
                     // `CALL(x)` where `CALL` is a macro of the project: what it expands to
@@ -2546,32 +3134,30 @@ impl<'a> Reader<'a> {
                         self.push_site("call", named, owner, site);
                     }
                 }
-                // `a + b` and `a == b` on an object call the class's operator.
+                // `a + b`, `a == b`: the class's operator, or a namespace-scope one.
                 "binary_expression" if self.dialect == Dialect::Cpp => {
-                    if let (Some(left), Some(operator)) =
-                        (node.child_by_field_name("left"), node.child_by_field_name("operator"))
-                        && left.kind() == "identifier"
-                    {
-                        let variable = self.text(left);
-                        if context.objects.contains(&variable)
-                            && let Some(class) = context.locals.get(&variable)
-                        {
-                            let site = CallSite {
-                                class_scope: context.class_scope.clone(),
-                                receiver_type: Some(class.clone()),
-                                receiver_name: Some(variable),
-                                arity: Some(1),
-                                speculative: true,
-                                ..CallSite::default()
-                            };
-                            self.facts.occurrences.push(FoundOccurrence {
-                                role: "call",
-                                span: ts::span(operator),
-                                owner: owner.clone(),
-                                site,
-                                name: format!("operator{}", self.text(operator)),
-                            });
-                        }
+                    if let Some(operator) = node.child_by_field_name("operator") {
+                        let spelled = self.text(operator);
+                        let (left, right) = (node.child_by_field_name("left"), node.child_by_field_name("right"));
+                        self.push_operator(owner, context, operator, &spelled, left, right);
+                    }
+                }
+                // `a = b` and every compound assignment.
+                "assignment_expression" if self.dialect == Dialect::Cpp => {
+                    if let Some(operator) = node.child_by_field_name("operator") {
+                        let spelled = self.text(operator);
+                        let (left, right) = (node.child_by_field_name("left"), node.child_by_field_name("right"));
+                        self.push_operator(owner, context, operator, &spelled, left, right);
+                    }
+                }
+                // `a[i]`: positioned at the `[`.
+                "subscript_expression" if self.dialect == Dialect::Cpp => {
+                    if let Some(indices) = node.child_by_field_name("indices") {
+                        let open = ts::children(indices).into_iter().next().filter(|t| t.kind() == "[").unwrap_or(indices);
+                        let named = ts::named_children(indices);
+                        let index = if let [only] = named.as_slice() { Some(*only) } else { None };
+                        let left = node.child_by_field_name("argument");
+                        self.push_operator(owner, context, open, "[]", left, index);
                     }
                 }
                 // `delete p` runs the destructor of the class `p` was declared
@@ -2602,7 +3188,73 @@ impl<'a> Reader<'a> {
                     }
                 }
                 // `Engine e;`, `Engine e(1);`, `Engine e{1};` construct an object.
-                "declaration" => self.constructions(node, owner, context),
+                "declaration" => {
+                    let before = self.facts.occurrences.len();
+                    self.constructions(node, owner, context);
+                    // The local's type is a REFERENCES, unless a construction already
+                    // stands at exactly that position (a construction is never doubled).
+                    if let Some(type_node) = node.child_by_field_name("type")
+                        && let Some(head) = type_head(type_node, self.source, true)
+                    {
+                        let at = ts::span(head.node);
+                        let constructed = self.facts.occurrences[before..]
+                            .iter()
+                            .any(|o| o.role == "call" && o.site.constructs && o.span == at);
+                        if !constructed {
+                            self.push_body_type_head(head, owner, context);
+                        }
+                    }
+                }
+                // Casts, sizeof/alignof/offsetof, compound literals, template arguments, `new`.
+                // A class defined in the body: `struct S { .. };` and `struct S { .. } s;`.
+                // An anonymous one declares nothing (`on_record` returns for it).
+                "struct_specifier" | "union_specifier" | "class_specifier"
+                    if node.child_by_field_name("body").is_some() =>
+                {
+                    self.declare_local_record(node, owner);
+                }
+                "type_descriptor" => self.push_body_type(node, owner, context),
+                // `Impl::make()`, `Outer::Inner x`, `Region::Europe`: each class in the scope.
+                "qualified_identifier" => self.push_scope_components(node, owner),
+                // C: `sizeof(S)` with a typedef'd S parses as an expression, not a type.
+                "sizeof_expression" => {
+                    if let Some(value) = node.child_by_field_name("value")
+                        && value.kind() == "parenthesized_expression"
+                        && let [only] = ts::named_children(value).as_slice()
+                        && only.kind() == "identifier"
+                    {
+                        let site = CallSite { type_use: true, speculative: true, ..CallSite::default() };
+                        self.push_site("read", *only, owner, site);
+                    }
+                }
+                // C++ `S{1}`: the type is a bare name, not a type_descriptor.
+                "compound_literal_expression" => {
+                    if let Some(type_node) = node.child_by_field_name("type")
+                        && type_node.kind() != "type_descriptor"
+                    {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
+                "for_range_loop" => {
+                    if let Some(type_node) = node.child_by_field_name("type") {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
+                // Parameters of a lambda, a catch clause or a local function pointer only:
+                // the vexing parse `T x(a, b)` and local prototypes hold argument names.
+                "parameter_declaration" | "optional_parameter_declaration" => {
+                    let holder = node.parent().and_then(|list| list.parent());
+                    let wanted = holder.is_some_and(|h| match h.kind() {
+                        "abstract_function_declarator" | "lambda_declarator" | "catch_clause" => true,
+                        "function_declarator" => h
+                            .child_by_field_name("declarator")
+                            .is_some_and(|d| d.kind() == "parenthesized_declarator"),
+                        _ => false,
+                    });
+                    if wanted && let Some(type_node) = node.child_by_field_name("type") {
+                        self.push_body_type(type_node, owner, context);
+                    }
+                }
                 "field_expression" => {
                     // A field in callee position was already recorded as a call;
                     // one site must not yield two occurrences.
@@ -2611,7 +3263,8 @@ impl<'a> Reader<'a> {
                     }
                     if let Some(field) = node.child_by_field_name("field") {
                         let role = if is_write_target(node) { "write" } else { "read" };
-                        self.push_occurrence(role, bare_name(field), owner);
+                        let site = self.member_site(node, context);
+                        self.push_site(role, bare_name(field), owner, site);
                     }
                 }
                 _ => {}
@@ -2847,6 +3500,7 @@ impl<'a> Reader<'a> {
             out
         };
         let wrapped = format!("void __callix_macro(void) {{ {body} ; }}");
+        let wrapped = erase::blank_string(&wrapped, self.erasable);
         let bytes = wrapped.as_bytes();
         let Ok(tree) = super::parse_tree(bytes, self.dialect) else {
             return;
@@ -2907,37 +3561,80 @@ impl<'a> Reader<'a> {
 
     /// What a call says about which function it means.
     fn call_site(&self, call: TsNode<'_>, function: TsNode<'_>, context: &BodyContext) -> CallSite {
-        let mut site = CallSite { class_scope: context.class_scope.clone(), ..CallSite::default() };
+        let mut site = if function.kind() == "field_expression" {
+            self.member_site(function, context)
+        } else {
+            CallSite { class_scope: context.class_scope.clone(), ..CallSite::default() }
+        };
         if let Some(arguments) = call.child_by_field_name("arguments") {
             site.arity = Some(ts::named_children(arguments).len());
             site.arg_kinds = self.argument_kinds(arguments, context);
         }
-        match function.kind() {
-            "field_expression" => {
-                if let Some(receiver) = function.child_by_field_name("argument") {
-                    match receiver.kind() {
-                        "this" => site.receiver_type = context.class_scope.clone(),
-                        "identifier" => {
-                            let name = self.text(receiver);
-                            site.receiver_type = context.locals.get(&name).cloned();
-                            site.receiver_name = Some(name);
-                        }
-                        // `this->member->f()`: the member's declared type tells.
-                        "field_expression" => {
-                            if receiver.child_by_field_name("argument").is_some_and(|a| a.kind() == "this")
-                                && let Some(field) = receiver.child_by_field_name("field")
-                            {
-                                site.receiver_name = Some(self.text(field));
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            "qualified_identifier" => site.qualifier = split_qualified(function, self.source).0,
-            _ => {}
+        if function.kind() == "qualified_identifier" {
+            site.qualifier = split_qualified(function, self.source).0;
         }
         site
+    }
+
+    /// The site of a member access `a.b` / `a->b` (read, write or callee): which
+    /// receiver it has, as far as the declarations in reach say.
+    fn member_site(&self, field_expression: TsNode<'_>, context: &BodyContext) -> CallSite {
+        let mut site = CallSite {
+            class_scope: context.class_scope.clone(),
+            member: true,
+            ..CallSite::default()
+        };
+        if let Some(argument) = field_expression.child_by_field_name("argument") {
+            self.scan_receiver(argument, context, &mut site);
+        }
+        site
+    }
+
+    /// Walks the operand of a member access down to its root.
+    ///
+    /// `this` is the enclosing class; a typed local gives its type and name; an
+    /// untyped local or parameter gives nothing (unknown, never mistaken for a
+    /// global or a field); any other identifier gives its name only (a field of the
+    /// class or a global). A field access in the operand pushes its field onto
+    /// `receiver_path`. Parentheses, `*p`, `&x` and subscripts look through to their
+    /// operand; a cast gives the cast type; anything else (a call result) is unknown.
+    fn scan_receiver(&self, node: TsNode<'_>, context: &BodyContext, site: &mut CallSite) {
+        match node.kind() {
+            "this" => site.receiver_type = context.class_scope.clone(),
+            "identifier" => {
+                let name = self.text(node);
+                if let Some(key) = context.locals.get(&name) {
+                    site.receiver_type = Some(key.clone());
+                    site.receiver_name = Some(name);
+                } else if !context.bound.contains(&name) {
+                    site.receiver_name = Some(name);
+                }
+            }
+            "field_expression" => {
+                if let Some(inner) = node.child_by_field_name("argument") {
+                    self.scan_receiver(inner, context, site);
+                }
+                if let Some(field) = node.child_by_field_name("field") {
+                    site.receiver_path.push(self.text(bare_name(field)));
+                }
+            }
+            "parenthesized_expression" | "pointer_expression" => {
+                if let Some(inner) = ts::named_children(node).first().copied() {
+                    self.scan_receiver(inner, context, site);
+                }
+            }
+            "subscript_expression" => {
+                if let Some(inner) = node.child_by_field_name("argument") {
+                    self.scan_receiver(inner, context, site);
+                }
+            }
+            "cast_expression" => {
+                if let Some(type_node) = node.child_by_field_name("type") {
+                    site.receiver_type = self.type_key(type_node);
+                }
+            }
+            _ => {}
+        }
     }
 
     /// The callee's name token; None when an expression result is called.
@@ -3061,7 +3758,8 @@ impl<'a> CFamilyEmitter<'a> {
         // definition's rather than whichever file happened to be walked first.
         if self.ledger.owns(&key, &site) && !graph.has_node(&id) {
             let declared_in = self.ledger.declared_elsewhere(&key);
-            let metadata = self.metadata_for(decl, &declared_in)?;
+            let declared_at = self.ledger.declared_at(&key);
+            let metadata = self.metadata_for(decl, &declared_in, &declared_at)?;
             // The definition's comment wins; failing that, the first one a
             // declaration carries (C keeps its documentation in the header).
             if let Some(doc) = self.ledger.doc(&key) {
@@ -3099,6 +3797,7 @@ impl<'a> CFamilyEmitter<'a> {
         &self,
         decl: &FoundDecl,
         declared_in: &[String],
+        declared_at: &[(String, Span)],
     ) -> PyResult<Bound<'a, PyDict>> {
         let metadata = PyDict::new(self.py);
         // SpanIndex maps a definition's position back to the node through the
@@ -3149,11 +3848,28 @@ impl<'a> CFamilyEmitter<'a> {
         // so the key would always be an empty list.
         if decl.kind != NodeKind::Parameter {
             metadata.set_item("declared_in", PyList::new(self.py, declared_in)?)?;
+            // Where the other declaring sites write the name: a prototype, a
+            // forward declaration, an in-class declaration. Each entry names its
+            // file - even when it is the node's own - so a reader never has to
+            // guess which file a bare span belongs to.
+            if !declared_at.is_empty() {
+                let mut sites = Vec::with_capacity(declared_at.len());
+                for (file, span) in declared_at {
+                    let entry = PyDict::new(self.py);
+                    entry.set_item("file", file.as_str())?;
+                    entry.set_item("span", *span)?;
+                    sites.push(entry);
+                }
+                metadata.set_item("declared_at", PyList::new(self.py, sites)?)?;
+            }
         }
         Ok(metadata)
     }
 
     /// An IMPORT node for one `#include`, bound to the header it names.
+    ///
+    /// The IMPORT's `name_span` is the path literal, and so is the span of its
+    /// RESOLVES_TO; the FILE -> header IMPORTS edge is deliberately unpositioned.
     ///
     /// The header's FILE node id is COMPUTED rather than looked up. Ids are
     /// deterministic and the adapter creates a FILE node for every path in
@@ -3197,6 +3913,7 @@ impl<'a> CFamilyEmitter<'a> {
             metadata.set_item("include_path", &include.path)?;
             metadata.set_item("include_style", include.style)?;
             metadata.set_item("resolved_path", resolved.as_deref())?;
+            metadata.set_item("name_span", include.path_span)?;
             let node = Node {
                 id: import_id.clone(),
                 kind: NodeKind::Import,
@@ -3227,7 +3944,24 @@ impl<'a> CFamilyEmitter<'a> {
             target_id.clone(),
             RelationKind::Imports,
         )?;
-        push_relation(self.py, graph, import_id, target_id, RelationKind::ResolvesTo)
+        // The path literal is where this edge was written. IMPORTS (file -> file)
+        // stays unpositioned and deduplicated: it is a summary, and positioning
+        // it would repeat every site. A computed `#include MACRO` names no file,
+        // so its edge carries no position. An edge with metadata is exempt from
+        // `dedupe_structural_relations`, so a header included twice in a file
+        // (both arms of an `#ifdef`) keeps both sites.
+        if include.style == "computed" {
+            push_relation(self.py, graph, import_id, target_id, RelationKind::ResolvesTo)
+        } else {
+            push_relation_with_span(
+                self.py,
+                graph,
+                import_id,
+                target_id,
+                RelationKind::ResolvesTo,
+                include.path_span,
+            )
+        }
     }
 
     fn ensure_external_symbol(
@@ -3267,6 +4001,27 @@ fn push_relation(
         target_id,
         kind,
         metadata: PyDict::new(py).unbind(),
+    };
+    graph.push_relation(Py::new(py, relation)?);
+    Ok(())
+}
+
+/// A structural edge that records where it was written (`metadata["span"]`).
+fn push_relation_with_span(
+    py: Python<'_>,
+    graph: &mut Graph,
+    source_id: String,
+    target_id: String,
+    kind: RelationKind,
+    span: Span,
+) -> PyResult<()> {
+    let metadata = PyDict::new(py);
+    metadata.set_item("span", span)?;
+    let relation = Relation {
+        source_id,
+        target_id,
+        kind,
+        metadata: metadata.unbind(),
     };
     graph.push_relation(Py::new(py, relation)?);
     Ok(())

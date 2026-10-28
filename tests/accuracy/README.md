@@ -39,7 +39,7 @@ reported on their own line instead, so neither inflates a number:
 | Suite | Cases | Ground truth |
 |---|---|---|
 | `python/pycg` | 112 | the PyCG micro-benchmark, vendored unmodified (Apache 2.0, see its `NOTICE.md`) |
-| `typescript/micro`, `go/micro`, `rust/micro`, `php/micro`, `c/micro`, `cpp/micro` | 21–41 each | written for this repository, from the language's rules rather than from callix's output |
+| `python/micro`, `typescript/micro`, `go/micro`, `rust/micro`, `php/micro`, `c/micro`, `cpp/micro` | 1–75 each (`python/micro` is new and holds one case) | written for this repository, from the language's rules rather than from callix's output |
 
 A suite is `<suite>/<category>/<case>/`; `README.md` in a case says what it tests.
 
@@ -63,17 +63,22 @@ is which edges a program has.
   more. A call on a value of the concrete type is the implementation's.
 * Calls in a closure, lambda or function literal belong to the function that
   contains it.
+* Code in a package-level initializer (Go `var x = f()`) belongs to the variable it initialises.
 * `new A()` / `A()` is an edge to the constructor when the class declares one, and
   no edge when it does not.
 * A function reached through a variable, argument, return value or container is
   an edge to the function (higher-order cases follow PyCG here). callix's
   type-based resolvers do not follow values, and those cases show it.
+* A Rust `macro_rules!` is a function of the program, named `m::name` (`m::util::name`
+  in a module), and every invocation of it is an edge to it; the calls its expansion
+  makes are edges of the caller. C and C++ preprocessor macros stay expansion-only,
+  with no node of their own.
 
 | | module-level code | function | method | constructor |
 |---|---|---|---|---|
 | Python | `main` | `main.f` | `main.C.m` | `main.C.__init__` |
 | TypeScript | `main.ts` | `main.f` | `main.C.m` | `main.C.constructor` |
-| Go | — | `m.f` | `m.T.M` | — |
+| Go | `m.x` (the var/const it initialises) | `m.f` | `m.T.M` | — |
 | Rust | — | `m::f` | `m::T.m` | — |
 | PHP | `main.php` | `App\f` | `App\C\m` | `App\C\__construct` |
 | C | — | `f`, `file.c::f` if static | — | — |

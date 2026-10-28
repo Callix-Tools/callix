@@ -31,7 +31,7 @@ use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::ResolverSlot;
 use crate::roots::{EXCLUDED_DIRS, collect_files, filter_nested_root_files};
 use crate::span::Span;
-use crate::span_index::SpanIndex;
+use crate::span_index::{SpanIndex, module_placement, relative_file_path};
 use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
@@ -194,12 +194,19 @@ fn add_relation(
 }
 
 /// Creates the MODULE node chain for `a.b.c` and returns the leaf's id.
+///
+/// `placements` maps a module's name to the relative path of the file it is
+/// (`a/b.py`, `a/b/__init__.py`); a module in the map is created placed at that
+/// file's 1:1, one that is not (a namespace package) is created without a position.
+/// It is decided up front because an ancestor package is usually created while
+/// handling one of its children, before its own `__init__.py` is reached.
 fn ensure_module_chain(
     py: Python<'_>,
     graph: &mut Graph,
     project: &str,
     module_qname: &str,
     modules: &mut IndexMap<String, String>,
+    placements: &IndexMap<String, String>,
 ) -> PyResult<String> {
     let parts: Vec<&str> = module_qname.split('.').collect();
     let mut parent_id: Option<String> = None;
@@ -208,14 +215,15 @@ fn ensure_module_chain(
         let qname = parts[..i].join(".");
         if !modules.contains_key(&qname) {
             let id = node_id(project, &qname, NodeKind::Module.as_str());
+            let (file_path, span, metadata) = module_placement(py, placements.get(&qname))?;
             let node = Node {
                 id: id.clone(),
                 kind: NodeKind::Module,
                 qualified_name: qname.clone(),
                 name: parts[i - 1].to_string(),
-                file_path: None,
-                span: None,
-                metadata: PyDict::new(py).unbind(),
+                file_path,
+                span,
+                metadata,
             };
             add_node(py, graph, node)?;
             modules.insert(qname.clone(), id.clone());
@@ -395,6 +403,18 @@ fn build_root_structure_inner(
     let mut all_boundaries: Vec<FileBoundaries> = Vec::new();
     let mut router_facts: Vec<super::routers::FileFacts> = Vec::new();
 
+    // The file each module is (first one in `files` order wins), so a MODULE is
+    // created already placed and no node is changed after it is inserted.
+    let mut placements: IndexMap<String, String> = IndexMap::new();
+    for file in &files {
+        let source_root = source_root_for(file, &roots).unwrap_or(&roots[0]);
+        if let Some(qname) = qualified_name(file, source_root) {
+            placements
+                .entry(qname)
+                .or_insert_with(|| relative_file_path(file, project_root, py_root));
+        }
+    }
+
     for file in &files {
         let source_root = source_root_for(file, &roots).unwrap_or(&roots[0]);
         let Some(module_qname) = qualified_name(file, source_root) else {
@@ -402,15 +422,11 @@ fn build_root_structure_inner(
         };
 
         let leaf_module_id =
-            ensure_module_chain(py, graph, &project, &module_qname, &mut modules)?;
+            ensure_module_chain(py, graph, &project, &module_qname, &mut modules, &placements)?;
 
         // A FILE node's path is relative to the ORIGINAL project_root, so the
         // whole monorepo shares one point of reference.
-        let relative_path = file
-            .strip_prefix(project_root)
-            .or_else(|_| file.strip_prefix(py_root))
-            .map(|p| p.to_string_lossy().into_owned())
-            .unwrap_or_else(|_| file.to_string_lossy().into_owned());
+        let relative_path = relative_file_path(file, project_root, py_root);
 
         let file_rel = relative_path.clone();
         let file_id = node_id(&project, &relative_path, NodeKind::File.as_str());
@@ -760,7 +776,24 @@ fn apply_resolutions_inner(
             continue;
         };
         metrics.resolved += 1;
+        // A site that declares the property is not a use of it: an object-literal key
+        // or a `this.x = 1` expando that the backend answers with its own position.
+        if matches!(occurrence.detail.as_deref(), Some("key" | "member"))
+            && reference.line == occurrence.line
+            && reference.col == occurrence.col
+            && reference
+                .file_path
+                .as_deref()
+                .is_some_and(|f| relative_to(f, project_root) == relative_to(path, project_root))
+        {
+            continue;
+        }
         let is_alias = occurrence.role == "alias";
+        // `Item(name=1)`: the keyword's name, recorded by the visitor as a `read` with detail `kw`.
+        // A TypeScript object-literal key is the same kind of thing, detail `key`.
+        let is_key = occurrence.role == "read" && occurrence.detail.as_deref() == Some("key");
+        let keyword =
+            occurrence.role == "read" && (occurrence.detail.as_deref() == Some("kw") || is_key);
         let rel_kind = match role_to_kind(&occurrence.role) {
             Some(kind) => kind,
             None if is_alias
@@ -785,7 +818,30 @@ fn apply_resolutions_inner(
             // project-relative ones, so the lookup has to be converted — the
             // Go and Rust adapters do the same.
             let relative = relative_to(file_path, project_root);
-            target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+            // A name wins; otherwise the start of a project file is its MODULE.
+            target_id = span_index
+                .lookup_name(&relative, reference.line, reference.col)
+                .or_else(|| span_index.lookup_module(&relative, reference.line, reference.col));
+        }
+
+        // A keyword is only worth an edge when it names a field of the project
+        // (ATTRIBUTE or VARIABLE). A parameter, a function, an external or an
+        // unbound answer is dropped, counted unresolved like an import that
+        // reaches nothing, and never becomes an external symbol.
+        if keyword
+            && !matches!(
+                target_id.as_deref().and_then(|id| graph.node_kind(id)),
+                Some(NodeKind::Attribute | NodeKind::Variable)
+            )
+            && !(is_key
+                && matches!(
+                    target_id.as_deref().and_then(|id| graph.node_kind(id)),
+                    Some(NodeKind::Method)
+                ))
+        {
+            metrics.resolved -= 1;
+            metrics.unresolved += 1;
+            continue;
         }
 
         // What a call points at, and what a variable or a parameter holds, is
@@ -905,6 +961,7 @@ fn apply_resolutions_inner(
         if occurrence.role == "call" {
             flow.call(path, occurrence, target_id.as_deref());
         } else if occurrence.role != "callarg"
+            && !keyword
             && let Some(held) = target_id.as_deref()
         {
             flow.arg(path, occurrence, held);

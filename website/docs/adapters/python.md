@@ -22,9 +22,10 @@ PythonAdapter(resolve=False).analyze(root)      # structure only
 ## What it extracts
 
 Modules as dotted names, classes, functions and methods, module- and
-class-level variables, attributes assigned through `self`, type aliases,
+class-level variables, attributes assigned through `self` or `cls` (one `ATTRIBUTE` of the class, however many methods assign it), type aliases,
 parameters, and imports — absolute and relative alike, with `from . import x`
-resolved against the importing module's package.
+resolved against the importing module's package, wherever they are written: in a
+function body, or under `if TYPE_CHECKING:` or `try:`.
 
 A `lambda` is a function nobody named: a `FUNCTION` node called `<lambdaN>` in the
 scope it is written in, numbered in the order that scope meets them
@@ -33,7 +34,12 @@ parameters are `PARAMETER` nodes and its body belongs to it, so what a lambda
 calls is its own edge. A lambda that is assigned, passed as an argument or
 returned is followed to where it is called (`resolution: "flow"`).
 
-A loop variable is a `VARIABLE` node only when the body of the loop calls it
+`obj.x = v` declares no local: it reads `obj` and writes the attribute `x`, which
+resolves to the class that defines it. Every target of a chained assignment
+(`a = b = v`) is declared. At module level the targets of `for` and
+`except ... as` are module variables, because other modules can import them.
+
+Inside a function, a loop variable is a `VARIABLE` node only when the body of the loop calls it
 (`for f in handlers: f()`): a node per loop counter would bury the graph. That
 call is followed to what the iterable hands out: the elements of a container, what
 a generator `yield`s (read like a `return`), what an iterator's `__next__` returns.
@@ -48,6 +54,21 @@ through in `via`.
 Occurrences are recorded for calls, identifier reads and writes, type
 annotations, and base classes; resolution turns them into `CALLS`,
 `REFERENCES`, `HAS_TYPE` and `INHERITS_FROM`.
+
+Every name in an annotation is a use, not only the first: `list[Item]`,
+`Optional["Item"]`, `dict[str, Item] | None`, `Callable[[A], R]`, a quoted forward
+reference, and annotated variables (module, class field, local, `self.x: T`) all
+produce a `HAS_TYPE` from the parameter, function, variable or attribute. In a
+qualified name such as `models.Item` the type is the last name: the `HAS_TYPE`
+goes to the class and `models` is a `REFERENCES` to the module. `Literal[...]`
+arguments and the metadata of `Annotated[T, ...]` are values, not types, and a
+string annotation that does not parse as a single expression is ignored.
+
+The name of a keyword argument in a call references the project field it sets
+(`Item(name=...)` on a dataclass, a `NamedTuple`, a `TypedDict`, or a
+`dataclass_transform` model such as a pydantic one), with `access: "read"` and
+`resolution: "definition"`. The keywords of an ordinary function or of a
+hand-written `__init__`, `**kwargs` and unknown names produce no edge.
 
 ## Projects inside the directory
 

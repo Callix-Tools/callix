@@ -6,6 +6,23 @@ use serde_json::Value;
 
 pub const SAMPLE: &str = include_str!("../data/sample.json");
 
+/// A placed MODULE (`pkg.util`), a reference and a resolved import both pointing
+/// at it, a YAML-like module with a file but no name span, and an unplaced one.
+pub const MODULE_GRAPH: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+  "nodes":[
+   {"id":"p","kind":"project","qualified_name":"proj","name":"proj","file_path":null,"span":null,"metadata":{}},
+   {"id":"fu","kind":"file","qualified_name":"pkg/util.py","name":"util.py","file_path":"pkg/util.py","span":null,"metadata":{}},
+   {"id":"fm","kind":"file","qualified_name":"pkg/main.py","name":"main.py","file_path":"pkg/main.py","span":null,"metadata":{}},
+   {"id":"fy","kind":"file","qualified_name":"ci.yaml","name":"ci.yaml","file_path":"ci.yaml","span":null,"metadata":{}},
+   {"id":"mu","kind":"module","qualified_name":"pkg.util","name":"util","file_path":"pkg/util.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}},
+   {"id":"my","kind":"module","qualified_name":"ci","name":"ci","file_path":"ci.yaml","span":null,"metadata":{}},
+   {"id":"mn","kind":"module","qualified_name":"ns","name":"ns","file_path":null,"span":null,"metadata":{}},
+   {"id":"run","kind":"function","qualified_name":"pkg.main.run","name":"run","file_path":"pkg/main.py","span":[3,1,4,20],"metadata":{"name_span":{"__span__":[3,5,3,8]}}}],
+  "relations":[
+   {"source_id":"run","target_id":"mu","kind":"references","metadata":{"span":{"__span__":[4,12,4,16]},"access":"read"}},
+   {"source_id":"run","target_id":"mu","kind":"resolves_to","metadata":{"span":{"__span__":[1,17,1,21]}}},
+   {"source_id":"run","target_id":"mu","kind":"resolves_to","metadata":{}}]}"#;
+
 /// Parses JSON Lines, asserts the dump is structurally valid and returns it.
 pub fn check_lsif(text: &str) -> Vec<Value> {
     if let Err(problems) = callix_export::lsif::check::validate(text) {
@@ -176,3 +193,46 @@ pub fn decode_scip(bytes: &[u8]) -> Scip {
     }
     index
 }
+
+/// A Go package placed at its package clause, with a qualifier and an import path
+/// that reference it, and a standard-library package that is only referenced.
+pub const GO_PACKAGE_GRAPH: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+ "nodes":[
+  {"id":"p","kind":"project","qualified_name":"example.com/m","name":"m","file_path":null,"span":null,"metadata":{}},
+  {"id":"mu","kind":"module","qualified_name":"example.com/m/util","name":"util","file_path":"util/util.go","span":null,"metadata":{"name_span":{"__span__":[1,9,1,13]}}},
+  {"id":"fu","kind":"file","qualified_name":"util/util.go","name":"util.go","file_path":"util/util.go","span":null,"metadata":{}},
+  {"id":"fm","kind":"file","qualified_name":"main.go","name":"main.go","file_path":"main.go","span":null,"metadata":{}},
+  {"id":"im","kind":"import","qualified_name":"main.go::example.com/m/util","name":"example.com/m/util","file_path":"main.go","span":[3,8,3,28],"metadata":{"origin":"internal"}},
+  {"id":"main","kind":"function","qualified_name":"example.com/m.main","name":"main","file_path":"main.go","span":[5,1,8,2],"metadata":{"name_span":{"__span__":[5,6,5,10]}}},
+  {"id":"fmt","kind":"external_symbol","qualified_name":"fmt","name":"fmt","file_path":null,"span":null,"metadata":{"origin":"stdlib"}}],
+ "relations":[
+  {"source_id":"fm","target_id":"main","kind":"declares","metadata":{}},
+  {"source_id":"fm","target_id":"im","kind":"declares","metadata":{}},
+  {"source_id":"im","target_id":"mu","kind":"resolves_to","metadata":{"span":{"__span__":[3,8,3,28]}}},
+  {"source_id":"main","target_id":"mu","kind":"references","metadata":{"span":{"__span__":[6,6,6,10]},"access":"read","resolution":"definition"}},
+  {"source_id":"main","target_id":"fmt","kind":"references","metadata":{"span":{"__span__":[7,2,7,5]},"access":"read","resolution":"external"}}]}"#;
+
+/// A C project: `add` is declared in a.h (3:5-8) and defined in a.c; a.c includes
+/// a.h and <stdio.h>; another node carries a Python-style BARE-span declared_at,
+/// which must not be placed.
+pub const C_DECL_SITES: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"degraded"},
+ "nodes":[
+  {"id":"p","kind":"project","qualified_name":"c","name":"c","file_path":null,"span":null,"metadata":{}},
+  {"id":"fa","kind":"file","qualified_name":"a.c","name":"a.c","file_path":"a.c","span":null,"metadata":{}},
+  {"id":"fh","kind":"file","qualified_name":"a.h","name":"a.h","file_path":"a.h","span":null,"metadata":{}},
+  {"id":"fb","kind":"file","qualified_name":"b.c","name":"b.c","file_path":"b.c","span":null,"metadata":{}},
+  {"id":"add","kind":"function","qualified_name":"add","name":"add","file_path":"a.c","span":[3,1,3,40],
+   "metadata":{"name_span":{"__span__":[3,5,3,8]},"declared_in":["a.h"],
+    "declared_at":[{"file":"a.h","span":{"__span__":[3,5,3,8]}}]}},
+  {"id":"over","kind":"function","qualified_name":"over","name":"over","file_path":"a.c","span":[5,1,5,30],
+   "metadata":{"name_span":{"__span__":[5,5,5,9]},"declared_at":[{"__span__":[9,1,9,5]}]}},
+  {"id":"ia","kind":"import","qualified_name":"a.c::a.h","name":"a.h","file_path":"a.c","span":[1,1,1,15],
+   "metadata":{"name_span":{"__span__":[1,10,1,15]}}},
+  {"id":"is","kind":"import","qualified_name":"a.c::stdio.h","name":"stdio.h","file_path":"a.c","span":[2,1,2,19],
+   "metadata":{"name_span":{"__span__":[2,10,2,19]}}},
+  {"id":"ext","kind":"external_symbol","qualified_name":"stdio.h","name":"stdio.h","file_path":null,"span":null,
+   "metadata":{"origin":"unknown"}}],
+ "relations":[
+  {"source_id":"fa","target_id":"fh","kind":"imports","metadata":{}},
+  {"source_id":"ia","target_id":"fh","kind":"resolves_to","metadata":{"span":{"__span__":[1,10,1,15]}}},
+  {"source_id":"is","target_id":"ext","kind":"resolves_to","metadata":{"span":{"__span__":[2,10,2,19]}}}]}"#;

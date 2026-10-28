@@ -51,7 +51,8 @@ type BuiltRoot = (String, Vec<(String, OccurrenceRef)>, Vec<FileBoundaries>);
 ///
 /// `vendor/` is matched at the root only, where Composer writes it: a project
 /// may legitimately hold `src/Vendor/`, and dropping the third-party tree must
-/// not take first-party code with it.
+/// not take first-party code with it. `php_roots` keeps vendor packages from
+/// becoming sub-roots of their own.
 pub fn collect_php_files(root: &Path) -> Vec<PathBuf> {
     let excluded: Vec<&str> = EXCLUDED_DIRS
         .iter()
@@ -340,7 +341,8 @@ fn role_to_kind(role: &str) -> Option<RelationKind> {
         "call" => RelationKind::Calls,
         "base" => RelationKind::InheritsFrom,
         "annotation" => RelationKind::HasType,
-        "read" | "write" => RelationKind::References,
+        "read" | "write" | "read_callable" => RelationKind::References,
+        "import" => RelationKind::ResolvesTo,
         _ => return None,
     })
 }
@@ -641,10 +643,6 @@ fn resolve_pass(
     }
 
     for ((path, occurrence), reference) in sent.iter().copied().zip(refs.iter()) {
-        // `$o->m(...)` makes a callable of `m`; the occurrence only places the name.
-        if occurrence.role == "read_callable" {
-            continue;
-        }
         let Some(reference) = reference else {
             metrics.unresolved += 1;
             continue;
@@ -657,6 +655,20 @@ fn resolve_pass(
         {
             let relative = relative_to(file_path, project_root);
             target_id = span_index.lookup_name(&relative, reference.line, reference.col);
+        }
+        if occurrence.role == "import" {
+            // A custom resolver may answer with the import itself: that binds nothing.
+            if target_id.as_deref() == Some(occurrence.enclosing_id.as_str()) {
+                target_id = None;
+            }
+            // `use App\Contracts;` names a namespace: bind to its MODULE rather than
+            // creating an EXTERNAL_SYMBOL for it.
+            if target_id.is_none() && !reference.full_name.is_empty() {
+                let module = node_id(project, &reference.full_name, NodeKind::Module.as_str());
+                if graph.has_node(&module) {
+                    target_id = Some(module);
+                }
+            }
         }
 
         if occurrence.role == "call" {
@@ -706,6 +718,8 @@ fn resolve_pass(
         metadata.set_item(resolution::KEY, resolution.as_str())?;
         if occurrence.role == "read" || occurrence.role == "write" {
             metadata.set_item("access", &occurrence.role)?;
+        } else if occurrence.role == "read_callable" {
+            metadata.set_item("access", "read")?;
         }
         graph.note_site_file(
             &occurrence.enclosing_id,

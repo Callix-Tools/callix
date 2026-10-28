@@ -22,13 +22,27 @@
       "span": null
     },
     {
-      "file_path": null,
+      "file_path": "src/service.ts",
       "id": "2c6568370f08cc8f",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
       "name": "service",
       "qualified_name": "service",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "src/service.ts",
@@ -47,6 +61,14 @@
         "alias": null,
         "is_relative": false,
         "is_star": false,
+        "name_span": {
+          "__span__": [
+            3,
+            10,
+            3,
+            14
+          ]
+        },
         "origin": "internal",
         "original_name": "store.Base"
       },
@@ -73,6 +95,14 @@
         "alias": null,
         "is_relative": false,
         "is_star": false,
+        "name_span": {
+          "__span__": [
+            3,
+            16,
+            3,
+            22
+          ]
+        },
         "origin": "internal",
         "original_name": "store.Engine"
       },
@@ -99,6 +129,14 @@
         "alias": null,
         "is_relative": false,
         "is_star": false,
+        "name_span": {
+          "__span__": [
+            3,
+            29,
+            3,
+            39
+          ]
+        },
         "origin": "internal",
         "original_name": "store.Identifier"
       },
@@ -346,13 +384,27 @@
       ]
     },
     {
-      "file_path": null,
+      "file_path": "src/store.ts",
       "id": "ec720ad133a23056",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
       "name": "store",
       "qualified_name": "store",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "src/store.ts",

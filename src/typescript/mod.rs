@@ -6,6 +6,7 @@ mod boundary;
 mod detector;
 mod module_resolver;
 mod resolver;
+mod type_uses;
 mod visitor;
 
 pub use detector::{

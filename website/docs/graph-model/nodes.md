@@ -40,8 +40,8 @@ node.metadata        # dict[str, object]
 
 | Language | A `MODULE` is |
 |---|---|
-| Python, TypeScript | a dotted name — `app.services.billing` |
-| Go | a package directory, whose `qualified_name` **is** the import path |
+| Python, TypeScript | a dotted name — `app.services.billing`. One with a file of its own (`.py`, `__init__.py`, `index.ts`) carries that `file_path` and a zero-width `1:1` span; a namespace package or a directory without an index file has no position. A TypeScript `namespace` block is also a `MODULE` (`metadata["is_namespace"]`), with the file and span of its declaration |
+| Go | a package directory, whose `qualified_name` **is** the import path; it carries the `file_path` of its first non-test file and a `name_span` at the package clause, and no `span` |
 | Rust | a module path — `crate::net::http` |
 | PHP | a namespace — `App\Service` |
 | C, C++ | the directory; a C++ namespace lives in the qualified names instead |
@@ -80,6 +80,8 @@ the visitor boundary.
 just the identifier, and that is the one resolution uses: a resolver answers
 with the position of a definition's *name*, so the lookup has to be against
 name spans.
+
+`node.metadata["declared_at"]` lists the other places a definition is written down. An entry is either a bare span in the node's own file (Python and TypeScript overload signatures) or `{"file": ..., "span": ...}` (C and C++ prototypes, forward declarations and in-class declarations, which are one node with their definition). In Rust the bare spans also cover the later declarations of a qualified name in the same file, such as the `add` of `impl Add<S>` and of `impl Add<&S>` for one type, or the variants of a `cfg`-gated function. A resolver's answer at any of these positions lands on the node.
 
 ## Documentation
 

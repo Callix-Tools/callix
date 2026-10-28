@@ -10,10 +10,20 @@
 //!
 //! A symbol is `callix . <project> . . <descriptor>`: the qualified name as one
 //! (backtick-escaped) descriptor whose suffix says what it is — `#` for a type,
-//! `().` for a callable, `.` for a term, `(…)` for a parameter. External symbols
+//! `().` for a callable, `.` for a term, `(…)` for a parameter. `<project>` is
+//! the sub-root, i.e. the PROJECT the definition sits under (the first PROJECT
+//! only for a node none reaches). Distinct definitions that would still share a
+//! symbol (a CLASS and a TYPE_ALIAS are both `#`) keep the plain symbol for the
+//! primary kind and put the other under a `<kind>/` namespace, e.g.
+//! `type_alias/Fp#`. External symbols
 //! that already are SCIP symbols (rust-analyzer's, kept verbatim in the graph)
 //! are used as they are; ones the resolver could not name — a node keyed by the
 //! site it was met at — have no identity to index and are left out.
+//!
+//! A header's prototype or forward declaration (`declared_at`) is an occurrence
+//! with the ForwardDefinition role (0x40); an `#include` is a plain reference to
+//! the included header's file symbol, which is defined on the first character of
+//! its document (1:1-1:2).
 //!
 //! The encoder is hand-written protobuf (varints and length-delimited fields),
 //! checked against an index rust-analyzer produced; field numbers are those of
@@ -23,7 +33,7 @@ use std::io::Write;
 
 use crate::error::Result;
 use crate::index::{Access, Index, Range, Symbol};
-use crate::model::{Graph, NodeKind, Span};
+use crate::model::{Graph, Node, NodeKind, Span};
 use crate::{Exporter, Options, Warning};
 
 pub struct Scip;
@@ -54,12 +64,13 @@ impl Exporter for Scip {
         let index = Index::build(graph);
         let mut warnings = index.warnings("SCIP");
 
-        let project = graph
+        let default_project = graph
             .nodes_of(NodeKind::Project)
             .next()
             .map_or("unknown", |p| p.name.as_str());
-        let symbols: Vec<Option<String>> =
-            index.symbols.iter().map(|s| symbol_string(project, s)).collect();
+        let mut symbols: Vec<Option<String>> =
+            index.symbols.iter().map(|s| symbol_string(default_project, s)).collect();
+        disambiguate(&index, default_project, &mut symbols);
 
         let mut metadata = Vec::new();
         let mut tool = Vec::new();
@@ -171,9 +182,29 @@ fn escape_package(name: &str) -> String {
     if name.is_empty() { ".".into() } else { name.replace(' ', "  ") }
 }
 
+/// The descriptor of a definition: its qualified name plus a suffix for its kind.
+fn descriptor(node: &Node) -> String {
+    let name = escape_name(&node.qualified_name);
+    match node.kind {
+        NodeKind::Class | NodeKind::TypeAlias => format!("{name}#"),
+        NodeKind::Function | NodeKind::Method => format!("{name}()."),
+        NodeKind::Parameter => format!("({name})"),
+        NodeKind::Module | NodeKind::File => format!("{name}/"),
+        _ => format!("{name}."),
+    }
+}
+
+/// The symbol of a definition, in its own sub-root (`default_project` for a node
+/// no PROJECT reaches). `namespace` is empty, or `<kind>/` and `<id>/` pieces
+/// written before the descriptor to keep colliding definitions apart.
+fn internal_symbol(default_project: &str, symbol: &Symbol<'_>, namespace: &str) -> String {
+    let project = symbol.project.unwrap_or(default_project);
+    format!("callix . {} . . {namespace}{}", escape_package(project), descriptor(symbol.node))
+}
+
 /// The SCIP symbol of a definition or an external symbol; none for a node that
 /// has no identity (see the module docs).
-fn symbol_string(project: &str, symbol: &Symbol<'_>) -> Option<String> {
+fn symbol_string(default_project: &str, symbol: &Symbol<'_>) -> Option<String> {
     let node = symbol.node;
     if symbol.external {
         if symbol.is_site_key() {
@@ -190,15 +221,61 @@ fn symbol_string(project: &str, symbol: &Symbol<'_>) -> Option<String> {
             escape_name(&node.qualified_name)
         ));
     }
-    let name = escape_name(&node.qualified_name);
-    let descriptor = match node.kind {
-        NodeKind::Class | NodeKind::TypeAlias => format!("{name}#"),
-        NodeKind::Function | NodeKind::Method => format!("{name}()."),
-        NodeKind::Parameter => format!("({name})"),
-        NodeKind::Module | NodeKind::File => format!("{name}/"),
-        _ => format!("{name}."),
-    };
-    Some(format!("callix . {} . . {descriptor}", escape_package(project)))
+    Some(internal_symbol(default_project, symbol, ""))
+}
+
+/// The kind that owns a descriptor suffix: it keeps the plain symbol when
+/// several kinds collide on it.
+fn primary_kind(kind: NodeKind) -> NodeKind {
+    match kind {
+        NodeKind::Class | NodeKind::TypeAlias => NodeKind::Class,
+        NodeKind::Function | NodeKind::Method => NodeKind::Function,
+        NodeKind::Parameter => NodeKind::Parameter,
+        NodeKind::Module | NodeKind::File => NodeKind::Module,
+        _ => NodeKind::Variable,
+    }
+}
+
+/// Makes the symbols of distinct definitions distinct. Definitions whose symbol
+/// text is shared (C `typedef struct S {..} S` is a CLASS and a TYPE_ALIAS) keep
+/// the plain symbol when their kind is the primary one for the suffix; the rest
+/// go under a `<kind>/` namespace. Whatever still collides (only possible when a
+/// fallback-project node meets a real one) gets its node id as a further
+/// namespace, in symbol order. A symbol that collides with nothing is untouched.
+fn disambiguate(index: &Index<'_>, default_project: &str, symbols: &mut [Option<String>]) {
+    let mut groups: std::collections::HashMap<String, Vec<usize>> = std::collections::HashMap::new();
+    let mut order: Vec<String> = Vec::new();
+    for (i, text) in symbols.iter().enumerate() {
+        if index.symbols[i].external {
+            continue;
+        }
+        let Some(text) = text else { continue };
+        let members = groups.entry(text.clone()).or_default();
+        if members.is_empty() {
+            order.push(text.clone());
+        }
+        members.push(i);
+    }
+    for text in order {
+        let members = &groups[&text];
+        if members.len() < 2 {
+            continue;
+        }
+        let mut seen = std::collections::HashSet::new();
+        for &i in members {
+            let symbol = &index.symbols[i];
+            let kind = symbol.node.kind;
+            let mut namespace =
+                if kind == primary_kind(kind) { String::new() } else { format!("{}/", kind.as_str()) };
+            let mut candidate = internal_symbol(default_project, symbol, &namespace);
+            if seen.contains(&candidate) {
+                namespace.push_str(&format!("{}/", symbol.node.id));
+                candidate = internal_symbol(default_project, symbol, &namespace);
+            }
+            seen.insert(candidate.clone());
+            symbols[i] = Some(candidate);
+        }
+    }
 }
 
 /// `SymbolInformation.Kind` for a node kind.
@@ -224,6 +301,8 @@ const TEXT_ENCODING_UTF8: u64 = 1;
 /// `PositionEncoding.UTF8CodeUnitOffsetFromLineStart`.
 const POSITION_UTF8: u64 = 1;
 const ROLE_DEFINITION: u64 = 0x1;
+/// `SymbolRole.ForwardDefinition`: SCIP's role for a C or C++ header declaration.
+const ROLE_FORWARD_DEFINITION: u64 = 0x40;
 const ROLE_WRITE: u64 = 0x4;
 const ROLE_READ: u64 = 0x8;
 
@@ -245,6 +324,8 @@ fn occurrence(range: &Range, symbol: &str, is_definition: bool) -> Vec<u8> {
     put_str(&mut out, 2, symbol);
     let roles = if is_definition {
         ROLE_DEFINITION
+    } else if range.forward {
+        ROLE_FORWARD_DEFINITION
     } else {
         match range.access {
             Access::Write => ROLE_WRITE,

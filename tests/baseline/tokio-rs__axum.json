@@ -1,34 +1,34 @@
 {
   "files": {
     "axum-core/src/body.rs": {
-      "hash": "2551f48ccb7dc7a9",
-      "nodes": 44,
-      "relations": 62
+      "hash": "2bfafcd9e2710327",
+      "nodes": 51,
+      "relations": 70
     },
     "axum-core/src/error.rs": {
       "hash": "128724ab756ce2ad",
       "nodes": 11,
-      "relations": 15
+      "relations": 16
     },
     "axum-core/src/ext_traits/mod.rs": {
-      "hash": "3208f6c93cefee72",
-      "nodes": 12,
-      "relations": 17
+      "hash": "127a6b91353a8ace",
+      "nodes": 14,
+      "relations": 22
     },
     "axum-core/src/ext_traits/request.rs": {
-      "hash": "fc913b2859042dd5",
-      "nodes": 37,
-      "relations": 57
+      "hash": "446f0860126d139d",
+      "nodes": 39,
+      "relations": 65
     },
     "axum-core/src/ext_traits/request_parts.rs": {
-      "hash": "fb0642461b5f960b",
-      "nodes": 24,
-      "relations": 41
+      "hash": "17466668e47ccd93",
+      "nodes": 25,
+      "relations": 45
     },
     "axum-core/src/extract/default_body_limit.rs": {
-      "hash": "ee2630d7ba83e2d8",
-      "nodes": 24,
-      "relations": 38
+      "hash": "4cd181c5a1cc118f",
+      "nodes": 30,
+      "relations": 48
     },
     "axum-core/src/extract/from_ref.rs": {
       "hash": "a192671bd0c2c586",
@@ -36,34 +36,34 @@
       "relations": 6
     },
     "axum-core/src/extract/mod.rs": {
-      "hash": "0532fda7e9566f23",
-      "nodes": 27,
-      "relations": 40
+      "hash": "99d8a9329ccfcd72",
+      "nodes": 31,
+      "relations": 58
     },
     "axum-core/src/extract/option.rs": {
-      "hash": "6e50e57c6d747d39",
-      "nodes": 19,
-      "relations": 28
+      "hash": "a208f23613442561",
+      "nodes": 22,
+      "relations": 37
     },
     "axum-core/src/extract/rejection.rs": {
       "hash": "87e870f0a6c83f7b",
       "nodes": 6,
-      "relations": 9
+      "relations": 10
     },
     "axum-core/src/extract/request_parts.rs": {
-      "hash": "514c10a4762862f5",
-      "nodes": 48,
-      "relations": 65
+      "hash": "52fb80b55300a570",
+      "nodes": 60,
+      "relations": 81
     },
     "axum-core/src/extract/tuple.rs": {
-      "hash": "2a25f951ec8827cf",
-      "nodes": 16,
-      "relations": 28
+      "hash": "bd5ced236a557665",
+      "nodes": 17,
+      "relations": 35
     },
     "axum-core/src/lib.rs": {
       "hash": "4c93d31e6d6d525c",
       "nodes": 6,
-      "relations": 13
+      "relations": 22
     },
     "axum-core/src/macros.rs": {
       "hash": "ccae6a263a3a4a16",
@@ -71,94 +71,94 @@
       "relations": 10
     },
     "axum-core/src/response/append_headers.rs": {
-      "hash": "f97bc404570bcae7",
-      "nodes": 8,
-      "relations": 13
+      "hash": "49c14d10676be8a8",
+      "nodes": 9,
+      "relations": 15
     },
     "axum-core/src/response/into_response.rs": {
-      "hash": "776dfc89fc27a53c",
-      "nodes": 39,
-      "relations": 53
+      "hash": "af9e0ac0a4e5257d",
+      "nodes": 41,
+      "relations": 58
     },
     "axum-core/src/response/into_response_parts.rs": {
-      "hash": "18845a5c52a2283b",
-      "nodes": 34,
-      "relations": 42
+      "hash": "891f13d684c95b85",
+      "nodes": 42,
+      "relations": 54
     },
     "axum-core/src/response/mod.rs": {
       "hash": "7b9a79397aacffb3",
       "nodes": 9,
-      "relations": 12
+      "relations": 21
     },
     "axum-extra/src/body/async_read_body.rs": {
-      "hash": "8092e8584ca71d0f",
-      "nodes": 16,
-      "relations": 29
+      "hash": "62463752fe529c7b",
+      "nodes": 18,
+      "relations": 31
     },
     "axum-extra/src/body/mod.rs": {
       "hash": "2fc530759890d2c3",
       "nodes": 2,
-      "relations": 3
+      "relations": 4
     },
     "axum-extra/src/either.rs": {
-      "hash": "30715fce719b985a",
-      "nodes": 19,
-      "relations": 28
+      "hash": "c16dd37a944e9cf2",
+      "nodes": 58,
+      "relations": 102
     },
     "axum-extra/src/extract/cached.rs": {
-      "hash": "b76a703bf9e8260c",
-      "nodes": 18,
-      "relations": 28
+      "hash": "f8e7f0ace4adf003",
+      "nodes": 22,
+      "relations": 32
     },
     "axum-extra/src/extract/cookie/mod.rs": {
-      "hash": "01d3949666d312d3",
-      "nodes": 50,
-      "relations": 75
+      "hash": "ce513ca4f9b6e430",
+      "nodes": 52,
+      "relations": 81
     },
     "axum-extra/src/extract/cookie/private.rs": {
-      "hash": "f5a74208276058e3",
-      "nodes": 39,
-      "relations": 53
+      "hash": "458c3f797e8e86e2",
+      "nodes": 42,
+      "relations": 58
     },
     "axum-extra/src/extract/cookie/signed.rs": {
-      "hash": "84b99eeeb2289912",
-      "nodes": 40,
-      "relations": 56
+      "hash": "e961c67442b7b259",
+      "nodes": 43,
+      "relations": 61
     },
     "axum-extra/src/extract/form.rs": {
-      "hash": "dcc7b793f6729637",
-      "nodes": 20,
-      "relations": 49
+      "hash": "f3bf5adc5c6b76d6",
+      "nodes": 25,
+      "relations": 56
     },
     "axum-extra/src/extract/host.rs": {
-      "hash": "b718e83faf35f736",
-      "nodes": 33,
-      "relations": 53
+      "hash": "2f96574b61f9eb29",
+      "nodes": 34,
+      "relations": 54
     },
     "axum-extra/src/extract/json_deserializer.rs": {
-      "hash": "57aeba4dd2a278e8",
-      "nodes": 54,
-      "relations": 114
+      "hash": "54573d3d123d457d",
+      "nodes": 63,
+      "relations": 127
     },
     "axum-extra/src/extract/mod.rs": {
       "hash": "4528c70cb80d3546",
       "nodes": 16,
-      "relations": 42
+      "relations": 65
     },
     "axum-extra/src/extract/multipart.rs": {
-      "hash": "e9011f073e1ca671",
-      "nodes": 56,
-      "relations": 81
+      "hash": "96caa6d87a31c663",
+      "nodes": 63,
+      "relations": 88
     },
     "axum-extra/src/extract/optional_path.rs": {
-      "hash": "01c21d0c25613ab2",
-      "nodes": 14,
-      "relations": 31
+      "hash": "e31e4184e6fc0907",
+      "nodes": 15,
+      "relations": 33
     },
     "axum-extra/src/extract/query.rs": {
-      "hash": "8c48f18db44b72dd",
-      "nodes": 34,
-      "relations": 67
+      "hash": "07814f1a87704e49",
+      "nodes": 53,
+      "relations": 95
     },
     "axum-extra/src/extract/rejection.rs": {
       "hash": "b765c31de01d021a",
@@ -166,49 +166,49 @@
       "relations": 3
     },
     "axum-extra/src/extract/scheme.rs": {
-      "hash": "d7cbbd518c1572d5",
-      "nodes": 22,
-      "relations": 36
-    },
-    "axum-extra/src/extract/with_rejection.rs": {
-      "hash": "5c47a15675f61d85",
-      "nodes": 33,
-      "relations": 54
-    },
-    "axum-extra/src/handler/mod.rs": {
-      "hash": "462604292e1b532b",
-      "nodes": 21,
+      "hash": "01a9b7267247bea9",
+      "nodes": 23,
       "relations": 37
     },
+    "axum-extra/src/extract/with_rejection.rs": {
+      "hash": "8d239662c66fde64",
+      "nodes": 39,
+      "relations": 60
+    },
+    "axum-extra/src/handler/mod.rs": {
+      "hash": "a552fce576d3aa7b",
+      "nodes": 23,
+      "relations": 42
+    },
     "axum-extra/src/handler/or.rs": {
-      "hash": "ed220704dcec7429",
-      "nodes": 25,
-      "relations": 49
+      "hash": "7ee9c41d7bb5c738",
+      "nodes": 28,
+      "relations": 55
     },
     "axum-extra/src/json_lines.rs": {
-      "hash": "407adcf21a0fd9ce",
-      "nodes": 32,
-      "relations": 68
+      "hash": "6db8bbfd249b0f59",
+      "nodes": 34,
+      "relations": 70
     },
     "axum-extra/src/lib.rs": {
       "hash": "7dab8133df993e1a",
       "nodes": 10,
-      "relations": 21
+      "relations": 32
     },
     "axum-extra/src/middleware.rs": {
-      "hash": "104c4e5acfefbc60",
-      "nodes": 20,
-      "relations": 37
+      "hash": "05df6bdbdbfa1139",
+      "nodes": 23,
+      "relations": 42
     },
     "axum-extra/src/protobuf.rs": {
-      "hash": "6d69a19532510ddd",
-      "nodes": 23,
-      "relations": 48
+      "hash": "dfdeb3d0e87348ce",
+      "nodes": 34,
+      "relations": 64
     },
     "axum-extra/src/response/attachment.rs": {
       "hash": "088340881e1755c8",
       "nodes": 22,
-      "relations": 36
+      "relations": 37
     },
     "axum-extra/src/response/content_disposition.rs": {
       "hash": "6956821571689e73",
@@ -233,17 +233,17 @@
     "axum-extra/src/response/mod.rs": {
       "hash": "03aff7aa131a8140",
       "nodes": 8,
-      "relations": 21
+      "relations": 33
     },
     "axum-extra/src/response/multiple.rs": {
       "hash": "89720a6a472a9bdc",
       "nodes": 40,
-      "relations": 65
+      "relations": 68
     },
     "axum-extra/src/routing/mod.rs": {
       "hash": "5a5a49f49a6cfa96",
       "nodes": 79,
-      "relations": 121
+      "relations": 127
     },
     "axum-extra/src/routing/resource.rs": {
       "hash": "822c7f9e45f562bc",
@@ -251,14 +251,14 @@
       "relations": 51
     },
     "axum-extra/src/routing/typed.rs": {
-      "hash": "621bef6800a00014",
-      "nodes": 32,
-      "relations": 53
+      "hash": "d092a82260454d16",
+      "nodes": 35,
+      "relations": 59
     },
     "axum-extra/src/typed_header.rs": {
-      "hash": "4fc096f8e3aa7c60",
-      "nodes": 31,
-      "relations": 50
+      "hash": "37b92cb82921c198",
+      "nodes": 35,
+      "relations": 56
     },
     "axum-macros/src/attr_parsing.rs": {
       "hash": "8d584ce6e34c6f5e",
@@ -271,104 +271,104 @@
       "relations": 22
     },
     "axum-macros/src/debug_handler.rs": {
-      "hash": "fecf20b89197a526",
-      "nodes": 78,
-      "relations": 88
+      "hash": "843bb45a8788d0f5",
+      "nodes": 80,
+      "relations": 96
     },
     "axum-macros/src/from_ref.rs": {
       "hash": "2de38ad39a5d190c",
       "nodes": 18,
-      "relations": 26
+      "relations": 29
     },
     "axum-macros/src/from_request/attr.rs": {
       "hash": "7089443d98901b40",
       "nodes": 17,
-      "relations": 24
+      "relations": 27
     },
     "axum-macros/src/from_request/mod.rs": {
-      "hash": "939b90db47c80c2f",
-      "nodes": 82,
-      "relations": 93
+      "hash": "73bda08a911b5c41",
+      "nodes": 87,
+      "relations": 108
     },
     "axum-macros/src/lib.rs": {
       "hash": "c6c6b130fd671db7",
       "nodes": 39,
-      "relations": 48
+      "relations": 56
     },
     "axum-macros/src/typed_path.rs": {
-      "hash": "abc39559060864c1",
-      "nodes": 50,
-      "relations": 59
+      "hash": "3ba9b5e38d56a50e",
+      "nodes": 52,
+      "relations": 67
     },
     "axum-macros/src/with_position.rs": {
-      "hash": "3533a746db07c326",
-      "nodes": 12,
-      "relations": 15
+      "hash": "417c0a610fb1e292",
+      "nodes": 17,
+      "relations": 24
     },
     "axum-macros/tests/debug_handler/fail/argument_not_extractor.rs": {
       "hash": "7576e2ac6b198a1e",
       "nodes": 5,
-      "relations": 6
+      "relations": 7
     },
     "axum-macros/tests/debug_handler/fail/duplicate_args.rs": {
       "hash": "58e09d7868de8719",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/fail/extension_not_clone.rs": {
       "hash": "944c52ca4d25318c",
       "nodes": 7,
-      "relations": 10
+      "relations": 11
     },
     "axum-macros/tests/debug_handler/fail/extract_self_mut.rs": {
-      "hash": "4060a757f1df6445",
-      "nodes": 9,
-      "relations": 12
+      "hash": "70a7f866ee6c7c95",
+      "nodes": 10,
+      "relations": 14
     },
     "axum-macros/tests/debug_handler/fail/extract_self_ref.rs": {
-      "hash": "616bf8ed2ddea5c2",
-      "nodes": 9,
-      "relations": 12
+      "hash": "18b329bf48f5909e",
+      "nodes": 10,
+      "relations": 14
     },
     "axum-macros/tests/debug_handler/fail/generics.rs": {
       "hash": "a6a3954b16a0d087",
       "nodes": 5,
-      "relations": 6
+      "relations": 7
     },
     "axum-macros/tests/debug_handler/fail/invalid_attrs.rs": {
       "hash": "87fe59a406f4cd79",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/fail/json_not_deserialize.rs": {
       "hash": "9add6378b3b37e49",
       "nodes": 7,
-      "relations": 10
+      "relations": 11
     },
     "axum-macros/tests/debug_handler/fail/multiple_paths.rs": {
       "hash": "c060bf215c7a66c8",
       "nodes": 6,
-      "relations": 9
+      "relations": 10
     },
     "axum-macros/tests/debug_handler/fail/multiple_request_consumers.rs": {
       "hash": "cb7eb946eb360e76",
       "nodes": 8,
-      "relations": 11
+      "relations": 12
     },
     "axum-macros/tests/debug_handler/fail/not_a_function.rs": {
       "hash": "3e7267eeb9d1248a",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/fail/not_async.rs": {
       "hash": "591773cfc46c93f2",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/fail/not_send.rs": {
       "hash": "d7464b4afc670973",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/fail/output_tuple_too_many.rs": {
       "hash": "d41097e96c3543d3",
@@ -388,12 +388,12 @@
     "axum-macros/tests/debug_handler/fail/too_many_extractors.rs": {
       "hash": "7435305961272786",
       "nodes": 22,
-      "relations": 25
+      "relations": 26
     },
     "axum-macros/tests/debug_handler/fail/wrong_order.rs": {
       "hash": "1e1f552e7d759de2",
       "nodes": 8,
-      "relations": 11
+      "relations": 12
     },
     "axum-macros/tests/debug_handler/fail/wrong_return_tuple.rs": {
       "hash": "53bd93658c5f8b5a",
@@ -403,12 +403,12 @@
     "axum-macros/tests/debug_handler/fail/wrong_return_type.rs": {
       "hash": "285f92fe5a39a8b4",
       "nodes": 4,
-      "relations": 5
+      "relations": 6
     },
     "axum-macros/tests/debug_handler/pass/associated_fn_without_self.rs": {
       "hash": "ec196422915f9901",
       "nodes": 5,
-      "relations": 6
+      "relations": 7
     },
     "axum-macros/tests/debug_handler/pass/deny_unreachable_code.rs": {
       "hash": "1218b1d47e707f93",
@@ -418,62 +418,62 @@
     "axum-macros/tests/debug_handler/pass/impl_future.rs": {
       "hash": "141f5705cd568015",
       "nodes": 5,
-      "relations": 8
+      "relations": 9
     },
     "axum-macros/tests/debug_handler/pass/impl_into_response.rs": {
       "hash": "a0161ed5582b293d",
       "nodes": 5,
-      "relations": 8
+      "relations": 9
     },
     "axum-macros/tests/debug_handler/pass/infer_state.rs": {
       "hash": "fbaec0529439bc66",
       "nodes": 15,
-      "relations": 18
+      "relations": 19
     },
     "axum-macros/tests/debug_handler/pass/multiple_extractors.rs": {
       "hash": "65b870ee7939a56e",
       "nodes": 8,
-      "relations": 11
+      "relations": 12
     },
     "axum-macros/tests/debug_handler/pass/mut_extractor.rs": {
       "hash": "ebe8dfc95d473612",
       "nodes": 5,
-      "relations": 6
+      "relations": 7
     },
     "axum-macros/tests/debug_handler/pass/ready.rs": {
       "hash": "cbf36ee3caa9ae0d",
       "nodes": 5,
-      "relations": 8
+      "relations": 9
     },
     "axum-macros/tests/debug_handler/pass/request_last.rs": {
       "hash": "e1b605504258d26a",
       "nodes": 6,
-      "relations": 9
+      "relations": 10
     },
     "axum-macros/tests/debug_handler/pass/result_impl_into_response.rs": {
-      "hash": "9442a0736fca93ae",
-      "nodes": 34,
-      "relations": 37
+      "hash": "f87de1985ec281e8",
+      "nodes": 35,
+      "relations": 39
     },
     "axum-macros/tests/debug_handler/pass/returns_self.rs": {
       "hash": "f10a7bf2a82a8dce",
       "nodes": 7,
-      "relations": 10
+      "relations": 11
     },
     "axum-macros/tests/debug_handler/pass/self_receiver.rs": {
-      "hash": "ffbe99b88152157f",
-      "nodes": 14,
-      "relations": 17
+      "hash": "5ce93d4beebbc503",
+      "nodes": 16,
+      "relations": 20
     },
     "axum-macros/tests/debug_handler/pass/set_state.rs": {
-      "hash": "bc4096d12d52892d",
-      "nodes": 11,
-      "relations": 14
+      "hash": "7f475218e70e76d7",
+      "nodes": 12,
+      "relations": 16
     },
     "axum-macros/tests/debug_handler/pass/state_and_body.rs": {
       "hash": "9b18fd80425922f9",
       "nodes": 7,
-      "relations": 10
+      "relations": 11
     },
     "axum-macros/tests/debug_middleware/fail/doesnt_take_next.rs": {
       "hash": "2b68193a2e520ef9",
@@ -521,14 +521,14 @@
       "relations": 6
     },
     "axum-macros/tests/from_request/fail/enum_from_request_ident_in_variant.rs": {
-      "hash": "643ebc24ad75ccdf",
-      "nodes": 4,
-      "relations": 5
+      "hash": "57c8792e571a11ec",
+      "nodes": 6,
+      "relations": 9
     },
     "axum-macros/tests/from_request/fail/enum_from_request_on_variant.rs": {
-      "hash": "f6946f201bdefe1b",
-      "nodes": 4,
-      "relations": 5
+      "hash": "737267486daf4d4c",
+      "nodes": 5,
+      "relations": 7
     },
     "axum-macros/tests/from_request/fail/enum_no_via.rs": {
       "hash": "17f19305ff9a5865",
@@ -646,9 +646,9 @@
       "relations": 20
     },
     "axum-macros/tests/from_request/pass/override_rejection.rs": {
-      "hash": "dd607be3c243c94d",
-      "nodes": 19,
-      "relations": 23
+      "hash": "3373b9708a931be9",
+      "nodes": 20,
+      "relations": 24
     },
     "axum-macros/tests/from_request/pass/override_rejection_non_generic.rs": {
       "hash": "fb69b00f078f7bf1",
@@ -661,9 +661,9 @@
       "relations": 22
     },
     "axum-macros/tests/from_request/pass/override_rejection_parts.rs": {
-      "hash": "24d044d3f9d3fe00",
-      "nodes": 19,
-      "relations": 23
+      "hash": "58fa5033e126d80c",
+      "nodes": 20,
+      "relations": 24
     },
     "axum-macros/tests/from_request/pass/override_rejection_with_via_on_enum.rs": {
       "hash": "d58393418dc3c39e",
@@ -691,14 +691,14 @@
       "relations": 19
     },
     "axum-macros/tests/from_request/pass/state_enum_via.rs": {
-      "hash": "d55a7042c8dfbf85",
-      "nodes": 9,
-      "relations": 14
+      "hash": "3db1360075ddd9cc",
+      "nodes": 10,
+      "relations": 16
     },
     "axum-macros/tests/from_request/pass/state_enum_via_parts.rs": {
-      "hash": "653bff1896891e8f",
-      "nodes": 9,
-      "relations": 15
+      "hash": "5807a370b02e72aa",
+      "nodes": 10,
+      "relations": 17
     },
     "axum-macros/tests/from_request/pass/state_explicit.rs": {
       "hash": "0c868fcaf313148f",
@@ -888,117 +888,117 @@
     "axum/src/boxed.rs": {
       "hash": "0bc4f4ac3dfc5cbe",
       "nodes": 62,
-      "relations": 79
+      "relations": 80
     },
     "axum/src/error_handling/mod.rs": {
-      "hash": "74822fb2c72fb0bd",
-      "nodes": 38,
-      "relations": 58
+      "hash": "d36b4d25e357d1b2",
+      "nodes": 43,
+      "relations": 63
     },
     "axum/src/extension.rs": {
-      "hash": "2a31bd16fc93a7de",
-      "nodes": 41,
-      "relations": 72
-    },
-    "axum/src/extract/connect_info.rs": {
-      "hash": "eb1a824a90be3eab",
-      "nodes": 50,
+      "hash": "8152046d8a6dd846",
+      "nodes": 47,
       "relations": 78
     },
+    "axum/src/extract/connect_info.rs": {
+      "hash": "73b8a1b6b0f2e11b",
+      "nodes": 57,
+      "relations": 88
+    },
     "axum/src/extract/matched_path.rs": {
-      "hash": "8c1143b3aa03f7de",
-      "nodes": 56,
-      "relations": 101
+      "hash": "6ef6e20470951678",
+      "nodes": 57,
+      "relations": 106
     },
     "axum/src/extract/mod.rs": {
       "hash": "4cdfa905e76cfce2",
       "nodes": 19,
-      "relations": 47
+      "relations": 72
     },
     "axum/src/extract/multipart.rs": {
-      "hash": "41bf5e635799f54b",
-      "nodes": 57,
-      "relations": 86
+      "hash": "8104410bbae1c763",
+      "nodes": 64,
+      "relations": 93
     },
     "axum/src/extract/nested_path.rs": {
-      "hash": "3eff7dd0169fd748",
-      "nodes": 35,
-      "relations": 67
+      "hash": "4a1c8d6f04237ad5",
+      "nodes": 39,
+      "relations": 72
     },
     "axum/src/extract/original_uri.rs": {
-      "hash": "7b605565451fcfd2",
-      "nodes": 8,
-      "relations": 13
+      "hash": "2bd783872db4ad91",
+      "nodes": 9,
+      "relations": 14
     },
     "axum/src/extract/path/de.rs": {
-      "hash": "ea77a06eecb55b2c",
-      "nodes": 141,
-      "relations": 167
+      "hash": "5e9fae93e7f07378",
+      "nodes": 166,
+      "relations": 207
     },
     "axum/src/extract/path/mod.rs": {
-      "hash": "753365b3c875bb0f",
-      "nodes": 82,
-      "relations": 166
+      "hash": "d0ccc967e7ab9436",
+      "nodes": 120,
+      "relations": 236
     },
     "axum/src/extract/query.rs": {
-      "hash": "456969f5e3d41c0f",
-      "nodes": 25,
-      "relations": 44
+      "hash": "b1e52cd066c25fe2",
+      "nodes": 37,
+      "relations": 63
     },
     "axum/src/extract/raw_form.rs": {
-      "hash": "c71da6c817b44246",
-      "nodes": 21,
-      "relations": 36
+      "hash": "647ea8b19178ac6c",
+      "nodes": 22,
+      "relations": 39
     },
     "axum/src/extract/raw_query.rs": {
-      "hash": "a2dc5c78ede9250c",
-      "nodes": 8,
-      "relations": 13
+      "hash": "2b90507cd6208e45",
+      "nodes": 9,
+      "relations": 14
     },
     "axum/src/extract/rejection.rs": {
       "hash": "f8fd421118ec6b79",
       "nodes": 5,
-      "relations": 12
+      "relations": 14
     },
     "axum/src/extract/state.rs": {
-      "hash": "9a3aa5f9d628a36b",
-      "nodes": 10,
-      "relations": 15
+      "hash": "3447b7c63b1db0c3",
+      "nodes": 12,
+      "relations": 17
     },
     "axum/src/extract/ws.rs": {
-      "hash": "24a89e7f4e3fa473",
-      "nodes": 164,
-      "relations": 218
+      "hash": "817b766889105bfa",
+      "nodes": 176,
+      "relations": 235
     },
     "axum/src/form.rs": {
-      "hash": "3da3768878eab447",
-      "nodes": 34,
-      "relations": 65
+      "hash": "b5cfe3d3b36ce5c2",
+      "nodes": 37,
+      "relations": 69
     },
     "axum/src/handler/future.rs": {
-      "hash": "5a82f1fce915de2f",
-      "nodes": 13,
-      "relations": 26
+      "hash": "04baf01767fbb753",
+      "nodes": 14,
+      "relations": 27
     },
     "axum/src/handler/mod.rs": {
-      "hash": "b689d002da0f0d1b",
-      "nodes": 52,
-      "relations": 88
+      "hash": "12608206627edb45",
+      "nodes": 56,
+      "relations": 97
     },
     "axum/src/handler/service.rs": {
-      "hash": "c69fa79a5cb3e33d",
-      "nodes": 29,
-      "relations": 49
+      "hash": "0b24b8c17fa74e03",
+      "nodes": 32,
+      "relations": 54
     },
     "axum/src/json.rs": {
-      "hash": "b75dde78b36ea9f9",
-      "nodes": 42,
-      "relations": 87
+      "hash": "f3b70d2de6f0d76c",
+      "nodes": 49,
+      "relations": 97
     },
     "axum/src/lib.rs": {
       "hash": "a0a628ccb4c8743d",
       "nodes": 11,
-      "relations": 30
+      "relations": 52
     },
     "axum/src/macros.rs": {
       "hash": "6e4e2164df9849bb",
@@ -1006,49 +1006,49 @@
       "relations": 0
     },
     "axum/src/middleware/from_extractor.rs": {
-      "hash": "e53754dfd01edb71",
-      "nodes": 48,
-      "relations": 79
+      "hash": "76af80100786e070",
+      "nodes": 58,
+      "relations": 90
     },
     "axum/src/middleware/from_fn.rs": {
-      "hash": "4019a3a0f7f9e1c3",
-      "nodes": 56,
-      "relations": 89
+      "hash": "3a0b767054cceec1",
+      "nodes": 61,
+      "relations": 95
     },
     "axum/src/middleware/map_request.rs": {
-      "hash": "0f3be9d883cac120",
-      "nodes": 58,
-      "relations": 96
+      "hash": "32ad271cfe9de847",
+      "nodes": 60,
+      "relations": 98
     },
     "axum/src/middleware/map_response.rs": {
-      "hash": "290e019dd4f6a6ff",
-      "nodes": 42,
-      "relations": 68
+      "hash": "60e5783512085d35",
+      "nodes": 44,
+      "relations": 70
     },
     "axum/src/middleware/mod.rs": {
       "hash": "0c276965b57bb215",
       "nodes": 11,
-      "relations": 26
+      "relations": 55
     },
     "axum/src/middleware/response_axum_body.rs": {
-      "hash": "004496d8cb781c18",
-      "nodes": 18,
-      "relations": 29
+      "hash": "4b163ff0538eec26",
+      "nodes": 23,
+      "relations": 34
     },
     "axum/src/response/mod.rs": {
       "hash": "ceb8547dc5759e04",
       "nodes": 46,
-      "relations": 89
+      "relations": 94
     },
     "axum/src/response/redirect.rs": {
       "hash": "6fcf5432faf6da3f",
       "nodes": 25,
-      "relations": 36
+      "relations": 37
     },
     "axum/src/response/sse.rs": {
-      "hash": "6467c61c5c0e08a1",
-      "nodes": 98,
-      "relations": 138
+      "hash": "4b5657e904bb52cf",
+      "nodes": 111,
+      "relations": 153
     },
     "axum/src/routing/future.rs": {
       "hash": "d245e7513c34f4a4",
@@ -1056,49 +1056,49 @@
       "relations": 3
     },
     "axum/src/routing/into_make_service.rs": {
-      "hash": "9ec8dc8523b87d3a",
-      "nodes": 13,
-      "relations": 19
+      "hash": "fa90a072cba69bb3",
+      "nodes": 16,
+      "relations": 22
     },
     "axum/src/routing/method_filter.rs": {
-      "hash": "36b6e1d9f9e1cca3",
-      "nodes": 20,
-      "relations": 26
+      "hash": "339d81b704a26ca6",
+      "nodes": 30,
+      "relations": 36
     },
     "axum/src/routing/method_routing.rs": {
-      "hash": "138bb64dd93bbfe4",
-      "nodes": 146,
-      "relations": 188
+      "hash": "a36b1d090a7b4de4",
+      "nodes": 155,
+      "relations": 210
     },
     "axum/src/routing/mod.rs": {
-      "hash": "555d0667370d3b55",
-      "nodes": 110,
-      "relations": 136
+      "hash": "37c29081ec43c8f6",
+      "nodes": 125,
+      "relations": 180
     },
     "axum/src/routing/not_found.rs": {
-      "hash": "b90868ed303e9b35",
-      "nodes": 11,
-      "relations": 20
+      "hash": "ec3a1f10940857b8",
+      "nodes": 14,
+      "relations": 23
     },
     "axum/src/routing/path_router.rs": {
       "hash": "da2ca975e464ccdc",
       "nodes": 79,
-      "relations": 99
+      "relations": 108
     },
     "axum/src/routing/route.rs": {
-      "hash": "3b779abc5a019c65",
-      "nodes": 50,
-      "relations": 69
+      "hash": "d71864da6a91ea26",
+      "nodes": 56,
+      "relations": 76
     },
     "axum/src/routing/strip_prefix.rs": {
-      "hash": "d21fdc4d2defdc13",
-      "nodes": 44,
-      "relations": 63
+      "hash": "f59831789699cd4b",
+      "nodes": 51,
+      "relations": 73
     },
     "axum/src/routing/tests/fallback.rs": {
       "hash": "bfd5a4444de67634",
       "nodes": 34,
-      "relations": 82
+      "relations": 84
     },
     "axum/src/routing/tests/get_to_head.rs": {
       "hash": "f0c4b4a27822a55f",
@@ -1116,34 +1116,34 @@
       "relations": 107
     },
     "axum/src/routing/tests/mod.rs": {
-      "hash": "70e9824c75c11815",
-      "nodes": 104,
-      "relations": 253
+      "hash": "ac3b4b083e49d1e3",
+      "nodes": 125,
+      "relations": 292
     },
     "axum/src/routing/tests/nest.rs": {
-      "hash": "0e60b95e8fc60a7e",
-      "nodes": 29,
-      "relations": 88
+      "hash": "b72a8204c12b0cb8",
+      "nodes": 34,
+      "relations": 93
     },
     "axum/src/routing/url_params.rs": {
-      "hash": "72cfdaaec7701b09",
-      "nodes": 9,
-      "relations": 16
+      "hash": "5f51802a0b34f832",
+      "nodes": 12,
+      "relations": 23
     },
     "axum/src/serve/listener.rs": {
-      "hash": "048bf3701843a209",
-      "nodes": 24,
-      "relations": 32
+      "hash": "307cd83a219b4cfe",
+      "nodes": 32,
+      "relations": 42
     },
     "axum/src/serve/mod.rs": {
-      "hash": "d71c08574cd69827",
-      "nodes": 74,
-      "relations": 124
+      "hash": "3849b28b5d6a8552",
+      "nodes": 83,
+      "relations": 143
     },
     "axum/src/service_ext.rs": {
       "hash": "59fecca3a6501d32",
       "nodes": 12,
-      "relations": 22
+      "relations": 24
     },
     "axum/src/test_helpers/counting_cloneable_state.rs": {
       "hash": "727b7872df8a4539",
@@ -1153,27 +1153,27 @@
     "axum/src/test_helpers/mod.rs": {
       "hash": "2dd2f4ea907eafb5",
       "nodes": 6,
-      "relations": 9
+      "relations": 13
     },
     "axum/src/test_helpers/test_client.rs": {
-      "hash": "b68502f3a5d08dae",
-      "nodes": 48,
-      "relations": 69
+      "hash": "c105e9772196af77",
+      "nodes": 51,
+      "relations": 72
     },
     "axum/src/test_helpers/tracing_helpers.rs": {
-      "hash": "f1acce659834ec65",
-      "nodes": 30,
-      "relations": 47
+      "hash": "bb2dbbf72169374d",
+      "nodes": 33,
+      "relations": 50
     },
     "axum/src/util.rs": {
-      "hash": "3311bee7446899a2",
-      "nodes": 24,
-      "relations": 32
+      "hash": "3910b5bfd6e628cb",
+      "nodes": 29,
+      "relations": 37
     },
     "axum/tests/panic_location.rs": {
-      "hash": "4a3f6ff11470c1cf",
-      "nodes": 5,
-      "relations": 10
+      "hash": "48035978a87ab674",
+      "nodes": 6,
+      "relations": 11
     },
     "examples/anyhow-error-response/src/main.rs": {
       "hash": "8274b15367dfb266",
@@ -1193,7 +1193,7 @@
     "examples/compression/src/main.rs": {
       "hash": "0265acace11524c9",
       "nodes": 11,
-      "relations": 21
+      "relations": 22
     },
     "examples/compression/src/tests.rs": {
       "hash": "84b50a79e7437e61",
@@ -1201,9 +1201,9 @@
       "relations": 50
     },
     "examples/consume-body-in-extractor-or-middleware/src/main.rs": {
-      "hash": "6642f66b1885148c",
-      "nodes": 18,
-      "relations": 24
+      "hash": "7a85fab38d136321",
+      "nodes": 19,
+      "relations": 25
     },
     "examples/cors/src/main.rs": {
       "hash": "59e7ce3c7e0ea61e",
@@ -1211,9 +1211,9 @@
       "relations": 17
     },
     "examples/customize-extractor-error/src/custom_extractor.rs": {
-      "hash": "96b549c4fe6efe33",
-      "nodes": 9,
-      "relations": 12
+      "hash": "972656f9d94c4de0",
+      "nodes": 10,
+      "relations": 13
     },
     "examples/customize-extractor-error/src/derive_from_request.rs": {
       "hash": "57b3c9603f66f1ed",
@@ -1223,17 +1223,17 @@
     "examples/customize-extractor-error/src/main.rs": {
       "hash": "9197d9952438b69d",
       "nodes": 4,
-      "relations": 10
+      "relations": 13
     },
     "examples/customize-extractor-error/src/with_rejection.rs": {
-      "hash": "46db99abdb9419ac",
-      "nodes": 9,
-      "relations": 16
+      "hash": "164d886ef18beafa",
+      "nodes": 10,
+      "relations": 18
     },
     "examples/customize-path-rejection/src/main.rs": {
-      "hash": "9e63bbf974c7ae44",
-      "nodes": 17,
-      "relations": 27
+      "hash": "45bc46fb485bd8a5",
+      "nodes": 18,
+      "relations": 28
     },
     "examples/dependency-injection/src/main.rs": {
       "hash": "b5f5ca6fa0a834a3",
@@ -1241,9 +1241,9 @@
       "relations": 63
     },
     "examples/diesel-async-postgres/src/main.rs": {
-      "hash": "e5be93f55c94d422",
-      "nodes": 26,
-      "relations": 42
+      "hash": "a4a263203bab1f7f",
+      "nodes": 27,
+      "relations": 43
     },
     "examples/diesel-postgres/src/main.rs": {
       "hash": "0c5d92103c2dd264",
@@ -1251,9 +1251,9 @@
       "relations": 38
     },
     "examples/error-handling/src/main.rs": {
-      "hash": "4eab63e9b0b1073a",
-      "nodes": 34,
-      "relations": 56
+      "hash": "f3810e6110792930",
+      "nodes": 40,
+      "relations": 67
     },
     "examples/form/src/main.rs": {
       "hash": "375897c3172f4d8f",
@@ -1286,9 +1286,9 @@
       "relations": 37
     },
     "examples/jwt/src/main.rs": {
-      "hash": "d56054f2d2bd5690",
-      "nodes": 39,
-      "relations": 65
+      "hash": "1d3cd597d7dcff05",
+      "nodes": 44,
+      "relations": 74
     },
     "examples/key-value-store/src/main.rs": {
       "hash": "3800187f92a08598",
@@ -1321,14 +1321,14 @@
       "relations": 13
     },
     "examples/oauth/src/main.rs": {
-      "hash": "dbf5755ef768d910",
-      "nodes": 58,
-      "relations": 89
+      "hash": "071edd5e53663aec",
+      "nodes": 59,
+      "relations": 90
     },
     "examples/parse-body-based-on-content-type/src/main.rs": {
-      "hash": "61c4043702f1613d",
-      "nodes": 13,
-      "relations": 20
+      "hash": "82b68fc7da475293",
+      "nodes": 14,
+      "relations": 21
     },
     "examples/print-request-response/src/main.rs": {
       "hash": "ea4f32af959d1171",
@@ -1336,9 +1336,9 @@
       "relations": 17
     },
     "examples/prometheus-metrics/src/main.rs": {
-      "hash": "f928737dcd17af6b",
-      "nodes": 14,
-      "relations": 24
+      "hash": "241bb537e229fbf9",
+      "nodes": 15,
+      "relations": 25
     },
     "examples/query-params-with-empty-strings/src/main.rs": {
       "hash": "e01a9f430f4ec586",
@@ -1381,9 +1381,9 @@
       "relations": 17
     },
     "examples/sqlx-postgres/src/main.rs": {
-      "hash": "aa8119711fbb385e",
-      "nodes": 17,
-      "relations": 26
+      "hash": "34f5e3014d8f3546",
+      "nodes": 18,
+      "relations": 27
     },
     "examples/sse/src/main.rs": {
       "hash": "4a43eacecee04bb7",
@@ -1436,14 +1436,14 @@
       "relations": 56
     },
     "examples/tokio-postgres/src/main.rs": {
-      "hash": "cfccf0d4acd87887",
-      "nodes": 18,
-      "relations": 27
+      "hash": "3bb5e6aa2880bfec",
+      "nodes": 19,
+      "relations": 28
     },
     "examples/tokio-redis/src/main.rs": {
-      "hash": "f747b91aa7a446ec",
-      "nodes": 19,
-      "relations": 30
+      "hash": "ec3ecde00479ddc9",
+      "nodes": 20,
+      "relations": 31
     },
     "examples/tracing-aka-logging/src/main.rs": {
       "hash": "68ba20a434ccba89",
@@ -1456,14 +1456,14 @@
       "relations": 30
     },
     "examples/validator/src/main.rs": {
-      "hash": "aaa0fc79256826bb",
-      "nodes": 30,
-      "relations": 51
+      "hash": "4033523622e924c2",
+      "nodes": 33,
+      "relations": 56
     },
     "examples/versioning/src/main.rs": {
-      "hash": "4733f4c7aa3b21f9",
-      "nodes": 19,
-      "relations": 33
+      "hash": "524691373ccd1400",
+      "nodes": 23,
+      "relations": 40
     },
     "examples/websockets-http2/src/main.rs": {
       "hash": "e1c54f625b1913cd",
@@ -1483,59 +1483,60 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 390,
+      "attribute": 461,
       "boundary": 182,
-      "class": 434,
+      "class": 598,
       "dependency": 458,
-      "external_symbol": 835,
+      "external_symbol": 831,
       "file": 296,
-      "function": 1145,
+      "function": 1117,
       "import": 1375,
-      "method": 889,
-      "module": 296,
+      "method": 917,
+      "module": 386,
       "parameter": 1393,
       "project": 61,
-      "type_alias": 13,
-      "variable": 71
+      "type_alias": 260,
+      "variable": 112
     },
     "relations": {
       "consumes": 350,
-      "contains": 592,
-      "declares": 6153,
+      "contains": 682,
+      "declares": 6864,
       "depends_on": 458,
       "exposes": 365,
       "imports": 1361,
-      "resolves_to": 1375
+      "references": 119,
+      "resolves_to": 1636
     }
   },
   "project": "tokio-rs/axum",
   "ref": "axum-v0.8.9",
   "resolution": {
     "metrics": {
-      "external": 7837,
-      "internal": 5234,
-      "queries": 17258,
-      "resolved": 14920,
-      "unresolved": 2291
+      "external": 18619,
+      "internal": 10614,
+      "queries": 37721,
+      "resolved": 31860,
+      "unresolved": 5814
     },
     "relations": {
-      "calls": 9668,
+      "calls": 9699,
       "consumes": 350,
-      "contains": 592,
-      "declares": 6153,
+      "contains": 682,
+      "declares": 6864,
       "depends_on": 458,
       "exposes": 365,
-      "has_type": 1363,
+      "has_type": 7988,
       "imports": 1361,
-      "inherits_from": 286,
-      "references": 1825,
-      "resolves_to": 1375
+      "inherits_from": 392,
+      "references": 9530,
+      "resolves_to": 3450
     },
     "status": "ok"
   },
   "totals": {
     "files": 296,
-    "nodes": 7838,
-    "relations": 10654
+    "nodes": 8447,
+    "relations": 11835
   }
 }

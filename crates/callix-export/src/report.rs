@@ -205,29 +205,108 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              container, an argument or a return value is followed by a flow pass and marked `flow`; \
              decorators, receivers, keyed containers and the library's own callbacks (`map`, \
              `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
-             `getattr` and `eval` are not followed",
+             `getattr` and `eval` are not followed; a module named in code binds to its MODULE, \
+             and a namespace package has no file, so references to it stay `unlocated`; a keyword \
+             argument's name references the field it sets (dataclass, NamedTuple, TypedDict, \
+             dataclass_transform models such as pydantic), while the keyword of a plain function \
+             or a hand-written `__init__` is no edge; every name of an annotation (subscripts, \
+             unions, quoted forward references, annotated variables and fields) is a HAS_TYPE, \
+             while `Literal` arguments and `Annotated` metadata are not, a `Literal` imported \
+             under another name is not recognised, and a string annotation that does not parse \
+             as one expression is skipped; a write through an attribute (`obj.x = v`, \
+             `self.x = v`) references the class attribute and declares no local, and a value \
+             assigned through a receiver other than `self`/`cls` is not followed by the flow \
+             pass",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
             "calls through a name or a member whose type is known; function values are followed by \
              a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
              closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
-             not followed",
+             not followed; a namespace import binds to the imported file's MODULE, and a \
+             directory without an index file has none; an internal import or export \
+             specifier is placed (the import RESOLVES_TO its definition) and a relative \
+               module string REFERENCES the imported file's MODULE, while an external or \
+               path-alias string gets no edge; `import x = require()` and \
+               `export default <expr>` are not walked; \
+             a member read or write (`s.kind`, \
+             `obj.x = v`) references the property it names, and an object-literal key or method \
+             references the member of the type the literal is checked against (the key of an \
+             untyped literal declares the property and is no edge); element access `o[\"k\"]`, \
+             shorthand and computed keys reference nothing; members of a type alias's object \
+             type (also in its top-level union or intersection arms) are nodes `Alias.member`, \
+             the signatures of an overload (exported, default-exported, in a namespace) are the \
+             `declared_at` of its implementation, a file-level `declare function` is a FUNCTION \
+             declared at every signature, and a namespace (`namespace N`, exported, `declare`, \
+             `A.B`) is a MODULE whose \
+             members are `N.member`, while an inline type literal elsewhere, a nested object \
+             type, a computed member name, `declare global` (also its function signatures), a \
+             string-named `declare module` and declaration files (`.d.ts`, not walked) \
+             give no node, so reads of them stay `unlocated`; every name in a type annotation or \
+             alias body is a HAS_TYPE, a type argument or an `as`/`satisfies` type a REFERENCES, \
+             and a type parameter gives no edge; `implements` clauses and the annotations of \
+             inline closures are not walked",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",
-            "static calls and concrete methods; a function value is followed by a flow pass and \
+            "static calls and concrete methods (also those in a package-level var or const initializer, which belong to that variable); a function value is followed by a flow pass and \
              marked `flow` (slices, range loops, channels, variadic parameters, a closed list of \
              standard-library callbacks); a call through an interface lands on the interface's \
-             method, never on an implementation",
+             method, never on an implementation; every named type in a receiver, parameter, \
+             result, field, type declaration (right-hand side and constraints), var or const \
+             type or initializer, or anywhere in a function body (literals, closures, assertions, type \
+             switches, make and new, type arguments) is a `has_type`, except predeclared \
+             types, type parameters, types declared inside a function, and the generic in an \
+             explicitly instantiated call `F[T](x)`, which tree-sitter reads as a conversion; a \
+             package qualifier (`pkg.X`, `pkg.T`) and an import path bind to the package's \
+             `MODULE`, placed at the package clause of its first non-test file, or to the \
+             import's external symbol; a local that shadows a package gets no edge, and an \
+             unaliased package whose name differs from the last element of its import path is \
+             not found in expressions; a field selector (an embedded field is named after its type), and the key of a keyed struct literal \
+             (`T{F: v}`, `&T{..}` and the elided `[]T{{F: v}}` included), is a `references` \
+             edge with access read or write to the field, while the keys of map, slice and \
+             array literals and fields of types declared inside a function, of a package-level \
+             `var x struct{..}` and of a literal's own struct type get none (every name of a \
+             multi-name field and the fields of an anonymous struct field type, `T.F.<anon>.G`, \
+             through `*`, `[]`, `[N]`, map values and chan, are covered); a bare \
+             use of a package-level const, var or function (an assignment side, an operand, a \
+             return value, a case, a composite element, a range operand, `v` in `v.M`) is a \
+             `references` edge with access read or write, while locals, parameters, predeclared \
+             names and dot-imported names get none; a conversion `T(x)` or `pkg.T(x)` to a type \
+             of the project is a `references` edge with access read to the type, never a call, \
+             but a parenthesised conversion `(*T)(p)`, a generic type conversion `G[int](x)` \
+             and a conversion to a standard-library or third-party type (still an external \
+             call) are not",
         ),
         "rust" => (
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
             "static calls and concrete methods; a function value is followed by a flow pass and \
              marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
-             the calls in macro arguments are found and a `macro_rules!` of the same file is \
-             expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
-             calls (`Drop`, operators, `for` over an iterator) are not edges",
+             the calls in macro arguments are found, nested std macros included; a `macro_rules!` \
+             is a function and every invocation of a macro the project defines is a call to it (an item-level one from its file; invocations inside `impl` and `trait` bodies are not recorded); \
+             a `macro_rules!` of the same file is expanded, one of another file and procedural \
+             macros are not; a call through a trait lands on the trait's method, not on an impl; implicit \
+             calls (`Drop`, operators, `for` over an iterator) are not edges; every type name in a \
+             signature, field, bound or `where` clause, `let`, alias, cast, closure or `impl` header \
+             is a type annotation, and the self type and trait of an `impl` (and the trait of an \
+             impl for a type outside the project) are recorded on the file; every segment of a \
+             path before the last and every `pub(crate)` / `pub(super)` / `pub(in path)` is a \
+             reference to the type or MODULE it names, while `self` in a path and `<T as Trait>::` \
+             qualifiers are not recorded, and a reference to a MODULE is not exported to LSIF or \
+             SCIP (a MODULE has no file to define it in); a const or static read, a struct \
+             literal's type and fields (shorthand included) and the paths and fields of match and \
+             `let` patterns are references, while a read of a local or a parameter is not an edge; \
+             enum variants, the associated types and consts of impls and traits and the items of \
+             a function body are nodes, and the calls and reads in a const or static initializer \
+             belong to the const; names inside the \
+             arguments of a macro the project defines and the bare receiver of a field access \
+             are not recorded; each name a `use` brings in (through groups and `as`, not `*` or \
+             `self`) resolves from its IMPORT to its definition, by path for a path of the crate \
+             (`name`, relative 2018 paths included) and through rust-analyzer otherwise, and \
+             `mod x;` is a reference to the MODULE (not exported); a `use` inside a function \
+             body, the prefix segments of a use path and a `#[path]` module are not recorded; \
+             same-named methods of several impls of one type (different traits or trait \
+             arguments, cfg variants) are one node, and a call to any of them is an edge to it",
         ),
         "php" => (
             "symbol table, by names",
@@ -235,16 +314,39 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              receiver (or a `new` assigned to it) when there is one and otherwise by name; an \
              undeclared method goes to `__call` when the class declares it; a callable named by \
              a string, an array or `g(...)` is followed to the parameter, local or property that \
-             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it",
+             holds it by a flow-insensitive pass (`flow`), and inside the built-ins that call it; \
+             `static` is the class it is written in, not the one it is called on (no late static \
+             binding)",
         ),
         "c" | "cpp" => (
             "symbol table, by names",
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); macros of the project are expanded where they \
-             are invoked, conditionals are not evaluated, and a callback handed to a library \
-             function is followed only for a closed list of them",
+             the name (such edges say `ambiguous`); a member read, write or initialiser is \
+             bound by the receiver's declared type through field chains, typedefs and \
+             file-scope variables, a type with no such field gives an external symbol, and \
+             an unqualified name is never a field; macros of the project are expanded where they \
+             are invoked, macros of the project that expand to nothing, an attribute or a \
+             storage keyword are erased before parsing, conditionals are not evaluated, and \
+             a callback handed to a library function is followed only for a closed list of \
+             them; a type name is bound by name to a class or typedef only, and a scope \
+             qualifier or `sizeof(name)` binds only when such a type is visible \
+             (namespaces are not nodes); a prototype, forward declaration or in-class \
+             declaration is the same node as its definition and its name position is in \
+             `declared_at` (exported as a forward definition); an `#include` path is the \
+             span of the IMPORT's RESOLVES_TO to the header's FILE or to an external \
+             symbol (a computed include is not positioned); a `.h` with no C++ syntax \
+             belongs to C where a C root reads it, and a C++ `#include` of it then \
+             resolves to an external symbol; an overloaded operator (`a = b`, the compound \
+             assignments, `a == b` and the other binary operators, `a[i]`) is a call when the \
+             left operand is an object local, parameter, field, global, `*p` or `*this` of a \
+             class that declares it (bases included), or when a namespace-scope two-parameter \
+             operator names an operand's class; operators on an expression result, unary \
+             operators, argument-dependent lookup and template-dependent operands are not \
+             followed, and an operator nothing declares gives no edge; a class, struct or union \
+             defined in a function body is qualified by that function (`run()::State`) and \
+             bound only from inside it, and a local enum or typedef is not declared",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

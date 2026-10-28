@@ -4,14 +4,21 @@
 //! LSIF and SCIP are two encodings of the same thing, so the reading of the
 //! graph — which nodes are definitions, which edges are placed references, what
 //! is skipped and why — lives here once.
+//!
+//! Two things beyond resolver edges are placed: the `{file, span}` entries of a
+//! node's `declared_at` (a header's prototype or forward declaration, as a
+//! forward reference in its own file), and a `RESOLVES_TO` that carries a span
+//! (an `#include` operand, pointing at the header's FILE, which is then defined
+//! on the first character of its document, 1:1-1:2).
 
 use std::collections::{HashMap, HashSet};
 
 use crate::Warning;
-use crate::model::{Graph, Node, NodeKind, Span};
+use crate::model::{Graph, Node, NodeKind, RelationKind, Span};
 
 /// Node kinds that are definitions with a position of their own.
-pub(crate) const DEFINITION_KINDS: [NodeKind; 7] = [
+pub(crate) const DEFINITION_KINDS: [NodeKind; 8] = [
+    NodeKind::Module,
     NodeKind::Class,
     NodeKind::Function,
     NodeKind::Method,
@@ -52,6 +59,10 @@ pub(crate) struct Range {
     pub extent: Option<Span>,
     /// How a reference touches its target: `read` or `write`, when recorded.
     pub access: Access,
+    /// A reference that is a declaration of the symbol written elsewhere than
+    /// its definition: a prototype or forward declaration. SCIP calls it a
+    /// forward definition.
+    pub forward: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -73,6 +84,10 @@ pub(crate) struct Doc {
 pub(crate) struct Symbol<'g> {
     pub node: &'g Node,
     pub external: bool,
+    /// The name of the sub-root (PROJECT) this node sits under, reached through
+    /// CONTAINS and DECLARES; `None` when no PROJECT reaches it (and for every
+    /// external symbol). LSIF ignores it.
+    pub project: Option<&'g str>,
 }
 
 impl Symbol<'_> {
@@ -104,6 +119,38 @@ pub(crate) struct Index<'g> {
     pub skipped_references: usize,
     pub unplaced_references: usize,
     pub ref_edges: usize,
+    /// Node id to the name of the PROJECT that reaches it.
+    project_of: HashMap<&'g str, &'g str>,
+}
+
+/// Maps every node id to the name of the first PROJECT (in graph order) that
+/// reaches it through CONTAINS / DECLARES. Walking down from each PROJECT is
+/// O(nodes + edges); "already assigned" doubles as the cycle guard.
+fn project_map(graph: &Graph) -> HashMap<&str, &str> {
+    let mut children: HashMap<&str, Vec<&str>> = HashMap::new();
+    for relation in &graph.relations {
+        if matches!(relation.kind, RelationKind::Contains | RelationKind::Declares) {
+            children.entry(relation.source_id.as_str()).or_default().push(relation.target_id.as_str());
+        }
+    }
+    let mut owner: HashMap<&str, &str> = HashMap::new();
+    for project in graph.nodes_of(NodeKind::Project) {
+        let name = project.name.as_str();
+        if owner.contains_key(project.id.as_str()) {
+            continue;
+        }
+        owner.insert(project.id.as_str(), name);
+        let mut stack = vec![project.id.as_str()];
+        while let Some(id) = stack.pop() {
+            for &child in children.get(id).into_iter().flatten() {
+                if !owner.contains_key(child) {
+                    owner.insert(child, name);
+                    stack.push(child);
+                }
+            }
+        }
+    }
+    owner
 }
 
 impl<'g> Index<'g> {
@@ -118,6 +165,7 @@ impl<'g> Index<'g> {
             skipped_references: 0,
             unplaced_references: 0,
             ref_edges: 0,
+            project_of: project_map(graph),
         };
         index.collect();
         index
@@ -138,7 +186,8 @@ impl<'g> Index<'g> {
             return i;
         }
         let i = self.symbols.len();
-        self.symbols.push(Symbol { node, external });
+        let project = if external { None } else { self.project_of.get(node.id.as_str()).copied() };
+        self.symbols.push(Symbol { node, external, project });
         self.symbol_index.insert(node.id.as_str(), i);
         i
     }
@@ -155,26 +204,71 @@ impl<'g> Index<'g> {
             }
         }
 
+        // A FILE that a placed edge points at (an `#include` operand) is a
+        // symbol too, defined on the first character of its own document
+        // (1:1-1:2: an empty range is not a place an editor can show). Only
+        // referenced files are defined, so no other graph's export changes.
+        let mut targeted_files: HashSet<&str> = HashSet::new();
+        for relation in &graph.relations {
+            if relation.is_placed_reference()
+                && let Some(target) = graph.node(&relation.target_id)
+                && target.kind == NodeKind::File
+            {
+                targeted_files.insert(target.id.as_str());
+            }
+        }
+
+        let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for node in &graph.nodes {
-            if !DEFINITION_KINDS.contains(&node.kind) {
+            let file_target =
+                node.kind == NodeKind::File && targeted_files.contains(node.id.as_str());
+            if !DEFINITION_KINDS.contains(&node.kind) && !file_target {
                 continue;
             }
-            let (Some(path), Some(name_span)) = (&node.file_path, node.name_span()) else {
-                if node.file_path.is_some() {
+            let name_span = if file_target {
+                Some(Span { start_line: 1, start_col: 1, end_line: 1, end_col: 2 })
+            } else {
+                node.name_span()
+            };
+            let (Some(path), Some(name_span)) = (&node.file_path, name_span) else {
+                // A module with a file but no name span (YAML, Go) is just not placed.
+                if node.file_path.is_some() && node.kind != NodeKind::Module {
                     self.skipped_definitions += 1;
                 }
                 continue;
             };
+            // An empty name span (a Python or TypeScript MODULE is placed at 1:1 of
+            // its file) is no place an editor can show, and check_lsif rejects it:
+            // the definition covers the first character instead.
+            let name_span = if name_span.start_line == name_span.end_line
+                && name_span.start_col == name_span.end_col
+            {
+                Span { end_col: name_span.start_col + 1, ..name_span }
+            } else {
+                name_span
+            };
             let symbol = self.symbol(node, false);
             let doc = self.doc(path);
             let mut range = range_of(name_span, symbol);
-            range.extent = node.span;
+            if !file_target {
+                range.extent = node.span;
+            }
             self.docs[doc].definitions.push(range);
+            // The other places the definition is written down (a header's
+            // prototype) are forward-definition references in their own file.
+            for (file, site) in node.declaration_sites() {
+                let site_doc = self.doc(file);
+                if !seen.insert((site_doc, site, symbol)) {
+                    continue;
+                }
+                let mut forward = range_of(site, symbol);
+                forward.forward = true;
+                self.docs[site_doc].references.push(forward);
+            }
         }
 
-        let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for relation in &graph.relations {
-            if !relation.kind.is_reference() {
+            if !relation.is_placed_reference() {
                 continue;
             }
             self.ref_edges += 1;
@@ -197,7 +291,7 @@ impl<'g> Index<'g> {
             };
             let symbol = match target.kind {
                 NodeKind::ExternalSymbol => self.symbol(target, true),
-                kind if DEFINITION_KINDS.contains(&kind) => {
+                kind if DEFINITION_KINDS.contains(&kind) || kind == NodeKind::File => {
                     match self.symbol_index.get(target.id.as_str()) {
                         Some(&i) => i,
                         None => {
@@ -245,6 +339,7 @@ pub(crate) fn range_of(span: Span, symbol: usize) -> Range {
         symbol,
         extent: None,
         access: Access::Unknown,
+        forward: false,
     }
 }
 

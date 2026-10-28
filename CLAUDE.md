@@ -44,7 +44,7 @@ questions — a change to a visitor should be checked against the last three:
 | `task test:rust` | `#[test]`s across the workspace | enum wire values, `sort_paths`, the SCIP decoder, dependency parsers, the C family's overload picking |
 | `task unit` | pytest over `tests/unit`, `tests/api` and `tests/accuracy` | the public Python API that 1.0 freezes, and the accuracy floor below |
 | `task golden` | whole graphs of `tests/fixtures/*`, frozen in `tests/golden/` | any change to any visitor, exactly |
-| `task accuracy` | seven suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
+| `task accuracy` | eight suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
 | `task baseline` | fingerprints of 14 real repositories | what a three-file fixture cannot reach: scale, and the resolvers |
 
 `tests/accuracy` is the only layer that can say a change made resolution *worse*.
@@ -72,6 +72,22 @@ task bench:one PROJECT=gin-gonic/gin
 task bench:run [BENCH_LANG=go]
 task bench:render VERSION=1.0.0   # splices the table into README.md
 ```
+
+## Dynamic workflows: which model does what
+
+When work is orchestrated as a multi-agent workflow, the stages run on
+different models, and the split is a rule, not a suggestion:
+
+| Stage | Model | What it produces |
+|---|---|---|
+| **Design** | Opus | the approach: architecture, invariants at stake, which layers of the regression net must prove it |
+| **Decomposition** | Sonnet | a list of tasks, each compact and self-explanatory — **5 to 10 file changes**, with the files named, the expected result stated and the check to run |
+| **Execution** | Haiku | the changes themselves, one task per agent |
+
+A task a Haiku agent cannot finish from its brief alone is a decomposition
+defect: split it further or make it more explicit, rather than moving it up
+to a larger model. A task over 10 file changes is split; one under 5 is merged
+with a neighbour unless it stands alone.
 
 ## Architecture
 
@@ -163,7 +179,37 @@ usually declared in a different file from the definition. A survey pass then
 reads every file into `FileFacts` and records declaring sites in a `DeclLedger`
 before any node is written — a prototype in a header and its definition in a
 source file are ONE node, and whichever file was read first would otherwise
-decide its span. **`src/yaml/` has no visitor and no resolver at all**: it
+decide its span. The ledger keeps (file, name_span) per site, which is what
+`declared_at` is made of. An `#include` path literal (delimiters included) is
+the IMPORT's `name_span` and the span of its RESOLVES_TO; the FILE-to-header
+IMPORTS edge stays unpositioned. An exporter defines a FILE on its first
+character (1:1-1:2, never an empty range: `docker/check_lsif.py` rejects one) only
+when a placed edge targets it. The same goes for any definition whose name span is empty
+(a Python or TypeScript MODULE is placed at a zero-width 1:1): the exporters widen it
+to one character, the graph keeps the zero width. With the sources at hand, LSIF moves a definition
+that still covers no text (a file that starts with a blank line) to the file's first
+non-blank character, and gives an empty file's definition no range at all.
+
+**Before the scope pass, the adapter blanks the project's erasable macros**
+(`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,
+`inline`, `extern "C"` or a storage keyword that fits the macro's name, in every `#if`
+arm) with same-length spaces, so `class API Foo {}`, `int x GUARDED_BY(m);` and
+`API int (*f)(int);` parse as written and every span stays a position in the original
+file. Header ownership (`claims`) is decided on the RAW bytes, because the blanked text
+of a C++ class can parse cleanly as K&R C; user boundary extractors get the raw source.
+The probe rule: a `.h` goes to C++ when its clean C parse has a K&R definition without a
+function declarator (`namespace a {`, `class C {`) or a C++ keyword as a type name, and
+also when no C root reads it (a tree with no `.c`, or a header outside every C root).
+Both adapters decide the latter from the same discovery (`detector::family_root_files`,
+`adapter::CReach`), so ownership stays one-adapter.
+A header the OTHER dialect claims still contributes its macros to the erasable set,
+though never to expansion: a header of nothing but `#define`s parses cleanly as C, so
+leveldb's `export.h` belongs to C (in a tree with a C source: leveldb's `c_test.c`)
+while `class LEVELDB_EXPORT DB` is C++. Ownership is unchanged (no FILE node, no
+facts from that header). Macros defined outside the analysed root, or in another
+root, are not erased (each root builds its own table).
+
+**`src/yaml/` has no visitor and no resolver at all**: it
 declares no symbols, emits no occurrences, and contributes only FILE nodes,
 dependencies and boundaries.
 
@@ -182,8 +228,32 @@ documents rather than by touching the queries.
 Do not assume Python's shape elsewhere. `MODULE` is a dotted name in Python and
 TypeScript, a **package directory** in Go (its `qualified_name` equals the
 import path, so internal imports bind by direct lookup), and a Rust module path
-in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
-be declared below its `impl`.
+in `rustlang`; an inline `mod foo { ... }` is a MODULE too (without a `file_path`
+or span, like the file modules). Rust dispatches `impl` blocks in a second pass
+because a type may be declared below its `impl`. In `rustlang` an enum variant is a
+CLASS `Enum.Variant` (called like a tuple struct), an associated type a TYPE_ALIAS and
+an associated const a VARIABLE `Type.NAME`, an item in a function body is qualified
+under the function (`m::f::Local`), and a const or static initializer's uses are
+enclosed by the const. A Rust method is `{module}::{Type}.{method}` with no trait in
+the name, so one node may stand for several impls, through `declared_at`.
+
+In Go every name of a multi-name field (`a, b int`) is its own ATTRIBUTE, and the fields of an anonymous struct field type (also behind `*`, `[]`, `[N]`, a map value, a chan) are ATTRIBUTEs `T.F.<anon>.G`, DECLARED by the ATTRIBUTE `F`. There is no node for `<anon>`, and no `base`/`INHERITS_FROM` for types embedded in such a struct.
+
+A Go MODULE is placed by `file_path` (its first non-`_test.go` file) plus
+`metadata["name_span"]` (that file's `package` clause identifier) and has **no
+`span`**, because a package spans several files: `SpanIndex::from_graph` skips
+span-less nodes, so a package never steals a real name. The placement file is
+chosen from the paths before the walk (`placement_files`).
+
+In TypeScript a `namespace`/`module` block is a MODULE `<scope>.N` (`is_namespace`, a real span and `name_span`, DECLARED by its container), and the members of a type alias's object type are `Alias.member`; a re-declaration in the same file adds a `declared_at` span instead of a node. An overload signature, exported or not, is a `declared_at` span of its implementation, and a file-level `declare function` is a FUNCTION declared at every signature.
+
+In Python and TypeScript a MODULE that has a file of its own (the `.py` file or
+`__init__.py`; the `.ts` file or `index.*`) is placed at a zero-width `1:1` span in
+that file, and `metadata["name_span"]` is the same span. A namespace package and a
+directory without an index file have no file, so they stay unplaced. The placement is
+decided in a pre-pass over the files (`ensure_module_chain` takes it), because an
+ancestor package is created while its children are handled, before its own
+`__init__.py` is reached.
 
 ### Resolvers: what is linked in and what is not
 
@@ -243,14 +313,86 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **A decorator is called by the scope the definition sits in**, not by the
   definition; the definition only `REFERENCES` it. Calls in a closure belong to the
   function that contains it. Both conventions are what the accuracy suites assume.
+- **Go package-level `var`/`const` initializers are scanned with the VARIABLE as
+  the enclosing definition** (`GoExtractor::scan_initializer`). A func literal that
+  is the whole value is the variable's body: its parameters are PARAMETERs
+  `<var>.<p>` and its called locals are nodes under the variable. A literal nested
+  deeper in the value is a closure and has no PARAMETERs. In `var a, b = f()` the
+  first name owns the call, so no site gets two occurrences.
+- **A Python keyword argument's name is a `read` occurrence with detail `kw`**, and
+  the adapter keeps its REFERENCES edge only when the answer binds to a field
+  (`ATTRIBUTE`/`VARIABLE`: dataclass, NamedTuple, TypedDict, `dataclass_transform`
+  models such as pydantic). An answer on a parameter, a function, an external, or
+  no answer at all is dropped and counted `unresolved` (like an import that reaches
+  nothing) - never turned into an `EXTERNAL_SYMBOL`. `kw` occurrences never feed
+  the flow pass.
+- **A TypeScript object-literal key or method name is a `read` occurrence with detail
+  `key`**, filtered like `kw`: the adapter keeps the REFERENCES edge only when the
+  answer binds to an `ATTRIBUTE`, `VARIABLE` or `METHOD` of the project, and drops it
+  (counted `unresolved`, never an `EXTERNAL_SYMBOL`) otherwise. A `key` or `member`
+  (property write, `obj.x = v`) occurrence whose answer is its own site is a
+  declaration of the property and produces no edge. Member reads are plain `read`s
+  at the property; a callee's name stays a `call` only.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
+- **A Go bare identifier** (`limit` in `n := limit`, `counter = n + limit`, a return
+  value, a case, a composite element, a range operand, a selector operand such as
+  `quoteEscaper` in `quoteEscaper.Replace(s)`) is a `read`/`write` occurrence with
+  detail `name:<ident>` (`GoExtractor::record_identifier`). `build_root_structure`
+  keeps it only when `{package}.{name}` is a package-level VARIABLE or FUNCTION of
+  the file's package and rewrites the detail to `name:<node id>`; `resolve_pass`
+  writes the `REFERENCES` edge only when go/types binds the use to exactly that
+  node. Locals, parameters, predeclared names and dot-imported names are dropped
+  without an EXTERNAL_SYMBOL. One site, one edge occurrence: `GoExtractor::sites`
+  holds the positions that already have a call/read/write.
+- **A Go package qualifier** (`pkg.X` operand, `pkg.T` in a type) is a `read`
+  occurrence with detail `package`. The pass binds it only when go/types answers
+  with the declaring position of one of the file's import specs (the alias, else
+  the path literal), so a local that shadows a package gets no edge. The edge is a
+  `REFERENCES` to the MODULE, or to the import path's EXTERNAL_SYMBOL, classified
+  with the import's own origin. The import path literal is the `span` of the
+  structural `RESOLVES_TO`; `IMPORTS` stays unpositioned. Selector operands are
+  filtered by the alias or the gopls assumed name (`assumed_package_name`), so an
+  unaliased import whose package name differs from its last path element is missed
+  in expressions; types are not filtered.
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
-- **`declared_at`** on a node lists extra name spans the type checker may answer
-  with (overload signatures, a function-valued field); `SpanIndex::from_graph`
-  reads it.
+- **`declared_at`** on a node lists extra name spans. An entry is a bare `Span` in
+  the node's own file (Python and TypeScript: positions the type checker may
+  answer with - overload signatures, a function-valued field; Rust: every later
+  declaration of a qualified name in the same file, such as same-named methods of
+  different impls of one type (`impl Add<S>` / `impl Add<&S>`, an inherent and a
+  trait method) and cfg variants; exporters do not place them), or `{file, span}` naming its file (C and C++: a prototype, forward
+  declaration or in-class declaration is the SAME node as its definition, and the
+  name span of every other declaring site is listed here, own-file prototypes
+  included; exporters write each as a SCIP ForwardDefinition). `SpanIndex::from_graph`
+  reads both shapes.
+- **C/C++ type uses are `read` occurrences with `CallSite.type_use`**, giving a
+  REFERENCES from the enclosing callable; a type in a declared position stays
+  `annotation` (HAS_TYPE). They resolve only to CLASS/TYPE_ALIAS through
+  `CFamilyIndex::resolve_type` (a written scope must match, no bare-name fallback).
+  Scope components and `sizeof(name)` are `speculative` (a miss writes nothing, so a
+  namespace makes no edge), and a local declaration's type yields to a construction
+  at the same span. The role is `read`, not a new one, so custom resolvers still
+  see it.
+- **A C++ operator use is a speculative `call` occurrence named `operator<op>`**, at the
+  operator token, with `CallSite.overloaded_operator` set (`=`, compound assignments,
+  binary operators, `[]`; alternative tokens such as `and_eq` are normalised). The
+  resolver (`resolve_operator`) never falls back to a bare name for it. `=`, `[]` and
+  `->` are member-only; a free operator needs an operand's class among the classes its
+  parameters name. Only fields and globals recorded as holding an object
+  (`FoundDecl.holds_object`: no pointer, array or function declarator) can be the left
+  operand, so `p_ = q` on a pointer field is not `operator=`. A miss writes nothing, so
+  built-in arithmetic adds no externals. Operators on expression results, unary
+  operators, ADL and templates are not followed.
+- **A resolver answer at 1:1 of a project file with no name there binds to that
+  file's MODULE** (`SpanIndex::lookup_module`, tried after `lookup_name`; Python and
+  TypeScript only, the other adapters do not call it). A real name at 1:1 wins: the
+  placed MODULE is kept out of the name table, because a zero-width span would beat
+  `x = 1` on the smallest-area tie-break. Module-name segments of an internal import
+  statement are `read` occurrences (not `import`, which would make a RESOLVES_TO from
+  the import to the package); a call that lands on a MODULE is still `unlocated`.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language
@@ -290,11 +432,19 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   no pyo3, no Python — and writes LSIF, SCIP, CycloneDX, CSV, DOT, Mermaid and the
   text/Markdown/JSON reports. `index.rs` reads the graph as an index (documents,
   placed definitions and references, symbols) once for both LSIF and SCIP; `ops.rs`
-  writes the model back as `json.dumps` would and does merge and diff. The SCIP
-  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
+  writes the model back as `json.dumps` would and does merge and diff. The index
+  places what `Relation::is_placed_reference` accepts: the four reference kinds plus
+  a RESOLVES_TO that records `metadata["span"]` (the name an import brings in); a
+  structural RESOLVES_TO is neither placed nor counted, and
+  `RelationKind::is_reference` (reports, counts) stays the four kinds. The SCIP
+  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. A SCIP symbol's `<project>` is its node's own sub-root (`Symbol.project`, the PROJECT that reaches it through CONTAINS/DECLARES in `Index::build`), the first PROJECT only for a node none reaches; distinct definitions that still share a symbol (CLASS and TYPE_ALIAS are both `#`) put the non-primary kind under a `<kind>/` namespace (`scip.rs::disambiguate`). Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
-  structural checker the tests use.
+  structural checker the tests use. `index.rs` places an edge by
+  `Relation::is_placed_reference()`: a `CALLS`/`REFERENCES`/`HAS_TYPE`/`INHERITS_FROM`, or a
+  `RESOLVES_TO` that carries `metadata["span"]` (the name an import brings in). The
+  structural, unspanned `RESOLVES_TO` of an import is not a reference, and a file that
+  only re-exports still gets a document. `RelationKind::is_reference` is unchanged, for reports and counts.
 - **`crates/callix-cli`** is the `callix` binary. It depends on `callix` with the
   default features, i.e. **without** `python`: the native engine, with nothing
   linked to libpython (`cargo tree -p callix-cli` has no pyo3, `ldd` no python).
@@ -337,6 +487,16 @@ Things that are easy to get wrong:
   finds the repo's workspace from inside the fixture, refuses it, and
   rust-analyzer resolves nothing — as a quiet `unavailable`, which the golden run
   reports as a mismatch only when rust-analyzer is installed.
+- **Installed Composer packages are never PHP sub-roots.** `php_roots` drops a
+  `composer.json` below a `vendor/` that is the first component of its path, or
+  sits directly in a directory holding a `composer.json`. `PHP_EXCLUDED_AT_ROOT`
+  in `collect_php_files` applies only relative to a sub-root, so a vendor package
+  made a root of its own was walked in full and its namespaces became "internal"
+  to the resolver.
+- **A Rust annotation is every type name under the type**, the last segment of a path, once per site (`recorded` in `src/rustlang/visitor.rs`), and never the declaring name of a generic parameter. `Result<A, B>`, bounds, `where` clauses, `let`/alias/cast/closure types, tuple fields and enum payloads all count. An `impl` header's annotations, and the `base` of an `impl Trait for T` whose `T` is not a project class, are enclosed by the **FILE**, never the MODULE: a Rust MODULE has no `file_path`, so `note_site_file` records no `metadata["file"]` and `crates/callix-export/src/index.rs` drops an edge it cannot place.
+- **A Rust path qualifier is a reference, never an annotation.** Every segment of a path before the last (`Foo` in `Foo::new()`, `inner`, `crate`, `super`, and every segment of `pub(in path)`, with the `crate`/`super` of `pub(crate)`/`pub(super)`) is a `read` occurrence, so the edge is a `REFERENCES` with `access: read`: a module is not a type and a `HAS_TYPE` to a MODULE would describe the answer as better than it is. It shares the one-site-one-occurrence set (`recorded`) with annotations. `self`, `<T as Trait>::` and primitive qualifiers (`u8::MAX`) are not recorded: no query that is certain to fail. A visibility is enclosed by the declaration, for a `mod` or a `use` by the FILE (a MODULE has no `file_path`). A module answer binds through `module_sites` in `src/rustlang/adapter.rs` (the start of a file, 1:1, maps to its file module; the name of an inline `mod` maps to its MODULE), because a MODULE has no span and the SpanIndex cannot see it.
+- **A Rust name in expression or pattern position is a `read` with `detail: "value"`.** This covers a const or static read, the last segment of a path (`Mode::A`, `u32::MAX`), a struct literal's type and each field initializer or shorthand, the type path and fields of a struct or tuple-struct pattern, and an uppercase identifier in a pattern (`src/rustlang/visitor.rs::collect_values`). A lowercase pattern identifier is a binding and is not recorded. Callees, plain-name arguments and field accesses keep their own occurrence through the shared `recorded` set (`collect_calls` marks them). Names inside a macro the project defines, inside an opaque macro such as `matches!`, and the bare receiver of `x.f` are not recorded (the arguments of a std macro such as `println!` are blanked first and read as expressions; the blanking repeats until nothing changes, so `vec!(f())` inside `assert_eq!(..)` is reached). In `resolve_pass`, a value answer that lands on a local or a parameter (SCIP `local` symbol, which `symbol_to_ref` marks `ResolvedRef.kind == "local"`, or a PARAMETER or a function-local VARIABLE) is dropped: no edge and no EXTERNAL_SYMBOL. An enum variant stays an `unlocated` external until variants are nodes (RUST-06).
+- **A Rust `macro_rules!` is a FUNCTION** named `module::name` (qualified under the function when written in a body) with `metadata["macro"] = "macro_rules"`; it gets a DECLARES edge from the FILE and, like every Rust function, no CONTAINS. Its invocation name is a `call` occurrence for any macro the crate defines (`RustExtractor::with_project_macros`, a crate-wide name set), on the last path segment of `crate::m!`. An item-level invocation (`name!(..);` outside any function) is a `call` occurrence enclosed by the FILE, never the MODULE (a Rust MODULE has no file_path), so its CALLS edge goes from the FILE to the macro's FUNCTION node; item-level invocations arrive as an `expression_statement` wrapping the `macro_invocation`, which `dispatch_items` unwraps. Invocations inside `impl` and `trait` bodies are not recorded. `resolve_pass` skips nodes carrying `metadata["macro"]` when it binds the `name:` callees written in a macro body, since such a token names a function. A fn and a macro with the same name in one module collapse into one node (known limit).
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.
@@ -351,6 +511,26 @@ Things that are easy to get wrong:
   have been written elsewhere; `Graph::note_site_file` records the file then and
   only then. Placing a reference by the source node's file alone put eight gin
   references in an eleven-line file.
+- **Go annotations cover every `type_identifier` of a type, root included.**
+  `src/golang/visitor.rs::walk_type` seeds its stack with the node itself and
+  reads in source order; `record_annotation` emits one `annotation` per named
+  type (`map[K]V` depends on both) and skips predeclared names and type
+  parameters in scope in the visitor, because neither is a node and a type
+  parameter would become a per-site `annotation@` external. Interface method
+  results are annotated too. `src/rustlang/visitor.rs::walk_type` had the same
+  root-skip and includes its root too.
+  Annotations are recorded at: receivers (enclosed by the method), the
+  right-hand side and the constraints of type specs and aliases (enclosed by the
+  TYPE_ALIAS or CLASS), `var`/`const` types (enclosed by the VARIABLE, one per
+  name), and every `type_identifier` in a function body (enclosed by the
+  callable, closures included; `collect_body_types`). Two exclusions: a type
+  declared inside a function is not a node and would become an unlocated
+  external, so its name is skipped (scope-insensitively); and `F[T](x)` parses
+  as `type_conversion_expression{generic_type}`, so the base `F` would become a
+  HAS_TYPE edge to a function — only its type arguments are annotated.
+  A `call` occurrence that go/types binds to a CLASS/TYPE_ALIAS is a conversion
+  `T(x)`: `resolve_pass` re-kinds it to REFERENCES (access read), never CALLS and
+  never dropped.
 - **Decorators, parameter defaults and a call's receiver are values the definition
   depends on, and `scan_value` must reach them.** The Python and TypeScript
   visitors once skipped all three — a bare `@deco` recorded nothing, a default was
@@ -377,12 +557,89 @@ Things that are easy to get wrong:
   of a module whose file comes later in the walk still lands on it. It once fell
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
-  resolver adds a `RESOLVES_TO` from the import to the definition.
+  resolver adds a `RESOLVES_TO` from the import to the definition. A PHP `use`
+  clause does the same at the last segment of the ORIGINAL name (never the
+  alias): the symbol table answers it by fully-qualified name and use kind
+  (class, function or const) without going through the file's alias map, a
+  namespace alias (`use App\Contracts;`) binds to its MODULE, and the IMPORT
+  node carries the clause's span.
+  In TypeScript an internal import specifier records an `import` occurrence at its
+  ORIGINAL name (never the alias; the default and namespace identifiers too) and the
+  IMPORT's `name_span` is the local binding; the module string of an internal import
+  or re-export statement with a RELATIVE path is a `read` occurrence (the whole literal,
+  enclosed by the container), so it REFERENCES the MODULE (a path-alias string such as
+  `"@/store"` is not recorded: the resolver does not answer its file position, and the
+  read would become a site-keyed external; its specifiers are still placed); a local
+  `export { x }` and the specifiers
+  of a re-export are `read` occurrences of their source name; `export * from` and
+  `export * as N from` make the same `__reexport_` IMPORT as `export {..} from`.
+  External specifiers and module strings get nothing. IMPORTS stays unpositioned so
+  it keeps being deduplicated.
+- **A Rust `use` leaf resolves from its IMPORT, and `mod x;` is a reference from the
+  FILE.** The IMPORT stays one node per declaration; the visitor reports one `UseSite`
+  per name the tree brings in (`src/rustlang/visitor.rs`). The structure pass
+  (`build_crate_structure`) binds each by path once every file of the crate is read
+  (`mod util;` in lib.rs is met before util.rs): an `internal` leaf by its absolute path,
+  an `unknown` one as a 2018 path relative to the importing module, and writes a
+  `RESOLVES_TO` with `span` and `resolution: name` (a `mod x;` is a `REFERENCES` FILE ->
+  MODULE with `access: read`). Only leaves it could not bind (std, dependencies, re-exports)
+  go to the resolver as `import` occurrences, so no site is answered twice; an unbound
+  answer with no name is dropped. `*`, `self`, `crate`, `super`, the `as` alias, a `use` inside a
+  function body and a `#[path]` module are not sites. Edges into a MODULE are not exported
+  (a Rust MODULE has no file).
+- **An import statement is an import wherever it is written.** `walk_statement`
+  hands `import`/`from ... import` to `visit`, so an import in a function body or
+  inside a module-level `if TYPE_CHECKING:`/`try:` is an IMPORT node
+  `{scope}.{local}` declared by its container, with the same IMPORTS/RESOLVES_TO
+  edges and an `import` occurrence on the imported name only. They once fell to
+  `scan_value`, which recorded every name, the alias included, as a `read` and
+  left no IMPORT node or IMPORTS edge.
+- **Every name in a Python annotation is an `annotation` occurrence, not just the
+  first.** `src/python/annotation.rs::type_names` walks subscript arguments, `|`,
+  `Callable` lists, a quoted forward reference (re-parsed, with positions offset
+  into the string) and annotated assignments (module variable, class field, local,
+  `self.x: T`). HAS_TYPE runs from the VARIABLE, ATTRIBUTE or PARAMETER (or the
+  function, for a return type). In `a.B` the type is `B` and `a` is a `read`.
+  `Literal[...]` arguments and `Annotated` metadata are not types. An
+  annotation-only statement has no right-hand side: take
+  `child_by_field_name("right")`, never the last child, or the type is scanned
+  as a value.
+- **Every name in a TypeScript type is an occurrence, not just the head.**
+  `src/typescript/type_uses.rs::type_uses` is a pure walker over a type subtree
+  (unions, generics, `a.T`, `typeof`, indexed access, mapped, conditional, function and
+  object types). HAS_TYPE (`annotation`) in declaration positions: variable, field and
+  return annotations, parameters, alias bodies, and type-parameter constraints and
+  defaults. `read` (REFERENCES) in expression and heritage positions: type arguments of
+  calls and `new`, `as`/`satisfies`/`<T>x`, `f<T>`, and the type arguments and namespace
+  prefixes of an `extends` clause. In `a.T` the type is `T` and `a` is a `read`; a
+  `typeof v` operand is a `read`. A type parameter, a mapped-type key and an `infer`
+  name are never recorded (a type parameter is no node, so its edge could only be a
+  per-site `unlocated` external symbol), nor are parameter names inside a function type.
+  `scan_value` has explicit arms for `as_expression`, `satisfies_expression`,
+  `type_assertion` and `instantiation_expression`: without them the default branch walks
+  the type as a value. `heritage_base_nodes` takes the `name` of a
+  `nested_type_identifier`, so `interface J extends a.Shape` inherits. Not walked:
+  `implements` clauses, annotations of inline closure parameters, JSDoc types.
+  `tests/api/test_type_positions.py` pins each form.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.
+- **A C-family member access carries its receiver, and the flat name table filters by kind.** `CallSite.member` / `receiver_path` (built by `Reader::member_site` in `visitor.rs`) say what `a->b->c` is read from; `CFamilyIndex::resolve` binds a call, a read, a write and a member initialiser by the receiver's declared type through field chains, typedefs (`aliases`) and file-scope variables (`value_type`), and says `Outside` when the type is known and lacks the field. Any by-name fallback goes through `lookup_kinds`/`by_bare_name` with a kind filter that runs BEFORE the first candidate is chosen: an unqualified name never binds to an `Attribute`, or a field declared first would hide a function of the same name.
+- **A class, struct or union defined in a function body is a CLASS qualified by the enclosing callable's full name** (`run()::State`, members `run()::State::stats` and `run()::State::State()`; in C `run::State`). The function DECLARES it, its member bodies are callables of their own (their calls are not the enclosing function's: `body_nodes` in `visitor.rs` does not enter a record specifier that has a body), and the resolver binds it only lexically - from inside that callable, innermost scope first (`CFamilyIndex::local_class`, the `within` argument of `resolve`/`resolve_type`) - or by its exact name; it is never found by its bare name from elsewhere and is not a candidate of `visible()`. Split a member's class from its name with `headers::split_member` (parenthesis-depth aware), never with `split('(')`, and read parameters with `params_of`, which takes the LAST parenthesis group. A qualified record head `class Outer::Inner {` names `Inner` (name and name span); its qualified name is unchanged. A local enum or typedef is not declared.
+- **`typedef struct { .. } T;` declares CLASS `T` beside TYPE_ALIAS `T`.** `anonymous_typedef_name` picks the name (the first plain `type_identifier` declarator, else the first named one) for `on_typedef` and for the scope pass; `on_record` receives it as a fallback, puts the name span on the alias identifier and takes span and doc from the `type_definition`, so the span contains the name span. An anonymous record's fields are hoisted into the enclosing record only when no typedef names it (C11 anonymous member). `resolver::type_key` keys the text before `{`, so a typedef of an inline tagged struct leads to its tag, while `struct { .. }` still names no class.
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
+- **An assignment target is declared where Python binds it.** `self.x` / `cls.x`
+  is ONE `ATTRIBUTE` of the nearest enclosing class (`Class.x`, not
+  `Class.method.x`), declared by the class, with every write site in `declared_at`
+  so the resolver's answer at any of them lands on the node. `obj.x = v` declares
+  nothing: it reads the receiver and records a `write` of `x`, which the resolver
+  binds to the real attribute (it has no holder, so the flow pass does not follow
+  the value). Every target of `a = b = v` is declared and `v` is scanned once.
+  Module-level `for` and `except ... as` targets are module `VARIABLE`s (declared
+  on their own span, never the whole statement); a function's loop variable stays
+  a node only when it is called.
+- **A TypeScript initializer, pair value or assignment side is read from its grammar field** (`value`, `right`, `body`), never as "the first named child that is not X": tree-sitter makes a comment a named extra, so `const x = /*@__PURE__*/ f()` once lost every edge in the initializer. A method or accessor of an object literal reached by `scan_value` (an argument, a returned or nested literal) is an inline closure of the containing scope; only class-body methods are a scope boundary there.
 
 The Docker images (`Dockerfile`, `docker/smoke.sh`) are plain Debian: `slim`
 (callix) and `full` (+ Go, Rust with rust-analyzer and rust-src, Node, Python+pip).

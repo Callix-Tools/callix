@@ -101,6 +101,28 @@ impl Source {
         Some(String::from_utf8_lossy(slice).into_owned())
     }
 
+    /// Whether a single-line range in 1-based byte columns covers anything but a
+    /// line break.
+    fn covers_text(&self, line: u32, start_col: u32, end_col: u32) -> bool {
+        self.text(line, start_col.saturating_sub(1), end_col.saturating_sub(1))
+            .is_some_and(|t| !t.trim_end_matches(['\r', '\n']).is_empty())
+    }
+
+    /// The file's first character that is not white space: its 1-based line
+    /// and the 1-based byte columns it spans.
+    fn first_char(&self) -> Option<(u32, u32, u32)> {
+        let offset = self.bytes.iter().position(|b| !b.is_ascii_whitespace())?;
+        let width = match self.bytes[offset] {
+            b if b >= 0xF0 => 4,
+            b if b >= 0xE0 => 3,
+            b if b >= 0xC0 => 2,
+            _ => 1,
+        };
+        let line = self.line_starts.partition_point(|&start| start <= offset);
+        let col = offset - self.line_starts[line - 1];
+        Some((line as u32, col as u32 + 1, (col + width) as u32 + 1))
+    }
+
     /// The UTF-16 column of a 0-based byte column on a 1-based line.
     fn utf16_col(&self, line: u32, byte_col: u32) -> u32 {
         let Some(&start) = self.line_starts.get(line as usize - 1) else {
@@ -258,11 +280,26 @@ impl<'g> Builder<'g> {
                     {
                         site_names.insert(range.symbol, text);
                     }
+                    let (mut start, mut end) = (range.start, range.end);
+                    // A definition with nothing to show - a MODULE placed at 1:1 of a
+                    // file that starts with a blank line - moves to the file's first
+                    // character; an empty file has none and gets no range.
+                    if is_def
+                        && start.line == end.line
+                        && let Some(source) = source
+                        && !source.covers_text(start.line, start.col, end.col)
+                    {
+                        let Some((line, from, to)) = source.first_char() else {
+                            continue;
+                        };
+                        start = Pos { line, col: from };
+                        end = Pos { line, col: to };
+                    }
                     let id = emitter.vertex(
                         "range",
                         json!({
-                            "start": position(source, range.start),
-                            "end": position(source, range.end),
+                            "start": position(source, start),
+                            "end": position(source, end),
                         }),
                     )?;
                     range_ids.push(id);

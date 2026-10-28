@@ -25,7 +25,7 @@ use crate::python::ResolvedRef;
 use crate::relation::RelationKind;
 use crate::resolver_slot::ResolverSlot;
 use crate::roots::{collect_files, filter_nested_root_files};
-use crate::span_index::SpanIndex;
+use crate::span_index::{SpanIndex, module_placement, relative_file_path};
 use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
@@ -113,19 +113,40 @@ fn build_root_structure(
     let mut all_occurrences: Vec<(String, OccurrenceRef)> = Vec::new();
     let mut all_boundaries: Vec<FileBoundaries> = Vec::new();
 
+    // The first file each module is, so a MODULE is created already placed.
+    let mut placements: IndexMap<String, String> = IndexMap::new();
+    for file in files {
+        let source_root = roots.iter().find(|r| file.starts_with(r)).unwrap_or(&roots[0]);
+        if let Some(qname) = qualified_name(file, source_root) {
+            placements
+                .entry(qname)
+                .or_insert_with(|| relative_file_path(file, project_root, lang_root));
+        }
+    }
+
+    // Every module name that owns a file or directory, with all dotted prefixes:
+    // a `namespace` with such a name must not become a second MODULE of that id.
+    let mut file_modules: HashSet<String> = HashSet::new();
+    for qname in placements.keys() {
+        let mut prefix = String::new();
+        for part in qname.split('.') {
+            if !prefix.is_empty() {
+                prefix.push('.');
+            }
+            prefix.push_str(part);
+            file_modules.insert(prefix.clone());
+        }
+    }
+
     for file in files {
         let source_root = roots.iter().find(|r| file.starts_with(r)).unwrap_or(&roots[0]);
         let Some(module_qname) = qualified_name(file, source_root) else {
             continue;
         };
         let leaf_module_id =
-            ensure_module_chain(py, graph, &project, &module_qname, &mut modules)?;
+            ensure_module_chain(py, graph, &project, &module_qname, &mut modules, &placements)?;
 
-        let relative_path = file
-            .strip_prefix(project_root)
-            .or_else(|_| file.strip_prefix(lang_root))
-            .map(|p| p.to_string_lossy().into_owned())
-            .unwrap_or_else(|_| file.to_string_lossy().into_owned());
+        let relative_path = relative_file_path(file, project_root, lang_root);
 
         let file_rel = relative_path.clone();
         let file_id = node_id(&project, &relative_path, NodeKind::File.as_str());
@@ -171,7 +192,8 @@ fn build_root_structure(
             &classifier,
             &modules,
             &aliases,
-        );
+        )
+        .with_file_modules(&file_modules);
         visitor.visit(tree.root_node())?;
         for occurrence in visitor.into_occurrences() {
             all_occurrences.push((abs_path.clone(), occurrence));
@@ -198,12 +220,16 @@ fn build_root_structure(
     Ok((project, all_occurrences, all_boundaries))
 }
 
+/// `placements` maps a module's name to the relative path of the first file that
+/// is that module (`a.ts`, `a/index.ts`); a module in the map is created placed at
+/// that file's 1:1, a directory without an index file is created without a position.
 fn ensure_module_chain(
     py: Python<'_>,
     graph: &mut Graph,
     project: &str,
     module_qname: &str,
     modules: &mut IndexMap<String, String>,
+    placements: &IndexMap<String, String>,
 ) -> PyResult<String> {
     let parts: Vec<&str> = module_qname.split('.').collect();
     let mut parent_id: Option<String> = None;
@@ -212,14 +238,15 @@ fn ensure_module_chain(
         let qname = parts[..i].join(".");
         if !modules.contains_key(&qname) {
             let id = node_id(project, &qname, NodeKind::Module.as_str());
+            let (file_path, span, metadata) = module_placement(py, placements.get(&qname))?;
             let node = Node {
                 id: id.clone(),
                 kind: NodeKind::Module,
                 qualified_name: qname.clone(),
                 name: parts[i - 1].to_string(),
-                file_path: None,
-                span: None,
-                metadata: PyDict::new(py).unbind(),
+                file_path,
+                span,
+                metadata,
             };
             graph.insert_node(id.clone(), Py::new(py, node)?);
             modules.insert(qname.clone(), id.clone());

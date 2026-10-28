@@ -1,27 +1,33 @@
 {
   "c/micro": {
-    "complete": 40,
+    "complete": 43,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 40
+    "sound": 43
   },
   "cpp/micro": {
-    "complete": 50,
+    "complete": 57,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 50
+    "sound": 57
   },
   "go/micro": {
-    "complete": 58,
+    "complete": 63,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 58
+    "sound": 63
   },
   "php/micro": {
-    "complete": 61,
-    "precision": 0.9903,
+    "complete": 69,
+    "precision": 0.9921,
     "recall": 1.0,
-    "sound": 62
+    "sound": 70
+  },
+  "python/micro": {
+    "complete": 1,
+    "precision": 1.0,
+    "recall": 1.0,
+    "sound": 1
   },
   "python/pycg": {
     "complete": 112,
@@ -30,15 +36,15 @@
     "sound": 112
   },
   "rust/micro": {
-    "complete": 57,
+    "complete": 62,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 57
+    "sound": 62
   },
   "typescript/micro": {
-    "complete": 65,
+    "complete": 75,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 65
+    "sound": 75
   }
 }

@@ -1,9 +1,9 @@
 {
   "files": {
     "bufferpool/bufpool.go": {
-      "hash": "bbbb4326ab4b84ca",
-      "nodes": 7,
-      "relations": 10
+      "hash": "c92326c7ed3e17f2",
+      "nodes": 8,
+      "relations": 12
     },
     "bufferpool/bufpool_test.go": {
       "hash": "d7afbddf9ac29183",
@@ -11,24 +11,24 @@
       "relations": 8
     },
     "cache/docs.go": {
-      "hash": "5b90a3181a1dc39a",
-      "nodes": 1,
-      "relations": 0
+      "hash": "f43a0f68ef373a90",
+      "nodes": 2,
+      "relations": 1
     },
     "cache/dynacache/dynacache.go": {
-      "hash": "a9e16966de7a6f99",
-      "nodes": 133,
-      "relations": 205
+      "hash": "3c15ca8ddebb5dd0",
+      "nodes": 134,
+      "relations": 207
     },
     "cache/dynacache/dynacache_test.go": {
-      "hash": "2a3a8eda99bc1055",
+      "hash": "1db011f92d7cc60d",
       "nodes": 32,
       "relations": 51
     },
     "cache/filecache/filecache.go": {
-      "hash": "a7ee0fa16bbb5b47",
-      "nodes": 104,
-      "relations": 145
+      "hash": "3edad8e6a6b20e07",
+      "nodes": 105,
+      "relations": 152
     },
     "cache/filecache/filecache_config.go": {
       "hash": "cfc4720d1c599205",
@@ -61,9 +61,9 @@
       "relations": 62
     },
     "cache/httpcache/httpcache.go": {
-      "hash": "c9f2debb84046e24",
-      "nodes": 41,
-      "relations": 68
+      "hash": "507e6e0b329c6ba8",
+      "nodes": 42,
+      "relations": 71
     },
     "cache/httpcache/httpcache_integration_test.go": {
       "hash": "58570a4f2a40a80a",
@@ -76,9 +76,9 @@
       "relations": 16
     },
     "codegen/methods.go": {
-      "hash": "94953057f657bad3",
-      "nodes": 73,
-      "relations": 107
+      "hash": "8ac540d7c1754677",
+      "nodes": 74,
+      "relations": 110
     },
     "codegen/methods2_test.go": {
       "hash": "13731d22c161e068",
@@ -91,9 +91,9 @@
       "relations": 48
     },
     "commands/commandeer.go": {
-      "hash": "3415f352922ce2a4",
-      "nodes": 153,
-      "relations": 270
+      "hash": "784c67e7ef441388",
+      "nodes": 154,
+      "relations": 288
     },
     "commands/commands.go": {
       "hash": "3600207535da537f",
@@ -181,9 +181,9 @@
       "relations": 325
     },
     "common/collections/append.go": {
-      "hash": "4c07f3bd19823cda",
-      "nodes": 13,
-      "relations": 18
+      "hash": "2ed68f4018add591",
+      "nodes": 14,
+      "relations": 26
     },
     "common/collections/append_test.go": {
       "hash": "5a7a906333ffdf75",
@@ -206,7 +206,7 @@
       "relations": 19
     },
     "common/collections/slice_test.go": {
-      "hash": "c7772a598f332e6d",
+      "hash": "3ab27d1ee48db16c",
       "nodes": 29,
       "relations": 38
     },
@@ -221,19 +221,19 @@
       "relations": 14
     },
     "common/constants/constants.go": {
-      "hash": "e652b5147c6ec843",
-      "nodes": 12,
-      "relations": 11
+      "hash": "908ba1d4c15cb173",
+      "nodes": 13,
+      "relations": 12
     },
     "common/docs.go": {
-      "hash": "945a8118da468fd1",
-      "nodes": 1,
-      "relations": 0
+      "hash": "136e8025ceda75d2",
+      "nodes": 2,
+      "relations": 1
     },
     "common/hashing/hashing.go": {
-      "hash": "c7b7d738d1d8486c",
-      "nodes": 48,
-      "relations": 68
+      "hash": "788b414cc2e9064c",
+      "nodes": 49,
+      "relations": 70
     },
     "common/hashing/hashing_test.go": {
       "hash": "805f8b951d0fa3eb",
@@ -241,14 +241,14 @@
       "relations": 43
     },
     "common/hdebug/debug.go": {
-      "hash": "fd2830dbe66e8d84",
-      "nodes": 14,
-      "relations": 21
+      "hash": "d51b84f08b3c4b02",
+      "nodes": 15,
+      "relations": 22
     },
     "common/herrors/error_locator.go": {
-      "hash": "89eefad6207a01e9",
-      "nodes": 35,
-      "relations": 51
+      "hash": "abb06f7b0a2657d0",
+      "nodes": 39,
+      "relations": 62
     },
     "common/herrors/error_locator_test.go": {
       "hash": "625293aa1b8b17c1",
@@ -266,7 +266,7 @@
       "relations": 19
     },
     "common/herrors/file_error.go": {
-      "hash": "62e9ef7f51846564",
+      "hash": "607c39cfcea55bfb",
       "nodes": 92,
       "relations": 126
     },
@@ -286,14 +286,14 @@
       "relations": 11
     },
     "common/hexec/esmloader.go": {
-      "hash": "30e38d9e109a60d4",
-      "nodes": 6,
-      "relations": 11
+      "hash": "231745e3f8ce7e9b",
+      "nodes": 7,
+      "relations": 15
     },
     "common/hexec/exec.go": {
-      "hash": "271389a16d3e5d4a",
-      "nodes": 105,
-      "relations": 159
+      "hash": "92a99f22b913a2e2",
+      "nodes": 112,
+      "relations": 166
     },
     "common/hexec/exec_integration_test.go": {
       "hash": "a7194093db745b49",
@@ -306,19 +306,19 @@
       "relations": 36
     },
     "common/himage/image.go": {
-      "hash": "b9a16fe2d8efc5c5",
-      "nodes": 25,
-      "relations": 36
+      "hash": "5d6c5488b357363a",
+      "nodes": 26,
+      "relations": 37
     },
     "common/hiter/iter.go": {
-      "hash": "f6ee18f543f4a06f",
-      "nodes": 14,
-      "relations": 15
+      "hash": "3994963dd33c5a2a",
+      "nodes": 15,
+      "relations": 16
     },
     "common/hmaps/cache.go": {
-      "hash": "578065669dc446b5",
-      "nodes": 48,
-      "relations": 54
+      "hash": "13ef3deb63236366",
+      "nodes": 49,
+      "relations": 64
     },
     "common/hmaps/cache_test.go": {
       "hash": "6764e83a200b31a0",
@@ -366,9 +366,9 @@
       "relations": 18
     },
     "common/hreflect/convert.go": {
-      "hash": "4477806d0ecce822",
-      "nodes": 36,
-      "relations": 41
+      "hash": "bd3efd29727aa3ef",
+      "nodes": 37,
+      "relations": 45
     },
     "common/hreflect/convert_test.go": {
       "hash": "514bc19483cd83db",
@@ -386,9 +386,9 @@
       "relations": 60
     },
     "common/hstore/scratch.go": {
-      "hash": "ae1e6d169ea6c452",
-      "nodes": 32,
-      "relations": 44
+      "hash": "fc8ff864546014ec",
+      "nodes": 33,
+      "relations": 46
     },
     "common/hstore/scratch_test.go": {
       "hash": "601792e27978d103",
@@ -396,9 +396,9 @@
       "relations": 33
     },
     "common/hstrings/strings.go": {
-      "hash": "3cdcbd20474dfd3a",
-      "nodes": 40,
-      "relations": 53
+      "hash": "6b97869d2cc7d086",
+      "nodes": 41,
+      "relations": 55
     },
     "common/hstrings/strings_test.go": {
       "hash": "1ba293f38f3265de",
@@ -406,9 +406,9 @@
       "relations": 30
     },
     "common/hsync/oncemore.go": {
-      "hash": "6890e5a378bcb201",
-      "nodes": 31,
-      "relations": 43
+      "hash": "a919d031ef4305c7",
+      "nodes": 32,
+      "relations": 45
     },
     "common/hsync/oncemore_test.go": {
       "hash": "e4f1d04435b0577e",
@@ -421,9 +421,9 @@
       "relations": 8
     },
     "common/htime/time.go": {
-      "hash": "f18d810c38bcdfdb",
-      "nodes": 30,
-      "relations": 43
+      "hash": "dc3137b49dfcc9df",
+      "nodes": 31,
+      "relations": 46
     },
     "common/htime/time_test.go": {
       "hash": "84544048182935ad",
@@ -431,9 +431,9 @@
       "relations": 16
     },
     "common/hugio/copy.go": {
-      "hash": "20eae07f21e8756c",
-      "nodes": 15,
-      "relations": 24
+      "hash": "05f436bbaef0957b",
+      "nodes": 16,
+      "relations": 29
     },
     "common/hugio/hasBytesWriter.go": {
       "hash": "51e54835b7a45341",
@@ -456,9 +456,9 @@
       "relations": 26
     },
     "common/hugo/hugo.go": {
-      "hash": "b4af5eca7a0cc573",
-      "nodes": 103,
-      "relations": 157
+      "hash": "8dee73abc84029b3",
+      "nodes": 104,
+      "relations": 165
     },
     "common/hugo/hugo_integration_test.go": {
       "hash": "72ee78c2cf2f327c",
@@ -496,14 +496,14 @@
       "relations": 4
     },
     "common/loggers/handlerdefault.go": {
-      "hash": "4a2f5feffba38490",
-      "nodes": 19,
-      "relations": 34
+      "hash": "a23ae5b39931595e",
+      "nodes": 20,
+      "relations": 41
     },
     "common/loggers/handlersmisc.go": {
-      "hash": "0bc867bf4349a247",
-      "nodes": 36,
-      "relations": 52
+      "hash": "b8f3bf135d053d7f",
+      "nodes": 37,
+      "relations": 53
     },
     "common/loggers/handlerterminal.go": {
       "hash": "28e94b37b2b20810",
@@ -531,9 +531,9 @@
       "relations": 15
     },
     "common/math/math.go": {
-      "hash": "8bedcad0e48f977a",
-      "nodes": 7,
-      "relations": 10
+      "hash": "b4a9c166773d92c9",
+      "nodes": 8,
+      "relations": 12
     },
     "common/math/math_test.go": {
       "hash": "67ee3ba8c68646dc",
@@ -541,9 +541,9 @@
       "relations": 8
     },
     "common/para/para.go": {
-      "hash": "683f78b6ff901f36",
-      "nodes": 17,
-      "relations": 25
+      "hash": "eaceed7256b0cf62",
+      "nodes": 18,
+      "relations": 27
     },
     "common/para/para_test.go": {
       "hash": "3f5b5f9772fd9b95",
@@ -551,9 +551,9 @@
       "relations": 32
     },
     "common/paths/path.go": {
-      "hash": "acb4a198c40b00c2",
-      "nodes": 101,
-      "relations": 122
+      "hash": "77fc59d05338d8dc",
+      "nodes": 103,
+      "relations": 131
     },
     "common/paths/path_test.go": {
       "hash": "b88c764dca11cdb1",
@@ -591,14 +591,14 @@
       "relations": 7
     },
     "common/predicate/predicate.go": {
-      "hash": "89e38c8f99b4ae48",
-      "nodes": 54,
-      "relations": 65
+      "hash": "b6ce043b6a5fe45e",
+      "nodes": 55,
+      "relations": 68
     },
     "common/predicate/predicate_test.go": {
-      "hash": "112b3fcace1f2e44",
-      "nodes": 30,
-      "relations": 37
+      "hash": "6feb26c08220e7ed",
+      "nodes": 34,
+      "relations": 41
     },
     "common/predicate/rangeop_test.go": {
       "hash": "43320897a126e3b0",
@@ -606,9 +606,9 @@
       "relations": 8
     },
     "common/rungroup/rungroup.go": {
-      "hash": "34e858df8d067b22",
-      "nodes": 19,
-      "relations": 29
+      "hash": "8be43b664fafbb1e",
+      "nodes": 20,
+      "relations": 31
     },
     "common/rungroup/rungroup_test.go": {
       "hash": "9fe2fa08f8f24f55",
@@ -616,19 +616,19 @@
       "relations": 11
     },
     "common/tasks/tasks.go": {
-      "hash": "6d10f9532e564542",
-      "nodes": 27,
-      "relations": 42
+      "hash": "45f3b5856a1f7671",
+      "nodes": 28,
+      "relations": 43
     },
     "common/terminal/colors.go": {
-      "hash": "7a329775f345d0e5",
-      "nodes": 36,
-      "relations": 45
+      "hash": "e10d7ca160f19181",
+      "nodes": 37,
+      "relations": 46
     },
     "common/text/position.go": {
-      "hash": "25bf658796963978",
-      "nodes": 18,
-      "relations": 30
+      "hash": "da7b7bdc03050af3",
+      "nodes": 19,
+      "relations": 34
     },
     "common/text/position_test.go": {
       "hash": "50528f5cdd0af849",
@@ -646,9 +646,9 @@
       "relations": 16
     },
     "common/types/closer.go": {
-      "hash": "cc19c800a9912787",
-      "nodes": 14,
-      "relations": 19
+      "hash": "79db9207b89efa8a",
+      "nodes": 15,
+      "relations": 26
     },
     "common/types/convert.go": {
       "hash": "9a011103831e2b46",
@@ -661,9 +661,9 @@
       "relations": 18
     },
     "common/types/css/csstypes.go": {
-      "hash": "099efb5912ee138c",
-      "nodes": 3,
-      "relations": 2
+      "hash": "a308d66bfcd46ded",
+      "nodes": 4,
+      "relations": 3
     },
     "common/types/evictingqueue.go": {
       "hash": "e95581edd9426751",
@@ -676,9 +676,9 @@
       "relations": 13
     },
     "common/types/hstring/stringtypes.go": {
-      "hash": "e18473b7468c4174",
-      "nodes": 7,
-      "relations": 10
+      "hash": "d8fce3b6bbed50e8",
+      "nodes": 8,
+      "relations": 12
     },
     "common/types/hstring/stringtypes_test.go": {
       "hash": "63d9904233aefd1b",
@@ -696,9 +696,9 @@
       "relations": 10
     },
     "common/urls/baseURL.go": {
-      "hash": "a0c41707aabd8c9e",
-      "nodes": 25,
-      "relations": 38
+      "hash": "2dc2d593bb33aa2e",
+      "nodes": 26,
+      "relations": 41
     },
     "common/urls/baseURL_test.go": {
       "hash": "45653a8cf1edfdc8",
@@ -711,9 +711,9 @@
       "relations": 7
     },
     "common/version/version.go": {
-      "hash": "d25c087ffd8167cf",
-      "nodes": 54,
-      "relations": 74
+      "hash": "6e9d7739cdadb8ec",
+      "nodes": 55,
+      "relations": 76
     },
     "common/version/version_test.go": {
       "hash": "bdbab2b734db4a45",
@@ -721,9 +721,9 @@
       "relations": 15
     },
     "compare/compare.go": {
-      "hash": "75eff80fa840ad86",
-      "nodes": 16,
-      "relations": 18
+      "hash": "363825cb1292182c",
+      "nodes": 17,
+      "relations": 22
     },
     "compare/compare_strings.go": {
       "hash": "bd36639cdef8ad2b",
@@ -741,9 +741,9 @@
       "relations": 0
     },
     "config/allconfig/allconfig.go": {
-      "hash": "1bd89a168eb9e593",
-      "nodes": 246,
-      "relations": 475
+      "hash": "7871b7df62ea21c1",
+      "nodes": 247,
+      "relations": 482
     },
     "config/allconfig/allconfig_integration_test.go": {
       "hash": "c702efd930962ed3",
@@ -776,9 +776,9 @@
       "relations": 14
     },
     "config/commonConfig.go": {
-      "hash": "b07466dc2d5dd6f1",
-      "nodes": 113,
-      "relations": 191
+      "hash": "0df3c520cdb7ce14",
+      "nodes": 114,
+      "relations": 203
     },
     "config/commonConfig_test.go": {
       "hash": "955d4ff3e8c3ea4c",
@@ -836,9 +836,9 @@
       "relations": 21
     },
     "config/privacy/privacyConfig.go": {
-      "hash": "576586398e275587",
-      "nodes": 32,
-      "relations": 52
+      "hash": "e29de81474294144",
+      "nodes": 33,
+      "relations": 54
     },
     "config/privacy/privacyConfig_test.go": {
       "hash": "c15f5b680d63e6fc",
@@ -846,9 +846,9 @@
       "relations": 15
     },
     "config/security/securityConfig.go": {
-      "hash": "758fb19dee71cc7c",
-      "nodes": 74,
-      "relations": 127
+      "hash": "95ce0590e0b87113",
+      "nodes": 75,
+      "relations": 131
     },
     "config/security/securityConfig_test.go": {
       "hash": "5a4ab770b983462b",
@@ -866,9 +866,9 @@
       "relations": 8
     },
     "config/services/servicesConfig.go": {
-      "hash": "4840ad5ba9660aad",
-      "nodes": 29,
-      "relations": 45
+      "hash": "393bc3eb96e095c3",
+      "nodes": 30,
+      "relations": 47
     },
     "config/services/servicesConfig_test.go": {
       "hash": "5490b6b750c32ae0",
@@ -876,14 +876,14 @@
       "relations": 13
     },
     "config/testconfig/testconfig.go": {
-      "hash": "bcd273ea571c43d9",
-      "nodes": 24,
-      "relations": 41
+      "hash": "7e32130a382453de",
+      "nodes": 25,
+      "relations": 42
     },
     "create/content.go": {
-      "hash": "576f8a352b9c2e5d",
-      "nodes": 54,
-      "relations": 97
+      "hash": "f85add06d9c5d79a",
+      "nodes": 55,
+      "relations": 99
     },
     "create/content_test.go": {
       "hash": "3e01749e246bd7ec",
@@ -891,14 +891,14 @@
       "relations": 63
     },
     "create/skeletons/skeletons.go": {
-      "hash": "c549d33b8e0d83c5",
-      "nodes": 36,
-      "relations": 55
+      "hash": "f40739198b7b05a5",
+      "nodes": 37,
+      "relations": 56
     },
     "deploy/cloudfront.go": {
-      "hash": "30b9240e9c4bc64a",
-      "nodes": 13,
-      "relations": 28
+      "hash": "3ccf8a8d2b441377",
+      "nodes": 14,
+      "relations": 33
     },
     "deploy/deploy.go": {
       "hash": "392d9964acdf5c62",
@@ -916,9 +916,9 @@
       "relations": 117
     },
     "deploy/deployconfig/deployConfig.go": {
-      "hash": "31fa468d18256873",
-      "nodes": 45,
-      "relations": 85
+      "hash": "8bc2af26ac0640ed",
+      "nodes": 46,
+      "relations": 87
     },
     "deploy/deployconfig/deployConfig_test.go": {
       "hash": "a59476826e211064",
@@ -931,9 +931,9 @@
       "relations": 15
     },
     "deps/deps.go": {
-      "hash": "d0b6b3c1c374f4e9",
-      "nodes": 129,
-      "relations": 245
+      "hash": "dc237698cd2cade8",
+      "nodes": 130,
+      "relations": 247
     },
     "deps/deps_test.go": {
       "hash": "42cdb3201ccc718e",
@@ -941,14 +941,14 @@
       "relations": 11
     },
     "docshelper/docs.go": {
-      "hash": "0d87e71ab9e69ae5",
-      "nodes": 9,
-      "relations": 10
+      "hash": "d26ddce4efbc83bf",
+      "nodes": 10,
+      "relations": 11
     },
     "helpers/content.go": {
-      "hash": "ba05bcd36642e331",
-      "nodes": 36,
-      "relations": 60
+      "hash": "ba9714645e4a5294",
+      "nodes": 37,
+      "relations": 74
     },
     "helpers/content_test.go": {
       "hash": "25fc4271e71897b6",
@@ -1016,14 +1016,14 @@
       "relations": 37
     },
     "htesting/hqt/checkers.go": {
-      "hash": "a3da3a37b967990a",
-      "nodes": 39,
-      "relations": 56
+      "hash": "480673042fdc075f",
+      "nodes": 40,
+      "relations": 57
     },
     "htesting/test_helpers.go": {
-      "hash": "d6cbc9edfee2623e",
-      "nodes": 46,
-      "relations": 67
+      "hash": "b36c3956e8232123",
+      "nodes": 47,
+      "relations": 69
     },
     "htesting/test_helpers_test.go": {
       "hash": "7d8f964fb20b60f5",
@@ -1031,9 +1031,9 @@
       "relations": 8
     },
     "hugofs/component_fs.go": {
-      "hash": "d104e89e7d8b1e90",
-      "nodes": 52,
-      "relations": 85
+      "hash": "8a567d91cd1825f1",
+      "nodes": 53,
+      "relations": 109
     },
     "hugofs/createcounting_fs.go": {
       "hash": "71daf48e257c733c",
@@ -1046,9 +1046,9 @@
       "relations": 41
     },
     "hugofs/dirsmerger.go": {
-      "hash": "3a25e99c7ec28adb",
-      "nodes": 4,
-      "relations": 7
+      "hash": "248ae5f5313e612d",
+      "nodes": 6,
+      "relations": 9
     },
     "hugofs/fileinfo.go": {
       "hash": "9a25c30b96eff211",
@@ -1071,9 +1071,9 @@
       "relations": 27
     },
     "hugofs/files/classifier.go": {
-      "hash": "d3905f70d6122861",
-      "nodes": 32,
-      "relations": 39
+      "hash": "c3ddd376de8d8adb",
+      "nodes": 33,
+      "relations": 41
     },
     "hugofs/files/classifier_test.go": {
       "hash": "71e28de0cbf7e092",
@@ -1116,9 +1116,9 @@
       "relations": 27
     },
     "hugofs/hglob/filename_filter.go": {
-      "hash": "1670ad289a60365a",
-      "nodes": 39,
-      "relations": 54
+      "hash": "86ba90bd7092ec51",
+      "nodes": 40,
+      "relations": 58
     },
     "hugofs/hglob/filename_filter_test.go": {
       "hash": "ed03e7e9d2bd54f7",
@@ -1186,9 +1186,9 @@
       "relations": 12
     },
     "hugolib/alias.go": {
-      "hash": "d99c9418bc48e99f",
-      "nodes": 43,
-      "relations": 76
+      "hash": "a020b9ff1eef8ce8",
+      "nodes": 44,
+      "relations": 171
     },
     "hugolib/alias_test.go": {
       "hash": "72eedb6245071854",
@@ -1211,7 +1211,7 @@
       "relations": 28
     },
     "hugolib/collections.go": {
-      "hash": "cd72bf2ce6e8734a",
+      "hash": "ebf1812bed760e07",
       "nodes": 9,
       "relations": 12
     },
@@ -1241,9 +1241,9 @@
       "relations": 69
     },
     "hugolib/content_map.go": {
-      "hash": "d0342c615e4e3533",
-      "nodes": 70,
-      "relations": 118
+      "hash": "83f2888bbee84057",
+      "nodes": 71,
+      "relations": 119
     },
     "hugolib/content_map_page.go": {
       "hash": "d4aecc9e0a5252b3",
@@ -1296,9 +1296,9 @@
       "relations": 103
     },
     "hugolib/doctree/nodeshifttree.go": {
-      "hash": "62eb4c37d4896dcd",
-      "nodes": 167,
-      "relations": 210
+      "hash": "14e6c6ffff57e637",
+      "nodes": 168,
+      "relations": 218
     },
     "hugolib/doctree/nodetransformstate_string.go": {
       "hash": "dab00f8ee55c4881",
@@ -1341,9 +1341,9 @@
       "relations": 11
     },
     "hugolib/filesystems/basefs.go": {
-      "hash": "f071b9d6e22464e4",
-      "nodes": 151,
-      "relations": 240
+      "hash": "b406b8e8752496bb",
+      "nodes": 152,
+      "relations": 242
     },
     "hugolib/filesystems/basefs_test.go": {
       "hash": "6ee112ec983ef76b",
@@ -1576,9 +1576,9 @@
       "relations": 27
     },
     "hugolib/pagesfromdata/pagesfromgotmpl.go": {
-      "hash": "c8d879c27f319106",
-      "nodes": 96,
-      "relations": 164
+      "hash": "80e86e9586b52456",
+      "nodes": 97,
+      "relations": 167
     },
     "hugolib/pagesfromdata/pagesfromgotmpl_integration_test.go": {
       "hash": "eb0d450dbfdfe218",
@@ -1601,9 +1601,9 @@
       "relations": 10
     },
     "hugolib/paths/paths.go": {
-      "hash": "332d258bbaa6616d",
-      "nodes": 33,
-      "relations": 56
+      "hash": "e1bef27c5e7dfe74",
+      "nodes": 34,
+      "relations": 57
     },
     "hugolib/permalinker.go": {
       "hash": "ad26108bdd5d3b5b",
@@ -1641,9 +1641,9 @@
       "relations": 7
     },
     "hugolib/roles/roles.go": {
-      "hash": "39b4a6ae2ff4c028",
-      "nodes": 45,
-      "relations": 69
+      "hash": "bc9ea2c46c31cd92",
+      "nodes": 46,
+      "relations": 71
     },
     "hugolib/roles/roles_integration_test.go": {
       "hash": "4fe556ec7ae24fd1",
@@ -1661,9 +1661,9 @@
       "relations": 32
     },
     "hugolib/segments/segments.go": {
-      "hash": "5931064352a2db1c",
-      "nodes": 65,
-      "relations": 109
+      "hash": "6fd7014a875ef6c0",
+      "nodes": 66,
+      "relations": 112
     },
     "hugolib/segments/segments_integration_test.go": {
       "hash": "974fd7ceb2cbde37",
@@ -1671,9 +1671,9 @@
       "relations": 18
     },
     "hugolib/segments/segments_test.go": {
-      "hash": "d904669461eb0faf",
-      "nodes": 23,
-      "relations": 32
+      "hash": "817447186d32a81a",
+      "nodes": 25,
+      "relations": 34
     },
     "hugolib/shortcode.go": {
       "hash": "afdd7059a794cc64",
@@ -1741,9 +1741,9 @@
       "relations": 26
     },
     "hugolib/sitesmatrix/dimensions.go": {
-      "hash": "0163649fa7937179",
-      "nodes": 87,
-      "relations": 110
+      "hash": "1d19c1c39328aba4",
+      "nodes": 88,
+      "relations": 115
     },
     "hugolib/sitesmatrix/dimensions_test.go": {
       "hash": "69c0acb175494b7c",
@@ -1776,9 +1776,9 @@
       "relations": 45
     },
     "hugolib/versions/versions.go": {
-      "hash": "56f6b4f11023aeef",
-      "nodes": 47,
-      "relations": 74
+      "hash": "762f71bc591aa3d0",
+      "nodes": 48,
+      "relations": 76
     },
     "hugolib/versions/versions_integration_test.go": {
       "hash": "2ff41b00a000becc",
@@ -1786,9 +1786,9 @@
       "relations": 11
     },
     "identity/finder.go": {
-      "hash": "5e23fa52fc45b3ac",
-      "nodes": 58,
-      "relations": 78
+      "hash": "47446e8c82c2dd9a",
+      "nodes": 59,
+      "relations": 86
     },
     "identity/finder_test.go": {
       "hash": "0f829d37e2e47771",
@@ -1796,7 +1796,7 @@
       "relations": 8
     },
     "identity/identity.go": {
-      "hash": "78e0e2ae1d7e3707",
+      "hash": "a9f4d497bd8417d7",
       "nodes": 148,
       "relations": 190
     },
@@ -1806,9 +1806,9 @@
       "relations": 43
     },
     "identity/identitytesting/identitytesting.go": {
-      "hash": "ca04b379e769962b",
-      "nodes": 3,
-      "relations": 4
+      "hash": "bf8a48714323a370",
+      "nodes": 4,
+      "relations": 5
     },
     "identity/predicate_identity.go": {
       "hash": "b39c3f42121ed65a",
@@ -1831,14 +1831,14 @@
       "relations": 8
     },
     "internal/js/api.go": {
-      "hash": "e8357be2cee20f3a",
-      "nodes": 27,
-      "relations": 42
+      "hash": "0e189a55e979cc95",
+      "nodes": 28,
+      "relations": 43
     },
     "internal/js/esbuild/batch.go": {
-      "hash": "0907bb7655b5f923",
-      "nodes": 244,
-      "relations": 371
+      "hash": "cf9dcc001c94115f",
+      "nodes": 245,
+      "relations": 380
     },
     "internal/js/esbuild/batch_integration_test.go": {
       "hash": "e5e484290b27ffeb",
@@ -1881,9 +1881,9 @@
       "relations": 31
     },
     "internal/warpc/avif.go": {
-      "hash": "3774fee8511f439a",
-      "nodes": 31,
-      "relations": 52
+      "hash": "b5af6f681667fd1f",
+      "nodes": 32,
+      "relations": 60
     },
     "internal/warpc/avif_color_test.go": {
       "hash": "ecd1d0876875d397",
@@ -1896,9 +1896,9 @@
       "relations": 20
     },
     "internal/warpc/genjs/main.go": {
-      "hash": "9ab8700d0a6680b9",
-      "nodes": 11,
-      "relations": 22
+      "hash": "fb7aa9ea0235720f",
+      "nodes": 12,
+      "relations": 23
     },
     "internal/warpc/katex.go": {
       "hash": "d61bdb49092e166b",
@@ -1926,14 +1926,14 @@
       "relations": 27
     },
     "langs/config.go": {
-      "hash": "16ddee13590f02eb",
-      "nodes": 47,
-      "relations": 77
+      "hash": "a76b38670558df71",
+      "nodes": 48,
+      "relations": 81
     },
     "langs/i18n/i18n.go": {
-      "hash": "41c39eb8dafb144a",
-      "nodes": 33,
-      "relations": 55
+      "hash": "bf6eb4d86f067f0d",
+      "nodes": 34,
+      "relations": 59
     },
     "langs/i18n/i18n_integration_test.go": {
       "hash": "89329a0290761cd8",
@@ -1951,9 +1951,9 @@
       "relations": 71
     },
     "langs/language.go": {
-      "hash": "ae1e493949e3c655",
-      "nodes": 68,
-      "relations": 102
+      "hash": "d31fb67754d9024d",
+      "nodes": 71,
+      "relations": 105
     },
     "langs/language_test.go": {
       "hash": "9a3c383c46b95327",
@@ -1966,14 +1966,14 @@
       "relations": 21
     },
     "livereload/connection.go": {
-      "hash": "94ddfe92c8328616",
-      "nodes": 11,
-      "relations": 19
+      "hash": "baf32ec5b7495117",
+      "nodes": 12,
+      "relations": 22
     },
     "livereload/gen/main.go": {
-      "hash": "880bbf051f414754",
-      "nodes": 12,
-      "relations": 25
+      "hash": "08ee8c573fb811a5",
+      "nodes": 13,
+      "relations": 26
     },
     "livereload/hub.go": {
       "hash": "8acf3dcd1be44c57",
@@ -1986,9 +1986,9 @@
       "relations": 44
     },
     "magefile.go": {
-      "hash": "1ca80fd121f4bbb9",
-      "nodes": 59,
-      "relations": 86
+      "hash": "0ffc7b561eb5b4cf",
+      "nodes": 60,
+      "relations": 91
     },
     "main.go": {
       "hash": "f7d5b8409d4f6ed0",
@@ -2016,14 +2016,14 @@
       "relations": 105
     },
     "markup/asciidocext/asciidocext_config/config.go": {
-      "hash": "aae7315c6193b4fd",
-      "nodes": 19,
-      "relations": 29
+      "hash": "5ffbed52d0c5e181",
+      "nodes": 20,
+      "relations": 30
     },
     "markup/asciidocext/convert.go": {
-      "hash": "47b0ec9530596c1b",
-      "nodes": 10,
-      "relations": 15
+      "hash": "b086129f897fe26e",
+      "nodes": 11,
+      "relations": 18
     },
     "markup/asciidocext/convert_test.go": {
       "hash": "2e7a7be5b916162e",
@@ -2031,29 +2031,29 @@
       "relations": 71
     },
     "markup/asciidocext/internal/converter.go": {
-      "hash": "5740cf99dba91992",
-      "nodes": 62,
-      "relations": 101
+      "hash": "d611df35f13b89fb",
+      "nodes": 63,
+      "relations": 102
     },
     "markup/blackfriday/anchors.go": {
-      "hash": "e0417dd9173d9d14",
-      "nodes": 4,
-      "relations": 5
+      "hash": "2675475cbf1f950f",
+      "nodes": 5,
+      "relations": 6
     },
     "markup/converter/converter.go": {
-      "hash": "be33660880b3a0ed",
-      "nodes": 72,
-      "relations": 121
+      "hash": "c48e5c5dd0c09376",
+      "nodes": 73,
+      "relations": 122
     },
     "markup/converter/hooks/hooks.go": {
-      "hash": "3a5ead517046fa5a",
-      "nodes": 99,
-      "relations": 150
+      "hash": "3e7122bba8e035e0",
+      "nodes": 100,
+      "relations": 151
     },
     "markup/goldmark/autoid.go": {
-      "hash": "882abbecf2c2cce6",
-      "nodes": 42,
-      "relations": 69
+      "hash": "6a4dcb8562513913",
+      "nodes": 43,
+      "relations": 77
     },
     "markup/goldmark/autoid_test.go": {
       "hash": "b66005f3bcae54db",
@@ -2061,9 +2061,9 @@
       "relations": 26
     },
     "markup/goldmark/blockquotes/blockquotes.go": {
-      "hash": "35e1ff329c801b37",
-      "nodes": 48,
-      "relations": 77
+      "hash": "183313d16ecad6fa",
+      "nodes": 49,
+      "relations": 80
     },
     "markup/goldmark/blockquotes/blockquotes_integration_test.go": {
       "hash": "1ea578db3411fdf8",
@@ -2081,9 +2081,9 @@
       "relations": 38
     },
     "markup/goldmark/codeblocks/render.go": {
-      "hash": "9866bceb58c4e0cb",
-      "nodes": 40,
-      "relations": 71
+      "hash": "734848dcb6385448",
+      "nodes": 41,
+      "relations": 73
     },
     "markup/goldmark/convert.go": {
       "hash": "515ce9bd42aa8708",
@@ -2096,9 +2096,9 @@
       "relations": 90
     },
     "markup/goldmark/goldmark_config/config.go": {
-      "hash": "b87ecda2de119dbd",
-      "nodes": 95,
-      "relations": 159
+      "hash": "4ad4f880df43b19f",
+      "nodes": 96,
+      "relations": 160
     },
     "markup/goldmark/goldmark_integration_test.go": {
       "hash": "8c7808c91ef3b828",
@@ -2106,9 +2106,9 @@
       "relations": 71
     },
     "markup/goldmark/hugocontext/hugocontext.go": {
-      "hash": "e3c8cf93aa2bd740",
-      "nodes": 86,
-      "relations": 119
+      "hash": "4f6edd592e0e22ac",
+      "nodes": 87,
+      "relations": 121
     },
     "markup/goldmark/hugocontext/hugocontext_test.go": {
       "hash": "20cf0d395cdce8c2",
@@ -2121,14 +2121,14 @@
       "relations": 11
     },
     "markup/goldmark/images/transform.go": {
-      "hash": "128c0a4e2c66ca87",
-      "nodes": 20,
-      "relations": 31
+      "hash": "3dcd0e3ed835c8ca",
+      "nodes": 21,
+      "relations": 33
     },
     "markup/goldmark/internal/extensions/attributes/attributes.go": {
-      "hash": "2600584735d340ac",
-      "nodes": 55,
-      "relations": 74
+      "hash": "bf4b13bdca4cb5ef",
+      "nodes": 56,
+      "relations": 76
     },
     "markup/goldmark/internal/extensions/attributes/attributes_integration_test.go": {
       "hash": "45068ab6c60fe8cc",
@@ -2136,14 +2136,14 @@
       "relations": 10
     },
     "markup/goldmark/internal/render/context.go": {
-      "hash": "d32065604231e974",
-      "nodes": 74,
-      "relations": 111
+      "hash": "f6dcbc50c590705f",
+      "nodes": 75,
+      "relations": 112
     },
     "markup/goldmark/passthrough/passthrough.go": {
-      "hash": "c5e44123f086cc74",
-      "nodes": 31,
-      "relations": 53
+      "hash": "70cf38ec7a879970",
+      "nodes": 32,
+      "relations": 55
     },
     "markup/goldmark/passthrough/passthrough_integration_test.go": {
       "hash": "dc75e1ccd41721c1",
@@ -2156,9 +2156,9 @@
       "relations": 145
     },
     "markup/goldmark/tables/tables.go": {
-      "hash": "ce147f6b8b5b2312",
-      "nodes": 41,
-      "relations": 62
+      "hash": "1fb1e300ab8a5227",
+      "nodes": 42,
+      "relations": 64
     },
     "markup/goldmark/tables/tables_integration_test.go": {
       "hash": "076af109149dcfa4",
@@ -2176,14 +2176,14 @@
       "relations": 19
     },
     "markup/highlight/chromalexers/chromalexers.go": {
-      "hash": "0fec8628423f370d",
-      "nodes": 7,
-      "relations": 12
+      "hash": "a7dde14aaa1b13eb",
+      "nodes": 8,
+      "relations": 13
     },
     "markup/highlight/config.go": {
-      "hash": "0a01f0f2c6d2ea0c",
-      "nodes": 55,
-      "relations": 84
+      "hash": "88ed49fcfa1e8fc2",
+      "nodes": 56,
+      "relations": 89
     },
     "markup/highlight/config_test.go": {
       "hash": "c264602ee6d0bfa9",
@@ -2206,24 +2206,24 @@
       "relations": 16
     },
     "markup/internal/attributes/attributes.go": {
-      "hash": "79b6dcd44fa44b58",
-      "nodes": 42,
-      "relations": 65
+      "hash": "13e7a43205757cc1",
+      "nodes": 43,
+      "relations": 66
     },
     "markup/internal/external.go": {
-      "hash": "c095f171f4d607f3",
-      "nodes": 17,
-      "relations": 28
+      "hash": "d948b231785967dc",
+      "nodes": 18,
+      "relations": 29
     },
     "markup/markup.go": {
-      "hash": "5faa74c659b91f90",
-      "nodes": 37,
-      "relations": 64
+      "hash": "27bd3bc9fee02c60",
+      "nodes": 38,
+      "relations": 66
     },
     "markup/markup_config/config.go": {
-      "hash": "5aa3f15a9145ba2f",
-      "nodes": 24,
-      "relations": 42
+      "hash": "ffd7716f2cfd5379",
+      "nodes": 25,
+      "relations": 44
     },
     "markup/markup_config/config_test.go": {
       "hash": "fcf623bb5ae30ad3",
@@ -2236,9 +2236,9 @@
       "relations": 18
     },
     "markup/org/convert.go": {
-      "hash": "a997cafd60cef72c",
-      "nodes": 18,
-      "relations": 31
+      "hash": "3cddfacf733bd301",
+      "nodes": 19,
+      "relations": 33
     },
     "markup/org/convert_test.go": {
       "hash": "04fe75edb72d10a0",
@@ -2246,9 +2246,9 @@
       "relations": 23
     },
     "markup/pandoc/convert.go": {
-      "hash": "fe9294cb3407757a",
-      "nodes": 24,
-      "relations": 37
+      "hash": "82af0b16e2136a09",
+      "nodes": 25,
+      "relations": 39
     },
     "markup/pandoc/convert_test.go": {
       "hash": "0a1e8fcf34975ea7",
@@ -2256,9 +2256,9 @@
       "relations": 20
     },
     "markup/rst/convert.go": {
-      "hash": "af8d4091ebe8ba2e",
-      "nodes": 26,
-      "relations": 43
+      "hash": "b1689cfcb32c38bb",
+      "nodes": 27,
+      "relations": 45
     },
     "markup/rst/convert_test.go": {
       "hash": "311586f3756fbe55",
@@ -2266,9 +2266,9 @@
       "relations": 20
     },
     "markup/tableofcontents/tableofcontents.go": {
-      "hash": "8e2e233ede6e83e2",
-      "nodes": 67,
-      "relations": 95
+      "hash": "0d7d8f7a3f197baf",
+      "nodes": 68,
+      "relations": 98
     },
     "markup/tableofcontents/tableofcontents_integration_test.go": {
       "hash": "1bad55b033b85d33",
@@ -2281,9 +2281,9 @@
       "relations": 20
     },
     "media/builtin.go": {
-      "hash": "3fe3211626035286",
-      "nodes": 48,
-      "relations": 91
+      "hash": "82ebbae9f8c7b7fc",
+      "nodes": 49,
+      "relations": 96
     },
     "media/config.go": {
       "hash": "76cd971213f18425",
@@ -2306,9 +2306,9 @@
       "relations": 47
     },
     "metrics/metrics.go": {
-      "hash": "0f31434916b29d51",
-      "nodes": 76,
-      "relations": 120
+      "hash": "1243ba80eaf1f831",
+      "nodes": 77,
+      "relations": 122
     },
     "metrics/metrics_test.go": {
       "hash": "bb6ddfa34c650a77",
@@ -2316,9 +2316,9 @@
       "relations": 24
     },
     "minifiers/config.go": {
-      "hash": "96abd7b643a15892",
-      "nodes": 32,
-      "relations": 67
+      "hash": "14abb0c4b35c0004",
+      "nodes": 33,
+      "relations": 71
     },
     "minifiers/config_test.go": {
       "hash": "b022da9b1e9189a1",
@@ -2336,9 +2336,9 @@
       "relations": 41
     },
     "modules/client.go": {
-      "hash": "b07b6de83ef0adc7",
-      "nodes": 163,
-      "relations": 262
+      "hash": "aefe42979b25a73e",
+      "nodes": 164,
+      "relations": 272
     },
     "modules/client_test.go": {
       "hash": "34ebedbcbfa7071d",
@@ -2386,9 +2386,9 @@
       "relations": 10
     },
     "modules/npm/package_builder.go": {
-      "hash": "5302484b65b43197",
-      "nodes": 82,
-      "relations": 125
+      "hash": "652c5f6350ad363b",
+      "nodes": 83,
+      "relations": 128
     },
     "modules/npm/package_builder_integration_test.go": {
       "hash": "b53fa26d14256bca",
@@ -2401,9 +2401,9 @@
       "relations": 10
     },
     "navigation/menu.go": {
-      "hash": "085e45fcbec5e616",
-      "nodes": 80,
-      "relations": 123
+      "hash": "eb269f65235c2202",
+      "nodes": 83,
+      "relations": 129
     },
     "navigation/menu_cache.go": {
       "hash": "6d6094eb718f08c0",
@@ -2421,9 +2421,9 @@
       "relations": 64
     },
     "output/config.go": {
-      "hash": "628e97c1f8a40071",
-      "nodes": 19,
-      "relations": 35
+      "hash": "6fb00b4ae90898d0",
+      "nodes": 20,
+      "relations": 41
     },
     "output/config_test.go": {
       "hash": "0f6f6784a73f1fe5",
@@ -2451,9 +2451,9 @@
       "relations": 20
     },
     "parser/frontmatter.go": {
-      "hash": "1424cf1e596570ab",
-      "nodes": 17,
-      "relations": 28
+      "hash": "306d0029474a55e9",
+      "nodes": 18,
+      "relations": 32
     },
     "parser/frontmatter_test.go": {
       "hash": "c0d7f063ba3d1434",
@@ -2471,9 +2471,9 @@
       "relations": 10
     },
     "parser/metadecoders/decoder.go": {
-      "hash": "cb66d9ec1e031ba1",
-      "nodes": 67,
-      "relations": 105
+      "hash": "5c22b50c9c36d34f",
+      "nodes": 68,
+      "relations": 111
     },
     "parser/metadecoders/decoder_integration_test.go": {
       "hash": "ec1b0de7dbc3bfeb",
@@ -2486,9 +2486,9 @@
       "relations": 20
     },
     "parser/metadecoders/encoder.go": {
-      "hash": "be235fdfc924a9d8",
-      "nodes": 4,
-      "relations": 5
+      "hash": "c577c7637e1b8d2a",
+      "nodes": 5,
+      "relations": 6
     },
     "parser/metadecoders/format.go": {
       "hash": "7d7623908f1c01df",
@@ -2501,9 +2501,9 @@
       "relations": 10
     },
     "parser/pageparser/doc.go": {
-      "hash": "90d618b0c7cfbfc1",
-      "nodes": 1,
-      "relations": 0
+      "hash": "858c6684bff93883",
+      "nodes": 2,
+      "relations": 13
     },
     "parser/pageparser/item.go": {
       "hash": "aaab18b5703fc3db",
@@ -2566,9 +2566,9 @@
       "relations": 31
     },
     "publisher/htmlElementsCollector.go": {
-      "hash": "498cfbf49751d714",
-      "nodes": 81,
-      "relations": 120
+      "hash": "6d25250459bc834c",
+      "nodes": 82,
+      "relations": 123
     },
     "publisher/htmlElementsCollector_test.go": {
       "hash": "b38df22c1c45fc9d",
@@ -2581,9 +2581,9 @@
       "relations": 90
     },
     "related/inverted_index.go": {
-      "hash": "267c4aaea024264d",
-      "nodes": 125,
-      "relations": 188
+      "hash": "941bb19fd4ff9e3f",
+      "nodes": 126,
+      "relations": 191
     },
     "related/inverted_index_test.go": {
       "hash": "784dbd780af9bdb7",
@@ -2596,17 +2596,17 @@
       "relations": 20
     },
     "releaser/releaser.go": {
-      "hash": "4259bfabec6bec32",
-      "nodes": 37,
-      "relations": 57
+      "hash": "5b79d52079eff285",
+      "nodes": 38,
+      "relations": 58
     },
     "resources/docs.go": {
-      "hash": "c5d5cc15578543ec",
-      "nodes": 1,
-      "relations": 0
+      "hash": "0183af85202302f1",
+      "nodes": 2,
+      "relations": 16
     },
     "resources/image.go": {
-      "hash": "8e271bc5df8c31e8",
+      "hash": "4c983ea1b1b291e3",
       "nodes": 72,
       "relations": 115
     },
@@ -2621,9 +2621,9 @@
       "relations": 91
     },
     "resources/images/auto_orient.go": {
-      "hash": "1980ddacdf5ab205",
-      "nodes": 18,
-      "relations": 24
+      "hash": "e38e2c923a766d67",
+      "nodes": 19,
+      "relations": 46
     },
     "resources/images/codec.go": {
       "hash": "c4b419edde5fdbed",
@@ -2686,9 +2686,9 @@
       "relations": 24
     },
     "resources/images/imagetesting/testing.go": {
-      "hash": "74620ce0825296c0",
-      "nodes": 37,
-      "relations": 75
+      "hash": "7c8bc4ccdf0278a5",
+      "nodes": 38,
+      "relations": 76
     },
     "resources/images/mask.go": {
       "hash": "6ce6362def3e4e84",
@@ -2701,9 +2701,9 @@
       "relations": 36
     },
     "resources/images/meta/meta.go": {
-      "hash": "010564284415bbd7",
-      "nodes": 72,
-      "relations": 113
+      "hash": "82ba6ebd48a06085",
+      "nodes": 75,
+      "relations": 118
     },
     "resources/images/meta/meta_integration_test.go": {
       "hash": "daf14722f41fd5c7",
@@ -2751,9 +2751,9 @@
       "relations": 56
     },
     "resources/internal/key.go": {
-      "hash": "c9bfcc6e52e0292b",
-      "nodes": 9,
-      "relations": 12
+      "hash": "d4e615f47b1e3f05",
+      "nodes": 10,
+      "relations": 15
     },
     "resources/internal/key_test.go": {
       "hash": "c1c6a95f63301121",
@@ -2766,9 +2766,9 @@
       "relations": 32
     },
     "resources/jsconfig/jsconfig.go": {
-      "hash": "400687094166a5f8",
-      "nodes": 16,
-      "relations": 24
+      "hash": "969fe3084c68c9f7",
+      "nodes": 17,
+      "relations": 26
     },
     "resources/jsconfig/jsconfig_test.go": {
       "hash": "ec863631cae7a132",
@@ -2776,9 +2776,9 @@
       "relations": 14
     },
     "resources/kinds/kinds.go": {
-      "hash": "4f5a8ace2048159c",
-      "nodes": 27,
-      "relations": 30
+      "hash": "f0a5af2830cdca42",
+      "nodes": 28,
+      "relations": 32
     },
     "resources/kinds/kinds_test.go": {
       "hash": "abdc6ecd2b1feb57",
@@ -2786,9 +2786,9 @@
       "relations": 8
     },
     "resources/page/hugoinfo.go": {
-      "hash": "bfef11d87789e218",
-      "nodes": 49,
-      "relations": 79
+      "hash": "969794380d75dc1d",
+      "nodes": 50,
+      "relations": 128
     },
     "resources/page/hugoinfo_test.go": {
       "hash": "d5c6f23088c3fef3",
@@ -2816,9 +2816,9 @@
       "relations": 14
     },
     "resources/page/page_generate/generate_page_wrappers.go": {
-      "hash": "6d1c246ad0c3cbdb",
-      "nodes": 18,
-      "relations": 33
+      "hash": "ab9153d4cc2463fc",
+      "nodes": 19,
+      "relations": 34
     },
     "resources/page/page_integration_test.go": {
       "hash": "7b7c6b3185a710a2",
@@ -2901,9 +2901,9 @@
       "relations": 85
     },
     "resources/page/pagemeta/page_frontmatter.go": {
-      "hash": "9858f9ec659e901a",
-      "nodes": 246,
-      "relations": 366
+      "hash": "6b2dc54dc663e1e5",
+      "nodes": 247,
+      "relations": 371
     },
     "resources/page/pagemeta/page_frontmatter_test.go": {
       "hash": "800616d510f213d0",
@@ -2971,9 +2971,9 @@
       "relations": 19
     },
     "resources/page/pages_sort.go": {
-      "hash": "3cf811e9a8e3ec6d",
-      "nodes": 63,
-      "relations": 80
+      "hash": "124818f0622778e9",
+      "nodes": 82,
+      "relations": 99
     },
     "resources/page/pages_sort_search.go": {
       "hash": "54bc977105299ecd",
@@ -3011,9 +3011,9 @@
       "relations": 13
     },
     "resources/page/permalinks.go": {
-      "hash": "fff83a40e6af415d",
-      "nodes": 117,
-      "relations": 156
+      "hash": "5be7b91b507c77f6",
+      "nodes": 119,
+      "relations": 158
     },
     "resources/page/permalinks_integration_test.go": {
       "hash": "5868fb8235be9c22",
@@ -3036,9 +3036,9 @@
       "relations": 8
     },
     "resources/page/siteidentities/identities.go": {
-      "hash": "d36b65f6d75028be",
-      "nodes": 5,
-      "relations": 6
+      "hash": "6e23e9570c3e313c",
+      "nodes": 6,
+      "relations": 7
     },
     "resources/page/taxonomy.go": {
       "hash": "d2206cb118a9de12",
@@ -3071,9 +3071,9 @@
       "relations": 11
     },
     "resources/postpub/fields.go": {
-      "hash": "002c9cc688c84717",
-      "nodes": 13,
-      "relations": 14
+      "hash": "0db3ea3df98b547a",
+      "nodes": 14,
+      "relations": 17
     },
     "resources/postpub/fields_test.go": {
       "hash": "532e256781de65bd",
@@ -3091,9 +3091,9 @@
       "relations": 275
     },
     "resources/resource/dates.go": {
-      "hash": "28ca7a079ca84334",
-      "nodes": 14,
-      "relations": 21
+      "hash": "32d6704ad44e7a17",
+      "nodes": 15,
+      "relations": 28
     },
     "resources/resource/params.go": {
       "hash": "7e5dd719e86cff4e",
@@ -3131,9 +3131,9 @@
       "relations": 72
     },
     "resources/resource_factories/bundler/bundler.go": {
-      "hash": "c26e1e512cb215f0",
-      "nodes": 29,
-      "relations": 47
+      "hash": "dd71ec10f80bdc87",
+      "nodes": 30,
+      "relations": 49
     },
     "resources/resource_factories/bundler/bundler_test.go": {
       "hash": "1fc5e97ac180d97a",
@@ -3141,9 +3141,9 @@
       "relations": 14
     },
     "resources/resource_factories/create/create.go": {
-      "hash": "623fc8a75495b1c3",
-      "nodes": 62,
-      "relations": 113
+      "hash": "719aacdc9df276db",
+      "nodes": 63,
+      "relations": 117
     },
     "resources/resource_factories/create/create_integration_test.go": {
       "hash": "b1e13f9e8ebfe5c6",
@@ -3181,9 +3181,9 @@
       "relations": 13
     },
     "resources/resource_transformers/babel/babel.go": {
-      "hash": "2afc9923c81431c8",
-      "nodes": 45,
-      "relations": 86
+      "hash": "68763dfb13584011",
+      "nodes": 46,
+      "relations": 88
     },
     "resources/resource_transformers/babel/babel_integration_test.go": {
       "hash": "e4437fb229b15f03",
@@ -3191,9 +3191,9 @@
       "relations": 28
     },
     "resources/resource_transformers/cssjs/inline_imports.go": {
-      "hash": "0b73398b437be3e3",
-      "nodes": 51,
-      "relations": 92
+      "hash": "e75eff9e03ae5fee",
+      "nodes": 52,
+      "relations": 98
     },
     "resources/resource_transformers/cssjs/inline_imports_test.go": {
       "hash": "49b3afba24e6739a",
@@ -3211,9 +3211,9 @@
       "relations": 50
     },
     "resources/resource_transformers/cssjs/tailwindcss.go": {
-      "hash": "9c04ccc3245611c6",
-      "nodes": 34,
-      "relations": 62
+      "hash": "80056dfe37135ac5",
+      "nodes": 35,
+      "relations": 63
     },
     "resources/resource_transformers/cssjs/tailwindcss_integration_test.go": {
       "hash": "5bc4a6eddbded771",
@@ -3221,14 +3221,14 @@
       "relations": 16
     },
     "resources/resource_transformers/htesting/testhelpers.go": {
-      "hash": "28f9ac3e78f9739d",
-      "nodes": 10,
-      "relations": 19
+      "hash": "19d7445c854c23fb",
+      "nodes": 11,
+      "relations": 20
     },
     "resources/resource_transformers/integrity/integrity.go": {
-      "hash": "0fe215d8502164ba",
-      "nodes": 33,
-      "relations": 58
+      "hash": "e88f013e99250c48",
+      "nodes": 34,
+      "relations": 60
     },
     "resources/resource_transformers/integrity/integrity_test.go": {
       "hash": "f24ea777377912ed",
@@ -3236,9 +3236,9 @@
       "relations": 22
     },
     "resources/resource_transformers/js/build.go": {
-      "hash": "62cd3c821ccee791",
-      "nodes": 33,
-      "relations": 55
+      "hash": "7de409077b70201d",
+      "nodes": 34,
+      "relations": 58
     },
     "resources/resource_transformers/js/js_integration_test.go": {
       "hash": "31a301e766a51135",
@@ -3256,9 +3256,9 @@
       "relations": 11
     },
     "resources/resource_transformers/minifier/minify.go": {
-      "hash": "d28aadafc3b9bd78",
-      "nodes": 18,
-      "relations": 29
+      "hash": "7cef7b86a35c969f",
+      "nodes": 19,
+      "relations": 32
     },
     "resources/resource_transformers/minifier/minify_test.go": {
       "hash": "45aeae8e7f759416",
@@ -3266,9 +3266,9 @@
       "relations": 20
     },
     "resources/resource_transformers/templates/execute_as_template.go": {
-      "hash": "f6d232647c464377",
-      "nodes": 28,
-      "relations": 49
+      "hash": "bd57e58c734d9622",
+      "nodes": 29,
+      "relations": 51
     },
     "resources/resource_transformers/templates/templates_integration_test.go": {
       "hash": "5b4abcb8ef8ce081",
@@ -3276,9 +3276,9 @@
       "relations": 8
     },
     "resources/resource_transformers/tocss/dartsass/client.go": {
-      "hash": "b6255366c9fbde8c",
-      "nodes": 45,
-      "relations": 88
+      "hash": "98b0d0866734a15d",
+      "nodes": 46,
+      "relations": 91
     },
     "resources/resource_transformers/tocss/dartsass/dartsass_integration_test.go": {
       "hash": "56834606d92402b9",
@@ -3291,9 +3291,9 @@
       "relations": 70
     },
     "resources/resource_transformers/tocss/sass/helpers.go": {
-      "hash": "2730af5d28257f3f",
-      "nodes": 30,
-      "relations": 47
+      "hash": "b2e7a0797bbb3b13",
+      "nodes": 31,
+      "relations": 49
     },
     "resources/resource_transformers/tocss/sass/helpers_test.go": {
       "hash": "a8bf4b3df4f250d2",
@@ -3301,9 +3301,9 @@
       "relations": 8
     },
     "resources/resource_transformers/tocss/scss/client.go": {
-      "hash": "14b91653cc2568f1",
-      "nodes": 30,
-      "relations": 50
+      "hash": "34773174a5e92d60",
+      "nodes": 31,
+      "relations": 56
     },
     "resources/resource_transformers/tocss/scss/client_extended.go": {
       "hash": "e1c9ad8414302b71",
@@ -3356,9 +3356,9 @@
       "relations": 82
     },
     "scripts/fork_go_templates/main.go": {
-      "hash": "45167de936e4fba2",
-      "nodes": 47,
-      "relations": 68
+      "hash": "0fd5cf54d70cd71a",
+      "nodes": 48,
+      "relations": 69
     },
     "source/content_directory_test.go": {
       "hash": "94010edbc01e6e50",
@@ -3366,9 +3366,9 @@
       "relations": 32
     },
     "source/fileInfo.go": {
-      "hash": "8f27f49ebef104c0",
-      "nodes": 42,
-      "relations": 64
+      "hash": "ac5e8c3a168b9ab6",
+      "nodes": 43,
+      "relations": 67
     },
     "source/sourceSpec.go": {
       "hash": "3bdf4cb992fdcc7d",
@@ -3376,9 +3376,9 @@
       "relations": 26
     },
     "tpl/cast/cast.go": {
-      "hash": "77997673ea601d59",
-      "nodes": 13,
-      "relations": 16
+      "hash": "f6a5ceda28e4ad50",
+      "nodes": 14,
+      "relations": 20
     },
     "tpl/cast/cast_test.go": {
       "hash": "ecc3973ebf4e60de",
@@ -3396,9 +3396,9 @@
       "relations": 10
     },
     "tpl/collections/append.go": {
-      "hash": "3d8b1ec0c58e786c",
-      "nodes": 5,
-      "relations": 8
+      "hash": "e0c8139ed5897385",
+      "nodes": 6,
+      "relations": 32
     },
     "tpl/collections/append_test.go": {
       "hash": "8f18c2fb1bfe962b",
@@ -3516,9 +3516,9 @@
       "relations": 39
     },
     "tpl/compare/compare.go": {
-      "hash": "914438ce67f40596",
-      "nodes": 66,
-      "relations": 87
+      "hash": "b65a9948a01d93d6",
+      "nodes": 67,
+      "relations": 90
     },
     "tpl/compare/compare_test.go": {
       "hash": "502f76dffb3d7223",
@@ -3531,9 +3531,9 @@
       "relations": 14
     },
     "tpl/crypto/crypto.go": {
-      "hash": "70896620dffd5415",
-      "nodes": 23,
-      "relations": 40
+      "hash": "99a68012e4362d9c",
+      "nodes": 24,
+      "relations": 43
     },
     "tpl/crypto/crypto_test.go": {
       "hash": "9348b38ff5598d18",
@@ -3551,14 +3551,14 @@
       "relations": 53
     },
     "tpl/css/css.go": {
-      "hash": "1edbc061e4615ca3",
-      "nodes": 45,
-      "relations": 92
+      "hash": "beb758e29ab49d5c",
+      "nodes": 46,
+      "relations": 94
     },
     "tpl/debug/debug.go": {
-      "hash": "d6624a7173a05687",
-      "nodes": 40,
-      "relations": 63
+      "hash": "1b008bdf46f40c26",
+      "nodes": 41,
+      "relations": 66
     },
     "tpl/debug/debug_integration_test.go": {
       "hash": "51cd587e813274ff",
@@ -3571,9 +3571,9 @@
       "relations": 11
     },
     "tpl/diagrams/diagrams.go": {
-      "hash": "0e887e575b2e4bc9",
-      "nodes": 7,
-      "relations": 12
+      "hash": "ac143d9e20cf1e71",
+      "nodes": 8,
+      "relations": 15
     },
     "tpl/diagrams/goat.go": {
       "hash": "63c67bcfb19f0a4d",
@@ -3586,9 +3586,9 @@
       "relations": 11
     },
     "tpl/encoding/encoding.go": {
-      "hash": "a31ba1db996f6b35",
-      "nodes": 21,
-      "relations": 39
+      "hash": "b5bb9e1fdddbdd66",
+      "nodes": 22,
+      "relations": 42
     },
     "tpl/encoding/encoding_test.go": {
       "hash": "9a412c5f1b5b4743",
@@ -3601,9 +3601,9 @@
       "relations": 11
     },
     "tpl/fmt/fmt.go": {
-      "hash": "85b3a99b018f9a93",
-      "nodes": 45,
-      "relations": 57
+      "hash": "aee8dfb0c1346858",
+      "nodes": 46,
+      "relations": 60
     },
     "tpl/fmt/fmt_integration_test.go": {
       "hash": "c5435bbd3a581a12",
@@ -3616,9 +3616,9 @@
       "relations": 11
     },
     "tpl/hash/hash.go": {
-      "hash": "634b3861eb892a0c",
-      "nodes": 15,
-      "relations": 26
+      "hash": "7cec4be8e119fb11",
+      "nodes": 16,
+      "relations": 28
     },
     "tpl/hash/hash_test.go": {
       "hash": "22f6fb2c7c5800a5",
@@ -3626,14 +3626,14 @@
       "relations": 26
     },
     "tpl/hugo/init.go": {
-      "hash": "7046eefb1c5e3007",
-      "nodes": 6,
-      "relations": 11
+      "hash": "442514eacd3fac59",
+      "nodes": 7,
+      "relations": 12
     },
     "tpl/images/images.go": {
-      "hash": "6b9b1119e0588bf2",
-      "nodes": 31,
-      "relations": 66
+      "hash": "a1c44cf4b191976c",
+      "nodes": 32,
+      "relations": 70
     },
     "tpl/images/images_integration_test.go": {
       "hash": "16570336a8e0f07e",
@@ -3651,9 +3651,9 @@
       "relations": 11
     },
     "tpl/inflect/inflect.go": {
-      "hash": "20afa13c6ee7d0f9",
-      "nodes": 13,
-      "relations": 20
+      "hash": "8b51b1b144f060bf",
+      "nodes": 14,
+      "relations": 23
     },
     "tpl/inflect/inflect_test.go": {
       "hash": "45efad1911c0ade2",
@@ -3666,9 +3666,9 @@
       "relations": 11
     },
     "tpl/internal/go_templates/cfg/cfg.go": {
-      "hash": "e6a0bd45836dc902",
-      "nodes": 2,
-      "relations": 1
+      "hash": "45eb7cceb01bb623",
+      "nodes": 3,
+      "relations": 2
     },
     "tpl/internal/go_templates/fmtsort/export_test.go": {
       "hash": "ab232e975ba88900",
@@ -3676,9 +3676,9 @@
       "relations": 6
     },
     "tpl/internal/go_templates/fmtsort/sort.go": {
-      "hash": "03ba4fb30f5c8536",
-      "nodes": 15,
-      "relations": 21
+      "hash": "91bfa7eac7c10382",
+      "nodes": 16,
+      "relations": 24
     },
     "tpl/internal/go_templates/fmtsort/sort_test.go": {
       "hash": "5b98a0bee7dc8f4e",
@@ -3686,9 +3686,9 @@
       "relations": 63
     },
     "tpl/internal/go_templates/htmltemplate/attr.go": {
-      "hash": "b2d8422f567f6913",
-      "nodes": 5,
-      "relations": 6
+      "hash": "67754584870e27bd",
+      "nodes": 6,
+      "relations": 38
     },
     "tpl/internal/go_templates/htmltemplate/attr_string.go": {
       "hash": "9c459066a5241027",
@@ -3846,9 +3846,9 @@
       "relations": 6
     },
     "tpl/internal/go_templates/testenv/exec.go": {
-      "hash": "6fcb528e6a435522",
-      "nodes": 34,
-      "relations": 55
+      "hash": "8bde750f05cc65c4",
+      "nodes": 35,
+      "relations": 63
     },
     "tpl/internal/go_templates/testenv/noopt.go": {
       "hash": "769ef5bfef507cb1",
@@ -3886,9 +3886,9 @@
       "relations": 15
     },
     "tpl/internal/go_templates/texttemplate/doc.go": {
-      "hash": "7afbe6bf354989d2",
-      "nodes": 1,
-      "relations": 0
+      "hash": "73d74a355ca5536c",
+      "nodes": 2,
+      "relations": 14
     },
     "tpl/internal/go_templates/texttemplate/example_test.go": {
       "hash": "6757f6b2fc8cd0dc",
@@ -3951,9 +3951,9 @@
       "relations": 14
     },
     "tpl/internal/go_templates/texttemplate/parse/lex.go": {
-      "hash": "fdbfe08c4f1f9b18",
-      "nodes": 143,
-      "relations": 170
+      "hash": "e383ae5f6d96ae76",
+      "nodes": 144,
+      "relations": 175
     },
     "tpl/internal/go_templates/texttemplate/parse/lex_test.go": {
       "hash": "1ec5fc3ab10a5c6c",
@@ -3981,9 +3981,9 @@
       "relations": 57
     },
     "tpl/internal/resourcehelpers/helpers.go": {
-      "hash": "3d0ebf1b62a09b5f",
-      "nodes": 9,
-      "relations": 16
+      "hash": "b604492b2093ee2b",
+      "nodes": 10,
+      "relations": 17
     },
     "tpl/internal/templatefuncRegistry_test.go": {
       "hash": "d7d1331bbe64c049",
@@ -3991,14 +3991,14 @@
       "relations": 13
     },
     "tpl/internal/templatefuncsRegistry.go": {
-      "hash": "dd01e55c677bc7fa",
-      "nodes": 57,
-      "relations": 102
+      "hash": "483faaac47f71b6d",
+      "nodes": 58,
+      "relations": 104
     },
     "tpl/js/init.go": {
-      "hash": "8fc2a8cb75c970c8",
-      "nodes": 6,
-      "relations": 11
+      "hash": "8693db51bc4c95dc",
+      "nodes": 7,
+      "relations": 13
     },
     "tpl/js/js.go": {
       "hash": "73859367b8146c01",
@@ -4006,9 +4006,9 @@
       "relations": 47
     },
     "tpl/lang/init.go": {
-      "hash": "ef202b4ec1ddb395",
-      "nodes": 7,
-      "relations": 14
+      "hash": "9912ec974815370a",
+      "nodes": 8,
+      "relations": 17
     },
     "tpl/lang/lang.go": {
       "hash": "55fbc5c771776c27",
@@ -4021,9 +4021,9 @@
       "relations": 18
     },
     "tpl/math/init.go": {
-      "hash": "cd340c65019d74cf",
-      "nodes": 7,
-      "relations": 14
+      "hash": "f7a6d6f67ff3221f",
+      "nodes": 8,
+      "relations": 18
     },
     "tpl/math/math.go": {
       "hash": "8f4fb886e2745d64",
@@ -4041,14 +4041,14 @@
       "relations": 8
     },
     "tpl/openapi/docs.go": {
-      "hash": "00769b3b9f607dc9",
-      "nodes": 1,
-      "relations": 0
+      "hash": "7a03cfe9cb7b4427",
+      "nodes": 2,
+      "relations": 1
     },
     "tpl/openapi/openapi3/init.go": {
-      "hash": "218105938fa9a055",
-      "nodes": 7,
-      "relations": 14
+      "hash": "5cbdf1227d036944",
+      "nodes": 8,
+      "relations": 17
     },
     "tpl/openapi/openapi3/openapi3.go": {
       "hash": "2dd2a6e7528ec936",
@@ -4061,9 +4061,9 @@
       "relations": 31
     },
     "tpl/os/init.go": {
-      "hash": "b8ec0aee9d0d78fb",
-      "nodes": 6,
-      "relations": 11
+      "hash": "461d777f86c62877",
+      "nodes": 7,
+      "relations": 15
     },
     "tpl/os/os.go": {
       "hash": "7ed0db90787d1776",
@@ -4081,9 +4081,9 @@
       "relations": 23
     },
     "tpl/page/init.go": {
-      "hash": "1d7e9bd6f0af0f48",
-      "nodes": 8,
-      "relations": 17
+      "hash": "9e484761fb2c3161",
+      "nodes": 9,
+      "relations": 19
     },
     "tpl/page/page_integration_test.go": {
       "hash": "747c17a45928fa3c",
@@ -4091,9 +4091,9 @@
       "relations": 20
     },
     "tpl/partials/init.go": {
-      "hash": "29b3327c41fd7331",
-      "nodes": 6,
-      "relations": 11
+      "hash": "b798c28a6e934079",
+      "nodes": 7,
+      "relations": 14
     },
     "tpl/partials/partials.go": {
       "hash": "09b62d508da3b139",
@@ -4106,9 +4106,9 @@
       "relations": 51
     },
     "tpl/path/init.go": {
-      "hash": "2685e737530f01d3",
-      "nodes": 8,
-      "relations": 17
+      "hash": "95bd6d8a86992a05",
+      "nodes": 9,
+      "relations": 20
     },
     "tpl/path/path.go": {
       "hash": "9da07f867c1d7548",
@@ -4121,9 +4121,9 @@
       "relations": 31
     },
     "tpl/reflect/init.go": {
-      "hash": "5bda9377741dad78",
-      "nodes": 6,
-      "relations": 11
+      "hash": "7e708c42fd9f636c",
+      "nodes": 7,
+      "relations": 15
     },
     "tpl/reflect/reflect.go": {
       "hash": "185b269233b0dbec",
@@ -4141,9 +4141,9 @@
       "relations": 11
     },
     "tpl/resources/init.go": {
-      "hash": "37a0c3a5a6f7754a",
-      "nodes": 6,
-      "relations": 11
+      "hash": "14f23fec7fb95ea1",
+      "nodes": 7,
+      "relations": 14
     },
     "tpl/resources/resources.go": {
       "hash": "dc7a49ab55ed3c28",
@@ -4156,9 +4156,9 @@
       "relations": 29
     },
     "tpl/safe/init.go": {
-      "hash": "14237687f847f932",
-      "nodes": 6,
-      "relations": 11
+      "hash": "3e52ad89d5124048",
+      "nodes": 7,
+      "relations": 14
     },
     "tpl/safe/safe.go": {
       "hash": "eb0ff4f0a6ed73e3",
@@ -4171,14 +4171,14 @@
       "relations": 22
     },
     "tpl/site/init.go": {
-      "hash": "a19fd03d553d010a",
-      "nodes": 7,
-      "relations": 14
+      "hash": "4fd0e7035e17e6ea",
+      "nodes": 8,
+      "relations": 15
     },
     "tpl/strings/init.go": {
-      "hash": "73792d2fca77148b",
-      "nodes": 6,
-      "relations": 11
+      "hash": "036ebf0aecfaacbc",
+      "nodes": 7,
+      "relations": 18
     },
     "tpl/strings/regexp.go": {
       "hash": "7fa7eca5f598a76c",
@@ -4211,9 +4211,9 @@
       "relations": 16
     },
     "tpl/template.go": {
-      "hash": "ef9850dc6df2e8e7",
-      "nodes": 61,
-      "relations": 104
+      "hash": "cd70ec7026c7fcf1",
+      "nodes": 62,
+      "relations": 106
     },
     "tpl/template_test.go": {
       "hash": "6fe0851a9a6ae715",
@@ -4236,9 +4236,9 @@
       "relations": 51
     },
     "tpl/templates/init.go": {
-      "hash": "77a3c360f21a7370",
-      "nodes": 7,
-      "relations": 14
+      "hash": "c0aa503a3cb6bfe8",
+      "nodes": 8,
+      "relations": 20
     },
     "tpl/templates/templates.go": {
       "hash": "d98aa0b9df357a9f",
@@ -4251,9 +4251,9 @@
       "relations": 44
     },
     "tpl/time/init.go": {
-      "hash": "f003235167d38aca",
-      "nodes": 8,
-      "relations": 17
+      "hash": "59baea7232cffe4c",
+      "nodes": 9,
+      "relations": 21
     },
     "tpl/time/time.go": {
       "hash": "58d8a48a78b65288",
@@ -4271,9 +4271,9 @@
       "relations": 37
     },
     "tpl/tplimpl/category_string.go": {
-      "hash": "abc271479e29f5fa",
-      "nodes": 6,
-      "relations": 7
+      "hash": "2a20f075d8fcedd6",
+      "nodes": 7,
+      "relations": 24
     },
     "tpl/tplimpl/embedded_templates_integration_test.go": {
       "hash": "c1deada80fe5a3c7",
@@ -4356,14 +4356,14 @@
       "relations": 26
     },
     "tpl/tplimplinit/tplimplinit.go": {
-      "hash": "be7b5f6c7b841e84",
-      "nodes": 40,
-      "relations": 107
+      "hash": "311a3d6abc079862",
+      "nodes": 41,
+      "relations": 108
     },
     "tpl/transform/init.go": {
-      "hash": "70aaf9556f927b5a",
-      "nodes": 6,
-      "relations": 11
+      "hash": "27d3b1701d7d52ca",
+      "nodes": 7,
+      "relations": 19
     },
     "tpl/transform/remarshal.go": {
       "hash": "cc2863c74309cbe6",
@@ -4401,9 +4401,9 @@
       "relations": 53
     },
     "tpl/urls/init.go": {
-      "hash": "ab5bc02944624e61",
-      "nodes": 6,
-      "relations": 11
+      "hash": "cfdad95d2fcacd2f",
+      "nodes": 7,
+      "relations": 14
     },
     "tpl/urls/urls.go": {
       "hash": "45e2973c6ca24f63",
@@ -4416,9 +4416,9 @@
       "relations": 28
     },
     "transform/chain.go": {
-      "hash": "95c4985692a533a8",
-      "nodes": 26,
-      "relations": 42
+      "hash": "b803ba889a1a5672",
+      "nodes": 27,
+      "relations": 44
     },
     "transform/chain_test.go": {
       "hash": "e50ee97a116ef601",
@@ -4426,9 +4426,9 @@
       "relations": 18
     },
     "transform/livereloadinject/livereloadinject.go": {
-      "hash": "973e8ffdd4083429",
-      "nodes": 12,
-      "relations": 25
+      "hash": "f53fb074e4a3cdce",
+      "nodes": 13,
+      "relations": 27
     },
     "transform/livereloadinject/livereloadinject_test.go": {
       "hash": "ccf3cb339c80aa13",
@@ -4436,9 +4436,9 @@
       "relations": 26
     },
     "transform/metainject/hugogenerator.go": {
-      "hash": "77f3376389df62cd",
-      "nodes": 11,
-      "relations": 22
+      "hash": "fa6a4056c71bc606",
+      "nodes": 12,
+      "relations": 24
     },
     "transform/metainject/hugogenerator_test.go": {
       "hash": "c8b5418db070bc9e",
@@ -4446,9 +4446,9 @@
       "relations": 14
     },
     "transform/urlreplacers/absurl.go": {
-      "hash": "3482f1ebbbfa02f1",
-      "nodes": 7,
-      "relations": 8
+      "hash": "db170303a0d47ffc",
+      "nodes": 8,
+      "relations": 11
     },
     "transform/urlreplacers/absurlreplacer.go": {
       "hash": "ce320101a3867cb4",
@@ -4461,14 +4461,14 @@
       "relations": 91
     },
     "watcher/batcher.go": {
-      "hash": "0fa91cceee19d5e7",
-      "nodes": 14,
-      "relations": 22
+      "hash": "7712997239951f2b",
+      "nodes": 15,
+      "relations": 23
     },
     "watcher/filenotify/filenotify.go": {
-      "hash": "117401141a46147d",
-      "nodes": 16,
-      "relations": 24
+      "hash": "a244a91b4c1c9094",
+      "nodes": 17,
+      "relations": 28
     },
     "watcher/filenotify/fsnotify.go": {
       "hash": "64f88f41d980aa81",
@@ -4498,15 +4498,15 @@
       "import": 5947,
       "method": 4867,
       "module": 191,
-      "parameter": 8404,
+      "parameter": 8454,
       "project": 4,
       "type_alias": 187,
-      "variable": 1804
+      "variable": 1805
     },
     "relations": {
       "consumes": 12,
       "contains": 1088,
-      "declares": 34283,
+      "declares": 34334,
       "depends_on": 185,
       "exposes": 4,
       "imports": 5947,
@@ -4517,30 +4517,30 @@
   "ref": "v0.163.3",
   "resolution": {
     "metrics": {
-      "external": 35558,
-      "internal": 52049,
-      "queries": 121250,
-      "resolved": 119220,
-      "unresolved": 2030
+      "external": 58811,
+      "internal": 85573,
+      "queries": 181333,
+      "resolved": 178317,
+      "unresolved": 3016
     },
     "relations": {
-      "calls": 47798,
+      "calls": 49010,
       "consumes": 12,
       "contains": 1088,
-      "declares": 34283,
+      "declares": 34334,
       "depends_on": 185,
       "exposes": 4,
-      "has_type": 9061,
+      "has_type": 22682,
       "imports": 5947,
       "inherits_from": 457,
-      "references": 30403,
+      "references": 72360,
       "resolves_to": 5947
     },
     "status": "ok"
   },
   "totals": {
     "files": 897,
-    "nodes": 31404,
-    "relations": 47466
+    "nodes": 31455,
+    "relations": 47517
   }
 }

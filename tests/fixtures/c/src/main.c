@@ -30,3 +30,10 @@ int main(void)
     }
     return fetch_one(1);
 }
+
+#include "api.h"
+
+int report_version(void)
+{
+    return engine_version();
+}

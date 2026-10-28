@@ -48,8 +48,10 @@ for b in Counter():
 for c in handlers:
     c()
 
-for i in range(3):
-    pass
+
+def counter_loop():
+    for i in range(3):
+        pass
 '''
 
 
@@ -67,9 +69,12 @@ def calls(graph: callix.Graph, how: str | None = None) -> set[tuple[str, str]]:
 
 
 def test_a_loop_variable_is_a_node_only_when_the_body_calls_it(tmp_path: Path) -> None:
+    # Module-level loop targets are module variables (importable globals), so a, b, c
+    # exist as before. Inside a function the policy is unchanged: no node unless called.
     graph = analyse(tmp_path)
     variables = {n.qualified_name for n in graph.nodes.values() if n.kind is NodeKind.VARIABLE}
     assert {"app.a", "app.b", "app.c"} <= variables
+    assert "app.counter_loop.i" not in variables
     assert "app.i" not in variables
 
 

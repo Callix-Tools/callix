@@ -3,7 +3,7 @@ mod common;
 use callix_export::lsif::Lsif;
 use callix_export::model::Graph;
 use callix_export::{Exporter, Options};
-use common::{SAMPLE, check_lsif, edges, labelled};
+use common::{C_DECL_SITES, MODULE_GRAPH, SAMPLE, check_lsif, edges, labelled};
 
 fn export(options: &Options) -> (String, Vec<callix_export::Warning>) {
     let graph = Graph::from_json(SAMPLE).unwrap();
@@ -217,4 +217,102 @@ fn a_hover_carries_what_the_author_wrote() {
     );
     // Undocumented: the kind and name alone.
     assert!(contents.iter().any(|c| c[0]["value"] == "function a.g" && c.as_array().unwrap().len() == 1));
+}
+
+#[test]
+fn a_go_package_graph_is_valid_lsif() {
+    let graph = Graph::from_json(common::GO_PACKAGE_GRAPH).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let elements = check_lsif(&String::from_utf8(out).unwrap());
+    // the package definition, the import path, the qualifier and `fmt`
+    assert!(labelled(&elements, "range").len() >= 4);
+}
+
+#[test]
+fn a_resolves_to_with_a_position_is_a_reference() {
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fl","kind":"file","qualified_name":"src/lib.rs","name":"lib.rs","file_path":"src/lib.rs","span":null,"metadata":{}},
+       {"id":"fs","kind":"file","qualified_name":"src/shapes.rs","name":"shapes.rs","file_path":"src/shapes.rs","span":null,"metadata":{}},
+       {"id":"imp","kind":"import","qualified_name":"src/lib.rs::crate::shapes::Circle","name":"crate::shapes::Circle","file_path":"src/lib.rs","span":[1,1,1,31],"metadata":{}},
+       {"id":"c","kind":"class","qualified_name":"demo::shapes::Circle","name":"Circle","file_path":"src/shapes.rs","span":[1,1,1,19],"metadata":{"name_span":{"__span__":[1,12,1,18]}}}],
+      "relations":[
+       {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{}},
+       {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{"span":{"__span__":[1,24,1,30]},"resolution":"name"}}]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    assert!(
+        labelled(&el, "document").iter().any(|d| d["uri"].as_str().unwrap().ends_with("src/lib.rs")),
+        "src/lib.rs has a document"
+    );
+    let hit = labelled(&el, "range").into_iter().any(|r| {
+        r["start"] == serde_json::json!({"line": 0, "character": 23})
+    });
+    assert!(hit, "the leaf's range is not exported");
+    let refs: usize = edges(&el, "item")
+        .iter()
+        .filter(|i| i["property"] == "references")
+        .map(|i| i["inVs"].as_array().unwrap().len())
+        .sum();
+    assert_eq!(refs, 1);
+}
+
+#[test]
+fn declaration_sites_and_includes_are_ranges() {
+    let graph = Graph::from_json(C_DECL_SITES).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let ranges = labelled(&el, "range");
+    let at = |line: u64, ch: u64| {
+        ranges
+            .iter()
+            .filter(|r| r["start"]["line"] == line && r["start"]["character"] == ch)
+            .count()
+    };
+    // `add`: its definition in a.c and its prototype in a.h.
+    assert_eq!(at(2, 4), 2);
+    // The a.h operand of the include in a.c.
+    assert!(at(0, 9) >= 1);
+    // The header's file symbol is defined on the first character of its own document.
+    assert!(ranges.iter().any(|r| r["start"]["line"] == 0 && r["start"]["character"] == 0 && r["end"]["character"] == 1));
+}
+
+#[test]
+fn a_module_exports_on_its_first_character() {
+    let mut out = Vec::new();
+    let graph = Graph::from_json(MODULE_GRAPH).unwrap();
+    let warnings = Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    check_lsif(&String::from_utf8(out).unwrap());
+    assert!(!warnings.iter().any(|w| w.code == "no-name-span"));
+}
+
+#[test]
+fn a_definition_with_no_text_moves_to_the_first_character() {
+    let dir = std::env::temp_dir().join(format!("callix-lsif-blank-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    // A module placed at 1:1 of a file whose first line is blank, and of an empty file.
+    std::fs::write(dir.join("a.py"), "\n\n  import os\n").unwrap();
+    std::fs::write(dir.join("b.py"), "").unwrap();
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"fb","kind":"file","qualified_name":"b.py","name":"b.py","file_path":"b.py","span":null,"metadata":{}},
+       {"id":"ma","kind":"module","qualified_name":"a","name":"a","file_path":"a.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}},
+       {"id":"mb","kind":"module","qualified_name":"b","name":"b","file_path":"b.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}}],
+      "relations":[]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options { source_root: Some(dir.clone()), ..Options::default() })
+        .unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let ranges = labelled(&el, "range");
+    // a.py: the `i` of `import` on the third line; b.py: nothing to point at.
+    assert_eq!(ranges.len(), 1, "{ranges:?}");
+    assert_eq!(ranges[0]["start"], serde_json::json!({"line": 2, "character": 2}));
+    assert_eq!(ranges[0]["end"], serde_json::json!({"line": 2, "character": 3}));
+    std::fs::remove_dir_all(dir).ok();
 }

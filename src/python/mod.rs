@@ -1,6 +1,7 @@
 //! The Python adapter: tree-sitter parsing and graph structure building.
 
 mod adapter;
+mod annotation;
 mod boundary;
 mod deps;
 mod detector;

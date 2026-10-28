@@ -29,3 +29,9 @@ type Engine struct {
 func (e Engine) Ping() bool {
 	return fmt.Sprint(e.Region) != ""
 }
+
+// Limits bounds a request.
+type Limits struct {
+	Min, Max int
+	Retry    struct{ Count int }
+}

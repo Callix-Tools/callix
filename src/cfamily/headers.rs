@@ -19,9 +19,15 @@
 //! 5. Because one node then has several declaring sites, the site the node is
 //!    BUILT from has to be chosen before any node is written — that is what
 //!    [`DeclLedger`] is for.
-//! 6. A `.h` is claimed by exactly ONE adapter, decided by parse probe. If both
-//!    claimed it, the merged graph would hold two different nodes under one id
-//!    and `Graph::merge` would raise: `Node.__eq__` compares `file_path` and
+//! 6. A `.h` is claimed by exactly ONE adapter. Two rules decide it. The parse
+//!    probe (`probe_dialect`) gives a header to C only when it parses cleanly
+//!    as C AND the C tree is not a misreading of C++ (a namespace or class head
+//!    read as a K&R function, `class` used as a type name). A header the probe
+//!    gives to C still goes to C++ when no C root reads it (a tree with no `.c`
+//!    file, or a header outside every C root); both adapters answer that from
+//!    the same discovery (`adapter::CReach`). If both claimed a header, the
+//!    merged graph would hold two different nodes under one id and
+//!    `Graph::merge` would raise: `Node.__eq__` compares `file_path` and
 //!    `span`, and two grammars do not agree on the span of a declaration one of
 //!    them cannot read.
 
@@ -96,6 +102,42 @@ pub fn qualify_scope(file_rel: &str, scope: &[String], linkage: Linkage) -> Stri
     parts.join(SCOPE_SEPARATOR)
 }
 
+/// Splits a member's qualified name into its class and its bare name.
+///
+/// The split is at the LAST `::` that is outside every parenthesis group, so
+/// the parameter list of the member (or of an enclosing function) never
+/// confuses it: `run()::State::State()` gives (`run()::State`, `State`),
+/// `F::operator()()` gives (`F`, `operator()`) and `n::C::f(std::string)`
+/// gives (`n::C`, `f`). The signature is stripped from the member part only.
+/// None when the name has no such `::`.
+pub fn split_member(qualified_name: &str) -> Option<(&str, &str)> {
+    let bytes = qualified_name.as_bytes();
+    let mut depth = 0usize;
+    let mut cut: Option<usize> = None;
+    let mut at = 0usize;
+    while at < bytes.len() {
+        match bytes[at] {
+            b'(' => depth += 1,
+            b')' => depth = depth.saturating_sub(1),
+            b':' if depth == 0 && bytes.get(at + 1) == Some(&b':') => {
+                cut = Some(at);
+                at += 1;
+            }
+            _ => {}
+        }
+        at += 1;
+    }
+    let cut = cut?;
+    let class = &qualified_name[..cut];
+    let member = &qualified_name[cut + 2..];
+    // `F::operator()()`: the call operator's own parentheses are not the signature's.
+    let member = match member.find("operator()") {
+        Some(position) => &member[..position + "operator()".len()],
+        None => member.split('(').next().unwrap_or(member),
+    };
+    Some((class, member))
+}
+
 /// Where one declaring site of a shared name sits.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct DeclSite {
@@ -121,6 +163,11 @@ struct DeclEntry {
     owner: DeclSite,
     /// Every file that declared the name, in the order the files were walked.
     declared_in: Vec<String>,
+    /// Every recorded (file, name span), in record order, exact duplicates
+    /// skipped. Record order is the adapter's `sort_paths` walk order, so the
+    /// list is deterministic. The value of `metadata["declared_at"]` is this list
+    /// minus the owner's own site.
+    sites: Vec<(String, Span)>,
     /// The documentation: the definition's if it has one, else the first
     /// declaration's.
     doc: Option<String>,
@@ -154,6 +201,10 @@ impl DeclLedger {
             if !entry.declared_in.iter().any(|file| file == &site.file_rel) {
                 entry.declared_in.push(site.file_rel.clone());
             }
+            let at = (site.file_rel.clone(), site.name_span);
+            if !entry.sites.contains(&at) {
+                entry.sites.push(at);
+            }
             if site.doc.is_some()
                 && (entry.doc.is_none() || (site.defines && !entry.doc_is_the_definitions))
             {
@@ -171,6 +222,7 @@ impl DeclLedger {
             key,
             DeclEntry {
                 declared_in: vec![site.file_rel.clone()],
+                sites: vec![(site.file_rel.clone(), site.name_span)],
                 owner: site,
                 doc,
                 doc_is_the_definitions,
@@ -207,6 +259,29 @@ impl DeclLedger {
                     .declared_in
                     .iter()
                     .filter(|file| file.as_str() != entry.owner.file_rel.as_str())
+                    .cloned()
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Every declaring site other than the one the node was built from, as
+    /// (project-relative file, name span) in record order - the value of
+    /// `metadata["declared_at"]`.
+    ///
+    /// Unlike `declared_elsewhere` this keeps a prototype that sits in the SAME
+    /// file as its definition (it has a position of its own). It is computed when
+    /// asked, so an owner that a later definition replaced is excluded correctly.
+    pub fn declared_at(&self, key: &DeclKey) -> Vec<(String, Span)> {
+        self.entries
+            .get(key)
+            .map(|entry| {
+                entry
+                    .sites
+                    .iter()
+                    .filter(|(file, span)| {
+                        !(file == &entry.owner.file_rel && *span == entry.owner.name_span)
+                    })
                     .cloned()
                     .collect()
             })
@@ -314,9 +389,18 @@ pub fn is_ambiguous_header(path: &Path) -> bool {
 /// makes the fallback useful in both directions: a C++ header full of templates
 /// parses as C with a handful of errors, while a C header using `class` or `new`
 /// as an identifier breaks the C++ grammar instead.
+///
+/// A clean C parse is kept unless [`misreads_cpp`] says the C tree has a shape no
+/// C program produces; then the header is C++ even if the C++ parse has errors.
 pub fn probe_dialect(source: &[u8]) -> Result<Dialect, PyErr> {
     let as_c = super::parse_tree(source, Dialect::C)?;
     if !as_c.root_node().has_error() {
+        // A clean C parse can still be a misreading: `namespace a {` and
+        // `class C {` parse as a K&R function definition. That reading is never
+        // right, and a wrong C reading is worse than a C++ one with errors.
+        if misreads_cpp(as_c.root_node(), source) {
+            return Ok(Dialect::Cpp);
+        }
         return Ok(Dialect::C);
     }
     let as_cpp = super::parse_tree(source, Dialect::Cpp)?;
@@ -345,16 +429,219 @@ fn error_score(root: TsNode<'_>) -> usize {
     score
 }
 
+/// Whether a CLEAN C tree is really C++ read through the wrong grammar.
+///
+/// Two shapes, neither of which valid C produces:
+/// - a `function_definition` whose declarator, once pointer, parenthesized and
+///   attributed wrappers are peeled, is not a `function_declarator` (what
+///   `namespace a {` and `class C {` become: a K&R definition of a bare name);
+/// - a `type_identifier` spelled `namespace`, `class`, `template`, `typename` or
+///   `using` (a `class Slice;` forward declaration). A C++ keyword used as a
+///   variable or field name is an `identifier` / `field_identifier`, not a
+///   `type_identifier`, so it does not count.
+fn misreads_cpp(root: TsNode<'_>, source: &[u8]) -> bool {
+    let mut stack = vec![root];
+    while let Some(node) = stack.pop() {
+        match node.kind() {
+            "function_definition" => {
+                if let Some(mut decl) = node.child_by_field_name("declarator") {
+                    while matches!(
+                        decl.kind(),
+                        "pointer_declarator" | "parenthesized_declarator" | "attributed_declarator"
+                    ) {
+                        let next = if decl.kind() == "pointer_declarator" {
+                            decl.child_by_field_name("declarator")
+                        } else {
+                            ts::named_children(decl).into_iter().next()
+                        };
+                        match next {
+                            Some(inner) => decl = inner,
+                            None => break,
+                        }
+                    }
+                    if decl.kind() != "function_declarator" {
+                        return true;
+                    }
+                }
+            }
+            "type_identifier" => {
+                if matches!(
+                    ts::text(node, source).as_ref(),
+                    "namespace" | "class" | "template" | "typename" | "using"
+                ) {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+        stack.extend(ts::children(node));
+    }
+    false
+}
+
 /// Whether this dialect's adapter should analyse the file.
 ///
 /// Exactly one adapter may claim a given `.h`; see the module header for what
-/// happens to `Graph::merge` if two do.
-pub fn claims(dialect: Dialect, path: &Path, source: &[u8]) -> Result<bool, PyErr> {
+/// happens to `Graph::merge` if two do. A `.h` the probe gives to C goes to C++
+/// when `c_reads()` is false, i.e. when no C root reads the file. The closure is
+/// called only for a `.h` that probes as C, so a tree whose headers all probe as
+/// C++ never pays for the C discovery walk.
+pub fn claims(
+    dialect: Dialect,
+    path: &Path,
+    source: &[u8],
+    c_reads: impl FnOnce() -> bool,
+) -> Result<bool, PyErr> {
     if let Some(owner) = dialect_from_extension(path) {
         return Ok(owner == dialect);
     }
     if !is_ambiguous_header(path) {
         return Ok(false);
     }
-    Ok(probe_dialect(source)? == dialect)
+    let owner = match probe_dialect(source)? {
+        Dialect::C if !c_reads() => Dialect::Cpp,
+        decided => decided,
+    };
+    Ok(owner == dialect)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sp(line: u32, c0: u32, c1: u32) -> Span {
+        Span { start_line: line, start_col: c0, end_line: line, end_col: c1 }
+    }
+
+    fn site(file: &str, name_span: Span, defines: bool) -> DeclSite {
+        DeclSite {
+            file_rel: file.to_string(),
+            span: Span { start_line: name_span.start_line, start_col: 1, end_line: name_span.start_line + 1, end_col: 1 },
+            name_span,
+            defines,
+            doc: None,
+        }
+    }
+
+    fn key() -> DeclKey {
+        (NodeKind::Function, "add".to_string())
+    }
+
+    #[test]
+    fn a_prototype_recorded_before_the_definition_is_listed() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        ledger.record(key(), site("a.c", sp(3, 5, 8), true));
+        assert_eq!(ledger.declared_at(&key()), vec![("a.h".to_string(), sp(3, 5, 8))]);
+        assert_eq!(ledger.declared_elsewhere(&key()), vec!["a.h".to_string()]);
+    }
+
+    #[test]
+    fn a_definition_recorded_first_gives_the_same_answer() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.c", sp(3, 5, 8), true));
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        assert_eq!(ledger.declared_at(&key()), vec![("a.h".to_string(), sp(3, 5, 8))]);
+    }
+
+    #[test]
+    fn a_prototype_in_the_owners_own_file_is_listed_but_not_declared_in() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("x.c", sp(1, 5, 6), false));
+        ledger.record(key(), site("x.c", sp(2, 5, 6), true));
+        assert_eq!(ledger.declared_at(&key()), vec![("x.c".to_string(), sp(1, 5, 6))]);
+        assert!(ledger.declared_elsewhere(&key()).is_empty());
+    }
+
+    #[test]
+    fn with_no_definition_the_first_declaration_owns_and_the_rest_are_listed() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("h1.h", sp(1, 5, 6), false));
+        ledger.record(key(), site("h2.h", sp(4, 5, 6), false));
+        assert_eq!(ledger.declared_at(&key()), vec![("h2.h".to_string(), sp(4, 5, 6))]);
+    }
+
+    #[test]
+    fn order_is_record_order_and_duplicates_are_recorded_once() {
+        let mut ledger = DeclLedger::new();
+        ledger.record(key(), site("a.c", sp(9, 5, 8), true));
+        ledger.record(key(), site("b.h", sp(2, 5, 8), false));
+        ledger.record(key(), site("b.h", sp(2, 5, 8), false));
+        ledger.record(key(), site("a.h", sp(3, 5, 8), false));
+        assert_eq!(
+            ledger.declared_at(&key()),
+            vec![("b.h".to_string(), sp(2, 5, 8)), ("a.h".to_string(), sp(3, 5, 8))]
+        );
+        assert!(ledger.declared_at(&(NodeKind::Function, "nope".to_string())).is_empty());
+    }
+
+    fn probes(text: &str) -> Dialect {
+        probe_dialect(text.as_bytes()).unwrap()
+    }
+
+    #[test]
+    fn a_namespace_header_probes_as_cpp() {
+        assert_eq!(probes("namespace a { int f(); }"), Dialect::Cpp);
+        assert_eq!(probes("namespace a {\ninline int f(int x) { return x; }\n}\n"), Dialect::Cpp);
+    }
+
+    #[test]
+    fn a_class_header_probes_as_cpp() {
+        assert_eq!(probes("class C { int y; };"), Dialect::Cpp);
+        assert_eq!(probes("class Slice;\nbool Get(Slice* in);\n"), Dialect::Cpp);
+    }
+
+    #[test]
+    fn a_template_header_still_probes_as_cpp() {
+        assert_eq!(probes("template <typename T> T id(T x) { return x; }"), Dialect::Cpp);
+    }
+
+    #[test]
+    fn plain_c_headers_stay_c() {
+        assert_eq!(probes("struct S { int a; };\nint f(void);\n#define X 1\n"), Dialect::C);
+        assert_eq!(probes("#define A 1\n#define B(x) (x)\n"), Dialect::C);
+        assert_eq!(probes("int f(a) int a; { return a; }\n"), Dialect::C);
+        assert_eq!(probes("struct x { int class; int new; };\nint private(int this);\n"), Dialect::C);
+        assert_eq!(
+            probes("#ifdef __cplusplus\nextern \"C\" {\n#endif\nint f(void);\n#ifdef __cplusplus\n}\n#endif\n"),
+            Dialect::C
+        );
+    }
+
+    #[test]
+    fn a_neutral_h_follows_the_c_reach() {
+        let path = Path::new("cfg.h");
+        let src = b"#define N 1\nint limit(void);\n";
+        assert!(claims(Dialect::Cpp, path, src, || false).unwrap());
+        assert!(!claims(Dialect::C, path, src, || false).unwrap());
+        assert!(claims(Dialect::C, path, src, || true).unwrap());
+        assert!(!claims(Dialect::Cpp, path, src, || true).unwrap());
+    }
+
+    #[test]
+    fn a_namespace_h_is_cpps_and_never_asks_the_reach() {
+        let path = Path::new("ns.h");
+        let src = b"namespace a { int f(); }";
+        assert!(claims(Dialect::Cpp, path, src, || panic!("asked")).unwrap());
+        assert!(!claims(Dialect::C, path, src, || panic!("asked")).unwrap());
+    }
+
+    #[test]
+    fn an_extension_decides_without_the_reach() {
+        assert!(claims(Dialect::C, Path::new("a.c"), b"int f(void);", || panic!("asked")).unwrap());
+        assert!(claims(Dialect::Cpp, Path::new("a.hpp"), b"int f();", || panic!("asked")).unwrap());
+        assert!(!claims(Dialect::C, Path::new("a.txt"), b"", || panic!("asked")).unwrap());
+    }
+
+    #[test]
+    fn a_member_is_split_at_the_last_scope_outside_parentheses() {
+        assert_eq!(split_member("run()::State::State()"), Some(("run()::State", "State")));
+        assert_eq!(split_member("run()::State::stats"), Some(("run()::State", "stats")));
+        assert_eq!(split_member("n::C::f(std::string)"), Some(("n::C", "f")));
+        assert_eq!(split_member("F::operator()()"), Some(("F", "operator()")));
+        assert_eq!(split_member("F::operator()(int)"), Some(("F", "operator()")));
+        assert_eq!(split_member("Region::Europe"), Some(("Region", "Europe")));
+        assert_eq!(split_member("plain"), None);
+        assert_eq!(split_member("f(int)"), None);
+    }
 }

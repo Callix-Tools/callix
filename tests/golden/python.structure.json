@@ -22,13 +22,27 @@
       "span": null
     },
     {
-      "file_path": null,
+      "file_path": "pkg/__init__.py",
       "id": "11571c97e7d8ff98",
       "kind": "module",
-      "metadata": {},
+      "metadata": {
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
       "name": "pkg",
       "qualified_name": "pkg",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "pkg/__init__.py",
@@ -40,15 +54,28 @@
       "span": null
     },
     {
-      "file_path": null,
+      "file_path": "pkg/models.py",
       "id": "1bdd980cd6a154be",
       "kind": "module",
       "metadata": {
-        "doc": "Types the service layer annotates against."
+        "doc": "Types the service layer annotates against.",
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
       },
       "name": "models",
       "qualified_name": "pkg.models",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "pkg/models.py",
@@ -388,7 +415,7 @@
     },
     {
       "file_path": "pkg/models.py",
-      "id": "6e3ff566f2180332",
+      "id": "a0aab695d7f0b6fe",
       "kind": "attribute",
       "metadata": {
         "declared_at": [
@@ -412,7 +439,7 @@
         }
       },
       "name": "region",
-      "qualified_name": "pkg.models.Engine.__init__.region",
+      "qualified_name": "pkg.models.Engine.region",
       "span": [
         22,
         9,
@@ -478,15 +505,28 @@
       ]
     },
     {
-      "file_path": null,
+      "file_path": "pkg/service.py",
       "id": "d11cd84c31385bd7",
       "kind": "module",
       "metadata": {
-        "doc": "Calls, references, annotations and a boundary."
+        "doc": "Calls, references, annotations and a boundary.",
+        "name_span": {
+          "__span__": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
       },
       "name": "service",
       "qualified_name": "pkg.service",
-      "span": null
+      "span": [
+        1,
+        1,
+        1,
+        1
+      ]
     },
     {
       "file_path": "pkg/service.py",
@@ -930,8 +970,8 @@
     {
       "kind": "declares",
       "metadata": {},
-      "source_id": "e86ccccefa632fb2",
-      "target_id": "6e3ff566f2180332"
+      "source_id": "7f60ae75b77ce17c",
+      "target_id": "a0aab695d7f0b6fe"
     },
     {
       "kind": "declares",

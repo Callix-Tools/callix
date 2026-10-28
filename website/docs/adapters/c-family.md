@@ -18,7 +18,11 @@ the first one with the `namespace` and `class` arms deleted, and would drift.
 
 Analyse a mixed repository twice and merge. Every file, including every
 ambiguous `.h`, is claimed by exactly one of the two adapters, so the merge
-cannot collide.
+cannot collide. A `.h` is assigned by a parse probe: it goes to C when it parses
+cleanly as C and the C tree does not look like C++ read as C (a `namespace` or
+`class` head read as a K&R function, or `class` as a type name). A `.h` that probes
+as C still goes to C++ when no C root reads it, for example in a tree with no `.c`
+file; both adapters decide that from the same file discovery.
 
 ## The header problem
 
@@ -40,11 +44,20 @@ that split them would answer "who calls this?" twice.
 survey pass over every file *before* the first node is written. Otherwise
 whichever file happened to be read first would set the node's span — a
 determinism bug, not a cosmetic one. The other declaring sites are recorded in
-`metadata["declared_in"]`, and every one of them emits a DECLARES edge:
+`metadata["declared_in"]`, and every one of them emits a DECLARES edge. Where
+each one writes the name is `metadata["declared_at"]`, one `{file, span}` entry
+per site (a prototype in the same file as the definition is listed there, not in
+`declared_in`):
 
 ```
 engine_build   file_path=src/engine.c:12   declared_in=['include/engine.h']
+               declared_at=[{'file': 'include/engine.h', 'span': 12:5-12:17}]
 ```
+
+An `#include` is positioned too: the path literal, quotes or angle brackets
+included, is the IMPORT's `name_span` and the `span` of its RESOLVES_TO to the
+header's FILE node (or to an external symbol). A computed `#include MACRO`
+names no file and is not positioned.
 
 **File-local names are prefixed with their file.** A `static` function in C, and
 anything in a C++ anonymous namespace, is visible only inside its translation
@@ -68,6 +81,12 @@ C has no namespaces, so an external-linkage name is bare: `engine_build`.
 Struct, union and enum tags live in their own namespace in C, which is why the
 node kind is part of the id — `struct stat` and `stat()` coexist in every libc.
 
+A struct or union named only by a typedef (`typedef struct { .. } T;`) is a
+CLASS `T` beside the TYPE_ALIAS `T` — the kind is part of the id, so both
+exist — and its fields are `T::field`. An anonymous struct or union MEMBER of a
+named record lends its fields to that record (C11), so `s.a` in
+`struct s { union { int a; float f; }; };` binds to `s::a`.
+
 C++ joins namespaces and classes with `::`, and **a callable carries its
 normalized parameter list**, because two overloads would otherwise collide on
 one id:
@@ -81,6 +100,20 @@ Parameter names are stripped and whitespace collapsed; cv-qualifiers and
 reference and pointer markers are kept, since they distinguish real overloads.
 C does not do this — it has no overloading, and adding a parameter list would
 gratuitously make `engine_build()` harder to look up than it needs to be.
+
+A class, struct or union defined in a function body is a CLASS qualified by the
+function that encloses it, parameter list included: `run()::State`, with the
+members `run()::State::stats` and `run()::State::State()` (in C, `run::State`).
+The function DECLARES it, and the member functions are callables of their own,
+so a call in a local constructor belongs to the constructor and not to `run()`.
+The name is bound lexically: from inside `run()` (or from inside a member of
+the local class) `State` means the local class even when a global `State`
+exists, and from any other function it never does. A local enum or typedef is
+not declared.
+
+A qualified record head - `class Outer::Inner { .. }` - declares the class
+`Inner` in the scope `Outer`: its `name` is `Inner` and its name span covers
+only `Inner`.
 
 Out-of-line definitions are classified with a workspace-wide pass. The grammar
 reports `qualified_identifier.scope` as a namespace identifier even when the
@@ -136,6 +169,16 @@ about which function it means, and the table reads it in the order C++ does:
   field of the enclosing class — decides, and the nearest class in its lineage
   that has a member `f` wins, hiding the rest as C++ name lookup does. A receiver
   whose type is a library class (`std::string`) is not a project call at all.
+- `x->f` / `x.f` read or written, and `f` in a member initialiser list: the same
+  receiver rule, applied to **fields**. The receiver may be a parameter, a local,
+  `this`, a file-scope variable, a field chain (`n->next->len`), a cast, or a
+  typedef'd pointer (`srv_t s`); the field is looked up in the receiver's class
+  and its bases. A receiver whose type is known and has no such field (`FILE *fp`,
+  `fp->_flags`) is an external symbol, not a guess. An unqualified name never binds
+  to a field, so `mstime()` is the function even when a struct has a field
+  `mstime`.
+  A typedef of an inline-defined tagged struct (`typedef struct tag { .. } T`)
+  leads to `tag`.
 - `A::f()` / `n::f()`: a written scope names a class's member or a namespace's
   function.
 - `f()` inside a method means the enclosing class's `f` first.
@@ -146,12 +189,21 @@ about which function it means, and the table reads it in the order C++ does:
   spelled (`1`, `1.0`, `"s"`, `'c'`, `true`, a local of a known type) against the
   parameter type. A tie takes the first declaration and the edge says
   `ambiguous`.
+- A **type name** is bound by name to a class or a typedef, never to a function or
+  variable of the same name. A type spelled in a body (a local declaration, a cast,
+  `sizeof`/`alignof`, a compound literal, a template argument, a lambda, `catch` or
+  function-pointer parameter) and each class in a written scope (`Impl::Get`) is a
+  `REFERENCES` from the enclosing function to the `CLASS` or `TYPE_ALIAS`. The type
+  of a declared node, its template arguments and its function-pointer signature
+  included, is its `HAS_TYPE`. An unadorned name prefers the typedef, and
+  `struct S` prefers the struct. A namespace, `std::string`-style library scopes and
+  `sizeof(variable)` write nothing; a library type written in a body becomes an
+  external symbol, except a construction of a library class, which writes nothing.
 
 Every edge the table writes has `metadata["resolution"] == "name"`, because that
 is how it was found, and `"ambiguous": true` when it had to choose between
 declarations it could not tell apart. A receiver whose type nothing in reach
-declares falls back to the bare name — the one case where `a.run()` may bind to
-the wrong class, and the one the edge flags.
+declares falls back to the bare name — a method or function-pointer field for a call, a field for a read or write — the one case where `a.run()` or `a->len` may bind to the wrong class, and the one the edge flags.
 
 What it will not do:
 
@@ -164,7 +216,11 @@ What it will not do:
   invoked: `CALL(x)` is a call of what `CALL`'s body calls (a parameter called as a
   function is the argument that was passed; `##` is joined; a macro within a macro is
   followed), a macro invoked where a declaration goes declares what it expands to,
-  and the macro's own name is not a call. Macros from system headers are not known,
+  and the macro's own name is not a call. A macro of the project that expands to nothing, an attribute or a storage keyword (`class API Foo`, `int x GUARDED_BY(m)`, `API int (*hook)(int)`) is erased before parsing, so the declaration is read as written; this includes
+  macros defined in a header the other dialect reads (a macro-only `.h`, which probes
+  as C and belongs to C where a C root reads it). A storage-keyword macro whose name is shorter than its keyword, or one defined
+  differently in another `#if` arm, is not erased, and neither is a macro from another
+  root or a system header. Macros from system headers are not known,
   conditionals are not evaluated (every definition of a macro is followed), and a body
   that does not parse on its own is skipped.
 - **Resolve overloads exactly.** Choosing the overload a call selects needs the

@@ -186,7 +186,9 @@ IMPORTS edge stays unpositioned. An exporter defines a FILE on its first
 character (1:1-1:2, never an empty range: `docker/check_lsif.py` rejects one) only
 when a placed edge targets it. The same goes for any definition whose name span is empty
 (a Python or TypeScript MODULE is placed at a zero-width 1:1): the exporters widen it
-to one character, the graph keeps the zero width.
+to one character, the graph keeps the zero width. With the sources at hand, LSIF moves a definition
+that still covers no text (a file that starts with a blank line) to the file's first
+non-blank character, and gives an empty file's definition no range at all.
 
 **Before the scope pass, the adapter blanks the project's erasable macros**
 (`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,

@@ -289,3 +289,30 @@ fn a_module_exports_on_its_first_character() {
     check_lsif(&String::from_utf8(out).unwrap());
     assert!(!warnings.iter().any(|w| w.code == "no-name-span"));
 }
+
+#[test]
+fn a_definition_with_no_text_moves_to_the_first_character() {
+    let dir = std::env::temp_dir().join(format!("callix-lsif-blank-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    // A module placed at 1:1 of a file whose first line is blank, and of an empty file.
+    std::fs::write(dir.join("a.py"), "\n\n  import os\n").unwrap();
+    std::fs::write(dir.join("b.py"), "").unwrap();
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"fb","kind":"file","qualified_name":"b.py","name":"b.py","file_path":"b.py","span":null,"metadata":{}},
+       {"id":"ma","kind":"module","qualified_name":"a","name":"a","file_path":"a.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}},
+       {"id":"mb","kind":"module","qualified_name":"b","name":"b","file_path":"b.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}}],
+      "relations":[]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options { source_root: Some(dir.clone()), ..Options::default() })
+        .unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let ranges = labelled(&el, "range");
+    // a.py: the `i` of `import` on the third line; b.py: nothing to point at.
+    assert_eq!(ranges.len(), 1, "{ranges:?}");
+    assert_eq!(ranges[0]["start"], serde_json::json!({"line": 2, "character": 2}));
+    assert_eq!(ranges[0]["end"], serde_json::json!({"line": 2, "character": 3}));
+    std::fs::remove_dir_all(dir).ok();
+}

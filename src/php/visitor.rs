@@ -364,6 +364,7 @@ impl<'a> PhpVisitor<'a> {
                         && let Some(left) = node.child_by_field_name("left")
                     {
                         self.record_assignment_value(left, right);
+                        self.record_overwrite(node, left, right);
                     }
                 }
                 Ok(())
@@ -1361,6 +1362,79 @@ impl<'a> PhpVisitor<'a> {
                 detail: Some(detail),
             });
         }
+    }
+
+    /// `$f = 'g';` as a top-level statement of a function's body, where `$f` is a
+    /// parameter of that function: from here on the parameter holds what was
+    /// assigned and not what callers pass. Emitted only when it is certain - the
+    /// statement is directly in the body (not in a branch, loop, try, closure or
+    /// arrow function), something known is assigned, and the value does not read
+    /// the parameter itself. The flow pass reads it as `Flow::overwrite`.
+    fn record_overwrite<'t>(&mut self, node: TsNode<'t>, left: TsNode<'t>, right: TsNode<'t>) {
+        if left.kind() != "variable_name" {
+            return;
+        }
+        let Some(ident) = variable_identifier(left) else {
+            return;
+        };
+        let name = self.text(ident);
+        let Some(holder) = self.target_holder(left) else {
+            return;
+        };
+        // A parameter of the innermost named function.
+        let Some((scope, _)) = self.param_scopes.last() else {
+            return;
+        };
+        if !holder.starts_with(&format!("p:{scope}\\")) {
+            return;
+        }
+        // A top-level statement of that function's body.
+        let Some(statement) = node.parent() else {
+            return;
+        };
+        if statement.kind() != "expression_statement" {
+            return;
+        }
+        let Some(block) = statement.parent() else {
+            return;
+        };
+        if block.kind() != "compound_statement" {
+            return;
+        }
+        let Some(function) = block.parent() else {
+            return;
+        };
+        if !matches!(function.kind(), "function_definition" | "method_declaration")
+            || function.child_by_field_name("body") != Some(block)
+        {
+            return;
+        }
+        // Something known is assigned.
+        let mut parts = Vec::new();
+        self.value_parts(right, &mut parts);
+        if parts.is_empty() {
+            return;
+        }
+        // The value does not read the parameter (`$f = $f ?? 'x'`).
+        let mut stack = vec![right];
+        while let Some(current) = stack.pop() {
+            if current.kind() == "variable_name"
+                && variable_identifier(current).is_some_and(|i| self.text(i) == name)
+            {
+                return;
+            }
+            stack.extend(ts::children(current));
+        }
+        let at = ts::span(left);
+        let container = self.container();
+        self.occurrences.push(OccurrenceRef {
+            role: "overwrite".to_string(),
+            line: at.start_line,
+            col: at.start_col,
+            enclosing_id: container,
+            span: ts::span(node),
+            detail: Some(format!("to:{holder}")),
+        });
     }
 
     /// `run('f')`, `$o->run([$this, 'm'])`, `run($cb)`: what is handed to a call,

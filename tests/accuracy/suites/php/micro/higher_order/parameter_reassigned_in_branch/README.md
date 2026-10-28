@@ -1,0 +1,1 @@
+A reassignment inside a branch may not happen, so both the value a caller passed and the value assigned locally reach the call. This keeps the overwrite rule narrow: only a top-level statement of the body, before the call, hides what callers pass.

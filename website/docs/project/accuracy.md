@@ -54,7 +54,7 @@ ambiguous edges out of 4 375 is telling you which ones to distrust.
 
 ### What `flow` is
 
-It is a small, flow-insensitive and context-insensitive pass that runs after
+It is a small, flow-insensitive and context-insensitive pass (with one narrow exception: a PHP parameter assigned by a top-level statement of the body, before it is called, holds only that assignment at the call) that runs after
 resolution. A variable assigned two functions holds both; a parameter holds the
 argument of every call site that passes it. It follows names, attribute chains,
 container literals and `table[key]`, the names a function returns, the result
@@ -93,7 +93,7 @@ writing:
 | TypeScript | 75 | 75 | 75 | 1.00 | 1.00 |
 | Go | 63 | 63 | 63 | 1.00 | 1.00 |
 | Rust | 62 | 62 | 62 | 1.00 | 1.00 |
-| PHP | 70 | 70 | 69 | 1.00 | 0.99 |
+| PHP | 71 | 71 | 71 | 1.00 | 1.00 |
 | C++ | 57 | 57 | 57 | 1.00 | 1.00 |
 | C | 43 | 43 | 43 | 1.00 | 1.00 |
 
@@ -141,9 +141,11 @@ expected edge, so that the number does not flatter:
   only the declared type is known. An implicit copy or move constructor is not an
   edge: whether a by-value argument copies depends on the callee's signature and on
   elision, and the table does not look past the callee's name.
-- **PHP**: a flow-insensitive pass. A parameter reassigned before it is called holds
-  both what the caller passed and what was assigned, and `php/micro` keeps that case
-  (`parameter_shadowed_by_local`) failing so the limit stays visible. `$m` and
+- **PHP**: a flow-insensitive pass, except that a parameter assigned by a top-level
+  statement of the body before it is called holds only what was assigned there. A
+  reassignment inside a branch or loop, after the call, by reference, or one that reads
+  the parameter, and a parameter passed on or copied after the reassignment, still
+  hold both the caller's value and the assigned one. `$m` and
   `$class` are followed only while a variable has one assignment, and a callable in a
   property is followed only through `$this->name` of the declaring class. Magic
   methods are taken as the callee only when no class in the hierarchy has a base

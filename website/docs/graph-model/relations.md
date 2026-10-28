@@ -62,7 +62,7 @@ A structural `RESOLVES_TO` may carry `span` too: the C family writes the path li
 |---|---|
 | `definition` | The backend located a definition in the project and the edge points at it. |
 | `value` | A call whose target is a variable, a parameter or a field: the backend found what the callee was read from, not the callee. |
-| `flow` | A `value` call followed through assignments, arguments and returns to a callable it can be shown to hold; `via` names the holder. Flow-insensitive: a holder assigned two callables gets an edge to each. |
+| `flow` | A `value` call followed through assignments, arguments and returns to a callable it can be shown to hold; `via` names the holder. Flow-insensitive: a holder assigned two callables gets an edge to each, except that a parameter reassigned by a top-level statement before it is called (PHP) holds only what was assigned at that call. |
 | `external` | The definition is outside the project (standard library, a dependency). |
 | `unlocated` | The backend answered with a place callix could not bind to a node (a position inside an import statement, a file callix does not know). The start of a known Python or TypeScript file is bound to its MODULE. A call that lands on a MODULE is `unlocated` too, but points at the MODULE. |
 | `name` | Matched by name in a symbol table (PHP, C, C++), or by path (Rust `use` paths and `mod x;`), with no type information. |

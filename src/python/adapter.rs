@@ -766,7 +766,7 @@ fn apply_resolutions_inner(
             if let Some(qname) = occurrence.detail.as_deref().and_then(|d| d.strip_prefix("p:")) {
                 let holder = node_id(project_name, qname, NodeKind::Parameter.as_str());
                 if graph.has_node(&holder) {
-                    flow.param_call(&occurrence.enclosing_id, &holder, occurrence.span);
+                    flow.param_call(path, &occurrence.enclosing_id, &holder, occurrence.span);
                 }
             }
             continue;

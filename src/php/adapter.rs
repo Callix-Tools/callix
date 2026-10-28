@@ -543,7 +543,7 @@ enum Need {
 fn need_of(occurrence: &OccurrenceRef) -> Need {
     let detail = occurrence.detail.as_deref().unwrap_or("");
     match occurrence.role.as_str() {
-        "paramcall" => Need::Nothing,
+        "paramcall" | "overwrite" => Need::Nothing,
         "alias" if detail.contains("|from:") => Need::Nothing,
         "callarg" if detail.contains("|h:") => Need::Nothing,
         "alias" | "callarg" => Need::Guess,
@@ -772,7 +772,17 @@ fn resolve_pass(
                     && let Some((_, _, id)) = holder_node(project, holder)
                     && graph.has_node(&id)
                 {
-                    flow.param_call(&occurrence.enclosing_id, &id, occurrence.span);
+                    flow.param_call(path, &occurrence.enclosing_id, &id, occurrence.span);
+                }
+            }
+            // `$f = 'g';` as a top-level statement of the body: from here on the
+            // parameter holds only what the body assigned.
+            "overwrite" => {
+                if let Some(holder) = detail_part(detail, "to:")
+                    && let Some((_, NodeKind::Parameter, id)) = holder_node(project, holder)
+                    && graph.has_node(&id)
+                {
+                    flow.overwrite(&id, path, occurrence.span.end_line, occurrence.span.end_col);
                 }
             }
             // `run($f)`: the parameter of what is called holds what `$f` holds.

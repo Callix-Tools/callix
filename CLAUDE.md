@@ -309,7 +309,12 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   `arg:LINE:COL:INDEX` (or `...:=NAME`) when it is a call argument. The loop of
   every adapter that has them (`python/adapter.rs`, which TypeScript also uses,
   `golang`, `rustlang`) builds a `Flow`, hands it the bound targets and calls
-  `finish`. It is flow- and context-insensitive and says so with the label.
+  `finish`. It is flow- and context-insensitive and says so with the label, with one
+  exception: a parameter assigned by a top-level statement of its function's body (the
+  PHP visitor's `overwrite` occurrence, fed to `Flow::overwrite`), before a call of it
+  and with a right-hand side that does not read it, is called with what the body
+  assigned only. Passing it on or copying it after the assignment still carries the
+  union.
 - **A decorator is called by the scope the definition sits in**, not by the
   definition; the definition only `REFERENCES` it. Calls in a closure belong to the
   function that contains it. Both conventions are what the accuracy suites assume.

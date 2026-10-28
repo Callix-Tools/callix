@@ -27,6 +27,12 @@
 //! graph usually does, and the `flow` label says so. It follows names and
 //! attribute chains only - not containers, return values or calls - and it
 //! follows nothing it cannot resolve to a node of the project.
+//!
+//! One exception, fed only by the PHP adapter (`overwrite`): a parameter assigned
+//! by a top-level statement of its function's body, before a call of it and with
+//! a right-hand side that does not read it, is called with what the body assigned
+//! only; the values callers pass do not reach that call. Passing the parameter on
+//! or copying it after the assignment still carries the union.
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
@@ -81,8 +87,15 @@ pub(crate) struct Flow {
     result_sites: HashMap<(String, u32, u32), (String, usize)>,
     /// The same calls with their depth, for the edges (`result_calls` holds depth 1).
     deep_calls: Vec<(String, String, crate::span::Span, usize)>,
-    /// `cb()` on a parameter: (the scope that calls, the parameter, where).
-    param_calls: Vec<(String, String, crate::span::Span)>,
+    /// `cb()` on a parameter: (the scope that calls, the parameter, where, file).
+    param_calls: Vec<(String, String, crate::span::Span, String)>,
+    /// Where a parameter is unconditionally reassigned by a top-level statement of
+    /// its function's body: parameter id -> (file, end line, end column) of the
+    /// assignment.
+    overwrites: HashMap<String, Vec<(String, u32, u32)>>,
+    /// What the body itself assigned to an overwritten parameter, taken before the
+    /// callers' arguments are bound: parameter id -> tokens.
+    assigned: HashMap<String, Vec<String>>,
     /// A function handed to a library function that calls it: (the scope that
     /// calls, the file and the place of the callee's name, what was handed, where).
     /// Written only when the callee turns out not to be a function of the project.
@@ -405,8 +418,15 @@ impl Flow {
     }
 
     /// `cb()` made by `caller_id`, `cb` being the parameter `parameter_id`.
-    pub(crate) fn param_call(&mut self, caller_id: &str, parameter_id: &str, span: crate::span::Span) {
-        self.param_calls.push((caller_id.to_owned(), parameter_id.to_owned(), span));
+    pub(crate) fn param_call(&mut self, file: &str, caller_id: &str, parameter_id: &str, span: crate::span::Span) {
+        self.param_calls.push((caller_id.to_owned(), parameter_id.to_owned(), span, file.to_owned()));
+    }
+
+    /// The parameter `parameter_id` is assigned, unconditionally, by a statement
+    /// that ends at `line:col` of `file`: a call of the parameter placed after that
+    /// point is made with what the body assigned, not with what callers pass.
+    pub(crate) fn overwrite(&mut self, parameter_id: &str, file: &str, line: u32, col: u32) {
+        self.overwrites.entry(parameter_id.to_owned()).or_default().push((file.to_owned(), line, col));
     }
 
     /// `f()()()` made by `caller_id`: a call of what `f()()` returns. `site` is the
@@ -663,10 +683,18 @@ impl Flow {
             && self.call_paths.is_empty()
             && self.deep_calls.is_empty()
             && self.param_calls.is_empty()
+            && self.overwrites.is_empty()
             && self.library_callbacks.is_empty()
         {
             return Ok(0);
         }
+        // What the body assigned itself, before callers' values are added to the holds.
+        let snapshot: HashMap<String, Vec<String>> = self
+            .overwrites
+            .keys()
+            .map(|parameter| (parameter.clone(), self.holds.get(parameter).cloned().unwrap_or_default()))
+            .collect();
+        self.assigned = snapshot;
         self.bind_decorators(graph);
         self.bind_arguments(py, graph);
         self.bind_iterations(graph);
@@ -782,6 +810,19 @@ impl Flow {
     /// Every callable a holder can be followed to.
     fn callables(&self, graph: &Graph, start: &str) -> Vec<String> {
         self.resolve(graph, start, &[])
+    }
+
+    /// The callables a list of tokens stand for, each once, in the order found.
+    fn callables_of_tokens(&self, graph: &Graph, tokens: &[String]) -> Vec<String> {
+        let mut found: Vec<String> = Vec::new();
+        for token in tokens {
+            for callable in self.resolve_item(graph, Item::Token(token.clone()), &[]) {
+                if !found.contains(&callable) {
+                    found.push(callable);
+                }
+            }
+        }
+        found
     }
 
     /// The classes a holder can be shown to hold an instance of: `c = Cls()`,
@@ -1198,8 +1239,19 @@ impl Flow {
                     have.insert((relation.source_id.clone(), relation.target_id.clone(), span.start_line, span.start_col));
                 }
             }
-            for (caller, parameter, span) in &self.param_calls {
-                for callable in self.callables(graph, parameter) {
+            for (caller, parameter, span, file) in &self.param_calls {
+                // A call placed after an unconditional reassignment of the parameter sees
+                // only what the body assigned.
+                let overwritten = self.overwrites.get(parameter).is_some_and(|sites| {
+                    sites.iter().any(|(f, line, col)| f == file && (*line, *col) < (span.start_line, span.start_col))
+                });
+                let reachable = if overwritten {
+                    let tokens: &[String] = self.assigned.get(parameter).map(Vec::as_slice).unwrap_or(&[]);
+                    self.callables_of_tokens(graph, tokens)
+                } else {
+                    self.callables(graph, parameter)
+                };
+                for callable in reachable {
                     if !have.insert((caller.clone(), callable.clone(), span.start_line, span.start_col)) {
                         continue;
                     }

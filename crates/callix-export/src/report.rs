@@ -230,9 +230,13 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              untyped literal declares the property and is no edge); element access `o[\"k\"]`, \
              shorthand and computed keys reference nothing; members of a type alias's object \
              type (also in its top-level union or intersection arms) are nodes `Alias.member`, \
-             and a namespace (`namespace N`, exported, `declare`, `A.B`) is a MODULE whose \
+             the signatures of an overload (exported, default-exported, in a namespace) are the \
+             `declared_at` of its implementation, a file-level `declare function` is a FUNCTION \
+             declared at every signature, and a namespace (`namespace N`, exported, `declare`, \
+             `A.B`) is a MODULE whose \
              members are `N.member`, while an inline type literal elsewhere, a nested object \
-             type, a computed member name, `declare global` and a string-named `declare module` \
+             type, a computed member name, `declare global` (also its function signatures), a \
+             string-named `declare module` and declaration files (`.d.ts`, not walked) \
              give no node, so reads of them stay `unlocated`; every name in a type annotation or \
              alias body is a HAS_TYPE, a type argument or an `as`/`satisfies` type a REFERENCES, \
              and a type parameter gives no edge; `implements` clauses and the annotations of \

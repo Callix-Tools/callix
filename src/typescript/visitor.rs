@@ -791,13 +791,31 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
+    /// The `function_signature` that `n` is or wraps (`export`, `declare`,
+    /// `export declare`), if any.
+    fn signature_in(n: TsNode<'_>) -> Option<TsNode<'_>> {
+        match n.kind() {
+            "function_signature" => Some(n),
+            "export_statement" | "ambient_declaration" => {
+                ts::children(n).into_iter().find_map(Self::signature_in)
+            }
+            _ => None,
+        }
+    }
+
     /// A function signature. Inside an ambient namespace (`declare namespace D {
-    /// export function h(x: number): void; }`) it declares the FUNCTION, declared at
-    /// every same-named signature of the block; anywhere else it is an overload note.
+    /// export function h(x: number): void; }`) and as a file-level `declare function` /
+    /// `export declare function` (no implementation can follow) it declares the
+    /// FUNCTION, declared at every same-named signature of the block or file. A
+    /// signature in `declare global { .. }` or a string-named `declare module` and an
+    /// ordinary overload signature (exported or not) is an overload note: the
+    /// implementation picks its spans up as `declared_at`.
     fn visit_function_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let ambient_ns = self.ambient_ns.last() == Some(&true)
             && self.kind_stack.last() == Some(&NodeKind::Module);
-        if !ambient_ns {
+        let file_level_declare = self.kind_stack.last() == Some(&NodeKind::File)
+            && node.parent().is_some_and(|p| p.kind() == "ambient_declaration");
+        if !(ambient_ns || file_level_declare) {
             return self.note_overload(node);
         }
         let Some(name_node) = ts::child_of_type(node, "identifier") else {
@@ -810,21 +828,14 @@ impl<'a> TsVisitor<'a> {
             return Ok(());
         }
         let mut holder = node.parent();
-        if let Some(parent) = holder
-            && parent.kind() == "export_statement"
+        while let Some(parent) = holder
+            && matches!(parent.kind(), "ambient_declaration" | "export_statement")
         {
             holder = parent.parent();
         }
         if let Some(block) = holder {
             for sibling in ts::children(block) {
-                let signature = match sibling.kind() {
-                    "function_signature" => Some(sibling),
-                    "export_statement" => ts::children(sibling)
-                        .into_iter()
-                        .find(|c| c.kind() == "function_signature"),
-                    _ => None,
-                };
-                if let Some(signature) = signature
+                if let Some(signature) = Self::signature_in(sibling)
                     && let Some(other) = ts::child_of_type(signature, "identifier")
                     && self.text(other) == name
                 {

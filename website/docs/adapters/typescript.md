@@ -20,7 +20,7 @@ TypeScriptAdapter(resolve=False).analyze(root)      # structure only
 | External requirements | none |
 
 Declaration files (`.d.ts`, `.d.mts`, `.d.cts`) are skipped: they carry types
-without implementation.
+without implementation. A call into a declaration file stays `unlocated`.
 
 ## What it extracts
 
@@ -128,3 +128,12 @@ resolver.definition_at("src/main.ts", 4, 15)
 
 The first query builds the program and takes tens of milliseconds; each one
 after that is tens of microseconds.
+
+### Overloads
+
+An overload signature is not a node. The implementation is the FUNCTION, and its
+`declared_at` lists every signature, also for `export`, `export default` and
+namespace members, so a call that the checker resolves to a signature lands on the
+implementation. A file-level `declare function` or `export declare function` has no
+implementation: it is a FUNCTION placed at its first signature, with every signature
+in `declared_at`. Signatures inside `declare global { ... }` give no node.

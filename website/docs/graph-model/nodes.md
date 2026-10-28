@@ -81,6 +81,12 @@ just the identifier, and that is the one resolution uses: a resolver answers
 with the position of a definition's *name*, so the lookup has to be against
 name spans.
 
+`node.metadata["declared_at"]`, when present, lists further name spans that resolve to
+this same node: the signatures of an overloaded function, and in Rust the later
+declarations of a qualified name in the same file, such as the `add` of `impl Add<S>`
+and of `impl Add<&S>` for one type, or the variants of a `cfg`-gated function. A
+resolver's answer at any of them lands on the node.
+
 ## Documentation
 
 `node.metadata["doc"]` holds what the author wrote about a definition, as plain

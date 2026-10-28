@@ -204,7 +204,8 @@ because a type may be declared below its `impl`. In `rustlang` an enum variant i
 CLASS `Enum.Variant` (called like a tuple struct), an associated type a TYPE_ALIAS and
 an associated const a VARIABLE `Type.NAME`, an item in a function body is qualified
 under the function (`m::f::Local`), and a const or static initializer's uses are
-enclosed by the const.
+enclosed by the const. A Rust method is `{module}::{Type}.{method}` with no trait in
+the name, so one node may stand for several impls, through `declared_at`.
 
 ### Resolvers: what is linked in and what is not
 
@@ -270,8 +271,10 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
 - **`declared_at`** on a node lists extra name spans the type checker may answer
-  with (overload signatures, a function-valued field); `SpanIndex::from_graph`
-  reads it.
+  with (overload signatures, a function-valued field, and, in Rust, every later
+  declaration of a qualified name in the same file: same-named methods of different
+  impls of one type (`impl Add<S>` / `impl Add<&S>`, an inherent and a trait method)
+  and cfg variants); `SpanIndex::from_graph` reads it.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language

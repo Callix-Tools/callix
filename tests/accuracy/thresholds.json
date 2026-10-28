@@ -30,10 +30,10 @@
     "sound": 112
   },
   "rust/micro": {
-    "complete": 61,
+    "complete": 62,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 61
+    "sound": 62
   },
   "typescript/micro": {
     "complete": 65,

@@ -32,7 +32,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::py::prelude::*;
-use crate::py::types::PyDict;
+use crate::py::types::{PyDict, PyList};
 use tree_sitter::Node as TsNode;
 
 use crate::graph::Graph;
@@ -340,6 +340,12 @@ pub struct RustExtractor<'a> {
     /// The names of every `macro_rules!` of the crate (all files), so an invocation of a
     /// macro written in another file is still named.
     project_macros: HashSet<String>,
+    /// Node id -> the name span of every declaration of that node seen in THIS file, in
+    /// source order; the first entry is the node's own `name_span`. Only these ids may get
+    /// `declared_at`: `SpanIndex` keys `declared_at` spans by the node's own `file_path`, so
+    /// a span of another file (two files sharing a module name through `#[path]`) would be
+    /// indexed in the wrong file and is left out.
+    declared_here: HashMap<String, Vec<crate::span::Span>>,
 }
 
 impl<'a> RustExtractor<'a> {
@@ -372,6 +378,7 @@ impl<'a> RustExtractor<'a> {
             inline_modules: Vec::new(),
             use_sites: Vec::new(),
             project_macros: HashSet::new(),
+            declared_here: HashMap::new(),
         }
     }
 
@@ -507,6 +514,12 @@ impl<'a> RustExtractor<'a> {
         result
     }
 
+    /// One node per qualified name. A qualified name carries no trait and no cfg, so
+    /// same-named methods of different impls of one type (`impl Add<S> for S` and
+    /// `impl Add<&S> for S`, an inherent and a trait method, cfg variants) and same-named
+    /// items of one scope are ONE node. Every later declaration of it in the same file adds
+    /// its name span to `metadata["declared_at"]` (read by `SpanIndex::from_graph`), so a
+    /// resolver that answers at the second declaration still binds to the node.
     fn declare(
         &mut self,
         qname: &str,
@@ -518,11 +531,27 @@ impl<'a> RustExtractor<'a> {
         let id = node_id(self.project_name, qname, kind.as_str());
         // Per site, not per node: a second declaration still has its own visibility.
         self.record_visibility(full_node, &id);
+        let name_span = ts::span(name_node);
         if self.graph.has_node(&id) {
+            // Only a node this file declared: see `declared_here`.
+            let extra: Vec<crate::span::Span> = match self.declared_here.get_mut(&id) {
+                Some(spans) if !spans.contains(&name_span) => {
+                    spans.push(name_span);
+                    spans[1..].to_vec()
+                }
+                _ => return Ok(id),
+            };
+            if let Some(node) = self.graph.node_map().get(&id) {
+                node.get()
+                    .metadata
+                    .bind(self.py)
+                    .set_item("declared_at", PyList::new(self.py, extra)?)?;
+            }
             return Ok(id);
         }
+        self.declared_here.insert(id.clone(), vec![name_span]);
         let metadata = PyDict::new(self.py);
-        metadata.set_item("name_span", ts::span(name_node))?;
+        metadata.set_item("name_span", name_span)?;
         // What the author wrote above it.
         if let Some(doc) = crate::doc::leading_comment(full_node, self.source) {
             metadata.set_item("doc", doc)?;

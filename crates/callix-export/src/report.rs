@@ -247,7 +247,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              `self`) resolves from its IMPORT to its definition, by path for a path of the crate \
              (`name`, relative 2018 paths included) and through rust-analyzer otherwise, and \
              `mod x;` is a reference to the MODULE (not exported); a `use` inside a function \
-             body, the prefix segments of a use path and a `#[path]` module are not recorded",
+             body, the prefix segments of a use path and a `#[path]` module are not recorded; \
+             same-named methods of several impls of one type (different traits or trait \
+             arguments, cfg variants) are one node, and a call to any of them is an edge to it",
         ),
         "php" => (
             "symbol table, by names",

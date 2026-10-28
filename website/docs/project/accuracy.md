@@ -175,6 +175,30 @@ trades one number for another has to say so: `run.py --reset` writes the
 measured values over the floor, and the diff is where a reviewer sees what was
 given up.
 
+## Runtime call graphs
+
+The suites above are written by people reading code; the SCIP comparison asks
+static indexers. A third reference is what a program really called: call graphs
+recorded while a real project ran its own tests or a fixed workload, stored as
+small artifacts in `tests/runtime/`. `runtime.py` maps every recorded function
+to a node and scores each executed call as `found`, `wrong_target` (callix has
+a call to another node of the same name, such as an interface method),
+`missing`, `unmapped` (an end has no node) or `implicit` (constructors,
+destructors, `Drop`, operators and magic methods, which the language calls and
+no one writes).
+
+Only recall is scored, `found / (found + wrong_target + missing)`: a trace is a
+lower bound, so an edge callix has that the run never took is not an error.
+It needs clones and is not part of CI.
+
+```bash
+task runtime           # compare + check against the recorded floors
+task runtime:update    # raise the floors after an improvement
+```
+
+The format, the capture rules and the mapping are in
+[`tests/runtime/README.md`](https://github.com/Callix-Tools/callix/blob/main/tests/runtime/README.md).
+
 ## What this does not tell you
 
 - Nothing here covers code generated at run time, reflection, or a framework's

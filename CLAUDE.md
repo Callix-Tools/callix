@@ -24,6 +24,7 @@ task golden                      # fixture graphs vs tests/golden (UPDATE=1 rewr
 task accuracy [-- go/micro -v]   # resolvers vs hand-written call graphs; task accuracy:update raises the floor
 task test:rust                   # cargo test --workspace — 137 core tests + exporters + the CLI end to end
 task baseline                    # fingerprints of 14 real projects (not in CI)
+task runtime / task runtime:update  # callix vs call graphs recorded at run time (needs clones, not in CI)
 task stubs / task stubs:check    # regenerate / verify committed .pyi
 task example -- example/foo.py   # run a different script
 task cli                         # build the `callix` binary
@@ -33,7 +34,7 @@ task docs:build                  # Docusaurus build — what the docs CI runs
 DEBUG=1 task ...                 # switch every cargo task to the debug profile
 ```
 
-### The regression net, in five layers
+### The regression net, in six layers
 
 Correctness used to rest on parity runs against graphlens. graphlens is now
 archived, so the harness stands on its own, and the layers answer different
@@ -46,6 +47,7 @@ questions — a change to a visitor should be checked against the last three:
 | `task golden` | whole graphs of `tests/fixtures/*`, frozen in `tests/golden/` | any change to any visitor, exactly |
 | `task accuracy` | eight suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
 | `task baseline` | fingerprints of 14 real repositories | what a three-file fixture cannot reach: scale, and the resolvers |
+| `task runtime` | call graphs recorded while 7 real projects ran their tests, stored in `tests/runtime/` | **recall on what really executes**: dynamic dispatch, callbacks and higher-order flow, which no static layer can see |
 
 `tests/accuracy` is the only layer that can say a change made resolution *worse*.
 `thresholds.json` is a ratchet — pytest fails below the recorded floor,
@@ -63,6 +65,8 @@ path handling. `tests/baseline/README.md` says what each project pins down.
 
 `CONTRIBUTING.md` covers the same ground for humans; the README is deliberately
 short and links out to the docs site in `website/`.
+
+The runtime layer (`tests/runtime/`, README there) is recall-only, because a trace is a lower bound: an edge that did not run proves nothing. It needs clones (and, to record a new artifact, valgrind or an equivalent), so like the baselines it is **not** in CI; its unit tests are. `tests/runtime/thresholds.json` is a ratchet like the accuracy one: `task runtime:update` only raises it. Implicit calls (constructors, destructors, `Drop`, operators, magic methods) are their own category, never misses.
 
 Benchmarks (`benchmarks/Taskfile.yaml`, included as `bench:`):
 
@@ -658,7 +662,7 @@ per-architecture digests to ghcr.io and stitches the multi-arch manifest.
 ## Parity with graphlens — historical
 
 graphlens was the correctness harness until it was archived. It is **no longer
-the reference**; the four layers above are. What remains is a record, in
+the reference**; the layers above are. What remains is a record, in
 `tests/baseline/README.md`, of the state at the moment its environment could
 still run: for Python and TypeScript not one file-level hash differed, and for Go
 and Rust every difference was an addition callix makes deliberately. If a future

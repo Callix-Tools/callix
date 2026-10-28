@@ -152,6 +152,17 @@ task baseline -- --project astral-sh/ruff
 Not part of `task test` or CI: it needs ~2 GB of checkouts and several minutes.
 Run it when you touch a visitor, the graph model, or path handling.
 
+[`tests/runtime/`](tests/runtime) holds call graphs recorded while real projects
+ran, and scores how many of the executed calls callix finds (recall only; a
+trace is a lower bound). Run it when you touch a resolver.
+
+```bash
+task runtime                       # compare + check against thresholds.json
+task runtime:update                # raise the floors, never lower them
+```
+
+Also not in CI: it needs clones. Its unit tests are.
+
 [`tests/baseline/README.md`](tests/baseline/README.md) records the cross-check
 against graphlens as of 2026-07-30, project by project — useful because that
 comparison is not reproducible forever.

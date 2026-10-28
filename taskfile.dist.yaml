@@ -166,6 +166,20 @@ tasks:
     cmds:
       - uv run python tests/baseline.py capture --clone --workdir {{.BASELINE_WORKDIR}} {{.CLI_ARGS}}
 
+  runtime:
+    desc: Score callix against recorded runtime call graphs (tests/runtime; needs clones, not in CI)
+    deps: [cli]
+    cmds:
+      - uv run python tests/runtime/runtime.py compare --clone --workdir {{.BASELINE_WORKDIR}} {{.CLI_ARGS}}
+      - uv run python tests/runtime/runtime.py check {{.CLI_ARGS}}
+
+  runtime:update:
+    desc: Raise the runtime recall floors in tests/runtime/thresholds.json after an improvement
+    deps: [cli]
+    cmds:
+      - uv run python tests/runtime/runtime.py compare --clone --workdir {{.BASELINE_WORKDIR}} {{.CLI_ARGS}}
+      - uv run python tests/runtime/runtime.py update {{.CLI_ARGS}}
+
   clean:
     desc: Remove build artifacts (the typescript-go clone in .ts-go stays)
     cmds:

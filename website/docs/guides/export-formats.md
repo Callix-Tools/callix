@@ -102,6 +102,8 @@ A Python or TypeScript module that has a file is a definition at `0:0` of that f
 A reference to a module, and the name an import brings in (a `RESOLVES_TO` edge that
 records a position), are occurrences. A module without a file (a namespace package, a
 directory without an index file) is not a definition, and a reference to it is left out.
+TypeScript relative module strings and import and export specifiers appear as
+occurrences too.
 
 ## CycloneDX
 

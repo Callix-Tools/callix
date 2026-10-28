@@ -429,6 +429,18 @@ Things that are easy to get wrong:
   back to an external symbol, or to the enclosing package, depending on file
   order. A `from m import name` also records an `import` occurrence, so the
   resolver adds a `RESOLVES_TO` from the import to the definition.
+  In TypeScript an internal import specifier records an `import` occurrence at its
+  ORIGINAL name (never the alias; the default and namespace identifiers too) and the
+  IMPORT's `name_span` is the local binding; the module string of an internal import
+  or re-export statement with a RELATIVE path is a `read` occurrence (the whole literal,
+  enclosed by the container), so it REFERENCES the MODULE (a path-alias string such as
+  `"@/store"` is not recorded: the resolver does not answer its file position, and the
+  read would become a site-keyed external; its specifiers are still placed); a local
+  `export { x }` and the specifiers
+  of a re-export are `read` occurrences of their source name; `export * from` and
+  `export * as N from` make the same `__reexport_` IMPORT as `export {..} from`.
+  External specifiers and module strings get nothing. IMPORTS stays unpositioned so
+  it keeps being deduplicated.
 - **An import statement is an import wherever it is written.** `walk_statement`
   hands `import`/`from ... import` to `visit`, so an import in a function body or
   inside a module-level `if TYPE_CHECKING:`/`try:` is an IMPORT node

@@ -26,8 +26,17 @@ without implementation. A call into a declaration file stays `unlocated`.
 
 Classes, interfaces and their members, enums, type aliases, functions and
 arrow functions, variables from `const`/`let` declarations, and imports and
-re-exports — including `export { X } from 'mod'`, whose specifier sits directly
-on the export statement rather than in a `from` clause.
+re-exports — including `export { X } from 'mod'`, `export * from 'mod'` and
+`export * as N from 'mod'`, whose module string sits directly on the export
+statement rather than in a `from` clause.
+
+Import and export specifiers and module strings are placed: an internal import
+specifier has a `RESOLVES_TO` from its IMPORT to the definition (positioned at
+the imported name, not the alias), and a relative module string has a
+`REFERENCES` edge from the file to the imported file's MODULE. A local
+`export { x }` references `x`. Only a relative module string is placed: a path
+alias such as `"@/store"` gets no module-string edge (its specifiers are still
+placed), and external specifiers and module strings get no edge.
 
 ## Module names and path aliases
 

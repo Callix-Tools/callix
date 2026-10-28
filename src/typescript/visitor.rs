@@ -431,15 +431,27 @@ impl<'a> TsVisitor<'a> {
     fn visit_export_statement(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let children = ts::children(node);
 
-        // `export { X } from 'mod'`: the string sits directly in the
-        // export_statement, with no from_clause wrapper.
-        let export_clause = children.iter().find(|c| c.kind() == "export_clause");
-        let from_string = children.iter().find(|c| c.kind() == "string");
-        if let (Some(_), Some(from_string)) = (export_clause, from_string) {
-            let module_path = strip_quotes(&self.text(*from_string));
+        // A re-export names its module in the `source` field, with no
+        // from_clause wrapper: `export { X } from 'mod'`, `export * from 'mod'`
+        // and `export * as N from 'mod'`.
+        let export_clause = children.iter().find(|c| c.kind() == "export_clause").copied();
+        if let Some(source) = node.child_by_field_name("source") {
+            let module_path = strip_quotes(&self.text(source));
             if !module_path.is_empty() {
-                self.emit_reexport(&module_path)?;
+                let origin = self.emit_reexport(&module_path)?;
+                if origin == "internal" {
+                    self.record_module_string(source);
+                    if let Some(clause) = export_clause {
+                        self.record_export_specifiers(clause);
+                    }
+                }
             }
+            return Ok(());
+        }
+        // A local `export { x, y as z }` or `export type { T }`: each specifier
+        // reads the name it exports.
+        if let Some(clause) = export_clause {
+            self.record_export_specifiers(clause);
             return Ok(());
         }
 
@@ -474,7 +486,8 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
-    fn emit_reexport(&mut self, module_path: &str) -> PyResult<()> {
+    /// Emits the `__reexport_` IMPORT of a re-export and returns the origin of its module.
+    fn emit_reexport(&mut self, module_path: &str) -> PyResult<&'static str> {
         let is_relative = is_relative_path(module_path);
         let local_name = format!(
             "__reexport_{}",
@@ -488,7 +501,50 @@ impl<'a> TsVisitor<'a> {
             }
         }
         let ext_qname = module_path_to_qname(&classify_path, is_relative, self.scope());
-        self.emit_import(&local_name, &ext_qname, is_relative, &classify_path, None, true)
+        let origin = self.import_origin(is_relative, &classify_path, &ext_qname);
+        self.emit_import(&local_name, &ext_qname, is_relative, &classify_path, None, true, None, None)?;
+        Ok(origin)
+    }
+
+    /// Where an imported module comes from: `internal`, or what the classifier says.
+    fn import_origin(&self, is_relative: bool, raw_path: &str, ext_qname: &str) -> &'static str {
+        if is_relative {
+            "internal"
+        } else {
+            self.classifier
+                .classify(if raw_path.is_empty() { ext_qname } else { raw_path })
+        }
+    }
+
+    /// The module string of an internal RELATIVE import or re-export reads the module:
+    /// the resolver answers a module with its file at 1:1, which binds to the MODULE.
+    /// The whole literal, quotes included, is the position.
+    ///
+    /// A path alias (`"@/store"`) is deliberately skipped: the resolver does not answer
+    /// the file position for it, so the read would not bind to the MODULE and would fall
+    /// back to a site-keyed EXTERNAL_SYMBOL. The specifiers of an aliased import are still placed.
+    fn record_module_string(&mut self, string_node: TsNode<'_>) {
+        let raw = strip_quotes(&self.text(string_node));
+        if !is_relative_path(&raw) {
+            return;
+        }
+        let container = self.container();
+        self.record_occurrence("read", string_node, &container);
+    }
+
+    /// Each specifier of an `export { ... }` clause reads its SOURCE name, never the alias.
+    fn record_export_specifiers(&mut self, clause: TsNode<'_>) {
+        let container = self.container();
+        for spec in ts::children(clause) {
+            if spec.kind() != "export_specifier" {
+                continue;
+            }
+            if let Some(name) = spec.child_by_field_name("name")
+                && name.kind() == "identifier"
+            {
+                self.record_occurrence("read", name, &container);
+            }
+        }
     }
 
     /// Strips the source root's leading segment from a rewritten alias.
@@ -1278,9 +1334,25 @@ impl<'a> TsVisitor<'a> {
         }
         let ext_qname = module_path_to_qname(&classify_path, is_relative, self.scope());
 
+        // The module string reads the MODULE (internal imports only), side-effect imports included.
+        if self.import_origin(is_relative, &classify_path, &ext_qname) == "internal"
+            && let Some(source) = node.child_by_field_name("source")
+        {
+            self.record_module_string(source);
+        }
+
         let Some(import_clause) = ts::child_of_type(node, "import_clause") else {
             let local = format!("__sideeffect_{}", safe_name(&module_path));
-            return self.emit_import(&local, &ext_qname, is_relative, &classify_path, None, true);
+            return self.emit_import(
+                &local,
+                &ext_qname,
+                is_relative,
+                &classify_path,
+                None,
+                true,
+                None,
+                None,
+            );
         };
 
         for child in ts::children(import_clause) {
@@ -1296,6 +1368,8 @@ impl<'a> TsVisitor<'a> {
                         &classify_path,
                         Some(&local.clone()),
                         false,
+                        Some(child),
+                        Some(child),
                     )?;
                 }
                 "named_imports" => {
@@ -1312,6 +1386,8 @@ impl<'a> TsVisitor<'a> {
                             &classify_path,
                             Some(&local.clone()),
                             true,
+                            Some(id_node),
+                            Some(id_node),
                         )?;
                     }
                 }
@@ -1336,12 +1412,24 @@ impl<'a> TsVisitor<'a> {
                 .into_iter()
                 .filter(|c| c.kind() == "identifier")
                 .collect();
+            // The local binding is the alias, else the name; the occurrence goes on the ORIGINAL name.
+            let name_field = spec.child_by_field_name("name");
+            let binding = spec.child_by_field_name("alias").or(name_field);
             match identifiers.len() {
                 0 => continue,
                 1 => {
                     let name = self.text(identifiers[0]);
                     let qname = format!("{ext_qname}.{name}");
-                    self.emit_import(&name, &qname, is_relative, raw_path, None, false)?;
+                    self.emit_import(
+                        &name,
+                        &qname,
+                        is_relative,
+                        raw_path,
+                        None,
+                        false,
+                        binding,
+                        name_field,
+                    )?;
                 }
                 _ => {
                     // "original as alias"
@@ -1355,6 +1443,8 @@ impl<'a> TsVisitor<'a> {
                         raw_path,
                         Some(&alias.clone()),
                         false,
+                        binding,
+                        name_field,
                     )?;
                 }
             }
@@ -1362,6 +1452,7 @@ impl<'a> TsVisitor<'a> {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_import(
         &mut self,
         local_name: &str,
@@ -1370,13 +1461,10 @@ impl<'a> TsVisitor<'a> {
         raw_path: &str,
         alias: Option<&str>,
         is_star: bool,
+        binding: Option<TsNode<'_>>,
+        use_site: Option<TsNode<'_>>,
     ) -> PyResult<()> {
-        let origin = if is_relative {
-            "internal"
-        } else {
-            self.classifier
-                .classify(if raw_path.is_empty() { ext_qname } else { raw_path })
-        };
+        let origin = self.import_origin(is_relative, raw_path, ext_qname);
 
         let import_qname = format!("{}.{local_name}", self.scope());
         let metadata = PyDict::new(self.py);
@@ -1386,10 +1474,21 @@ impl<'a> TsVisitor<'a> {
         metadata.set_item("is_star", is_star)?;
         metadata.set_item("origin", origin)?;
 
+        // `binding` is the local name (metadata only: the IMPORT keeps no `span`, so it is
+        // not a definition for the SpanIndex).
         let import_node =
-            self.make_node(NodeKind::Import, &import_qname, local_name, None, metadata, None)?;
+            self.make_node(NodeKind::Import, &import_qname, local_name, None, metadata, binding)?;
         let import_id = import_node.get().id.clone();
         self.add_node_with_relation(import_node, RelationKind::Declares)?;
+
+        // The imported name is an `import` occurrence enclosed by the IMPORT, so the shared
+        // resolution loop adds a spanned RESOLVES_TO to the definition. Internal origin only:
+        // an external answer would only be dropped and counted as unresolved.
+        if origin == "internal"
+            && let Some(site) = use_site
+        {
+            self.record_occurrence("import", site, &import_id);
+        }
 
         let mut target_id = None;
         if origin == "internal" {

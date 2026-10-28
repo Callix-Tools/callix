@@ -224,7 +224,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
              closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
              not followed; a namespace import binds to the imported file's MODULE, and a \
-             directory without an index file has none; a member read or write (`s.kind`, \
+             directory without an index file has none; an internal import or export \
+             specifier is placed (the import RESOLVES_TO its definition) and a relative \
+               module string REFERENCES the imported file's MODULE, while an external or \
+               path-alias string gets no edge; `import x = require()` and \
+               `export default <expr>` are not walked; \
+             a member read or write (`s.kind`, \
              `obj.x = v`) references the property it names, and an object-literal key or method \
              references the member of the type the literal is checked against (the key of an \
              untyped literal declares the property and is no edge); element access `o[\"k\"]`, \

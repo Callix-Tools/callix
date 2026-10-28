@@ -242,13 +242,13 @@
       "imports": 3,
       "inherits_from": 1,
       "references": 16,
-      "resolves_to": 3
+      "resolves_to": 6
     },
     "resolver": {
       "external": 4,
-      "internal": 23,
-      "queries": 30,
-      "resolved": 30,
+      "internal": 26,
+      "queries": 33,
+      "resolved": 33,
       "unresolved": 0
     },
     "resolver_status": "ok"

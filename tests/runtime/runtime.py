@@ -550,15 +550,12 @@ def score(artifact: dict, graph: Graph) -> dict:
             }
             pairs[(key_a, key_b)] = entry
         entry["count"] += count
-        entry["implicit"] = (
-            entry["implicit"]
-            or is_implicit(functions[callee]["name"], language)
-            or (key_b[0] != "raw" and is_implicit_node(graph.nodes[key_b], language))
-        )
-
         # implicit only when every call folded into the pair is: an accessor
         # mapped to its enclosing function must not hide a call written to it
-        if not is_implicit(functions[callee]["name"], language):
+        call_implicit = is_implicit(functions[callee]["name"], language) or (
+            key_b[0] != "raw" and is_implicit_node(graph.nodes[key_b], language)
+        )
+        if not call_implicit:
             if entry["implicit"]:
                 entry["caller"], entry["callee"] = caller, callee
             entry["implicit"] = False

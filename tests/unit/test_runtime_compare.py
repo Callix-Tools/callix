@@ -345,6 +345,7 @@ def test_analyze_langs():
     assert runtime.analyze_langs("cpp") == "cpp,c"
     assert runtime.analyze_langs("go") == "go"
 
+
 def test_rust_raw_identifier_maps_to_its_r_hash_node():
     nodes = [node("m", "r#async", "src/p.rs", [10, 5, 12, 6], kind="method")]
     fn = {"id": 0, "file": "src/p.rs", "name": "<p::StderrReader>::async", "line": 10}
@@ -361,6 +362,7 @@ def test_rust_function_generated_by_a_project_macro_maps_to_the_macro():
     # Only a macro catches a named function: no line-only fallback otherwise.
     fn = {"id": 0, "file": "src/g.rs", "name": "g::tests::other", "line": 60}
     assert runtime.map_function(fn, graph(nodes, []), "rust") == (None, "no_name")
+
 
 @pytest.mark.parametrize(("raw", "expected"), [
     ("gin.init.0", (["gin", "init"], False)),
@@ -388,6 +390,7 @@ def test_go_init_rules():
     ], [(0, 1, 1), (3, 2, 4)])
     result = runtime.score(art, g)
     assert (result["found"], result["unmapped"], result["implicit"]) == (2, 0, 0)
+
 
 def _pnode(ident, name, file, span, kind="function", qn=None, meta=None):
     return {

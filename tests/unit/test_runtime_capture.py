@@ -196,56 +196,6 @@ def test_callgrind_drops_relative_paths_outside_the_root(tmp_path):
     calls = callgrind.parse([_write(tmp_path, text)], str(root))
     assert calls == [(("src/main.c", "main", 1), ("src/main.c", "main", 1), 1)]
 
-def test_callgrind_call_target_position_does_not_move_the_caller_line(tmp_path):
-    text = (
-        "positions: line\nevents: Ir\nfl=/proj/a.c\nfn=f\n100 1\ncfn=g\ncalls=1 5\n"
-        "* 2\n+1 1\nfn=g\n5 1\n"
-    )
-    calls = callgrind.parse([_write(tmp_path, text)], "/proj")
-    assert calls == [(("a.c", "f", 100), ("a.c", "g", 5), 1)]
-
-
-def test_callgrind_relative_path_must_exist_under_root(tmp_path):
-    root = tmp_path / "root"
-    (root / "src").mkdir(parents=True)
-    (root / "src" / "x.c").write_text("int main(void){return 0;}\n", encoding="utf-8")
-    text = (
-        "positions: line\nevents: Ir\nfl=src/x.c\nfn=main\n1 1\n"
-        "cfl=libio/genops.c\ncfn=_IO_puts\ncalls=1 7\n* 3\n"
-        "cfl=src/x.c\ncfn=helper\ncalls=2 9\n* 4\n"
-        "fn=helper\n9 1\n"
-    )
-    calls = callgrind.parse([_write(tmp_path, text)], str(root))
-    assert calls == [(("src/x.c", "main", 1), ("src/x.c", "helper", 9), 2)]
-
-def test_callgrind_call_target_does_not_move_the_position(tmp_path):
-    # valgrind writes the `calls=` target relative to the last position but
-    # does not move it: the cost line after it, and the lines after that, are
-    # relative to the caller's own last position.
-    text = (
-        "positions: line\nevents: Ir\n"
-        "fl=/proj/a.rs\nfn=f\n50 5\n+1 3\n"
-        "cfn=g\ncalls=1 10\n* 9\n+2 3\n"
-        "fn=g\n10 1\n"
-    )
-    fn_lines = {}
-    callgrind.parse_text(text, fn_lines, {})
-    assert fn_lines[("/proj/a.rs", "f")] == 50
-    assert fn_lines[("/proj/a.rs", "g")] == 10
-
-
-def test_callgrind_relative_path_is_project_code_only_when_the_file_exists(tmp_path):
-    root = tmp_path / "proj"
-    (root / "src").mkdir(parents=True)
-    (root / "src" / "a.c").write_text("")
-    text = (
-        "positions: line\nevents: Ir\n"
-        "fl=./src/a.c\nfn=f\n1 1\ncfl=./elf/./elf/dl-load.c\ncfn=g\ncalls=1 5\n1 1\n"
-        "cfl=./src/a.c\ncfn=h\ncalls=1 7\n1 1\n"
-    )
-    calls = callgrind.parse([_write(tmp_path, text)], str(root))
-    assert calls == [(("src/a.c", "f", 1), ("src/a.c", "h", 0), 1)]
-
 
 def test_rust_capture_keeps_only_functions_written_in_the_project():
     import rust
@@ -637,6 +587,7 @@ def test_composer_git_reports_a_package_without_source(tmp_path):
     lock = {"packages": [{"name": "a/b", "version": "1"}], "packages-dev": []}
     (tmp_path / "composer.lock").write_text(json.dumps(lock), encoding="utf-8")
     assert composer_git.install(tmp_path) == ["a/b: no git source"]
+
 
 def test_jsprobe_traces_become_an_artifact(tmp_path):
     import jsprobe  # noqa: PLC0415

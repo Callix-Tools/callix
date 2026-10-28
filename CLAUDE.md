@@ -444,6 +444,23 @@ Things that are easy to get wrong:
   annotation-only statement has no right-hand side: take
   `child_by_field_name("right")`, never the last child, or the type is scanned
   as a value.
+- **Every name in a TypeScript type is an occurrence, not just the head.**
+  `src/typescript/type_uses.rs::type_uses` is a pure walker over a type subtree
+  (unions, generics, `a.T`, `typeof`, indexed access, mapped, conditional, function and
+  object types). HAS_TYPE (`annotation`) in declaration positions: variable, field and
+  return annotations, parameters, alias bodies, and type-parameter constraints and
+  defaults. `read` (REFERENCES) in expression and heritage positions: type arguments of
+  calls and `new`, `as`/`satisfies`/`<T>x`, `f<T>`, and the type arguments and namespace
+  prefixes of an `extends` clause. In `a.T` the type is `T` and `a` is a `read`; a
+  `typeof v` operand is a `read`. A type parameter, a mapped-type key and an `infer`
+  name are never recorded (a type parameter is no node, so its edge could only be a
+  per-site `unlocated` external symbol), nor are parameter names inside a function type.
+  `scan_value` has explicit arms for `as_expression`, `satisfies_expression`,
+  `type_assertion` and `instantiation_expression`: without them the default branch walks
+  the type as a value. `heritage_base_nodes` takes the `name` of a
+  `nested_type_identifier`, so `interface J extends a.Shape` inherits. Not walked:
+  `implements` clauses, annotations of inline closure parameters, JSDoc types.
+  `tests/api/test_type_positions.py` pins each form.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

@@ -229,7 +229,10 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              references the member of the type the literal is checked against (the key of an \
              untyped literal declares the property and is no edge); element access `o[\"k\"]`, \
              shorthand and computed keys reference nothing, and members of a type literal have \
-             no node, so reads of them stay `unlocated`",
+             no node, so reads of them stay `unlocated`; every name in a type annotation or \
+             alias body is a HAS_TYPE, a type argument or an `as`/`satisfies` type a REFERENCES, \
+             and a type parameter gives no edge; `implements` clauses and the annotations of \
+             inline closures are not walked",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",

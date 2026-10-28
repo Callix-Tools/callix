@@ -72,6 +72,26 @@ Not covered: element access (`o["k"]`, `o[k]`), shorthand keys (`{ x }` referenc
 local), computed keys, `x.count++` as a write, and members of a type literal, which
 have no node yet, so reads of them are `unlocated`.
 
+## Type positions
+
+Every name a type mentions is a use, not only the first identifier. In a declaration
+position it is a `HAS_TYPE` edge: a variable, field or parameter annotation, a return
+type, the body of a type alias, and the constraint or default of a type parameter
+(`a.T`, `Array<Shape>`, `Shape | a.T`, `Shape["k"]`, `{ s: Shape }` each give an edge per
+name). The type of `a.T` is `T`; the namespace `a` and the operand of `typeof v` are
+`REFERENCES` with `access` `read`.
+
+Where the type is not the type of a declaration it is a `REFERENCES` edge: the type
+arguments of a call or `new` (`f<Shape>(x)`), `x as T`, `x satisfies T`, `<T>x`, `f<T>`,
+and the type arguments and namespace prefix of an `extends` clause. An interface that
+extends a qualified name (`interface J extends a.Shape`) now inherits from it.
+
+A type parameter, a mapped-type key (`[k in keyof S]`) and an `infer` name are not nodes
+and give no edge; neither do the parameter names inside a function type.
+
+Not covered: `implements` clauses, the annotations of inline arrow-function parameters,
+and JSDoc types in `.js` files.
+
 ## The embedded typescript-go
 
 The resolver is built on

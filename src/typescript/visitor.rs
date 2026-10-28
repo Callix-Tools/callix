@@ -23,6 +23,7 @@ use crate::span::Span;
 use crate::ts;
 
 use super::module_resolver::{apply_alias, resolve_relative};
+use super::type_uses::{TypeUse, alias_value, type_uses, value_chain};
 
 /// A method's name in a class body may sit in one of three slots.
 const METHOD_NAME_TYPES: [&str; 3] = [
@@ -473,8 +474,12 @@ impl<'a> TsVisitor<'a> {
         self.add_node_with_relation(class_node, RelationKind::Declares)?;
         self.scan_decorators(&decorators, &class_id)?;
 
-        for base_node in base_nodes {
-            self.record_occurrence("base", base_node, &class_id);
+        for base_node in &base_nodes {
+            self.record_occurrence("base", *base_node, &class_id);
+        }
+        self.record_type_parameters(node, &class_id);
+        if let Some(clause) = heritage {
+            self.record_heritage_uses(clause, &base_nodes, &class_id);
         }
 
         self.push(qname, class_id, NodeKind::Class);
@@ -530,6 +535,7 @@ impl<'a> TsVisitor<'a> {
         )?;
         let method_id = method.get().id.clone();
         self.add_node_with_relation(method, RelationKind::Declares)?;
+        self.record_type_parameters(node, &method_id);
         if let Some(type_ann) = ts::child_of_type(node, "type_annotation") {
             self.record_annotation(type_ann, &method_id);
         }
@@ -558,18 +564,11 @@ impl<'a> TsVisitor<'a> {
         let alias_id = alias.get().id.clone();
         self.add_node_with_relation(alias, RelationKind::Declares)?;
 
-        // The aliased type is the first named child after `=`.
-        let mut past_eq = false;
-        for child in ts::children(node) {
-            if !child.is_named() && child.kind() == "=" {
-                past_eq = true;
-                continue;
-            }
-            if past_eq && child.is_named() {
-                self.record_annotation(child, &alias_id);
-                break;
-            }
+        // Every name of the aliased type, then the constraints and defaults of its parameters.
+        if let Some(value) = alias_value(node) {
+            self.record_type_uses(value, &alias_id, "annotation");
         }
+        self.record_type_parameters(node, &alias_id);
         Ok(())
     }
 
@@ -697,6 +696,7 @@ impl<'a> TsVisitor<'a> {
         let func_id = func.get().id.clone();
         self.add_node_with_relation(func, RelationKind::Declares)?;
         self.scan_decorators(&decorators, &func_id)?;
+        self.record_type_parameters(node, &func_id);
 
         if let Some(type_ann) = type_ann {
             self.record_annotation(type_ann, &func_id);
@@ -797,6 +797,7 @@ impl<'a> TsVisitor<'a> {
         let func = self.make_node(kind, &qname, &name, Some(value), metadata, Some(name_node))?;
         let func_id = func.get().id.clone();
         self.add_node_with_relation(func, RelationKind::Declares)?;
+        self.record_type_parameters(value, &func_id);
 
         if let Some(type_ann) = type_ann {
             self.record_annotation(type_ann, &func_id);
@@ -1440,29 +1441,72 @@ impl<'a> TsVisitor<'a> {
 
     // -- use-sites --------------------------------------------------------
 
-    /// The leading type identifier from an annotation.
-    fn first_type_identifier<'tree>(&self, node: TsNode<'tree>) -> Option<TsNode<'tree>> {
-        match node.kind() {
-            "type_annotation" => ts::named_children(node)
-                .into_iter()
-                .next()
-                .and_then(|c| self.first_type_identifier(c)),
-            "type_identifier" | "identifier" => Some(node),
-            // Built-in string/number/boolean — take the token itself.
-            "predefined_type" => ts::children(node).into_iter().next(),
-            // Base<T> — the base's name only.
-            "generic_type" => ts::child_of_types(node, &["type_identifier", "identifier"]),
-            // NS.Type — the trailing property.
-            "member_expression" => ts::children(node).last().copied(),
-            _ => ts::named_children(node)
-                .into_iter()
-                .find_map(|c| self.first_type_identifier(c)),
+    /// Records every name a type mentions. A type name gets `type_role`; a namespace prefix
+    /// or a `typeof` operand is a `read`. Type parameters, mapped keys and `infer` names
+    /// are not recorded (see `type_uses`).
+    fn record_type_uses(&mut self, node: TsNode<'_>, enclosing_id: &str, type_role: &str) {
+        let source = self.source;
+        for (name, how) in type_uses(node, source) {
+            let role = match how {
+                TypeUse::Type => type_role,
+                TypeUse::Value => "read",
+            };
+            self.record_occurrence(role, name, enclosing_id);
         }
     }
 
+    /// A type annotation or aliased type in a declaration position: HAS_TYPE.
     fn record_annotation(&mut self, type_ann: TsNode<'_>, enclosing_id: &str) {
-        if let Some(id_node) = self.first_type_identifier(type_ann) {
-            self.record_occurrence("annotation", id_node, enclosing_id);
+        self.record_type_uses(type_ann, enclosing_id, "annotation");
+    }
+
+    /// The constraints and defaults of `decl`'s type parameters (never their names).
+    fn record_type_parameters(&mut self, decl: TsNode<'_>, owner_id: &str) {
+        let Some(params) = ts::child_of_type(decl, "type_parameters") else {
+            return;
+        };
+        for param in ts::children(params) {
+            if param.kind() != "type_parameter" {
+                continue;
+            }
+            for field in ["constraint", "value"] {
+                if let Some(node) = param.child_by_field_name(field) {
+                    self.record_type_uses(node, owner_id, "annotation");
+                }
+            }
+        }
+    }
+
+    /// The names in an `extends` clause that are not the base itself: namespace prefixes
+    /// (`ns.Base`, `a.Shape`) and type arguments. A class or module does not "have type"
+    /// `Shape`, so these are `read`s from the class.
+    fn record_heritage_uses(
+        &mut self,
+        clause: TsNode<'_>,
+        base_nodes: &[TsNode<'_>],
+        class_id: &str,
+    ) {
+        let source = self.source;
+        let heads: Vec<usize> = base_nodes.iter().map(|n| n.start_byte()).collect();
+        for child in ts::children(clause) {
+            match child.kind() {
+                "member_expression" => {
+                    if let Some(object) = child.child_by_field_name("object") {
+                        for name in value_chain(object, source) {
+                            self.record_occurrence("read", name, class_id);
+                        }
+                    }
+                }
+                "nested_type_identifier" | "generic_type" | "type_arguments" => {
+                    for (name, how) in type_uses(child, source) {
+                        if how == TypeUse::Type && heads.contains(&name.start_byte()) {
+                            continue;
+                        }
+                        self.record_occurrence("read", name, class_id);
+                    }
+                }
+                _ => {}
+            }
         }
     }
 
@@ -1574,6 +1618,42 @@ impl<'a> TsVisitor<'a> {
                 self.record_occurrence("read", node, enclosing_id);
                 Ok(())
             }
+            // `x as T`, `x satisfies T`: scan the expression, the type is a set of reads.
+            // Never fall to the default branch, which would walk the type as a value.
+            "as_expression" | "satisfies_expression" => {
+                let named = ts::named_children(node);
+                if let Some(expression) = named.first() {
+                    self.scan_value(*expression, enclosing_id)?;
+                }
+                // `x as const` has no type node: only the expression is named.
+                if named.len() > 1
+                    && let Some(ty) = named.last()
+                {
+                    self.record_type_uses(*ty, enclosing_id, "read");
+                }
+                Ok(())
+            }
+            // `<T>x`
+            "type_assertion" => {
+                for child in ts::named_children(node) {
+                    if child.kind() == "type_arguments" {
+                        self.record_type_uses(child, enclosing_id, "read");
+                    } else {
+                        self.scan_value(child, enclosing_id)?;
+                    }
+                }
+                Ok(())
+            }
+            // `f<T>` without a call.
+            "instantiation_expression" => {
+                if let Some(function) = node.child_by_field_name("function") {
+                    self.scan_value(function, enclosing_id)?;
+                }
+                if let Some(args) = node.child_by_field_name("type_arguments") {
+                    self.record_type_uses(args, enclosing_id, "read");
+                }
+                Ok(())
+            }
             // An object literal { key: value } — the key is a read of the member, then the value is scanned.
             "pair" => {
                 let named = ts::named_children(node);
@@ -1672,6 +1752,10 @@ impl<'a> TsVisitor<'a> {
                 }
                 _ => self.scan_value(callee, enclosing_id)?,
             }
+        }
+        // `f<Shape>(x)`, `new Box<Shape>(x)`: the type arguments are reads.
+        if let Some(type_args) = node.child_by_field_name("type_arguments") {
+            self.record_type_uses(type_args, enclosing_id, "read");
         }
         if let Some(args) = ts::child_of_type(node, "arguments") {
             let mut index = 0usize;
@@ -2189,10 +2273,23 @@ fn heritage_base_nodes<'tree>(heritage: TsNode<'tree>) -> Vec<TsNode<'tree>> {
                     nodes.push(*last);
                 }
             }
+            // `a.Shape` in `interface J extends a.Shape`: the name, not the namespace.
+            "nested_type_identifier" => {
+                if let Some(name_node) = child.child_by_field_name("name") {
+                    nodes.push(name_node);
+                }
+            }
             "generic_type" => {
-                if let Some(name_node) =
-                    ts::child_of_types(child, &["type_identifier", "identifier"])
-                {
+                let head = child
+                    .child_by_field_name("name")
+                    .or_else(|| ts::child_of_types(child, &["type_identifier", "identifier"]));
+                let head = match head {
+                    Some(h) if h.kind() == "nested_type_identifier" => {
+                        h.child_by_field_name("name")
+                    }
+                    other => other,
+                };
+                if let Some(name_node) = head {
                     nodes.push(name_node);
                 }
             }

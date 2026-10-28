@@ -247,9 +247,9 @@
     "resolver": {
       "external": 4,
       "internal": 23,
-      "queries": 40,
+      "queries": 30,
       "resolved": 30,
-      "unresolved": 10
+      "unresolved": 0
     },
     "resolver_status": "ok"
   },

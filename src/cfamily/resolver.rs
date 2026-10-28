@@ -107,6 +107,10 @@ pub struct CFamilyIndex {
     namespace_aliases: HashMap<String, String>,
     /// Qualified typedef / `using` name → the class-like type it stands for.
     aliases: BTreeMap<String, String>,
+    /// Qualified names of the fields and file-scope variables that hold an object
+    /// itself (not a pointer, array or function): the only ones `a = b` can call an
+    /// operator on.
+    objects: HashSet<String>,
 }
 
 /// A member function of a class.
@@ -389,6 +393,11 @@ impl CFamilyIndex {
         }
     }
 
+    /// Records that a field or file-scope variable holds an object itself.
+    pub fn declare_object(&mut self, qualified_name: &str) {
+        self.objects.insert(qualified_name.to_string());
+    }
+
     /// The field `name` of `class` or one of its bases, when there is one.
     fn field_of(&self, class: &str, name: &str) -> Option<String> {
         self.lineage(class).into_iter().find_map(|c| self.field_names.get(&(c, name.to_string())).cloned())
@@ -492,6 +501,117 @@ impl CFamilyIndex {
         Receiver::Classes(self.class_of(&current))
     }
 
+    /// The classes the LEFT operand of an operator can be. Like `receiver_classes`, but a
+    /// field or global that is not recorded in `objects` (a pointer, an array) gives
+    /// nothing, since `p = q` on pointers is built in.
+    fn operand_classes(&self, site: &CallSite, from_file: &str) -> Vec<String> {
+        let mut holder: Option<String> = None;
+        let start = if let Some(t) = site.receiver_type.clone() {
+            Some(t)
+        } else if let Some(name) = site.receiver_name.as_deref() {
+            if let Some(scope) = site.class_scope.as_deref()
+                && let Some(t) = self.field_type(scope, name)
+            {
+                holder = self.field_of(scope, name);
+                Some(t)
+            } else {
+                let visible = self.visible(name, from_file, &|k| k == NodeKind::Variable);
+                match visible.first() {
+                    Some(symbol) => {
+                        holder = Some(symbol.qualified_name.clone());
+                        symbol.value_type.clone()
+                    }
+                    None => None,
+                }
+            }
+        } else {
+            None
+        };
+        let Some(mut current) = start else {
+            return Vec::new();
+        };
+        for step in &site.receiver_path {
+            let classes = self.class_of(&current);
+            let next = classes
+                .iter()
+                .find_map(|c| self.field_type(c, step).map(|t| (t, self.field_of(c, step))));
+            match next {
+                Some((t, h)) => {
+                    current = t;
+                    holder = h;
+                }
+                None => return Vec::new(),
+            }
+        }
+        if let Some(h) = &holder
+            && !self.objects.contains(h)
+        {
+            return Vec::new();
+        }
+        self.class_of(&current)
+    }
+
+    /// An overloaded operator use. The left operand's class (and its bases) first, as a
+    /// member; then, except for `=`, `[]` and `->` which are member-only, a visible
+    /// two-parameter namespace-scope function, admitted only when an operand's class
+    /// appears in the lineage of the class a parameter names. Never a bare-name fallback.
+    fn resolve_operator(&self, name: &str, site: &CallSite, from_file: &str) -> Outcome {
+        let lefts = self.operand_classes(site, from_file);
+        for class in &lefts {
+            if let Some((member, ambiguous)) = self.member_of(class, name, site) {
+                return Outcome::Found {
+                    qualified_name: member.qualified_name,
+                    kind: member.kind,
+                    ambiguous: ambiguous || lefts.len() > 1,
+                };
+            }
+        }
+        if matches!(name, "operator=" | "operator[]" | "operator->") {
+            return Outcome::NotACall;
+        }
+        let right_kind = site.arg_kinds.first().cloned().unwrap_or_else(|| "?".to_string());
+        let right_name = right_kind.trim_start_matches("&&");
+        let right_classes = if right_name.is_empty() || right_name == "?" {
+            Vec::new()
+        } else {
+            self.class_of(right_name)
+        };
+        let candidates: Vec<&Symbol> = self
+            .visible(name, from_file, &|k| k == NodeKind::Function)
+            .into_iter()
+            .filter(|symbol| {
+                let params = params_of(&symbol.qualified_name);
+                if params.len() != 2 {
+                    return false;
+                }
+                let evidence = |operands: &[String], parameter: &str| {
+                    let Some(key) = type_key(parameter) else {
+                        return false;
+                    };
+                    let wanted = self.class_of(&key);
+                    operands.iter().any(|operand| self.lineage(operand).iter().any(|c| wanted.contains(c)))
+                };
+                evidence(&lefts, params[0].as_str()) || evidence(&right_classes, params[1].as_str())
+            })
+            .collect();
+        if candidates.is_empty() {
+            return Outcome::NotACall;
+        }
+        let left_kind = lefts
+            .first()
+            .map(|c| c.rsplit("::").next().unwrap_or(c.as_str()).to_string())
+            .unwrap_or_else(|| "?".to_string());
+        let mut probe = site.clone();
+        probe.arity = Some(2);
+        probe.arg_kinds = vec![left_kind, right_kind];
+        let (symbol, tie) = pick(&candidates, |s| s.qualified_name.clone(), &probe);
+        Outcome::Found {
+            qualified_name: symbol.qualified_name.clone(),
+            kind: symbol.kind,
+            ambiguous: tie || lefts.len() > 1,
+        }
+    }
+
     /// Resolves a call or a construction using everything the site says.
     ///
     /// The order is the order C++ reads a name in: a receiver's class decides a
@@ -550,6 +670,11 @@ impl CFamilyIndex {
                 return Outcome::Found { qualified_name: field, kind: NodeKind::Attribute, ambiguous: false };
             }
             return Outcome::NotACall;
+        }
+
+        // An overloaded operator: never the bare-name fallback of a member access.
+        if site.overloaded_operator {
+            return self.resolve_operator(name, site, from_file);
         }
 
         // A member access (call, read or write): the receiver's declared type decides.
@@ -765,6 +890,21 @@ fn fit(parameter: &str, argument: &str) -> i32 {
     let floating = ["float", "double"];
     let is_integral = integral.iter().any(|t| bare.contains(t)) && !pointer;
     let is_floating = floating.iter().any(|t| bare == *t) && !pointer;
+    // `&&` or `&&Class`: a temporary. It prefers `T&&`, then `const T&` or a copy, and
+    // cannot bind a non-const `T&`.
+    if let Some(class) = argument.strip_prefix("&&") {
+        let matches = class.is_empty() || bare == class || bare.ends_with(&format!("::{class}"));
+        if !matches {
+            return 0;
+        }
+        return if parameter.contains("&&") {
+            4
+        } else if parameter.contains('&') && !parameter.contains("const") {
+            -2
+        } else {
+            3
+        };
+    }
     match argument {
         "int" => {
             if is_integral && !bare.contains("char") { 3 } else if is_floating || bare == "bool" { 1 } else if pointer { 0 } else { -2 }
@@ -786,7 +926,12 @@ fn fit(parameter: &str, argument: &str) -> i32 {
         }
         "?" => 0,
         named => {
-            if bare == named || bare.ends_with(&format!("::{named}")) { 3 } else { 0 }
+            if bare == named || bare.ends_with(&format!("::{named}")) {
+                // An lvalue prefers the copy over `T&&`.
+                if parameter.contains("&&") { 1 } else { 3 }
+            } else {
+                0
+            }
         }
     }
 }
@@ -1070,5 +1215,112 @@ mod tests {
         index.declare_field("buf_t", "len", "buf_t::len", "int");
         let got = found(index.resolve("len", "read", &member(Some("buf_t"), &[]), "a.h"));
         assert_eq!(got, Some(("buf_t::len".into(), NodeKind::Attribute, false)));
+    }
+
+    fn op_site(left: Option<&str>, right: &str) -> CallSite {
+        CallSite {
+            overloaded_operator: true,
+            speculative: true,
+            arity: Some(1),
+            arg_kinds: vec![right.to_string()],
+            receiver_type: left.map(str::to_string),
+            ..CallSite::default()
+        }
+    }
+
+    fn operator_index() -> CFamilyIndex {
+        let mut index = CFamilyIndex::new();
+        for class in ["S", "B", "D", "A", "C"] {
+            index.declare_class(class);
+        }
+        index.add_base("D", "B");
+        index
+    }
+
+    #[test]
+    fn an_operator_member_is_found_through_a_base_class() {
+        let mut index = operator_index();
+        index.declare_member("B", "operator==", "B::operator==(const B&) const", NodeKind::Method);
+        let got = found(index.resolve("operator==", "call", &op_site(Some("D"), "D"), "a.h"));
+        assert_eq!(got, Some(("B::operator==(const B&) const".into(), NodeKind::Method, false)));
+    }
+
+    #[test]
+    fn a_free_operator_is_chosen_by_the_type_of_its_parameters() {
+        let mut index = operator_index();
+        index.declare("operator!=", "operator!=(const S&,const S&)", NodeKind::Function, "a.h", false);
+        let got = found(index.resolve("operator!=", "call", &op_site(Some("S"), "S"), "a.h"));
+        assert_eq!(got, Some(("operator!=(const S&,const S&)".into(), NodeKind::Function, false)));
+    }
+
+    #[test]
+    fn a_free_operator_needs_an_operand_of_the_class_it_names() {
+        let mut index = operator_index();
+        index.declare("operator==", "operator==(const S&,const S&)", NodeKind::Function, "a.h", false);
+        // `int == int`: no operand class at all.
+        let outcome = index.resolve("operator==", "call", &op_site(None, "int"), "a.h");
+        assert!(matches!(outcome, Outcome::NotACall));
+    }
+
+    #[test]
+    fn assignment_never_falls_back_to_a_free_function() {
+        let mut index = operator_index();
+        index.declare("operator=", "operator=(S&,const S&)", NodeKind::Function, "a.h", false);
+        let outcome = index.resolve("operator=", "call", &op_site(Some("S"), "S"), "a.h");
+        assert!(matches!(outcome, Outcome::NotACall));
+    }
+
+    #[test]
+    fn a_pointer_field_is_not_an_operand_but_an_object_field_is() {
+        let mut index = operator_index();
+        index.declare_class("H");
+        index.declare_field("H", "p_", "H::p_", "S*");
+        index.declare_field("H", "v_", "H::v_", "S");
+        index.declare_object("H::v_");
+        index.declare_member("S", "operator=", "S::operator=(const S&)", NodeKind::Method);
+        let on = |field: &str| CallSite {
+            overloaded_operator: true,
+            speculative: true,
+            arity: Some(1),
+            arg_kinds: vec!["S".to_string()],
+            class_scope: Some("H".to_string()),
+            receiver_name: Some(field.to_string()),
+            ..CallSite::default()
+        };
+        let object = found(index.resolve("operator=", "call", &on("v_"), "a.h"));
+        assert_eq!(object, Some(("S::operator=(const S&)".into(), NodeKind::Method, false)));
+        assert!(matches!(index.resolve("operator=", "call", &on("p_"), "a.h"), Outcome::NotACall));
+    }
+
+    #[test]
+    fn a_temporary_picks_the_move_and_a_named_object_the_copy() {
+        let mut index = operator_index();
+        index.declare_member("S", "operator=", "S::operator=(const S&)", NodeKind::Method);
+        index.declare_member("S", "operator=", "S::operator=(S&&)", NodeKind::Method);
+        let pick_for = |right: &str| {
+            found(index.resolve("operator=", "call", &op_site(Some("S"), right), "a.h")).map(|f| (f.0, f.2))
+        };
+        assert_eq!(pick_for("&&S"), Some(("S::operator=(S&&)".to_string(), false)));
+        assert_eq!(pick_for("&&"), Some(("S::operator=(S&&)".to_string(), false)));
+        assert_eq!(pick_for("S"), Some(("S::operator=(const S&)".to_string(), false)));
+    }
+
+    #[test]
+    fn two_equally_fitting_free_operators_are_ambiguous() {
+        let mut index = operator_index();
+        index.declare("operator==", "operator==(const A&,const B&)", NodeKind::Function, "a.h", false);
+        index.declare("operator==", "operator==(const A&,const C&)", NodeKind::Function, "a.h", false);
+        let got = found(index.resolve("operator==", "call", &op_site(Some("A"), "?"), "a.h"));
+        assert_eq!(got.map(|g| g.2), Some(true));
+    }
+
+    #[test]
+    fn fit_scores_temporaries_and_lvalues_against_rvalue_references() {
+        assert_eq!(fit("T&&", "&&T"), 4);
+        assert_eq!(fit("const T&", "&&T"), 3);
+        assert_eq!(fit("T", "&&T"), 3);
+        assert_eq!(fit("T&", "&&T"), -2);
+        assert_eq!(fit("T&&", "T"), 1);
+        assert_eq!(fit("const T&", "T"), 3);
     }
 }

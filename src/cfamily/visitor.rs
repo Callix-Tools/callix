@@ -150,6 +150,46 @@ fn misparsed_pointer_name<'tree>(left: TsNode<'tree>) -> Option<TsNode<'tree>> {
     ts::named_children(*pointer).first().copied().filter(|n| n.kind() == "identifier")
 }
 
+/// Whether a declarator declares an object itself: no pointer, array or function
+/// declarator between it and the name. References and `init_declarator` are looked
+/// through (a reference to a pointer is a pointer).
+fn declarator_holds_object(declarator: TsNode<'_>) -> bool {
+    let mut current = declarator;
+    loop {
+        if matches!(current.kind(), "pointer_declarator" | "array_declarator" | "function_declarator") {
+            return false;
+        }
+        let next = current.child_by_field_name("declarator").or_else(|| {
+            if matches!(current.kind(), "reference_declarator" | "parenthesized_declarator") {
+                ts::named_children(current).first().copied()
+            } else {
+                None
+            }
+        });
+        match next {
+            Some(inner) => current = inner,
+            None => return true,
+        }
+    }
+}
+
+/// The spelling an operator function is named by: the alternative tokens are the
+/// symbols they stand for (`and_eq` is `operator&=`).
+fn operator_spelling(token: &str) -> &str {
+    match token {
+        "and_eq" => "&=",
+        "or_eq" => "|=",
+        "xor_eq" => "^=",
+        "not_eq" => "!=",
+        "and" => "&&",
+        "or" => "||",
+        "bitand" => "&",
+        "bitor" => "|",
+        "xor" => "^",
+        other => other,
+    }
+}
+
 /// A node's descendants, itself included, depth-first.
 fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     let mut out = Vec::new();
@@ -558,6 +598,9 @@ pub struct FoundDecl {
     /// The normalized parameter list of a C++ callable, already folded into
     /// `qualified_name`; empty in C, which has no overloading.
     pub signature: String,
+    /// A variable or field that holds an object itself: its declarator chain has no
+    /// pointer, array or function declarator. `a = b` calls an operator only for these.
+    pub holds_object: bool,
 }
 
 /// What a call site says about which function it means, beyond the name.
@@ -605,6 +648,11 @@ pub struct CallSite {
     /// binds when the class declares one and says nothing otherwise, instead of
     /// becoming an external symbol for every `a + b` on a built-in type.
     pub speculative: bool,
+    /// The site is a use of an overloaded operator (`a = b`, `a == b`, `a[i]`). The
+    /// `receiver_*` fields describe the LEFT operand, which must hold an object, and
+    /// `arg_kinds[0]` is the right operand. Always set together with `speculative`: a
+    /// miss writes nothing. The resolver never falls back to a bare name for these.
+    pub overloaded_operator: bool,
     /// The name is written as a TYPE (a local's type, a cast, `sizeof`, a template
     /// argument, a scope component, a declared node's type): it binds only to a
     /// CLASS or a TYPE_ALIAS, through `CFamilyIndex::resolve_type`, never to a
@@ -1530,6 +1578,7 @@ impl<'a> Reader<'a> {
             is_template: modifiers.is_template,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
 
         let record_owner = Owner::Decl {
@@ -1611,6 +1660,7 @@ impl<'a> Reader<'a> {
                     is_template: false,
                     type_text: String::new(),
                     signature: String::new(),
+                    holds_object: false,
                 });
                 (
                     Owner::Decl { qualified_name: qname, kind: NodeKind::Class },
@@ -1662,6 +1712,7 @@ impl<'a> Reader<'a> {
             is_template: false,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
     }
 
@@ -1714,6 +1765,7 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text: type_text.clone(),
                 signature: String::new(),
+                holds_object: false,
             });
             let alias_owner = Owner::Decl { qualified_name: qname, kind: NodeKind::TypeAlias };
             // `typedef struct S {..} S;` defines S and is no use of it.
@@ -1757,6 +1809,7 @@ impl<'a> Reader<'a> {
             is_template,
             type_text,
             signature: String::new(),
+            holds_object: false,
         });
         if let Some(type_node) = type_node {
             let alias_owner = Owner::Decl {
@@ -1798,6 +1851,7 @@ impl<'a> Reader<'a> {
             is_template: true,
             type_text: String::new(),
             signature: String::new(),
+            holds_object: false,
         });
     }
 
@@ -1947,6 +2001,7 @@ impl<'a> Reader<'a> {
                     is_template: false,
                     type_text: type_node.map(|n| self.text(n)).unwrap_or_default(),
                     signature: String::new(),
+                    holds_object: false,
                 });
                 if let Some(value) = value {
                     let holder = Owner::Decl { qualified_name: qname, kind: NodeKind::Variable };
@@ -1986,6 +2041,7 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text: String::new(),
                 signature: String::new(),
+                holds_object: false,
             });
         }
         // `fp = g;` inside the function.
@@ -2173,28 +2229,210 @@ impl<'a> Reader<'a> {
     fn argument_kinds(&self, arguments: TsNode<'_>, context: &BodyContext) -> Vec<String> {
         ts::named_children(arguments)
             .into_iter()
-            .map(|argument| match argument.kind() {
-                "number_literal" => {
-                    let text = self.text(argument).to_ascii_lowercase();
-                    let hex = text.starts_with("0x");
-                    if text.contains('.') || (!hex && (text.contains('e') || text.ends_with('f'))) {
-                        "float".to_string()
-                    } else {
-                        "int".to_string()
-                    }
-                }
-                "string_literal" | "raw_string_literal" | "concatenated_string" => "string".to_string(),
-                "char_literal" => "char".to_string(),
-                "true" | "false" => "bool".to_string(),
-                "null" | "nullptr" => "null".to_string(),
-                "identifier" => context.locals.get(&self.text(argument)).cloned().unwrap_or_else(|| "?".to_string()),
-                "pointer_expression" => ts::named_children(argument)
-                    .first()
-                    .and_then(|inner| context.locals.get(&self.text(*inner)).cloned())
-                    .unwrap_or_else(|| "?".to_string()),
-                _ => "?".to_string(),
-            })
+            .map(|argument| self.argument_kind(argument, context))
             .collect()
+    }
+
+    /// What one argument is, as far as its spelling shows.
+    fn argument_kind(&self, argument: TsNode<'_>, context: &BodyContext) -> String {
+        match argument.kind() {
+            "number_literal" => {
+                let text = self.text(argument).to_ascii_lowercase();
+                let hex = text.starts_with("0x");
+                if text.contains('.') || (!hex && (text.contains('e') || text.ends_with('f'))) {
+                    "float".to_string()
+                } else {
+                    "int".to_string()
+                }
+            }
+            "string_literal" | "raw_string_literal" | "concatenated_string" => "string".to_string(),
+            "char_literal" => "char".to_string(),
+            "true" | "false" => "bool".to_string(),
+            "null" | "nullptr" => "null".to_string(),
+            "identifier" => context.locals.get(&self.text(argument)).cloned().unwrap_or_else(|| "?".to_string()),
+            "pointer_expression" => ts::named_children(argument)
+                .first()
+                .and_then(|inner| context.locals.get(&self.text(*inner)).cloned())
+                .unwrap_or_else(|| "?".to_string()),
+            _ => "?".to_string(),
+        }
+    }
+
+    /// What the right operand of an overloaded operator is. A temporary (a call
+    /// result, `std::move(x)`, `T(..)`, `T{..}`) is `&&` followed by its class when the
+    /// spelling shows it; an object local is its class; a pointer is `?`.
+    fn operand_kind(&self, node: TsNode<'_>, context: &BodyContext) -> String {
+        match node.kind() {
+            "number_literal" | "string_literal" | "raw_string_literal" | "concatenated_string"
+            | "char_literal" | "true" | "false" | "null" | "nullptr" => self.argument_kind(node, context),
+            "identifier" => {
+                let name = self.text(node);
+                if context.objects.contains(&name) {
+                    context.locals.get(&name).cloned().unwrap_or_else(|| "?".to_string())
+                } else {
+                    "?".to_string()
+                }
+            }
+            "pointer_expression" => {
+                let deref = node.child_by_field_name("operator").is_some_and(|o| self.text(o) == "*");
+                let inner = node.child_by_field_name("argument").filter(|i| i.kind() == "identifier");
+                match inner {
+                    Some(inner) if deref => {
+                        let name = self.text(inner);
+                        if context.objects.contains(&name) {
+                            "?".to_string()
+                        } else {
+                            context.locals.get(&name).cloned().unwrap_or_else(|| "?".to_string())
+                        }
+                    }
+                    _ => "?".to_string(),
+                }
+            }
+            "parenthesized_expression" => ts::named_children(node)
+                .first()
+                .map(|inner| self.operand_kind(*inner, context))
+                .unwrap_or_else(|| "?".to_string()),
+            "call_expression" => {
+                let function = node.child_by_field_name("function");
+                let mut class = function
+                    .filter(|f| matches!(f.kind(), "type_identifier" | "template_type"))
+                    .and_then(|f| self.type_key(f));
+                if class.is_none()
+                    && function.is_some_and(|f| self.text(f) == "std::move")
+                    && let Some(arguments) = node.child_by_field_name("arguments")
+                    && let Some(first) = ts::named_children(arguments).first().copied()
+                    && first.kind() == "identifier"
+                {
+                    class = context.locals.get(&self.text(first)).cloned();
+                }
+                format!("&&{}", class.unwrap_or_default())
+            }
+            "compound_literal_expression" => {
+                let class = node.child_by_field_name("type").and_then(|t| self.type_key(t));
+                format!("&&{}", class.unwrap_or_default())
+            }
+            _ => "?".to_string(),
+        }
+    }
+
+    /// Fills the receiver fields of `site` from the LEFT operand of an operator and
+    /// says whether the operand can hold an object. A pointer local, an untyped
+    /// local and an expression result give nothing.
+    fn operand_receiver(&self, node: TsNode<'_>, context: &BodyContext, site: &mut CallSite) -> bool {
+        match node.kind() {
+            "identifier" => {
+                let name = self.text(node);
+                if context.objects.contains(&name)
+                    && let Some(class) = context.locals.get(&name)
+                {
+                    site.receiver_type = Some(class.clone());
+                    site.receiver_name = Some(name);
+                    true
+                } else if context.bound.contains(&name) {
+                    false
+                } else {
+                    // A field of the class or a global: the resolver checks that it holds an object.
+                    site.receiver_name = Some(name);
+                    true
+                }
+            }
+            "pointer_expression" => {
+                let deref = node.child_by_field_name("operator").is_some_and(|o| self.text(o) == "*");
+                let Some(inner) = node.child_by_field_name("argument").filter(|_| deref) else {
+                    return false;
+                };
+                match inner.kind() {
+                    "this" => {
+                        site.receiver_type = context.class_scope.clone();
+                        site.receiver_type.is_some()
+                    }
+                    "identifier" => {
+                        let name = self.text(inner);
+                        if !context.objects.contains(&name)
+                            && let Some(class) = context.locals.get(&name)
+                        {
+                            site.receiver_type = Some(class.clone());
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    _ => false,
+                }
+            }
+            "field_expression" => {
+                let (Some(argument), Some(field)) =
+                    (node.child_by_field_name("argument"), node.child_by_field_name("field"))
+                else {
+                    return false;
+                };
+                let mut root = CallSite::default();
+                self.scan_receiver(argument, context, &mut root);
+                if root.receiver_type.is_none() && root.receiver_name.is_none() {
+                    return false;
+                }
+                root.receiver_path.push(self.text(bare_name(field)));
+                site.receiver_type = root.receiver_type;
+                site.receiver_name = root.receiver_name;
+                site.receiver_path = root.receiver_path;
+                true
+            }
+            "parenthesized_expression" => match ts::named_children(node).first().copied() {
+                Some(inner) => self.operand_receiver(inner, context, site),
+                None => false,
+            },
+            // `p[i]` with `p` a pointer local: an element of the class `p` points to.
+            "subscript_expression" => {
+                let Some(argument) = node.child_by_field_name("argument").filter(|a| a.kind() == "identifier") else {
+                    return false;
+                };
+                let name = self.text(argument);
+                if !context.objects.contains(&name)
+                    && let Some(class) = context.locals.get(&name)
+                {
+                    site.receiver_type = Some(class.clone());
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    /// A speculative `call` of `operator<spelled>` positioned at the operator token.
+    /// `=` and `[]` are member-only: with no receiver they could never bind, so no
+    /// occurrence is made. Any other operator is kept without a receiver, because the
+    /// right operand can still select a namespace-scope operator.
+    fn push_operator(
+        &mut self,
+        owner: &Owner,
+        context: &BodyContext,
+        token: TsNode<'_>,
+        spelled: &str,
+        left: Option<TsNode<'_>>,
+        right: Option<TsNode<'_>>,
+    ) {
+        let member_only = matches!(spelled, "=" | "[]");
+        let mut site = CallSite {
+            class_scope: context.class_scope.clone(),
+            arity: Some(1),
+            arg_kinds: vec![right.map(|r| self.operand_kind(r, context)).unwrap_or_else(|| "?".to_string())],
+            overloaded_operator: true,
+            speculative: true,
+            ..CallSite::default()
+        };
+        let has_receiver = left.is_some_and(|l| self.operand_receiver(l, context, &mut site));
+        if member_only && !has_receiver {
+            return;
+        }
+        self.facts.occurrences.push(FoundOccurrence {
+            role: "call",
+            span: ts::span(token),
+            owner: owner.clone(),
+            site,
+            name: format!("operator{}", operator_spelling(spelled)),
+        });
     }
 
     /// A `declaration` or a `field_declaration`, which may declare several
@@ -2332,6 +2570,7 @@ impl<'a> Reader<'a> {
             is_template: identity.modifiers.is_template,
             type_text,
             signature: identity.signature,
+            holds_object: false,
         });
 
         let callable_owner = Owner::Decl {
@@ -2424,6 +2663,7 @@ impl<'a> Reader<'a> {
                 is_template: false,
                 type_text,
                 signature: String::new(),
+                holds_object: false,
             });
             let param_owner = Owner::Decl {
                 qualified_name: qname,
@@ -2512,6 +2752,7 @@ impl<'a> Reader<'a> {
             is_template: modifiers.is_template,
             type_text,
             signature: String::new(),
+            holds_object: declarator_holds_object(declarator),
         });
         let data_owner = Owner::Decl { qualified_name: qname.clone(), kind };
         // `const char *Base::Label = ..`: `Base` is a class the definition refers to.
@@ -2838,32 +3079,30 @@ impl<'a> Reader<'a> {
                         self.push_site("call", named, owner, site);
                     }
                 }
-                // `a + b` and `a == b` on an object call the class's operator.
+                // `a + b`, `a == b`: the class's operator, or a namespace-scope one.
                 "binary_expression" if self.dialect == Dialect::Cpp => {
-                    if let (Some(left), Some(operator)) =
-                        (node.child_by_field_name("left"), node.child_by_field_name("operator"))
-                        && left.kind() == "identifier"
-                    {
-                        let variable = self.text(left);
-                        if context.objects.contains(&variable)
-                            && let Some(class) = context.locals.get(&variable)
-                        {
-                            let site = CallSite {
-                                class_scope: context.class_scope.clone(),
-                                receiver_type: Some(class.clone()),
-                                receiver_name: Some(variable),
-                                arity: Some(1),
-                                speculative: true,
-                                ..CallSite::default()
-                            };
-                            self.facts.occurrences.push(FoundOccurrence {
-                                role: "call",
-                                span: ts::span(operator),
-                                owner: owner.clone(),
-                                site,
-                                name: format!("operator{}", self.text(operator)),
-                            });
-                        }
+                    if let Some(operator) = node.child_by_field_name("operator") {
+                        let spelled = self.text(operator);
+                        let (left, right) = (node.child_by_field_name("left"), node.child_by_field_name("right"));
+                        self.push_operator(owner, context, operator, &spelled, left, right);
+                    }
+                }
+                // `a = b` and every compound assignment.
+                "assignment_expression" if self.dialect == Dialect::Cpp => {
+                    if let Some(operator) = node.child_by_field_name("operator") {
+                        let spelled = self.text(operator);
+                        let (left, right) = (node.child_by_field_name("left"), node.child_by_field_name("right"));
+                        self.push_operator(owner, context, operator, &spelled, left, right);
+                    }
+                }
+                // `a[i]`: positioned at the `[`.
+                "subscript_expression" if self.dialect == Dialect::Cpp => {
+                    if let Some(indices) = node.child_by_field_name("indices") {
+                        let open = ts::children(indices).into_iter().next().filter(|t| t.kind() == "[").unwrap_or(indices);
+                        let named = ts::named_children(indices);
+                        let index = if let [only] = named.as_slice() { Some(*only) } else { None };
+                        let left = node.child_by_field_name("argument");
+                        self.push_operator(owner, context, open, "[]", left, index);
                     }
                 }
                 // `delete p` runs the destructor of the class `p` was declared

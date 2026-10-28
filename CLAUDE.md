@@ -305,6 +305,16 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   namespace makes no edge), and a local declaration's type yields to a construction
   at the same span. The role is `read`, not a new one, so custom resolvers still
   see it.
+- **A C++ operator use is a speculative `call` occurrence named `operator<op>`**, at the
+  operator token, with `CallSite.overloaded_operator` set (`=`, compound assignments,
+  binary operators, `[]`; alternative tokens such as `and_eq` are normalised). The
+  resolver (`resolve_operator`) never falls back to a bare name for it. `=`, `[]` and
+  `->` are member-only; a free operator needs an operand's class among the classes its
+  parameters name. Only fields and globals recorded as holding an object
+  (`FoundDecl.holds_object`: no pointer, array or function declarator) can be the left
+  operand, so `p_ = q` on a pointer field is not `operator=`. A miss writes nothing, so
+  built-in arithmetic adds no externals. Operators on expression results, unary
+  operators, ADL and templates are not followed.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language

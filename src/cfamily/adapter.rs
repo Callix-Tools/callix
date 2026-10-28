@@ -529,6 +529,10 @@ fn resolve_with_table(
                 decl.linkage == Linkage::Internal,
                 value_type,
             );
+            // A field or file-scope variable that holds an object: the operand of `a = b`.
+            if decl.holds_object && matches!(decl.kind, NodeKind::Attribute | NodeKind::Variable) {
+                index.declare_object(&decl.qualified_name);
+            }
             // Classes, their members and fields: what a receiver's type is asked.
             // `F::operator()()`: the call operator's own parentheses are not the signature's.
             let without_signature = match decl.qualified_name.find("operator()") {

@@ -49,3 +49,45 @@ def test_reads_and_writes_carry_their_access(language: str) -> None:
     references = [r for r in graph.relations if r.kind is RelationKind.REFERENCES]
     assert references
     assert {r.metadata.get("access") for r in references} <= {"read", "write"}
+
+
+OPERATOR_SOURCE = """struct S {
+  S& operator=(const S& o) { return *this; }
+  bool operator==(const S& o) const { return true; }
+  int operator[](int i) const { return i; }
+};
+bool operator!=(const S& a, const S& b) { return false; }
+S make() { return S(); }
+int f() {
+  S a;
+  S b = make();
+  a = b;
+  bool e = (a == b);
+  bool n = (a != b);
+  return a[0] + e + n;
+}
+"""
+
+
+def test_cpp_operator_edges_cover_the_operator_token(tmp_path) -> None:
+    (tmp_path / "a.cc").write_text(OPERATOR_SOURCE)
+    graph = callix.CppAdapter().analyze(str(tmp_path))
+    names = {i: n.qualified_name for i, n in graph.nodes.items()}
+    spans = {}
+    for r in graph.relations:
+        if r.kind is not RelationKind.CALLS:
+            continue
+        if not names.get(r.source_id, "").startswith("f("):
+            continue
+        spans[names.get(r.target_id, "")] = r.metadata["span"]
+    for target, line in [
+        ("S::operator=(const S&)", 11),
+        ("operator!=(const S&,const S&)", 13),
+    ]:
+        span = spans[target]
+        assert isinstance(span, callix.Span)
+        assert span.start_line == line
+        assert span.start_col <= 5 < span.end_col or line == 13
+    assignment = spans["S::operator=(const S&)"]
+    assert assignment.start_col <= 5 < assignment.end_col
+    assert any(t.startswith("S::operator[]") and s.start_line == 14 for t, s in spans.items())

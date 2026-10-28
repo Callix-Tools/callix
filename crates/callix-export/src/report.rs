@@ -257,7 +257,13 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              span of the IMPORT's RESOLVES_TO to the header's FILE or to an external \
              symbol (a computed include is not positioned); a `.h` with no C++ syntax \
              belongs to C where a C root reads it, and a C++ `#include` of it then \
-             resolves to an external symbol",
+             resolves to an external symbol; an overloaded operator (`a = b`, the compound \
+             assignments, `a == b` and the other binary operators, `a[i]`) is a call when the \
+             left operand is an object local, parameter, field, global, `*p` or `*this` of a \
+             class that declares it (bases included), or when a namespace-scope two-parameter \
+             operator names an operand's class; operators on an expression result, unary \
+             operators, argument-dependent lookup and template-dependent operands are not \
+             followed, and an operator nothing declares gives no edge",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

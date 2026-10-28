@@ -39,7 +39,7 @@ reported on their own line instead, so neither inflates a number:
 | Suite | Cases | Ground truth |
 |---|---|---|
 | `python/pycg` | 112 | the PyCG micro-benchmark, vendored unmodified (Apache 2.0, see its `NOTICE.md`) |
-| `typescript/micro`, `go/micro`, `rust/micro`, `php/micro`, `c/micro`, `cpp/micro` | 21–60 each | written for this repository, from the language's rules rather than from callix's output |
+| `python/micro`, `typescript/micro`, `go/micro`, `rust/micro`, `php/micro`, `c/micro`, `cpp/micro` | 1–75 each | written for this repository, from the language's rules rather than from callix's output |
 
 A suite is `<suite>/<category>/<case>/`; `README.md` in a case says what it tests.
 

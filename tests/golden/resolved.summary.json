@@ -149,7 +149,7 @@
       "boundary": 1,
       "class": 2,
       "dependency": 1,
-      "external_symbol": 14,
+      "external_symbol": 15,
       "file": 3,
       "function": 3,
       "import": 6,
@@ -166,17 +166,17 @@
       "contains": 6,
       "declares": 27,
       "depends_on": 1,
-      "has_type": 10,
+      "has_type": 11,
       "imports": 4,
       "inherits_from": 1,
-      "references": 18,
+      "references": 20,
       "resolves_to": 9
     },
     "resolver": {
-      "external": 11,
-      "internal": 25,
-      "queries": 53,
-      "resolved": 46,
+      "external": 12,
+      "internal": 27,
+      "queries": 56,
+      "resolved": 49,
       "unresolved": 4
     },
     "resolver_status": "ok"
@@ -221,7 +221,7 @@
       "boundary": 1,
       "class": 3,
       "dependency": 1,
-      "external_symbol": 6,
+      "external_symbol": 7,
       "file": 2,
       "function": 3,
       "import": 3,
@@ -241,15 +241,15 @@
       "has_type": 4,
       "imports": 3,
       "inherits_from": 1,
-      "references": 12,
-      "resolves_to": 3
+      "references": 16,
+      "resolves_to": 6
     },
     "resolver": {
-      "external": 3,
-      "internal": 20,
-      "queries": 36,
-      "resolved": 26,
-      "unresolved": 10
+      "external": 4,
+      "internal": 26,
+      "queries": 33,
+      "resolved": 33,
+      "unresolved": 0
     },
     "resolver_status": "ok"
   },

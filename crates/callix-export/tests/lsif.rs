@@ -3,7 +3,7 @@ mod common;
 use callix_export::lsif::Lsif;
 use callix_export::model::Graph;
 use callix_export::{Exporter, Options};
-use common::{C_DECL_SITES, SAMPLE, check_lsif, edges, labelled};
+use common::{C_DECL_SITES, MODULE_GRAPH, SAMPLE, check_lsif, edges, labelled};
 
 fn export(options: &Options) -> (String, Vec<callix_export::Warning>) {
     let graph = Graph::from_json(SAMPLE).unwrap();
@@ -279,4 +279,13 @@ fn declaration_sites_and_includes_are_ranges() {
     assert!(at(0, 9) >= 1);
     // The header's file symbol is defined on the first character of its own document.
     assert!(ranges.iter().any(|r| r["start"]["line"] == 0 && r["start"]["character"] == 0 && r["end"]["character"] == 1));
+}
+
+#[test]
+fn a_module_exports_on_its_first_character() {
+    let mut out = Vec::new();
+    let graph = Graph::from_json(MODULE_GRAPH).unwrap();
+    let warnings = Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    check_lsif(&String::from_utf8(out).unwrap());
+    assert!(!warnings.iter().any(|w| w.code == "no-name-span"));
 }

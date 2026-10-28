@@ -6,6 +6,23 @@ use serde_json::Value;
 
 pub const SAMPLE: &str = include_str!("../data/sample.json");
 
+/// A placed MODULE (`pkg.util`), a reference and a resolved import both pointing
+/// at it, a YAML-like module with a file but no name span, and an unplaced one.
+pub const MODULE_GRAPH: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+  "nodes":[
+   {"id":"p","kind":"project","qualified_name":"proj","name":"proj","file_path":null,"span":null,"metadata":{}},
+   {"id":"fu","kind":"file","qualified_name":"pkg/util.py","name":"util.py","file_path":"pkg/util.py","span":null,"metadata":{}},
+   {"id":"fm","kind":"file","qualified_name":"pkg/main.py","name":"main.py","file_path":"pkg/main.py","span":null,"metadata":{}},
+   {"id":"fy","kind":"file","qualified_name":"ci.yaml","name":"ci.yaml","file_path":"ci.yaml","span":null,"metadata":{}},
+   {"id":"mu","kind":"module","qualified_name":"pkg.util","name":"util","file_path":"pkg/util.py","span":[1,1,1,1],"metadata":{"name_span":{"__span__":[1,1,1,1]}}},
+   {"id":"my","kind":"module","qualified_name":"ci","name":"ci","file_path":"ci.yaml","span":null,"metadata":{}},
+   {"id":"mn","kind":"module","qualified_name":"ns","name":"ns","file_path":null,"span":null,"metadata":{}},
+   {"id":"run","kind":"function","qualified_name":"pkg.main.run","name":"run","file_path":"pkg/main.py","span":[3,1,4,20],"metadata":{"name_span":{"__span__":[3,5,3,8]}}}],
+  "relations":[
+   {"source_id":"run","target_id":"mu","kind":"references","metadata":{"span":{"__span__":[4,12,4,16]},"access":"read"}},
+   {"source_id":"run","target_id":"mu","kind":"resolves_to","metadata":{"span":{"__span__":[1,17,1,21]}}},
+   {"source_id":"run","target_id":"mu","kind":"resolves_to","metadata":{}}]}"#;
+
 /// Parses JSON Lines, asserts the dump is structurally valid and returns it.
 pub fn check_lsif(text: &str) -> Vec<Value> {
     if let Err(problems) = callix_export::lsif::check::validate(text) {

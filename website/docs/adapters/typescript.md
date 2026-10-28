@@ -20,14 +20,23 @@ TypeScriptAdapter(resolve=False).analyze(root)      # structure only
 | External requirements | none |
 
 Declaration files (`.d.ts`, `.d.mts`, `.d.cts`) are skipped: they carry types
-without implementation.
+without implementation. A call into a declaration file stays `unlocated`.
 
 ## What it extracts
 
 Classes, interfaces and their members, enums, type aliases, functions and
 arrow functions, variables from `const`/`let` declarations, and imports and
-re-exports — including `export { X } from 'mod'`, whose specifier sits directly
-on the export statement rather than in a `from` clause.
+re-exports — including `export { X } from 'mod'`, `export * from 'mod'` and
+`export * as N from 'mod'`, whose module string sits directly on the export
+statement rather than in a `from` clause.
+
+Import and export specifiers and module strings are placed: an internal import
+specifier has a `RESOLVES_TO` from its IMPORT to the definition (positioned at
+the imported name, not the alias), and a relative module string has a
+`REFERENCES` edge from the file to the imported file's MODULE. A local
+`export { x }` references `x`. Only a relative module string is placed: a path
+alias such as `"@/store"` gets no module-string edge (its specifiers are still
+placed), and external specifiers and module strings get no edge.
 
 ## Module names and path aliases
 
@@ -55,6 +64,60 @@ Express routes and NestJS `@Get(...)` controller methods on the server side;
 A `fetch(url, {method: "POST"})` is read as POST — the literal wins over the
 GET default, so a non-GET request does not enter the graph as a GET.
 
+## Members and object-literal keys
+
+A property read (`s.kind`) and a property write (`s.size = 3`) give a `REFERENCES`
+edge to the property they name, with `access` `read` or `write`, when the type
+checker can place it (an interface member, a class field, a method). A property
+of a library type becomes an external symbol, as a library call does.
+
+The key of an object literal, and the name of a method written in one, references
+the member of the type the literal is checked against (`const h: Shape = { kind: 1 }`,
+a returned literal, `{...} as Shape`); its `access` is `read`. The key of an
+untyped literal declares the property and gives no edge, and a key typed by a
+library interface gives none either.
+
+Not covered: element access (`o["k"]`, `o[k]`), shorthand keys (`{ x }` references the
+local), computed keys, and `x.count++` as a write. Members of a type alias's object type
+(also in the arms of its top-level union or intersection) are nodes `Alias.member`, like
+an interface's. An inline type literal elsewhere (a parameter, a variable, a generic
+argument), an object type nested in a member's type and a computed member name have no
+stable qualified name and no node, so reads of them are `unlocated`. A string or number
+member name (`"~standard": T`, `0: T`) is a node named without its quotes.
+
+**Namespaces.** A `namespace N { ... }` (also `export namespace`, `declare namespace`
+and `namespace A.B`, which gives the MODULEs `A` and `A.B`) is a MODULE `<scope>.N` with
+`metadata["is_namespace"]`, the extent of its declaration as `span`, and a `DECLARES` edge
+from its container; what it declares is `N.member`. A call written directly in the body
+of a namespace belongs to the namespace's MODULE. The function signatures of an
+ambient namespace (`declare namespace D { function h(x: number): void; }`) are FUNCTIONs
+whose `declared_at` lists every signature. A second declaration of the same namespace,
+interface or member in the same file adds a `declared_at` span, not a node. A namespace
+that shares a dotted name with a file or directory module is not a node of its own, and
+neither are `declare global` and a string-named `declare module "x"`.
+
+A method or accessor of an object literal that is not a variable's initializer (a call argument, a returned or nested literal) is an inline closure: its calls belong to the enclosing function, as a callback's do. A comment in front of an initializer (`/*@__PURE__*/`) does not affect what is scanned.
+
+## Type positions
+
+Every name a type mentions is a use, not only the first identifier. In a declaration
+position it is a `HAS_TYPE` edge: a variable, field or parameter annotation, a return
+type, the body of a type alias, and the constraint or default of a type parameter
+(`a.T`, `Array<Shape>`, `Shape | a.T`, `Shape["k"]`, `{ s: Shape }` each give an edge per
+name). The type of `a.T` is `T`; the namespace `a` and the operand of `typeof v` are
+`REFERENCES` with `access` `read`.
+
+Where the type is not the type of a declaration it is a `REFERENCES` edge: the type
+arguments of a call or `new` (`f<Shape>(x)`), `x as T`, `x satisfies T`, `<T>x`, `f<T>`,
+and the type arguments and namespace prefix of an `extends` clause. An interface that
+extends a qualified name (`interface J extends a.Shape`) now inherits from it.
+
+A type parameter, a mapped-type key (`[k in keyof S]`) and an `infer` name are not nodes
+and give no edge; neither do the parameter names inside a function type.
+
+Not covered: `implements` clauses, the annotations of inline arrow-function parameters,
+and JSDoc types in `.js` files.
+
 ## The embedded typescript-go
 
 The resolver is built on
@@ -74,3 +137,12 @@ resolver.definition_at("src/main.ts", 4, 15)
 
 The first query builds the program and takes tens of milliseconds; each one
 after that is tens of microseconds.
+
+### Overloads
+
+An overload signature is not a node. The implementation is the FUNCTION, and its
+`declared_at` lists every signature, also for `export`, `export default` and
+namespace members, so a call that the checker resolves to a signature lands on the
+implementation. A file-level `declare function` or `export declare function` has no
+implementation: it is a FUNCTION placed at its first signature, with every signature
+in `declared_at`. Signatures inside `declare global { ... }` give no node.

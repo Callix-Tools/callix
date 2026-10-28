@@ -44,7 +44,7 @@ questions — a change to a visitor should be checked against the last three:
 | `task test:rust` | `#[test]`s across the workspace | enum wire values, `sort_paths`, the SCIP decoder, dependency parsers, the C family's overload picking |
 | `task unit` | pytest over `tests/unit`, `tests/api` and `tests/accuracy` | the public Python API that 1.0 freezes, and the accuracy floor below |
 | `task golden` | whole graphs of `tests/fixtures/*`, frozen in `tests/golden/` | any change to any visitor, exactly |
-| `task accuracy` | seven suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
+| `task accuracy` | eight suites of small programs, each with the call graph a reader would draw | **whether a resolver is right**: the other layers freeze what callix produces, this one scores it |
 | `task baseline` | fingerprints of 14 real repositories | what a three-file fixture cannot reach: scale, and the resolvers |
 
 `tests/accuracy` is the only layer that can say a change made resolution *worse*.
@@ -184,7 +184,9 @@ decide its span. The ledger keeps (file, name_span) per site, which is what
 the IMPORT's `name_span` and the span of its RESOLVES_TO; the FILE-to-header
 IMPORTS edge stays unpositioned. An exporter defines a FILE on its first
 character (1:1-1:2, never an empty range: `docker/check_lsif.py` rejects one) only
-when a placed edge targets it.
+when a placed edge targets it. The same goes for any definition whose name span is empty
+(a Python or TypeScript MODULE is placed at a zero-width 1:1): the exporters widen it
+to one character, the graph keeps the zero width.
 
 **Before the scope pass, the adapter blanks the project's erasable macros**
 (`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,
@@ -240,6 +242,16 @@ A Go MODULE is placed by `file_path` (its first non-`_test.go` file) plus
 `span`**, because a package spans several files: `SpanIndex::from_graph` skips
 span-less nodes, so a package never steals a real name. The placement file is
 chosen from the paths before the walk (`placement_files`).
+
+In TypeScript a `namespace`/`module` block is a MODULE `<scope>.N` (`is_namespace`, a real span and `name_span`, DECLARED by its container), and the members of a type alias's object type are `Alias.member`; a re-declaration in the same file adds a `declared_at` span instead of a node. An overload signature, exported or not, is a `declared_at` span of its implementation, and a file-level `declare function` is a FUNCTION declared at every signature.
+
+In Python and TypeScript a MODULE that has a file of its own (the `.py` file or
+`__init__.py`; the `.ts` file or `index.*`) is placed at a zero-width `1:1` span in
+that file, and `metadata["name_span"]` is the same span. A namespace package and a
+directory without an index file have no file, so they stay unplaced. The placement is
+decided in a pre-pass over the files (`ensure_module_chain` takes it), because an
+ancestor package is created while its children are handled, before its own
+`__init__.py` is reached.
 
 ### Resolvers: what is linked in and what is not
 
@@ -305,6 +317,20 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   `<var>.<p>` and its called locals are nodes under the variable. A literal nested
   deeper in the value is a closure and has no PARAMETERs. In `var a, b = f()` the
   first name owns the call, so no site gets two occurrences.
+- **A Python keyword argument's name is a `read` occurrence with detail `kw`**, and
+  the adapter keeps its REFERENCES edge only when the answer binds to a field
+  (`ATTRIBUTE`/`VARIABLE`: dataclass, NamedTuple, TypedDict, `dataclass_transform`
+  models such as pydantic). An answer on a parameter, a function, an external, or
+  no answer at all is dropped and counted `unresolved` (like an import that reaches
+  nothing) - never turned into an `EXTERNAL_SYMBOL`. `kw` occurrences never feed
+  the flow pass.
+- **A TypeScript object-literal key or method name is a `read` occurrence with detail
+  `key`**, filtered like `kw`: the adapter keeps the REFERENCES edge only when the
+  answer binds to an `ATTRIBUTE`, `VARIABLE` or `METHOD` of the project, and drops it
+  (counted `unresolved`, never an `EXTERNAL_SYMBOL`) otherwise. A `key` or `member`
+  (property write, `obj.x = v`) occurrence whose answer is its own site is a
+  declaration of the property and produces no edge. Member reads are plain `read`s
+  at the property; a callee's name stays a `call` only.
 - **A local is a node only when it is called** (Go, Rust): nothing else needs one,
   and a node per local would multiply the graph.
 - **A Go bare identifier** (`limit` in `n := limit`, `counter = n + limit`, a return
@@ -358,6 +384,13 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   operand, so `p_ = q` on a pointer field is not `operator=`. A miss writes nothing, so
   built-in arithmetic adds no externals. Operators on expression results, unary
   operators, ADL and templates are not followed.
+- **A resolver answer at 1:1 of a project file with no name there binds to that
+  file's MODULE** (`SpanIndex::lookup_module`, tried after `lookup_name`; Python and
+  TypeScript only, the other adapters do not call it). A real name at 1:1 wins: the
+  placed MODULE is kept out of the name table, because a zero-width span would beat
+  `x = 1` on the smallest-area tie-break. Module-name segments of an internal import
+  statement are `read` occurrences (not `import`, which would make a RESOLVES_TO from
+  the import to the package); a call that lands on a MODULE is still `unlocated`.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language
@@ -397,8 +430,12 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   no pyo3, no Python — and writes LSIF, SCIP, CycloneDX, CSV, DOT, Mermaid and the
   text/Markdown/JSON reports. `index.rs` reads the graph as an index (documents,
   placed definitions and references, symbols) once for both LSIF and SCIP; `ops.rs`
-  writes the model back as `json.dumps` would and does merge and diff. The SCIP
-  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
+  writes the model back as `json.dumps` would and does merge and diff. The index
+  places what `Relation::is_placed_reference` accepts: the four reference kinds plus
+  a RESOLVES_TO that records `metadata["span"]` (the name an import brings in); a
+  structural RESOLVES_TO is neither placed nor counted, and
+  `RelationKind::is_reference` (reports, counts) stays the four kinds. The SCIP
+  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. A SCIP symbol's `<project>` is its node's own sub-root (`Symbol.project`, the PROJECT that reaches it through CONTAINS/DECLARES in `Index::build`), the first PROJECT only for a node none reaches; distinct definitions that still share a symbol (CLASS and TYPE_ALIAS are both `#`) put the non-primary kind under a `<kind>/` namespace (`scip.rs::disambiguate`). Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
   structural checker the tests use. `index.rs` places an edge by
@@ -524,6 +561,18 @@ Things that are easy to get wrong:
   (class, function or const) without going through the file's alias map, a
   namespace alias (`use App\Contracts;`) binds to its MODULE, and the IMPORT
   node carries the clause's span.
+  In TypeScript an internal import specifier records an `import` occurrence at its
+  ORIGINAL name (never the alias; the default and namespace identifiers too) and the
+  IMPORT's `name_span` is the local binding; the module string of an internal import
+  or re-export statement with a RELATIVE path is a `read` occurrence (the whole literal,
+  enclosed by the container), so it REFERENCES the MODULE (a path-alias string such as
+  `"@/store"` is not recorded: the resolver does not answer its file position, and the
+  read would become a site-keyed external; its specifiers are still placed); a local
+  `export { x }` and the specifiers
+  of a re-export are `read` occurrences of their source name; `export * from` and
+  `export * as N from` make the same `__reexport_` IMPORT as `export {..} from`.
+  External specifiers and module strings get nothing. IMPORTS stays unpositioned so
+  it keeps being deduplicated.
 - **A Rust `use` leaf resolves from its IMPORT, and `mod x;` is a reference from the
   FILE.** The IMPORT stays one node per declaration; the visitor reports one `UseSite`
   per name the tree brings in (`src/rustlang/visitor.rs`). The structure pass
@@ -536,6 +585,40 @@ Things that are easy to get wrong:
   answer with no name is dropped. `*`, `self`, `crate`, `super`, the `as` alias, a `use` inside a
   function body and a `#[path]` module are not sites. Edges into a MODULE are not exported
   (a Rust MODULE has no file).
+- **An import statement is an import wherever it is written.** `walk_statement`
+  hands `import`/`from ... import` to `visit`, so an import in a function body or
+  inside a module-level `if TYPE_CHECKING:`/`try:` is an IMPORT node
+  `{scope}.{local}` declared by its container, with the same IMPORTS/RESOLVES_TO
+  edges and an `import` occurrence on the imported name only. They once fell to
+  `scan_value`, which recorded every name, the alias included, as a `read` and
+  left no IMPORT node or IMPORTS edge.
+- **Every name in a Python annotation is an `annotation` occurrence, not just the
+  first.** `src/python/annotation.rs::type_names` walks subscript arguments, `|`,
+  `Callable` lists, a quoted forward reference (re-parsed, with positions offset
+  into the string) and annotated assignments (module variable, class field, local,
+  `self.x: T`). HAS_TYPE runs from the VARIABLE, ATTRIBUTE or PARAMETER (or the
+  function, for a return type). In `a.B` the type is `B` and `a` is a `read`.
+  `Literal[...]` arguments and `Annotated` metadata are not types. An
+  annotation-only statement has no right-hand side: take
+  `child_by_field_name("right")`, never the last child, or the type is scanned
+  as a value.
+- **Every name in a TypeScript type is an occurrence, not just the head.**
+  `src/typescript/type_uses.rs::type_uses` is a pure walker over a type subtree
+  (unions, generics, `a.T`, `typeof`, indexed access, mapped, conditional, function and
+  object types). HAS_TYPE (`annotation`) in declaration positions: variable, field and
+  return annotations, parameters, alias bodies, and type-parameter constraints and
+  defaults. `read` (REFERENCES) in expression and heritage positions: type arguments of
+  calls and `new`, `as`/`satisfies`/`<T>x`, `f<T>`, and the type arguments and namespace
+  prefixes of an `extends` clause. In `a.T` the type is `T` and `a` is a `read`; a
+  `typeof v` operand is a `read`. A type parameter, a mapped-type key and an `infer`
+  name are never recorded (a type parameter is no node, so its edge could only be a
+  per-site `unlocated` external symbol), nor are parameter names inside a function type.
+  `scan_value` has explicit arms for `as_expression`, `satisfies_expression`,
+  `type_assertion` and `instantiation_expression`: without them the default branch walks
+  the type as a value. `heritage_base_nodes` takes the `name` of a
+  `nested_type_identifier`, so `interface J extends a.Shape` inherits. Not walked:
+  `implements` clauses, annotations of inline closure parameters, JSDoc types.
+  `tests/api/test_type_positions.py` pins each form.
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.
@@ -544,6 +627,17 @@ Things that are easy to get wrong:
 - **`typedef struct { .. } T;` declares CLASS `T` beside TYPE_ALIAS `T`.** `anonymous_typedef_name` picks the name (the first plain `type_identifier` declarator, else the first named one) for `on_typedef` and for the scope pass; `on_record` receives it as a fallback, puts the name span on the alias identifier and takes span and doc from the `type_definition`, so the span contains the name span. An anonymous record's fields are hoisted into the enclosing record only when no typedef names it (C11 anonymous member). `resolver::type_key` keys the text before `{`, so a typedef of an inline tagged struct leads to its tag, while `struct { .. }` still names no class.
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
+- **An assignment target is declared where Python binds it.** `self.x` / `cls.x`
+  is ONE `ATTRIBUTE` of the nearest enclosing class (`Class.x`, not
+  `Class.method.x`), declared by the class, with every write site in `declared_at`
+  so the resolver's answer at any of them lands on the node. `obj.x = v` declares
+  nothing: it reads the receiver and records a `write` of `x`, which the resolver
+  binds to the real attribute (it has no holder, so the flow pass does not follow
+  the value). Every target of `a = b = v` is declared and `v` is scanned once.
+  Module-level `for` and `except ... as` targets are module `VARIABLE`s (declared
+  on their own span, never the whole statement); a function's loop variable stays
+  a node only when it is called.
+- **A TypeScript initializer, pair value or assignment side is read from its grammar field** (`value`, `right`, `body`), never as "the first named child that is not X": tree-sitter makes a comment a named extra, so `const x = /*@__PURE__*/ f()` once lost every edge in the initializer. A method or accessor of an object literal reached by `scan_value` (an argument, a returned or nested literal) is an inline closure of the containing scope; only class-body methods are a scope boundary there.
 
 The Docker images (`Dockerfile`, `docker/smoke.sh`) are plain Debian: `slim`
 (callix) and `full` (+ Go, Rust with rust-analyzer and rust-src, Node, Python+pip).

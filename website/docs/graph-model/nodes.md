@@ -40,7 +40,7 @@ node.metadata        # dict[str, object]
 
 | Language | A `MODULE` is |
 |---|---|
-| Python, TypeScript | a dotted name — `app.services.billing` |
+| Python, TypeScript | a dotted name — `app.services.billing`. One with a file of its own (`.py`, `__init__.py`, `index.ts`) carries that `file_path` and a zero-width `1:1` span; a namespace package or a directory without an index file has no position. A TypeScript `namespace` block is also a `MODULE` (`metadata["is_namespace"]`), with the file and span of its declaration |
 | Go | a package directory, whose `qualified_name` **is** the import path; it carries the `file_path` of its first non-test file and a `name_span` at the package clause, and no `span` |
 | Rust | a module path — `crate::net::http` |
 | PHP | a namespace — `App\Service` |

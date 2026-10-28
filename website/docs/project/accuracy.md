@@ -13,7 +13,7 @@ found. This page is what those two things amount to.
 
 | Language | Backend | How a call is found | What it does not follow |
 |---|---|---|---|
-| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr` and monkey-patching are not followed at all. A receiver whose class ty knows resolves to the declared class, not to each subclass. |
+| Python | ty, linked in | by types: the definition the checker names at the callee | A function carried in a container, an argument or a return value is followed by callix's own pass (below), not by ty. Dynamic attribute access, `getattr` and monkey-patching are not followed at all. A receiver whose class ty knows resolves to the declared class, not to each subclass. Keyword argument names bind to fields only, not to parameters. |
 | TypeScript | typescript-go, linked in | by types | Calls through `any`, dynamic `import()` and computed keys. Destructuring, literal keys and indexes, `bind`/`call`/`apply`, a property a constructor assigns, an object handed to a destructured parameter and a closed list of library callbacks (`map`, `forEach`, `then`, `setTimeout`, `addEventListener`, …) are followed by the flow pass; nested patterns are not read. |
 | Go | `go/packages` + `go/types` | by types; needs the Go toolchain | A call through an interface lands on the interface's method, never on an implementation. A function reached through a slice, a range loop, a channel or a variadic parameter is followed by the flow pass, and a closed list of standard-library callbacks (`sort.Slice`, `strings.Map`, `sync.Once.Do`, …) is a call. |
 | Rust | `rust-analyzer scip` | by types; needs rust-analyzer and Cargo | A call through a trait or a trait object lands on the trait's method, not on an impl. Implicit calls (`Drop::drop`, an operator's trait method, `Iterator::next` in a `for`) are not edges. The calls in a macro's arguments are found, nested std macros included; the invocation of a project `macro_rules!` is an edge to it (an item-level one from its file; invocations inside `impl` and `trait` bodies are not recorded); a `macro_rules!` of the same file is expanded; a macro from another file, a procedural macro and macro-generated items are not expanded. Same-named methods of several impls of one type (different traits or trait arguments, cfg variants) are one node, and a call to any of them is an edge to it. |
@@ -77,8 +77,9 @@ project.
 `tests/accuracy` holds a suite of small programs per language, each with the call
 graph a reader of the source would draw, and scores the graph callix builds
 against it. Python uses the [PyCG micro-benchmark](https://github.com/vitsalis/pycg-evaluation)
-(112 cases, vendored with its licence); the other languages have suites written
-for this repository from each language's rules, not from what callix answers.
+(112 cases, vendored with its licence) plus a small suite of its own for cases PyCG
+does not cover; the other languages have suites written for this repository from
+each language's rules, not from what callix answers.
 
 A case is **sound** when every expected edge is present and **complete** when no
 edge from a listed caller is unexpected. Edge **recall** and **precision** are
@@ -88,6 +89,7 @@ writing:
 | Suite | Cases | Sound | Complete | Edge recall | Edge precision |
 |---|---:|---:|---:|---:|---:|
 | Python (PyCG) | 112 | 112 | 112 | 1.00 | 1.00 |
+| Python (micro) | 1 | 1 | 1 | 1.00 | 1.00 |
 | TypeScript | 65 | 65 | 65 | 1.00 | 1.00 |
 | Go | 58 | 58 | 58 | 1.00 | 1.00 |
 | Rust | 62 | 62 | 62 | 1.00 | 1.00 |

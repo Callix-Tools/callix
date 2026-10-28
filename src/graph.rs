@@ -140,6 +140,12 @@ impl Graph {
         self.nodes.get(id).map(|node| node.get().kind)
     }
 
+    /// The metadata dict of the node with this id, when there is one. The dict is
+    /// shared, so a write through it changes the stored node.
+    pub(crate) fn node_metadata(&self, py: Python<'_>, id: &str) -> Option<Py<PyDict>> {
+        self.nodes.get(id).map(|node| node.get().metadata.clone_ref(py))
+    }
+
     pub(crate) fn has_node(&self, id: &str) -> bool {
         self.nodes.contains_key(id)
     }

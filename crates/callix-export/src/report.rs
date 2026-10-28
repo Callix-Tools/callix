@@ -205,14 +205,47 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              container, an argument or a return value is followed by a flow pass and marked `flow`; \
              decorators, receivers, keyed containers and the library's own callbacks (`map`, \
              `sorted(key=)`) are followed by the same pass; the pass is flow- and context-insensitive; \
-             `getattr` and `eval` are not followed",
+             `getattr` and `eval` are not followed; a module named in code binds to its MODULE, \
+             and a namespace package has no file, so references to it stay `unlocated`; a keyword \
+             argument's name references the field it sets (dataclass, NamedTuple, TypedDict, \
+             dataclass_transform models such as pydantic), while the keyword of a plain function \
+             or a hand-written `__init__` is no edge; every name of an annotation (subscripts, \
+             unions, quoted forward references, annotated variables and fields) is a HAS_TYPE, \
+             while `Literal` arguments and `Annotated` metadata are not, a `Literal` imported \
+             under another name is not recognised, and a string annotation that does not parse \
+             as one expression is skipped; a write through an attribute (`obj.x = v`, \
+             `self.x = v`) references the class attribute and declares no local, and a value \
+             assigned through a receiver other than `self`/`cls` is not followed by the flow \
+             pass",
         ),
         "typescript" | "javascript" => (
             "typescript-go (embedded), by types",
             "calls through a name or a member whose type is known; function values are followed by \
              a flow pass and marked `flow` (destructuring, literal keys, `bind`/`call`/`apply`, a \
              closed list of library callbacks); `any`, dynamic `import()` and computed keys are \
-             not followed",
+             not followed; a namespace import binds to the imported file's MODULE, and a \
+             directory without an index file has none; an internal import or export \
+             specifier is placed (the import RESOLVES_TO its definition) and a relative \
+               module string REFERENCES the imported file's MODULE, while an external or \
+               path-alias string gets no edge; `import x = require()` and \
+               `export default <expr>` are not walked; \
+             a member read or write (`s.kind`, \
+             `obj.x = v`) references the property it names, and an object-literal key or method \
+             references the member of the type the literal is checked against (the key of an \
+             untyped literal declares the property and is no edge); element access `o[\"k\"]`, \
+             shorthand and computed keys reference nothing; members of a type alias's object \
+             type (also in its top-level union or intersection arms) are nodes `Alias.member`, \
+             the signatures of an overload (exported, default-exported, in a namespace) are the \
+             `declared_at` of its implementation, a file-level `declare function` is a FUNCTION \
+             declared at every signature, and a namespace (`namespace N`, exported, `declare`, \
+             `A.B`) is a MODULE whose \
+             members are `N.member`, while an inline type literal elsewhere, a nested object \
+             type, a computed member name, `declare global` (also its function signatures), a \
+             string-named `declare module` and declaration files (`.d.ts`, not walked) \
+             give no node, so reads of them stay `unlocated`; every name in a type annotation or \
+             alias body is a HAS_TYPE, a type argument or an `as`/`satisfies` type a REFERENCES, \
+             and a type parameter gives no edge; `implements` clauses and the annotations of \
+             inline closures are not walked",
         ),
         "go" => (
             "go/packages + go/types, by types; needs the Go toolchain",

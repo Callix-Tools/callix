@@ -21,6 +21,7 @@ use crate::relation::{Relation, RelationKind};
 use crate::span::Span;
 use crate::ts;
 
+use super::annotation;
 use super::resolve_relative_import;
 
 /// Which parameter of a call an argument is passed to.
@@ -129,6 +130,9 @@ pub struct PythonVisitor<'a> {
     /// The parameters of the functions being visited, innermost last: a call of
     /// one of them is a call of whatever it holds.
     param_scopes: Vec<(String, std::collections::HashSet<String>)>,
+    /// Extra name spans per node id (`declared_at`): the type checker may answer a
+    /// `self.x` site with any of the sites that write the one class attribute.
+    declared_extra: HashMap<String, Vec<Span>>,
 }
 
 impl<'a> PythonVisitor<'a> {
@@ -168,6 +172,7 @@ impl<'a> PythonVisitor<'a> {
             lambda_names: HashMap::new(),
             next_store: 0,
             param_scopes: Vec::new(),
+            declared_extra: HashMap::new(),
         }
     }
 
@@ -261,6 +266,7 @@ impl<'a> PythonVisitor<'a> {
                 "dotted_name" => {
                     let name = self.dotted_name(child);
                     self.emit_import(&name, &name, false, 0, None, false, None)?;
+                    self.record_internal_module_reads(&name, false, child);
                 }
                 "aliased_import" => {
                     let Some(name_node) = ts::child_of_type(child, "dotted_name") else {
@@ -274,6 +280,7 @@ impl<'a> PythonVisitor<'a> {
                     };
                     let alias = alias_node.map(|_| local.clone());
                     self.emit_import(&local, &name, false, 0, alias.as_deref(), false, None)?;
+                    self.record_internal_module_reads(&name, false, name_node);
                 }
                 _ => {}
             }
@@ -287,6 +294,7 @@ impl<'a> PythonVisitor<'a> {
         // The source module and relative level come only before `import`.
         let mut level = 0usize;
         let mut source_module = String::new();
+        let mut source_dotted = None;
         for child in &children {
             if child.kind() == "import" {
                 break;
@@ -298,18 +306,26 @@ impl<'a> PythonVisitor<'a> {
                     }
                     let mod_name = ts::child_of_type(*child, "dotted_name")
                         .map(|n| self.dotted_name(n));
+                    source_dotted = ts::child_of_type(*child, "dotted_name");
                     source_module = resolve_relative_import(
                         self.module_qname,
                         level,
                         mod_name.as_deref(),
                     );
                 }
-                "dotted_name" => source_module = self.dotted_name(*child),
+                "dotted_name" => {
+                    source_module = self.dotted_name(*child);
+                    source_dotted = Some(*child);
+                }
                 _ => {}
             }
         }
 
         let is_relative = level > 0;
+        if let Some(dotted) = source_dotted {
+            let source_name = source_module.clone();
+            self.record_internal_module_reads(&source_name, is_relative, dotted);
+        }
         let qualify = |imported: &str| {
             if source_module.is_empty() {
                 imported.to_string()
@@ -368,6 +384,23 @@ impl<'a> PythonVisitor<'a> {
             }
         }
         Ok(())
+    }
+
+    /// The segments of an internal import's module name (`a`, `b`, `c` of
+    /// `import a.b.c`) are reads of those modules; the resolver answers each with
+    /// the module's file. They are `read`, not `import`: an `import` occurrence
+    /// becomes a RESOLVES_TO from the import node, and `import pkg.util` does not
+    /// resolve to `pkg`. External modules get nothing, or every `import os.path`
+    /// would add a site-keyed external symbol.
+    fn record_internal_module_reads(&mut self, module_name: &str, is_relative: bool, dotted: TsNode<'_>) {
+        let top = module_name.split('.').next().unwrap_or(module_name);
+        if !is_relative && self.classifier.classify(top) != "internal" {
+            return;
+        }
+        let enclosing = self.container();
+        for segment in ts::children(dotted).into_iter().filter(|c| c.kind() == "identifier") {
+            self.record_occurrence("read", segment, &enclosing);
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -588,7 +621,7 @@ impl<'a> PythonVisitor<'a> {
         self.scan_decorators(decorator_nodes, &func_id)?;
 
         if let Some(type_node) = type_node {
-            self.record_annotation(type_node, &func_id);
+            self.record_annotation(type_node, &func_id, &func_id);
             self.scan_annotation_calls(type_node, &func_id)?;
         }
 
@@ -741,7 +774,7 @@ impl<'a> PythonVisitor<'a> {
             }
 
             if let Some(ann_type_node) = ann_type_node {
-                self.record_annotation(ann_type_node, &param_id);
+                self.record_annotation(ann_type_node, &param_id, function_id);
                 // Calls inside an annotation (Depends(get_dep)) are value
                 // uses, and they are enclosed by the function, not the
                 // parameter.
@@ -865,7 +898,7 @@ impl<'a> PythonVisitor<'a> {
                         // The arguments of this call are bound to what it calls, which is
                         // found only after resolution: they are keyed by the place of
                         // the argument list.
-                        let site = ts::child_of_type(node, "argument_list").map(ts::span);
+                        let site = Self::call_arguments(node).0.map(ts::span);
                         let detail = match site {
                             Some(at) => format!("result:{depth}:{}:{}", at.start_line, at.start_col),
                             None => format!("result:{depth}"),
@@ -885,15 +918,21 @@ impl<'a> PythonVisitor<'a> {
                 _ => self.scan_value(callee, enclosing_id)?,
             }
         }
-        if let Some(arg_list) = ts::child_of_type(node, "argument_list") {
+        if let (Some(_), arguments) = Self::call_arguments(node) {
             let mut index = 0usize;
-            for child in ts::children(arg_list) {
+            for child in arguments {
                 if matches!(child.kind(), "(" | ")" | ",") {
                     continue;
                 }
                 if child.kind() == "keyword_argument" {
-                    // The value only (the last child) — a kwarg's name
-                    // must not produce REFERENCES.
+                    // The name is recorded as a `kw` read; the adapter keeps its
+                    // REFERENCES edge only when it lands on a field (dataclass,
+                    // NamedTuple, TypedDict, dataclass_transform models).
+                    if let Some(name_node) = child.child_by_field_name("name")
+                        && name_node.kind() == "identifier"
+                    {
+                        self.record_occurrence_with("read", name_node, enclosing_id, Some("kw".into()));
+                    }
                     if let Some(value) = ts::children(child).last().copied() {
                         let keyword = ts::children(child)
                             .first()
@@ -908,6 +947,24 @@ impl<'a> PythonVisitor<'a> {
             }
         }
         Ok(())
+    }
+
+    /// The arguments of a call. tree-sitter stores `f(x for x in xs)` with the
+    /// generator expression in place of an `argument_list`: it is the call's single
+    /// positional argument.
+    ///
+    /// Returns the `arguments` node (its span keys `result:` sites) and the argument
+    /// nodes. For an `argument_list` these are its children, unfiltered, so every
+    /// caller keeps its own filtering of punctuation and comments.
+    fn call_arguments<'t>(call: TsNode<'t>) -> (Option<TsNode<'t>>, Vec<TsNode<'t>>) {
+        let Some(arguments) = call.child_by_field_name("arguments") else {
+            return (None, Vec::new());
+        };
+        match arguments.kind() {
+            "argument_list" => (Some(arguments), ts::children(arguments)),
+            "generator_expression" => (Some(arguments), vec![arguments]),
+            _ => (Some(arguments), Vec::new()),
+        }
     }
 
     /// The identifier a call's callee ends in.
@@ -940,11 +997,8 @@ impl<'a> PythonVisitor<'a> {
                 _ => return Vec::new(),
             }
         };
-        let Some(arguments) = call.child_by_field_name("arguments") else {
-            return Vec::new();
-        };
         let mut found = Vec::new();
-        for argument in ts::children(arguments) {
+        for argument in Self::call_arguments(call).1 {
             if argument.kind() == "keyword_argument" {
                 if let (Some(name), Some(value)) = (argument.child_by_field_name("name"), argument.child_by_field_name("value"))
                     && self.text(name) == "key"
@@ -1154,6 +1208,7 @@ impl<'a> PythonVisitor<'a> {
     }
 
     /// `d[k] = v`: `v` is stored in `d` under `k`.
+    /// Does not scan `v`: the caller does, once, however many targets there are.
     fn store_into_container(&mut self, lhs: TsNode<'_>, rhs: Option<TsNode<'_>>) -> PyResult<()> {
         let container = self.container();
         if let Some((root, keys)) = Self::subscript_chain(lhs) {
@@ -1166,10 +1221,8 @@ impl<'a> PythonVisitor<'a> {
                 self.record_aliases(rhs, &sink, &[], 0)?;
             }
         }
+        // The right-hand side is scanned once by `handle_assignment`.
         self.scan_value(lhs, &container)?;
-        if let Some(rhs) = rhs {
-            self.scan_value(rhs, &container)?;
-        }
         Ok(())
     }
 
@@ -1193,10 +1246,8 @@ impl<'a> PythonVisitor<'a> {
                 None => return Ok(()),
             },
         };
-        let Some(arg_list) = ts::child_of_type(call, "argument_list") else {
-            return Ok(());
-        };
-        let arguments: Vec<TsNode<'_>> = ts::children(arg_list)
+        let arguments: Vec<TsNode<'_>> = Self::call_arguments(call)
+            .1
             .into_iter()
             .filter(|a| a.is_named() && !matches!(a.kind(), "comment" | "keyword_argument"))
             .collect();
@@ -1311,10 +1362,15 @@ impl<'a> PythonVisitor<'a> {
     /// Handling one statement (or clause) inside a body.
     ///
     /// Assignments and returns go to their own handlers, nested definitions
-    /// to `visit`, blocks and block clauses (else/except/elif/finally)
-    /// recursively, and everything else is a value expression.
+    /// and imports to `visit` (an import is an import wherever it is written:
+    /// in a function body or under `if TYPE_CHECKING:` / `try:`), blocks and
+    /// block clauses (else/except/elif/finally) recursively, and everything
+    /// else is a value expression.
     fn walk_statement(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
         if NESTED_DEF_TYPES.contains(&node.kind()) {
+            return self.visit(node);
+        }
+        if matches!(node.kind(), "import_statement" | "import_from_statement") {
             return self.visit(node);
         }
         if node.kind() == "expression_statement" {
@@ -1330,6 +1386,9 @@ impl<'a> PythonVisitor<'a> {
         if node.kind() == "return_statement" {
             return self.visit_return_statement(node);
         }
+        if node.kind() == "except_clause" && self.kind_stack.last() == Some(&NodeKind::File) {
+            return self.walk_module_except(node, enclosing_id);
+        }
         if node.kind() == "raise_statement" {
             // `raise A` instantiates A as surely as `raise A()` does.
             if let Some(raised) = ts::children(node).into_iter().find(|c| c.kind() != "raise")
@@ -1344,13 +1403,25 @@ impl<'a> PythonVisitor<'a> {
             }
             return Ok(());
         }
+        // The child that is a module-level loop target: declared (a write), not scanned.
+        let mut skip: Option<usize> = None;
         if node.kind() == "for_statement"
             && let Some(iterable) = node.child_by_field_name("right")
         {
+            if self.kind_stack.last() == Some(&NodeKind::File)
+                && let Some(left) = node.child_by_field_name("left")
+            {
+                self.declare_module_targets(left)?;
+                skip = Some(left.id());
+            }
+            // Runs after the declaration above: it then only returns the qualified name.
             let variable = self.declare_called_loop_variable(node)?;
             self.record_iteration(iterable, enclosing_id, variable);
         }
         for child in ts::children(node) {
+            if skip == Some(child.id()) {
+                continue;
+            }
             if child.kind() == "block" {
                 self.walk_body(child, enclosing_id)?;
             } else if ts::has_child_of_type(child, "block") {
@@ -1418,7 +1489,18 @@ impl<'a> PythonVisitor<'a> {
         enclosing_id: &str,
         detail: Option<String>,
     ) {
-        let span = ts::span(name_node);
+        self.record_occurrence_at(role, ts::span(name_node), enclosing_id, detail);
+    }
+
+    /// Like `record_occurrence_with`, for a position that is not a node of the
+    /// tree (a name inside a quoted annotation).
+    fn record_occurrence_at(
+        &mut self,
+        role: &str,
+        span: Span,
+        enclosing_id: &str,
+        detail: Option<String>,
+    ) {
         self.occurrences.push(OccurrenceRef {
             role: role.to_string(),
             line: span.start_line,
@@ -1441,10 +1523,17 @@ impl<'a> PythonVisitor<'a> {
         }
     }
 
-    /// Records an `annotation` for the leading identifier of a `type` node.
-    fn record_annotation(&mut self, type_node: TsNode<'_>, enclosing_id: &str) {
-        if let Some(ident) = ts::first_identifier(type_node) {
-            self.record_occurrence("annotation", ident, enclosing_id);
+    /// Records every name a type annotation mentions: an `annotation` (enclosed by
+    /// `type_enclosing`, the declared thing) for each type, and a `read` (enclosed
+    /// by `value_enclosing`) for each qualifier, so `models.Item` is a HAS_TYPE to
+    /// the class and a REFERENCES to the module. See `annotation::type_names`.
+    fn record_annotation(&mut self, type_node: TsNode<'_>, type_enclosing: &str, value_enclosing: &str) {
+        for name in annotation::type_names(type_node, self.source) {
+            if name.qualifier {
+                self.record_occurrence_at("read", name.span, value_enclosing, None);
+            } else {
+                self.record_occurrence_at("annotation", name.span, type_enclosing, None);
+            }
         }
     }
 
@@ -1542,23 +1631,66 @@ impl<'a> PythonVisitor<'a> {
         Ok(())
     }
 
-    /// Creates a VARIABLE, ATTRIBUTE, or TYPE_ALIAS from an assignment.
+    /// Creates the VARIABLE, ATTRIBUTE or TYPE_ALIAS every target of an assignment
+    /// names, and scans the value once.
     ///
-    /// `x: TypeAlias = v` → TYPE_ALIAS; `self.attr = v` or a class body →
-    /// ATTRIBUTE; otherwise VARIABLE.
+    /// `a = b = v` declares both `a` and `b` (the nested `assignment` is walked
+    /// here, never handed to `scan_value`). `x: TypeAlias = v` -> TYPE_ALIAS;
+    /// `self.attr = v` / `cls.attr = v` -> the ATTRIBUTE of the enclosing class; a
+    /// class body -> ATTRIBUTE; otherwise VARIABLE. `obj.attr = v` declares nothing
+    /// (see `declare_target`).
     fn handle_assignment(&mut self, node: TsNode<'_>) -> PyResult<()> {
-        let children = ts::children(node);
-        let Some(lhs) = children.first().copied() else {
-            return Ok(());
+        // Every `(assignment, target)` pair of the chain, outermost first, and the
+        // value at its end.
+        let mut targets: Vec<(TsNode<'_>, TsNode<'_>)> = Vec::new();
+        let mut current = node;
+        let final_rhs = loop {
+            let Some(lhs) = ts::children(current).first().copied() else {
+                return Ok(());
+            };
+            targets.push((current, lhs));
+            match current.child_by_field_name("right") {
+                Some(next) if next.kind() == "assignment" => current = next,
+                other => break other,
+            }
         };
-        let annotation = ts::child_of_type(node, "type");
-        let last = children.last().copied();
-        let rhs = last.filter(|n| n.id() != lhs.id());
+        // An annotation-only statement (`n: Item`) has no right-hand side: take the
+        // fields, never the last child, which would be the `type` node. The
+        // annotation belongs to the first target only.
+        let annotation = node.child_by_field_name("type");
+        let mut is_alias = false;
+        for (index, (assign, lhs)) in targets.into_iter().enumerate() {
+            let annotation = if index == 0 { annotation } else { None };
+            is_alias |= self.bind_target(assign, lhs, final_rhs, annotation)?;
+        }
+        let container = self.container();
+        match final_rhs {
+            Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,
+            Some(rhs) => self.record_annotation(rhs, &container, &container),
+            None => {}
+        }
+        Ok(())
+    }
 
+    /// Binds one target of an assignment. Never scans the value. Returns whether
+    /// the target is a type alias.
+    fn bind_target(
+        &mut self,
+        assign: TsNode<'_>,
+        lhs: TsNode<'_>,
+        rhs: Option<TsNode<'_>>,
+        annotation: Option<TsNode<'_>>,
+    ) -> PyResult<bool> {
         match lhs.kind() {
             // `d[k] = v` stores into `d`; it declares nothing.
-            "subscript" => return self.store_into_container(lhs, rhs),
-            "pattern_list" | "tuple_pattern" | "list_pattern" => return self.handle_unpacking(node, lhs, rhs),
+            "subscript" => {
+                self.store_into_container(lhs, rhs)?;
+                return Ok(false);
+            }
+            "pattern_list" | "tuple_pattern" | "list_pattern" => {
+                self.handle_unpacking(assign, lhs, rhs)?;
+                return Ok(false);
+            }
             _ => {}
         }
 
@@ -1573,70 +1705,93 @@ impl<'a> PythonVisitor<'a> {
             ts::first_identifier(lhs)
         };
         let Some(name_node) = name_node else {
-            return Ok(());
+            return Ok(false);
         };
-        let (var_id, is_alias) = self.declare_target(node, lhs, name_node, annotation)?;
         let container = self.container();
+        let Some((var_id, is_alias)) = self.declare_target(assign, lhs, name_node, annotation)? else {
+            // `obj.attr = v`: nothing is declared, so there is no holder for a type.
+            if let Some(annotation) = annotation {
+                self.scan_annotation_calls(annotation, &container)?;
+            }
+            return Ok(false);
+        };
+
+        // `x: list[Item] = []`: the declared thing has the types the annotation names.
+        if let Some(annotation) = annotation
+            && !is_alias
+        {
+            self.record_annotation(annotation, &var_id, &container);
+            self.scan_annotation_calls(annotation, &container)?;
+        }
 
         // `x = y`: the variable holds what `y` resolves to. The enclosing node of
         // an `alias` is the variable, so the flow pass knows who holds it.
         if !is_alias && let Some(value) = rhs {
             self.record_aliases(value, &Sink::holder(&var_id), &[], 0)?;
         }
-
-        match rhs {
-            Some(rhs) if !is_alias => self.scan_value(rhs, &container)?,
-            Some(rhs) => {
-                if let Some(ident) = ts::first_identifier(rhs) {
-                    self.record_occurrence("annotation", ident, &container);
-                }
-            }
-            None => {}
-        }
-        Ok(())
+        Ok(is_alias)
     }
 
     /// Declares the variable, attribute or type alias an assignment creates, and
-    /// records the write. Returns its id and whether it is a type alias.
+    /// records the write. Returns its id and whether it is a type alias, or `None`
+    /// when the target declares nothing.
+    ///
+    /// `self.x` / `cls.x` is the ATTRIBUTE `Class.x` of the nearest enclosing class,
+    /// declared by the class: one node however many methods assign it. Any other
+    /// attribute target (`query.end_time = v`, `a.b.c = v`) reads its receiver and
+    /// writes the attribute; the resolver binds the write to the real attribute.
     fn declare_target(
         &mut self,
         node: TsNode<'_>,
         lhs: TsNode<'_>,
         name_node: TsNode<'_>,
         annotation: Option<TsNode<'_>>,
-    ) -> PyResult<(String, bool)> {
+    ) -> PyResult<Option<(String, bool)>> {
         let name = self.text(name_node);
+        let container = self.container();
 
         let is_alias = annotation.is_some_and(|a| self.text(a) == "TypeAlias");
         let in_class = self.kind_stack.last() == Some(&NodeKind::Class);
-        let is_self_attr = lhs.kind() == "attribute"
-            && ts::children(lhs)
-                .first()
-                .is_some_and(|c| self.text(*c) == "self");
+
+        // (qualified name, id) of the class a `self.x` / `cls.x` belongs to.
+        let mut class_owner: Option<(String, String)> = None;
+        if lhs.kind() == "attribute" {
+            let receiver = lhs.child_by_field_name("object");
+            let is_self = receiver
+                .is_some_and(|r| r.kind() == "identifier" && matches!(self.text(r).as_str(), "self" | "cls"));
+            let class_index = if is_self {
+                self.kind_stack.iter().rposition(|k| *k == NodeKind::Class)
+            } else {
+                None
+            };
+            match class_index {
+                Some(i) => {
+                    class_owner = Some((self.scope_stack[i].clone(), self.container_stack[i].clone()));
+                }
+                None => {
+                    if let Some(receiver) = receiver {
+                        self.scan_value(receiver, &container)?;
+                    }
+                    self.record_occurrence("write", name_node, &container);
+                    return Ok(None);
+                }
+            }
+        }
 
         let kind = if is_alias {
             NodeKind::TypeAlias
-        } else if in_class || is_self_attr {
+        } else if in_class || class_owner.is_some() {
             NodeKind::Attribute
         } else {
             NodeKind::Variable
         };
 
-        let qname = format!("{}.{name}", self.scope());
+        let qname = match &class_owner {
+            Some((class_qname, _)) => format!("{class_qname}.{name}"),
+            None => format!("{}.{name}", self.scope()),
+        };
         let metadata = PyDict::new(self.py);
         metadata.set_item("is_constant", is_upper(&name))?;
-        // For `self.x = v` the type checker answers with the start of `self.x`, not
-        // with the name `x`: declare the attribute there as well.
-        if lhs.kind() == "attribute" && kind == NodeKind::Attribute {
-            let start = ts::span(lhs);
-            let at_start = crate::span::Span {
-                start_line: start.start_line,
-                start_col: start.start_col,
-                end_line: start.start_line,
-                end_col: start.start_col + 1,
-            };
-            metadata.set_item("declared_at", PyList::new(self.py, vec![at_start])?)?;
-        }
 
         let var_node = self.make_node(
             kind,
@@ -1647,17 +1802,101 @@ impl<'a> PythonVisitor<'a> {
             Some(name_node),
         )?;
         let var_id = var_node.get().id.clone();
-        self.add_node_with_relation(var_node, RelationKind::Declares)?;
+        match class_owner {
+            Some((_, class_id)) => {
+                let existed = self.graph.has_node(&var_id);
+                self.safe_add_node(var_node);
+                self.push_relation(class_id, var_id.clone(), RelationKind::Declares)?;
+                self.note_declared_at(&var_id, lhs, name_node, existed)?;
+            }
+            None => self.add_node_with_relation(var_node, RelationKind::Declares)?,
+        }
 
-        let container = self.container();
         self.record_occurrence("write", name_node, &container);
-        Ok((var_id, is_alias))
+        Ok(Some((var_id, is_alias)))
+    }
+
+    /// For `self.x = v` the type checker answers with the start of `self.x`, not
+    /// with the name `x`, and with the site of whichever method it looked at: keep
+    /// every site in the node's `declared_at`.
+    fn note_declared_at(&mut self, id: &str, lhs: TsNode<'_>, name_node: TsNode<'_>, existed: bool) -> PyResult<()> {
+        let start = ts::span(lhs);
+        let at_start = Span {
+            start_line: start.start_line,
+            start_col: start.start_col,
+            end_line: start.start_line,
+            end_col: start.start_col + 1,
+        };
+        let mut sites = vec![at_start];
+        if existed {
+            sites.push(ts::span(name_node));
+        }
+        let known = self.declared_extra.entry(id.to_string()).or_default();
+        for site in sites {
+            if !known.contains(&site) {
+                known.push(site);
+            }
+        }
+        let spans = known.clone();
+        if let Some(metadata) = self.graph.node_metadata(self.py, id) {
+            metadata.bind(self.py).set_item("declared_at", PyList::new(self.py, spans)?)?;
+        }
+        Ok(())
+    }
+
+    /// Declares the names a module-level `for` / `except ... as` binds: they are
+    /// importable globals. A target that is not a plain name (`a.b`, `a[0]`) is
+    /// skipped. The target node is its own span, never the whole statement: a
+    /// statement span would claim the occurrences of the loop body.
+    fn declare_module_targets(&mut self, target: TsNode<'_>) -> PyResult<()> {
+        match target.kind() {
+            "identifier" => {
+                self.declare_target(target, target, target, None)?;
+            }
+            "pattern_list" | "tuple_pattern" | "list_pattern" | "list_splat_pattern" => {
+                for child in ts::children(target) {
+                    self.declare_module_targets(child)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    /// A module-level `except E as e:`: `e` is declared, `E` is a read, the body is
+    /// walked. Handles both grammar shapes (an `alias` field on the clause, or an
+    /// `as_pattern` child).
+    fn walk_module_except(&mut self, node: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
+        let alias = node.child_by_field_name("alias");
+        for child in ts::children(node) {
+            if alias.is_some_and(|a| a.id() == child.id()) {
+                if let Some(name) = ts::first_identifier(child) {
+                    self.declare_module_targets(name)?;
+                }
+            } else if child.kind() == "as_pattern" {
+                let pattern_alias = child.child_by_field_name("alias");
+                for part in ts::children(child) {
+                    if pattern_alias.is_some_and(|a| a.id() == part.id()) {
+                        if let Some(name) = ts::first_identifier(part) {
+                            self.declare_module_targets(name)?;
+                        }
+                    } else {
+                        self.scan_value(part, enclosing_id)?;
+                    }
+                }
+            } else if child.kind() == "block" {
+                self.walk_body(child, enclosing_id)?;
+            } else {
+                self.scan_value(child, enclosing_id)?;
+            }
+        }
+        Ok(())
     }
 
     /// `a, *b, c = x, y, z, w`: each name is a variable holding what stands in its
     /// place, and the starred name holds the elements in between.
+    /// Does not scan the right-hand side; `handle_assignment` does, once.
     fn handle_unpacking(&mut self, node: TsNode<'_>, lhs: TsNode<'_>, rhs: Option<TsNode<'_>>) -> PyResult<()> {
-        let container = self.container();
         let mut targets: Vec<(Option<String>, bool)> = Vec::new();
         for target in ts::children(lhs).into_iter().filter(|c| c.is_named() && c.kind() != "comment") {
             let (name, starred) = match target.kind() {
@@ -1666,7 +1905,7 @@ impl<'a> PythonVisitor<'a> {
                 _ => (None, false),
             };
             let id = match name {
-                Some(name) => Some(self.declare_target(node, name, name, None)?.0),
+                Some(name) => self.declare_target(node, name, name, None)?.map(|(id, _)| id),
                 None => None,
             };
             targets.push((id, starred));
@@ -1708,7 +1947,6 @@ impl<'a> PythonVisitor<'a> {
                     }
                 }
             }
-            self.scan_value(rhs, &container)?;
         }
         Ok(())
     }

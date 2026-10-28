@@ -1,0 +1,1 @@
+Type positions are REFERENCES/HAS_TYPE only: a type argument (`f<Shape>(s)`, `new Box<Shape>(s)`), `as`, `satisfies`, `typeof helper` in a type and a generic constraint add no CALLS edge, so the call graph is exactly the three calls at module level.

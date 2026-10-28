@@ -20,7 +20,7 @@ relation.metadata    # dict[str, object]
 | `CONTAINS` | project → module, module → file | structure |
 | `DECLARES` | file → declaration | structure |
 | `IMPORTS` | file → import | structure |
-| `RESOLVES_TO` | import → module or external symbol (in Go with the `span` of the import path); also, with a span and a `resolution`, import → the definition of a name it brings in | structure (Rust: the name, by path) and resolution |
+| `RESOLVES_TO` | import → module or external symbol (in Go with the `span` of the import path); also, with a `span` and a `resolution`, import → what a name it brings in resolves to: a definition or a module | structure (Rust: the name, by path) and resolution |
 | `DEPENDS_ON` | project → dependency | structure |
 | `CALLS` | function → callee | resolution |
 | `REFERENCES` | declaration → symbol read or written | resolution |
@@ -64,7 +64,7 @@ A structural `RESOLVES_TO` may carry `span` too: the C family writes the path li
 | `value` | A call whose target is a variable, a parameter or a field: the backend found what the callee was read from, not the callee. |
 | `flow` | A `value` call followed through assignments, arguments and returns to a callable it can be shown to hold; `via` names the holder. Flow-insensitive: a holder assigned two callables gets an edge to each. |
 | `external` | The definition is outside the project (standard library, a dependency). |
-| `unlocated` | The backend answered with a place callix could not bind to a node. |
+| `unlocated` | The backend answered with a place callix could not bind to a node (a position inside an import statement, a file callix does not know). The start of a known Python or TypeScript file is bound to its MODULE. A call that lands on a MODULE is `unlocated` too, but points at the MODULE. |
 | `name` | Matched by name in a symbol table (PHP, C, C++), or by path (Rust `use` paths and `mod x;`), with no type information. |
 
 An edge written by a visitor rather than by resolution (`DECLARES`, `CONTAINS`,

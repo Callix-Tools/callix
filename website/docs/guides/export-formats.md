@@ -36,6 +36,7 @@ GitLab reads it as a code-navigation report.
 | a file | `document`, with its `languageId` |
 | a definition's `metadata["name_span"]` | `range` — the identifier, not the whole extent |
 | a reference edge's `metadata["span"]` | `range` at the use-site |
+| a Python or TypeScript module with a file | a definition: a zero-width `range` at `0:0` of its file |
 | a definition, or an external symbol | `resultSet` |
 | where it is defined, where it is referenced | `definitionResult`, `referenceResult` with `item` edges per document |
 | kind and qualified name, then the definition's `metadata["doc"]` | `hoverResult` |
@@ -49,7 +50,9 @@ Positions are converted properly: callix counts bytes from 1, LSIF wants UTF-16
 units from 0. Give the exporter the sources (the directory you analysed, or
 `--source-root` for a saved graph) and every column is exact; without them
 columns are emitted as byte offsets, which is wrong on lines holding non-ASCII
-text, and the exporter warns.
+text, and the exporter warns. A Python or TypeScript module with a file is a
+definition at `0:0` of that file, and a `RESOLVES_TO` edge that records a position
+is a reference.
 
 ### What an LSIF dump cannot hold
 
@@ -88,7 +91,13 @@ A `RESOLVES_TO` edge that records a position (the name an import brings in) is e
 
 A symbol reads `callix . <project> . . <descriptor>`: the qualified name as one
 backtick-escaped descriptor, suffixed by what it is — `#` for a type, `().` for a
-callable, `.` for a term, `(…)` for a parameter. rust-analyzer's own symbols,
+callable, `.` for a term, `(…)` for a parameter. `<project>` is the sub-root
+(PROJECT) the definition belongs to, so a workspace with several sub-roots keeps
+same-named definitions apart; a definition no PROJECT contains uses the first one.
+When two definitions would still share a symbol (C `typedef struct S S` is a class
+and a type alias, both `#`), the class keeps the plain symbol and the type alias —
+more generally the non-primary kind — is written under a `<kind>/` namespace, e.g.
+`type_alias/S#`. rust-analyzer's own symbols,
 which the graph keeps verbatim for Rust's external references, are used as they
 are, and the definitions callix indexes for the Rust fixture sit at exactly the
 ranges rust-analyzer's index puts them (a test checks it against a real index).
@@ -102,6 +111,14 @@ Left out, with a warning: a reference whose target the resolver could not name
 index. Documentation is the symbol's kind and qualified name, since the graph
 keeps no docstrings. The output is binary; `callix` refuses to write it to a
 terminal.
+
+A Python or TypeScript module that has a file is a definition at `0:0` of that file
+(the convention scip-python uses), so an empty `__init__.py` still gets its document.
+A reference to a module, and the name an import brings in (a `RESOLVES_TO` edge that
+records a position), are occurrences. A module without a file (a namespace package, a
+directory without an index file) is not a definition, and a reference to it is left out.
+TypeScript relative module strings and import and export specifiers appear as
+occurrences too.
 
 ## CycloneDX
 

@@ -42,9 +42,9 @@
     "sound": 57
   },
   "typescript/micro": {
-    "complete": 67,
+    "complete": 69,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 67
+    "sound": 69
   }
 }

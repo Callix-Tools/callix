@@ -72,6 +72,8 @@ Not covered: element access (`o["k"]`, `o[k]`), shorthand keys (`{ x }` referenc
 local), computed keys, `x.count++` as a write, and members of a type literal, which
 have no node yet, so reads of them are `unlocated`.
 
+A method or accessor of an object literal that is not a variable's initializer (a call argument, a returned or nested literal) is an inline closure: its calls belong to the enclosing function, as a callback's do. A comment in front of an initializer (`/*@__PURE__*/`) does not affect what is scanned.
+
 ## Type positions
 
 Every name a type mentions is a use, not only the first identifier. In a declaration

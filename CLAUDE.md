@@ -476,6 +476,7 @@ Things that are easy to get wrong:
   Module-level `for` and `except ... as` targets are module `VARIABLE`s (declared
   on their own span, never the whole statement); a function's loop variable stays
   a node only when it is called.
+- **A TypeScript initializer, pair value or assignment side is read from its grammar field** (`value`, `right`, `body`), never as "the first named child that is not X": tree-sitter makes a comment a named extra, so `const x = /*@__PURE__*/ f()` once lost every edge in the initializer. A method or accessor of an object literal reached by `scan_value` (an argument, a returned or nested literal) is an inline closure of the containing scope; only class-body methods are a scope boundary there.
 
 The Docker images (`Dockerfile`, `docker/smoke.sh`) are plain Debian: `slim`
 (callix) and `full` (+ Go, Rust with rust-analyzer and rust-src, Node, Python+pip).

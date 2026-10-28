@@ -33,7 +33,9 @@ const METHOD_NAME_TYPES: [&str; 3] = [
 ];
 
 /// Nested definitions are a scope boundary; the value scanner does not enter
-/// them.
+/// them. Inline function values (arrow functions, function expressions, and
+/// methods or accessors of an object literal) are the exception: `scan_value`
+/// handles them as closures of the containing scope before this check.
 const NESTED_DEF_TYPES: [&str; 9] = [
     "function_declaration",
     "generator_function_declaration",
@@ -347,7 +349,7 @@ impl<'a> TsVisitor<'a> {
             return Ok(());
         }
         let enclosing = self.container();
-        let Some(expr) = ts::named_children(node).into_iter().next() else {
+        let Some(expr) = ts::named_children(node).into_iter().find(|c| c.kind() != "comment") else {
             return Ok(());
         };
         if matches!(expr.kind(), "internal_module" | "module") {
@@ -357,11 +359,11 @@ impl<'a> TsVisitor<'a> {
             expr.kind(),
             "assignment_expression" | "augmented_assignment_expression"
         ) {
-            if let Some(left) = ts::children(expr).first().copied() {
+            if let Some(left) = expr.child_by_field_name("left") {
                 self.scan_assignment_target(left, &enclosing)?;
             }
-            if let Some(rhs) = ts::children(expr).last() {
-                self.scan_value(*rhs, &enclosing)?;
+            if let Some(rhs) = expr.child_by_field_name("right") {
+                self.scan_value(rhs, &enclosing)?;
             }
             return Ok(());
         }
@@ -648,19 +650,9 @@ impl<'a> TsVisitor<'a> {
         if let Some(type_ann) = ts::child_of_type(node, "type_annotation") {
             self.record_annotation(type_ann, &attr_id);
         }
-        let initializer = ts::children(node).into_iter().find(|c| {
-            c.is_named()
-                && !matches!(
-                    c.kind(),
-                    "property_identifier"
-                        | "type_annotation"
-                        | "accessibility_modifier"
-                        | "abstract"
-                        | "readonly"
-                        | "static"
-                        | "override"
-                )
-        });
+        // The initializer is the `value` field: a comment is a named extra and a
+        // decorator is a named child, so filtering by kind picks the wrong node.
+        let initializer = node.child_by_field_name("value");
         if let Some(initializer) = initializer {
             self.scan_value(initializer, &class_id)?;
         }
@@ -828,9 +820,7 @@ impl<'a> TsVisitor<'a> {
         is_const: bool,
     ) -> PyResult<()> {
         let enclosing = self.container();
-        let initializer = ts::children(declarator)
-            .into_iter()
-            .find(|c| c.is_named() && c.id() != pattern.id() && c.kind() != "type_annotation");
+        let initializer = declarator.child_by_field_name("value");
         // (the bound name, the key it is read with)
         let mut bound: Vec<(TsNode<'_>, Option<String>)> = Vec::new();
         let mut index = 0usize;
@@ -845,8 +835,7 @@ impl<'a> TsVisitor<'a> {
                     }
                 }
                 ("object_pattern", "pair_pattern") => {
-                    let named = ts::named_children(element);
-                    if let (Some(key), Some(value)) = (named.first().copied(), named.get(1).copied()) {
+                    if let (Some(key), Some(value)) = (element.child_by_field_name("key"), element.child_by_field_name("value")) {
                         let value = match value.kind() {
                             "assignment_pattern" => ts::named_children(value).first().copied(),
                             _ => Some(value),
@@ -942,11 +931,9 @@ impl<'a> TsVisitor<'a> {
             self.record_annotation(type_ann, &var_id);
         }
 
-        // The initializer is found by filtering rather than by position: a
-        // type annotation shifts it from the second named child to the third.
-        let initializer = ts::children(declarator).into_iter().find(|c| {
-            c.is_named() && c.id() != name_node.id() && c.kind() != "type_annotation"
-        });
+        // The initializer is the `value` field: comments are named extras, so
+        // "the first named child that is not the name" can be a comment.
+        let initializer = declarator.child_by_field_name("value");
         if let Some(initializer) = initializer {
             self.record_aliases(initializer, &var_id, 0);
             if initializer.kind() == "object" {
@@ -972,8 +959,7 @@ impl<'a> TsVisitor<'a> {
             let function = match member.kind() {
                 "method_definition" => Some((None, member)),
                 "pair" => {
-                    let named = ts::named_children(member);
-                    match (named.first(), named.get(1)) {
+                    match (member.child_by_field_name("key"), member.child_by_field_name("value")) {
                         (Some(key), Some(value))
                             if matches!(key.kind(), "property_identifier" | "identifier")
                                 && matches!(
@@ -981,7 +967,7 @@ impl<'a> TsVisitor<'a> {
                                     "arrow_function" | "function_expression" | "function"
                                 ) =>
                         {
-                            Some((Some(*key), *value))
+                            Some((Some(key), value))
                         }
                         _ => None,
                     }
@@ -1320,9 +1306,8 @@ impl<'a> TsVisitor<'a> {
                     (left, left.and_then(|l| self.literal_key(l)))
                 }
                 "pair_pattern" => {
-                    let named = ts::named_children(element);
-                    let value = named.get(1).copied().filter(|v| v.kind() == "identifier");
-                    (value, named.first().copied().and_then(|k| self.literal_key(k)))
+                    let value = element.child_by_field_name("value").filter(|v| v.kind() == "identifier");
+                    (value, element.child_by_field_name("key").and_then(|k| self.literal_key(k)))
                 }
                 _ => (None, None),
             };
@@ -1436,7 +1421,7 @@ impl<'a> TsVisitor<'a> {
     fn default_value<'tree>(parameter: TsNode<'tree>) -> Option<TsNode<'tree>> {
         let children = ts::children(parameter);
         let eq = children.iter().position(|c| c.kind() == "=")?;
-        children.get(eq + 1).copied()
+        children[eq + 1..].iter().find(|c| c.kind() != "comment").copied()
     }
 
     // -- use-sites --------------------------------------------------------
@@ -1582,6 +1567,12 @@ impl<'a> TsVisitor<'a> {
         {
             self.record_site("read", name, enclosing_id, Some("key"));
         }
+        // A method, getter or setter of an object literal is an inline closure of the
+        // containing scope, as a callback is. A class-body method is a scope boundary
+        // and keeps the early return below.
+        if node.kind() == "method_definition" && node.parent().is_some_and(|p| p.kind() == "object") {
+            return self.scan_closure(node, enclosing_id);
+        }
         if NESTED_DEF_TYPES.contains(&node.kind()) {
             return Ok(());
         }
@@ -1656,14 +1647,13 @@ impl<'a> TsVisitor<'a> {
             }
             // An object literal { key: value } — the key is a read of the member, then the value is scanned.
             "pair" => {
-                let named = ts::named_children(node);
-                if let Some(key) = named.first()
+                if let Some(key) = node.child_by_field_name("key")
                     && matches!(key.kind(), "property_identifier" | "string")
                 {
-                    self.record_site("read", *key, enclosing_id, Some("key"));
+                    self.record_site("read", key, enclosing_id, Some("key"));
                 }
-                if named.len() > 1 {
-                    self.scan_value(named[1], enclosing_id)?;
+                if let Some(value) = node.child_by_field_name("value") {
+                    self.scan_value(value, enclosing_id)?;
                 }
                 Ok(())
             }
@@ -1784,10 +1774,7 @@ impl<'a> TsVisitor<'a> {
                         // parameter under its key, for a parameter that unpacks them.
                         for pair in ts::children(arg) {
                             let (key, value) = match pair.kind() {
-                                "pair" => {
-                                    let named = ts::named_children(pair);
-                                    (named.first().copied(), named.get(1).copied())
-                                }
+                                "pair" => (pair.child_by_field_name("key"), pair.child_by_field_name("value")),
                                 "shorthand_property_identifier" => (Some(pair), Some(pair)),
                                 _ => continue,
                             };
@@ -1854,8 +1841,7 @@ impl<'a> TsVisitor<'a> {
         for element in ts::children(literal) {
             match element.kind() {
                 "pair" => {
-                    let named = ts::named_children(element);
-                    let (written, value) = (named.first().copied()?, named.get(1).copied()?);
+                    let (written, value) = (element.child_by_field_name("key")?, element.child_by_field_name("value")?);
                     if self.literal_key(written).as_deref() == Some(key) {
                         return Some(value);
                     }
@@ -1952,8 +1938,7 @@ impl<'a> TsVisitor<'a> {
                 for element in ts::children(value) {
                     match element.kind() {
                         "pair" => {
-                            let named = ts::named_children(element);
-                            let (Some(key), Some(inner)) = (named.first().copied(), named.get(1).copied()) else {
+                            let (Some(key), Some(inner)) = (element.child_by_field_name("key"), element.child_by_field_name("value")) else {
                                 continue;
                             };
                             let mut deeper = path.to_vec();
@@ -2014,12 +1999,7 @@ impl<'a> TsVisitor<'a> {
 
     /// A function's body: the block, or the expression of `() => expr`.
     fn function_body<'t>(node: TsNode<'t>) -> Option<TsNode<'t>> {
-        if let Some(block) = ts::child_of_type(node, "statement_block") {
-            return Some(block);
-        }
-        let children = ts::children(node);
-        let arrow = children.iter().position(|c| c.kind() == "=>")?;
-        children.get(arrow + 1).copied()
+        node.child_by_field_name("body")
     }
 
     fn walk_body(&mut self, body: TsNode<'_>, enclosing_id: &str) -> PyResult<()> {
@@ -2057,17 +2037,17 @@ impl<'a> TsVisitor<'a> {
             return Ok(());
         }
         if kind == "expression_statement" {
-            let Some(expr) = ts::named_children(node).into_iter().next() else {
+            let Some(expr) = ts::named_children(node).into_iter().find(|c| c.kind() != "comment") else {
                 return Ok(());
             };
             if matches!(
                 expr.kind(),
                 "assignment_expression" | "augmented_assignment_expression"
             ) {
-                if let Some(rhs) = ts::children(expr).last() {
+                if let Some(rhs) = expr.child_by_field_name("right") {
                     // `this.f = f`: the property holds what is assigned to it.
                     if expr.kind() == "assignment_expression"
-                        && let Some(left) = ts::children(expr).first().copied()
+                        && let Some(left) = expr.child_by_field_name("left")
                         && left.kind() == "member_expression"
                         && let parts = ts::children(left)
                         && parts.first().is_some_and(|o| o.kind() == "this")
@@ -2086,13 +2066,13 @@ impl<'a> TsVisitor<'a> {
                             NodeKind::Attribute.as_str(),
                         );
                         if self.graph.has_node(&attribute) {
-                            self.record_aliases(*rhs, &attribute, 0);
+                            self.record_aliases(rhs, &attribute, 0);
                         }
                     }
-                    if let Some(left) = ts::children(expr).first().copied() {
+                    if let Some(left) = expr.child_by_field_name("left") {
                         self.scan_assignment_target(left, enclosing_id)?;
                     }
-                    self.scan_value(*rhs, enclosing_id)?;
+                    self.scan_value(rhs, enclosing_id)?;
                 }
             } else {
                 self.scan_value(expr, enclosing_id)?;

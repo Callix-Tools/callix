@@ -3,7 +3,7 @@ mod common;
 use callix_export::lsif::Lsif;
 use callix_export::model::Graph;
 use callix_export::{Exporter, Options};
-use common::{SAMPLE, check_lsif, edges, labelled};
+use common::{C_DECL_SITES, SAMPLE, check_lsif, edges, labelled};
 
 fn export(options: &Options) -> (String, Vec<callix_export::Warning>) {
     let graph = Graph::from_json(SAMPLE).unwrap();
@@ -258,4 +258,25 @@ fn a_resolves_to_with_a_position_is_a_reference() {
         .map(|i| i["inVs"].as_array().unwrap().len())
         .sum();
     assert_eq!(refs, 1);
+}
+
+#[test]
+fn declaration_sites_and_includes_are_ranges() {
+    let graph = Graph::from_json(C_DECL_SITES).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    let ranges = labelled(&el, "range");
+    let at = |line: u64, ch: u64| {
+        ranges
+            .iter()
+            .filter(|r| r["start"]["line"] == line && r["start"]["character"] == ch)
+            .count()
+    };
+    // `add`: its definition in a.c and its prototype in a.h.
+    assert_eq!(at(2, 4), 2);
+    // The a.h operand of the include in a.c.
+    assert!(at(0, 9) >= 1);
+    // The header's file symbol is defined at 0:0 of its own document.
+    assert!(ranges.iter().any(|r| r["start"]["line"] == 0 && r["start"]["character"] == 0 && r["end"]["character"] == 0));
 }

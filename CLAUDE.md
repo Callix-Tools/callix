@@ -179,7 +179,32 @@ usually declared in a different file from the definition. A survey pass then
 reads every file into `FileFacts` and records declaring sites in a `DeclLedger`
 before any node is written — a prototype in a header and its definition in a
 source file are ONE node, and whichever file was read first would otherwise
-decide its span. **`src/yaml/` has no visitor and no resolver at all**: it
+decide its span. The ledger keeps (file, name_span) per site, which is what
+`declared_at` is made of. An `#include` path literal (delimiters included) is
+the IMPORT's `name_span` and the span of its RESOLVES_TO; the FILE-to-header
+IMPORTS edge stays unpositioned. An exporter defines a FILE at 1:1 only when a
+placed edge targets it.
+
+**Before the scope pass, the adapter blanks the project's erasable macros**
+(`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,
+`inline`, `extern "C"` or a storage keyword that fits the macro's name, in every `#if`
+arm) with same-length spaces, so `class API Foo {}`, `int x GUARDED_BY(m);` and
+`API int (*f)(int);` parse as written and every span stays a position in the original
+file. Header ownership (`claims`) is decided on the RAW bytes, because the blanked text
+of a C++ class can parse cleanly as K&R C; user boundary extractors get the raw source.
+The probe rule: a `.h` goes to C++ when its clean C parse has a K&R definition without a
+function declarator (`namespace a {`, `class C {`) or a C++ keyword as a type name, and
+also when no C root reads it (a tree with no `.c`, or a header outside every C root).
+Both adapters decide the latter from the same discovery (`detector::family_root_files`,
+`adapter::CReach`), so ownership stays one-adapter.
+A header the OTHER dialect claims still contributes its macros to the erasable set,
+though never to expansion: a header of nothing but `#define`s parses cleanly as C, so
+leveldb's `export.h` belongs to C (in a tree with a C source: leveldb's `c_test.c`)
+while `class LEVELDB_EXPORT DB` is C++. Ownership is unchanged (no FILE node, no
+facts from that header). Macros defined outside the analysed root, or in another
+root, are not erased (each root builds its own table).
+
+**`src/yaml/` has no visitor and no resolver at all**: it
 declares no symbols, emits no occurrences, and contributes only FILE nodes,
 dependencies and boundaries.
 
@@ -304,11 +329,34 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
 - **ty's project is the analysed root**, never an ancestor's `pyproject.toml`
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
-- **`declared_at`** on a node lists extra name spans the type checker may answer
-  with (overload signatures, a function-valued field, and, in Rust, every later
-  declaration of a qualified name in the same file: same-named methods of different
-  impls of one type (`impl Add<S>` / `impl Add<&S>`, an inherent and a trait method)
-  and cfg variants); `SpanIndex::from_graph` reads it.
+- **`declared_at`** on a node lists extra name spans. An entry is a bare `Span` in
+  the node's own file (Python and TypeScript: positions the type checker may
+  answer with - overload signatures, a function-valued field; Rust: every later
+  declaration of a qualified name in the same file, such as same-named methods of
+  different impls of one type (`impl Add<S>` / `impl Add<&S>`, an inherent and a
+  trait method) and cfg variants; exporters do not place them), or `{file, span}` naming its file (C and C++: a prototype, forward
+  declaration or in-class declaration is the SAME node as its definition, and the
+  name span of every other declaring site is listed here, own-file prototypes
+  included; exporters write each as a SCIP ForwardDefinition). `SpanIndex::from_graph`
+  reads both shapes.
+- **C/C++ type uses are `read` occurrences with `CallSite.type_use`**, giving a
+  REFERENCES from the enclosing callable; a type in a declared position stays
+  `annotation` (HAS_TYPE). They resolve only to CLASS/TYPE_ALIAS through
+  `CFamilyIndex::resolve_type` (a written scope must match, no bare-name fallback).
+  Scope components and `sizeof(name)` are `speculative` (a miss writes nothing, so a
+  namespace makes no edge), and a local declaration's type yields to a construction
+  at the same span. The role is `read`, not a new one, so custom resolvers still
+  see it.
+- **A C++ operator use is a speculative `call` occurrence named `operator<op>`**, at the
+  operator token, with `CallSite.overloaded_operator` set (`=`, compound assignments,
+  binary operators, `[]`; alternative tokens such as `and_eq` are normalised). The
+  resolver (`resolve_operator`) never falls back to a bare name for it. `=`, `[]` and
+  `->` are member-only; a free operator needs an operand's class among the classes its
+  parameters name. Only fields and globals recorded as holding an object
+  (`FoundDecl.holds_object`: no pointer, array or function declarator) can be the left
+  operand, so `p_ = q` on a pointer field is not `operator=`. A miss writes nothing, so
+  built-in arithmetic adds no externals. Operators on expression results, unary
+  operators, ADL and templates are not followed.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language
@@ -490,6 +538,9 @@ Things that are easy to get wrong:
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.
+- **A C-family member access carries its receiver, and the flat name table filters by kind.** `CallSite.member` / `receiver_path` (built by `Reader::member_site` in `visitor.rs`) say what `a->b->c` is read from; `CFamilyIndex::resolve` binds a call, a read, a write and a member initialiser by the receiver's declared type through field chains, typedefs (`aliases`) and file-scope variables (`value_type`), and says `Outside` when the type is known and lacks the field. Any by-name fallback goes through `lookup_kinds`/`by_bare_name` with a kind filter that runs BEFORE the first candidate is chosen: an unqualified name never binds to an `Attribute`, or a field declared first would hide a function of the same name.
+- **A class, struct or union defined in a function body is a CLASS qualified by the enclosing callable's full name** (`run()::State`, members `run()::State::stats` and `run()::State::State()`; in C `run::State`). The function DECLARES it, its member bodies are callables of their own (their calls are not the enclosing function's: `body_nodes` in `visitor.rs` does not enter a record specifier that has a body), and the resolver binds it only lexically - from inside that callable, innermost scope first (`CFamilyIndex::local_class`, the `within` argument of `resolve`/`resolve_type`) - or by its exact name; it is never found by its bare name from elsewhere and is not a candidate of `visible()`. Split a member's class from its name with `headers::split_member` (parenthesis-depth aware), never with `split('(')`, and read parameters with `params_of`, which takes the LAST parenthesis group. A qualified record head `class Outer::Inner {` names `Inner` (name and name span); its qualified name is unchanged. A local enum or typedef is not declared.
+- **`typedef struct { .. } T;` declares CLASS `T` beside TYPE_ALIAS `T`.** `anonymous_typedef_name` picks the name (the first plain `type_identifier` declarator, else the first named one) for `on_typedef` and for the scope pass; `on_record` receives it as a fallback, puts the name span on the alias identifier and takes span and doc from the `type_definition`, so the span contains the name span. An anonymous record's fields are hoisted into the enclosing record only when no typedef names it (C11 anonymous member). `resolver::type_key` keys the text before `{`, so a typedef of an inline tagged struct leads to its tag, while `struct { .. }` still names no class.
 - **`--strict` always fails for PHP, C and C++**, by the same design that makes
   them `degraded`.
 

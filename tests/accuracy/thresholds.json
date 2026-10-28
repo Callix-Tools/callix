@@ -1,15 +1,15 @@
 {
   "c/micro": {
-    "complete": 40,
+    "complete": 43,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 40
+    "sound": 43
   },
   "cpp/micro": {
-    "complete": 50,
+    "complete": 57,
     "precision": 1.0,
     "recall": 1.0,
-    "sound": 50
+    "sound": 57
   },
   "go/micro": {
     "complete": 63,

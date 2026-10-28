@@ -290,9 +290,30 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "approximate: a member call is bound by the receiver's declared type and the class's \
              bases, overloads by arity and the look of the arguments, `#include` reachability for \
              the rest; no type checking, so a receiver whose type is not declared falls back to \
-             the name (such edges say `ambiguous`); macros of the project are expanded where they \
-             are invoked, conditionals are not evaluated, and a callback handed to a library \
-             function is followed only for a closed list of them",
+             the name (such edges say `ambiguous`); a member read, write or initialiser is \
+             bound by the receiver's declared type through field chains, typedefs and \
+             file-scope variables, a type with no such field gives an external symbol, and \
+             an unqualified name is never a field; macros of the project are expanded where they \
+             are invoked, macros of the project that expand to nothing, an attribute or a \
+             storage keyword are erased before parsing, conditionals are not evaluated, and \
+             a callback handed to a library function is followed only for a closed list of \
+             them; a type name is bound by name to a class or typedef only, and a scope \
+             qualifier or `sizeof(name)` binds only when such a type is visible \
+             (namespaces are not nodes); a prototype, forward declaration or in-class \
+             declaration is the same node as its definition and its name position is in \
+             `declared_at` (exported as a forward definition); an `#include` path is the \
+             span of the IMPORT's RESOLVES_TO to the header's FILE or to an external \
+             symbol (a computed include is not positioned); a `.h` with no C++ syntax \
+             belongs to C where a C root reads it, and a C++ `#include` of it then \
+             resolves to an external symbol; an overloaded operator (`a = b`, the compound \
+             assignments, `a == b` and the other binary operators, `a[i]`) is a call when the \
+             left operand is an object local, parameter, field, global, `*p` or `*this` of a \
+             class that declares it (bases included), or when a namespace-scope two-parameter \
+             operator names an operand's class; operators on an expression result, unary \
+             operators, argument-dependent lookup and template-dependent operands are not \
+             followed, and an operator nothing declares gives no edge; a class, struct or union \
+             defined in a function body is qualified by that function (`run()::State`) and \
+             bound only from inside it, and a local enum or typedef is not declared",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

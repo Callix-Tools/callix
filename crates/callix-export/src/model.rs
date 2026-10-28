@@ -202,6 +202,26 @@ impl Node {
     pub fn meta_str(&self, key: &str) -> Option<&str> {
         self.metadata.get(key)?.as_str()
     }
+
+    /// The other places a definition is written down: the `{file, span}` entries
+    /// of `metadata["declared_at"]` (a C or C++ prototype, forward declaration or
+    /// in-class declaration). A bare span is skipped on purpose: it is a
+    /// position a type checker may answer with (Python's one-character
+    /// `self.x` start, a TypeScript overload signature), not text that spells
+    /// the name there.
+    pub fn declaration_sites(&self) -> Vec<(&str, Span)> {
+        let Some(Value::Array(items)) = self.metadata.get("declared_at") else {
+            return Vec::new();
+        };
+        items
+            .iter()
+            .filter_map(|item| {
+                let map = item.as_object()?;
+                let file = map.get("file")?.as_str()?;
+                Some((file, Span::from_value(map.get("span")?)?))
+            })
+            .collect()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -215,7 +235,7 @@ pub struct Relation {
 impl Relation {
     /// Whether an index places this edge at a position: a reference kind, or a
     /// `RESOLVES_TO` that records where the name it resolves was written (the name an
-    /// import brings in). The structural `RESOLVES_TO` of an import has no span and is
+    /// import brings in, an import path, an `#include` operand). The structural `RESOLVES_TO` of an import has no span and is
     /// not one. `RelationKind::is_reference` is unchanged, for reports and counts.
     pub fn is_placed_reference(&self) -> bool {
         self.kind.is_reference() || (self.kind == RelationKind::ResolvesTo && self.span().is_some())

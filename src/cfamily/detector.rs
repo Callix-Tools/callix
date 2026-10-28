@@ -14,7 +14,7 @@ use crate::py::prelude::*;
 use crate::py::derive::gen_stub_pyfunction;
 use walkdir::WalkDir;
 
-use crate::roots::{EXCLUDED_DIRS, collect_files, collect_marker_roots};
+use crate::roots::{EXCLUDED_DIRS, collect_files, collect_marker_roots, filter_nested_root_files};
 
 use super::Dialect;
 
@@ -24,7 +24,8 @@ const C_FAMILY_MARKERS: [&str; 4] =
 
 pub const C_SOURCE_EXTENSIONS: [&str; 1] = [".c"];
 pub const CPP_SOURCE_EXTENSIONS: [&str; 4] = [".cpp", ".cc", ".cxx", ".c++"];
-/// `.h` names no dialect; `headers::probe_dialect` decides per file.
+/// `.h` names no dialect; `headers::probe_dialect` decides per file, and a `.h` the
+/// probe gives to C belongs to C only where a C root reads it (`headers::claims`).
 pub const AMBIGUOUS_HEADER_EXTENSIONS: [&str; 1] = [".h"];
 pub const CPP_HEADER_EXTENSIONS: [&str; 4] = [".hpp", ".hh", ".hxx", ".h++"];
 
@@ -32,7 +33,8 @@ pub const CPP_HEADER_EXTENSIONS: [&str; 4] = [".hpp", ".hh", ".hxx", ".h++"];
 pub const C_EXTENSIONS: [&str; 2] = [".c", ".h"];
 
 /// Everything the C++ adapter may be handed. `.h` is here too: both adapters
-/// COLLECT it and exactly one of them keeps a given file (see `headers::claims`).
+/// COLLECT it and exactly one of them keeps a given file (see `headers::claims`);
+/// a neutral `.h` goes to C++ when no C root reads it.
 pub const CPP_EXTENSIONS: [&str; 9] = [
     ".cpp", ".cc", ".cxx", ".c++", ".hpp", ".hh", ".hxx", ".h++", ".h",
 ];
@@ -172,6 +174,29 @@ pub fn c_roots(root: &Path) -> Vec<PathBuf> {
 
 pub fn cpp_roots(root: &Path) -> Vec<PathBuf> {
     family_roots(root, Dialect::Cpp)
+}
+
+/// The roots of a dialect and the files each one analyses, as the adapter's own
+/// discovery sees them (nested roots' files removed).
+///
+/// One definition for both the adapter's `analyze` and `adapter::CReach`, so the
+/// C++ adapter decides which `.h` the C adapter reads from exactly the answer the
+/// C adapter works with.
+pub fn family_root_files(project_root: &Path, dialect: Dialect) -> Vec<(PathBuf, Vec<PathBuf>)> {
+    let roots = match dialect {
+        Dialect::C => c_roots(project_root),
+        Dialect::Cpp => cpp_roots(project_root),
+    };
+    roots
+        .iter()
+        .map(|root| {
+            let collected = match dialect {
+                Dialect::C => collect_c_files(root),
+                Dialect::Cpp => collect_cpp_files(root),
+            };
+            (root.clone(), filter_nested_root_files(collected, root, &roots))
+        })
+        .collect()
 }
 
 /// The name from CMake's `project()` command.

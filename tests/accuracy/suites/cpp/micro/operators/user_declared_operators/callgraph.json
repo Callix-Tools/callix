@@ -1,0 +1,1 @@
+{"f()": ["make()", "S::operator=(const S&)", "S::operator==(const S&) const", "operator!=(const S&,const S&)", "S::operator[](int) const"], "make()": [], "S::operator=(const S&)": [], "S::operator==(const S&) const": [], "S::operator[](int) const": [], "operator!=(const S&,const S&)": []}

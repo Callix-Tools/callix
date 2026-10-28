@@ -37,6 +37,10 @@ slow part — ruff alone spends four minutes in `rust-analyzer scip`.
 | C++ | leveldb · rocksdb | the same at two scales, plus `X::y` scope classification |
 | YAML | openapi-directory · argo-cd | the OpenAPI extractor; discovery and flavours |
 
+Pins re-recorded after member accesses became bound by the receiver's declared type (issue #18); redis, leveldb and rocksdb moved because field edges were re-targeted or made external.
+
+Pins re-recorded after a struct or union named only by a typedef (`typedef struct { .. } T;`) became a CLASS `T` with `T::field` members, and after a typedef of an inline tagged struct (`typedef struct tag { .. } T;`) began to lead to `tag` (issue #26); redis moved because the new CLASS and ATTRIBUTE nodes enter the fingerprint; rocksdb moved only in its resolution counts (four more external, four fewer internal), and leveldb did not move.
+
 PHP and the C family resolve through a symbol table, so their fingerprints
 record `degraded` and — more usefully — the internal/external split. The C
 family's `unresolved` is always 0 by construction: every miss becomes an
@@ -106,3 +110,6 @@ callix now says more about the same code. The alignment is described in
 What this record is for: if a future change makes Python or TypeScript diverge
 from graphlens beyond the DEPENDENCY nodes, that is a regression, and this
 table is the evidence of what the state was before it.
+
+Pins re-recorded after namespace-wrapped `.h` headers and `.h` files outside every C root went to C++ (issue #49).
+Pins re-recorded for issue #56 (CPP-11): classes defined in function bodies are now CLASS nodes (`Version::Get()::State`), and `class Outer::Inner` names `Inner`.

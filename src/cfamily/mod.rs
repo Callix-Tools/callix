@@ -35,6 +35,7 @@ mod adapter;
 mod boundary;
 mod deps;
 mod detector;
+mod erase;
 mod headers;
 mod resolver;
 mod visitor;

@@ -22,12 +22,12 @@
       "span": null
     },
     {
-      "file_path": "include/engine.hpp",
-      "id": "64e96181de5fbdf2",
+      "file_path": "include/clamp.h",
+      "id": "8778f13c05bd4028",
       "kind": "file",
       "metadata": {},
-      "name": "engine.hpp",
-      "qualified_name": "include/engine.hpp",
+      "name": "clamp.h",
+      "qualified_name": "include/clamp.h",
       "span": null
     },
     {
@@ -40,12 +40,39 @@
       "span": null
     },
     {
-      "file_path": "src/engine.cpp",
-      "id": "f701dbf6f3d7f1ac",
+      "file_path": "include/engine.hpp",
+      "id": "64e96181de5fbdf2",
       "kind": "file",
       "metadata": {},
-      "name": "engine.cpp",
-      "qualified_name": "src/engine.cpp",
+      "name": "engine.hpp",
+      "qualified_name": "include/engine.hpp",
+      "span": null
+    },
+    {
+      "file_path": "include/export.hpp",
+      "id": "0a115c9b823654ad",
+      "kind": "file",
+      "metadata": {},
+      "name": "export.hpp",
+      "qualified_name": "include/export.hpp",
+      "span": null
+    },
+    {
+      "file_path": "include/visibility.h",
+      "id": "881faa32238b4356",
+      "kind": "file",
+      "metadata": {},
+      "name": "visibility.h",
+      "qualified_name": "include/visibility.h",
+      "span": null
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "7ae9f4431f656f64",
+      "kind": "file",
+      "metadata": {},
+      "name": "clamp.cpp",
+      "qualified_name": "src/clamp.cpp",
       "span": null
     },
     {
@@ -58,6 +85,24 @@
       "span": null
     },
     {
+      "file_path": "src/engine.cpp",
+      "id": "f701dbf6f3d7f1ac",
+      "kind": "file",
+      "metadata": {},
+      "name": "engine.cpp",
+      "qualified_name": "src/engine.cpp",
+      "span": null
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "e267e5d9477ca25d",
+      "kind": "file",
+      "metadata": {},
+      "name": "local.cpp",
+      "qualified_name": "src/local.cpp",
+      "span": null
+    },
+    {
       "file_path": "src/main.cpp",
       "id": "76a741d010b73d4f",
       "kind": "file",
@@ -65,6 +110,62 @@
       "name": "main.cpp",
       "qualified_name": "src/main.cpp",
       "span": null
+    },
+    {
+      "file_path": "include/clamp.h",
+      "id": "081767f040948df3",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            3,
+            12,
+            3,
+            17
+          ]
+        },
+        "return_type": "int",
+        "signature": "(int)"
+      },
+      "name": "clamp",
+      "qualified_name": "fixture::clamp(int)",
+      "span": [
+        3,
+        1,
+        3,
+        50
+      ]
+    },
+    {
+      "file_path": "include/clamp.h",
+      "id": "f395a863c9be4c9b",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "int",
+        "name_span": {
+          "__span__": [
+            3,
+            22,
+            3,
+            23
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::clamp(int).v",
+      "span": [
+        3,
+        18,
+        3,
+        23
+      ]
     },
     {
       "file_path": "include/engine.hpp",
@@ -598,6 +699,14 @@
       "metadata": {
         "include_path": "string",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -628,6 +737,14 @@
       "metadata": {
         "include_path": "vector",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -652,11 +769,251 @@
       "span": null
     },
     {
+      "file_path": "include/export.hpp",
+      "id": "68f9d0ae6d2b2c4d",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            10,
+            22,
+            10,
+            30
+          ]
+        },
+        "record_kind": "class"
+      },
+      "name": "Exported",
+      "qualified_name": "fixture::Exported",
+      "span": [
+        10,
+        1,
+        17,
+        2
+      ]
+    },
+    {
+      "file_path": "include/export.hpp",
+      "id": "ff6bae9665100aba",
+      "kind": "method",
+      "metadata": {
+        "access": "public",
+        "declared_in": [],
+        "is_definition": false,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            12,
+            9,
+            12,
+            13
+          ]
+        },
+        "return_type": "int",
+        "signature": "()"
+      },
+      "name": "bump",
+      "qualified_name": "fixture::Exported::bump()",
+      "span": [
+        12,
+        5,
+        12,
+        16
+      ]
+    },
+    {
+      "file_path": "include/export.hpp",
+      "id": "5ae189e1d1b0258f",
+      "kind": "attribute",
+      "metadata": {
+        "access": "private",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            15,
+            9,
+            15,
+            15
+          ]
+        }
+      },
+      "name": "count_",
+      "qualified_name": "fixture::Exported::count_",
+      "span": [
+        15,
+        5,
+        15,
+        42
+      ]
+    },
+    {
+      "file_path": "include/export.hpp",
+      "id": "1b41ad014be71d85",
+      "kind": "attribute",
+      "metadata": {
+        "access": "private",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            16,
+            9,
+            16,
+            14
+          ]
+        }
+      },
+      "name": "lock_",
+      "qualified_name": "fixture::Exported::lock_",
+      "span": [
+        16,
+        5,
+        16,
+        15
+      ]
+    },
+    {
+      "file_path": "include/export.hpp",
+      "id": "0844248b71c6614c",
+      "kind": "import",
+      "metadata": {
+        "include_path": "visibility.h",
+        "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            24
+          ]
+        },
+        "origin": "internal",
+        "resolved_path": "include/visibility.h"
+      },
+      "name": "visibility.h",
+      "qualified_name": "include/export.hpp::visibility.h",
+      "span": [
+        4,
+        1,
+        5,
+        1
+      ]
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "c90db5fcbf97b687",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            4,
+            5,
+            4,
+            16
+          ]
+        },
+        "return_type": "int",
+        "signature": "(int)"
+      },
+      "name": "clamp_twice",
+      "qualified_name": "fixture::clamp_twice(int)",
+      "span": [
+        4,
+        1,
+        4,
+        51
+      ]
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "b4b4e5c80daa3bfb",
+      "kind": "parameter",
+      "metadata": {
+        "annotation": "int",
+        "name_span": {
+          "__span__": [
+            4,
+            21,
+            4,
+            22
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::clamp_twice(int).v",
+      "span": [
+        4,
+        17,
+        4,
+        22
+      ]
+    },
+    {
+      "file_path": "src/clamp.cpp",
+      "id": "70e0f431b3f68d8d",
+      "kind": "import",
+      "metadata": {
+        "include_path": "clamp.h",
+        "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            19
+          ]
+        },
+        "origin": "internal",
+        "resolved_path": "include/clamp.h"
+      },
+      "name": "clamp.h",
+      "qualified_name": "src/clamp.cpp::clamp.h",
+      "span": [
+        1,
+        1,
+        2,
+        1
+      ]
+    },
+    {
       "file_path": "src/engine.cpp",
       "id": "4bd9dbe87b0cba7d",
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                33,
+                17,
+                33,
+                25
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -691,6 +1048,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                41,
+                14,
+                41,
+                20
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -749,6 +1119,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                44,
+                10,
+                44,
+                14
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -784,6 +1167,19 @@
       "kind": "method",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                45,
+                10,
+                45,
+                14
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -842,6 +1238,19 @@
       "kind": "function",
       "metadata": {
         "access": "",
+        "declared_at": [
+          {
+            "file": "include/engine.hpp",
+            "span": {
+              "__span__": [
+                54,
+                13,
+                54,
+                22
+              ]
+            }
+          }
+        ],
         "declared_in": [
           "include/engine.hpp"
         ],
@@ -901,6 +1310,14 @@
       "metadata": {
         "include_path": "engine.hpp",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            22
+          ]
+        },
         "origin": "internal",
         "resolved_path": "include/engine.hpp"
       },
@@ -911,6 +1328,245 @@
         1,
         2,
         1
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "3c91bd352f5ceefc",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            4,
+            5,
+            4,
+            16
+          ]
+        },
+        "return_type": "int",
+        "signature": "()"
+      },
+      "name": "local_total",
+      "qualified_name": "fixture::local_total()",
+      "span": [
+        4,
+        1,
+        13,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "07cb663d18215f86",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            15
+          ]
+        },
+        "record_kind": "struct"
+      },
+      "name": "Tally",
+      "qualified_name": "fixture::local_total()::Tally",
+      "span": [
+        5,
+        3,
+        9,
+        4
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "8ecd2a61828fb697",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            6,
+            9,
+            6,
+            14
+          ]
+        }
+      },
+      "name": "count",
+      "qualified_name": "fixture::local_total()::Tally::count",
+      "span": [
+        6,
+        5,
+        6,
+        15
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "f4994a61ba520604",
+      "kind": "method",
+      "metadata": {
+        "access": "public",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            7,
+            5,
+            7,
+            10
+          ]
+        },
+        "return_type": "",
+        "signature": "()"
+      },
+      "name": "Tally",
+      "qualified_name": "fixture::local_total()::Tally::Tally()",
+      "span": [
+        7,
+        5,
+        7,
+        26
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "90e76ea154ee9f88",
+      "kind": "method",
+      "metadata": {
+        "access": "public",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            8,
+            10,
+            8,
+            14
+          ]
+        },
+        "return_type": "void",
+        "signature": "()"
+      },
+      "name": "bump",
+      "qualified_name": "fixture::local_total()::Tally::bump()",
+      "span": [
+        8,
+        5,
+        8,
+        32
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "e52943ea70eeaea2",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            15,
+            7,
+            15,
+            12
+          ]
+        },
+        "record_kind": "class"
+      },
+      "name": "Outer",
+      "qualified_name": "fixture::Outer",
+      "span": [
+        15,
+        1,
+        18,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "cc43aa61291696b9",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            20,
+            14,
+            20,
+            19
+          ]
+        },
+        "record_kind": "class"
+      },
+      "name": "Inner",
+      "qualified_name": "fixture::Outer::Inner",
+      "span": [
+        20,
+        1,
+        23,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "3f84e2b1857a7fe0",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            22,
+            7,
+            22,
+            8
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::Outer::Inner::v",
+      "span": [
+        22,
+        3,
+        22,
+        9
       ]
     },
     {
@@ -1032,11 +1688,51 @@
     },
     {
       "file_path": "src/main.cpp",
+      "id": "856dc171b20884b2",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            40,
+            5,
+            40,
+            23
+          ]
+        },
+        "return_type": "int",
+        "signature": "()"
+      },
+      "name": "fixture_use_export",
+      "qualified_name": "fixture_use_export()",
+      "span": [
+        40,
+        1,
+        44,
+        2
+      ]
+    },
+    {
+      "file_path": "src/main.cpp",
       "id": "91f6f63bd07d6dc4",
       "kind": "import",
       "metadata": {
         "include_path": "curl/curl.h",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            23
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1067,6 +1763,14 @@
       "metadata": {
         "include_path": "iostream",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            3,
+            10,
+            3,
+            20
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1097,6 +1801,14 @@
       "metadata": {
         "include_path": "string",
         "include_style": "system",
+        "name_span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        },
         "origin": "unknown",
         "resolved_path": null
       },
@@ -1116,6 +1828,14 @@
       "metadata": {
         "include_path": "engine.hpp",
         "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            6,
+            10,
+            6,
+            22
+          ]
+        },
         "origin": "internal",
         "resolved_path": "include/engine.hpp"
       },
@@ -1125,6 +1845,33 @@
         6,
         1,
         7,
+        1
+      ]
+    },
+    {
+      "file_path": "src/main.cpp",
+      "id": "1316ed65e2c723d3",
+      "kind": "import",
+      "metadata": {
+        "include_path": "export.hpp",
+        "include_style": "quoted",
+        "name_span": {
+          "__span__": [
+            38,
+            10,
+            38,
+            22
+          ]
+        },
+        "origin": "internal",
+        "resolved_path": "include/export.hpp"
+      },
+      "name": "export.hpp",
+      "qualified_name": "src/main.cpp::export.hpp",
+      "span": [
+        38,
+        1,
+        39,
         1
       ]
     },
@@ -1158,7 +1905,25 @@
       "kind": "contains",
       "metadata": {},
       "source_id": "ab20b7f46e68ccfd",
+      "target_id": "8778f13c05bd4028"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
       "target_id": "64e96181de5fbdf2"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
+      "target_id": "0a115c9b823654ad"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "ab20b7f46e68ccfd",
+      "target_id": "881faa32238b4356"
     },
     {
       "kind": "contains",
@@ -1170,13 +1935,37 @@
       "kind": "contains",
       "metadata": {},
       "source_id": "468d1a6442363500",
+      "target_id": "7ae9f4431f656f64"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
       "target_id": "f701dbf6f3d7f1ac"
     },
     {
       "kind": "contains",
       "metadata": {},
       "source_id": "468d1a6442363500",
+      "target_id": "e267e5d9477ca25d"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
       "target_id": "76a741d010b73d4f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "8778f13c05bd4028",
+      "target_id": "081767f040948df3"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "081767f040948df3",
+      "target_id": "f395a863c9be4c9b"
     },
     {
       "kind": "declares",
@@ -1438,7 +2227,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        }
+      },
       "source_id": "3206543f2c859376",
       "target_id": "1fc5f2603f27d122"
     },
@@ -1456,9 +2254,126 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            18
+          ]
+        }
+      },
       "source_id": "86e5d23f084d37ae",
       "target_id": "e0604723efa962fe"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "68f9d0ae6d2b2c4d"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "ff6bae9665100aba"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "68f9d0ae6d2b2c4d",
+      "target_id": "ff6bae9665100aba"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "5ae189e1d1b0258f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "68f9d0ae6d2b2c4d",
+      "target_id": "5ae189e1d1b0258f"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "1b41ad014be71d85"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "68f9d0ae6d2b2c4d",
+      "target_id": "1b41ad014be71d85"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "0844248b71c6614c"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "0a115c9b823654ad",
+      "target_id": "881faa32238b4356"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            24
+          ]
+        }
+      },
+      "source_id": "0844248b71c6614c",
+      "target_id": "881faa32238b4356"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "c90db5fcbf97b687"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "c90db5fcbf97b687",
+      "target_id": "b4b4e5c80daa3bfb"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "70e0f431b3f68d8d"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "7ae9f4431f656f64",
+      "target_id": "8778f13c05bd4028"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            19
+          ]
+        }
+      },
+      "source_id": "70e0f431b3f68d8d",
+      "target_id": "8778f13c05bd4028"
     },
     {
       "kind": "declares",
@@ -1504,9 +2419,96 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            22
+          ]
+        }
+      },
       "source_id": "0b34ed338f27e9dd",
       "target_id": "64e96181de5fbdf2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "3c91bd352f5ceefc"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "07cb663d18215f86"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "3c91bd352f5ceefc",
+      "target_id": "07cb663d18215f86"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "8ecd2a61828fb697"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "8ecd2a61828fb697"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "f4994a61ba520604"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "f4994a61ba520604"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "90e76ea154ee9f88"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "90e76ea154ee9f88"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "e52943ea70eeaea2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "cc43aa61291696b9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "3f84e2b1857a7fe0"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cc43aa61291696b9",
+      "target_id": "3f84e2b1857a7fe0"
     },
     {
       "kind": "declares",
@@ -1536,6 +2538,12 @@
       "kind": "declares",
       "metadata": {},
       "source_id": "76a741d010b73d4f",
+      "target_id": "856dc171b20884b2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "76a741d010b73d4f",
       "target_id": "91f6f63bd07d6dc4"
     },
     {
@@ -1546,7 +2554,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            1,
+            10,
+            1,
+            23
+          ]
+        }
+      },
       "source_id": "91f6f63bd07d6dc4",
       "target_id": "d5b24bcb704d333f"
     },
@@ -1564,7 +2581,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            3,
+            10,
+            3,
+            20
+          ]
+        }
+      },
       "source_id": "eb1153ae14e4f102",
       "target_id": "320ec0f3825e34f0"
     },
@@ -1582,7 +2608,16 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            4,
+            10,
+            4,
+            18
+          ]
+        }
+      },
       "source_id": "760d52779cbdb268",
       "target_id": "1fc5f2603f27d122"
     },
@@ -1600,9 +2635,45 @@
     },
     {
       "kind": "resolves_to",
-      "metadata": {},
+      "metadata": {
+        "span": {
+          "__span__": [
+            6,
+            10,
+            6,
+            22
+          ]
+        }
+      },
       "source_id": "8b3ea77fd98c5353",
       "target_id": "64e96181de5fbdf2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "76a741d010b73d4f",
+      "target_id": "1316ed65e2c723d3"
+    },
+    {
+      "kind": "imports",
+      "metadata": {},
+      "source_id": "76a741d010b73d4f",
+      "target_id": "0a115c9b823654ad"
+    },
+    {
+      "kind": "resolves_to",
+      "metadata": {
+        "span": {
+          "__span__": [
+            38,
+            10,
+            38,
+            22
+          ]
+        }
+      },
+      "source_id": "1316ed65e2c723d3",
+      "target_id": "0a115c9b823654ad"
     },
     {
       "kind": "consumes",

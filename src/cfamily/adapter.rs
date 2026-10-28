@@ -3,7 +3,8 @@
 //! Two `#[pyclass]`es over one implementation, each pinning a [`Dialect`]. A
 //! mixed repository is analysed twice and the graphs merged; `headers::claims`
 //! guarantees each file, including each ambiguous `.h`, is claimed by exactly
-//! one of them, so the merge cannot collide.
+//! one of them, so the merge cannot collide. A `.h` that probes as C is C's only
+//! where a C root reads it ([`CReach`]); otherwise it is C++'s.
 //!
 //! `analyze` runs FOUR passes rather than the family's usual three, and the
 //! extra one is the point of the file:
@@ -20,6 +21,8 @@
 //! 4. **Resolve, then boundaries.** In that order, so BOUNDARY nodes land after
 //!    resolver edges.
 
+use std::borrow::Cow;
+use std::cell::OnceCell;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -43,24 +46,31 @@ use crate::occurrence::OccurrenceRef;
 use crate::python::{apply_boundaries_rust, apply_resolutions_rust};
 use crate::relation::{Relation, RelationKind};
 use crate::resolver_slot::{ResolverSlot, custom_prepare, custom_resolve_all, custom_status};
-use crate::roots::filter_nested_root_files;
 use crate::span_index::SpanIndex;
 use crate::status::ResolverStatus;
 
 use super::boundary::extract_boundaries;
 use super::deps::dependencies;
+use super::erase;
 use super::detector::{
-    C_EXTENSIONS, CPP_EXTENSIONS, c_roots, collect_c_files, collect_cpp_files, cpp_roots, is_c,
+    C_EXTENSIONS, CPP_EXTENSIONS, collect_c_files, collect_cpp_files, family_root_files, is_c,
     is_cpp, project_name,
 };
-use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
-use super::resolver::{CFamilyIndex, Outcome, SymbolTable};
+use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include, split_member};
+use super::resolver::{CFamilyIndex, Outcome, SymbolTable, type_key};
 use super::visitor::{
-    CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes, read_file,
+    CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes,
+    read_file,
 };
 use super::{Dialect, parse_tree};
 
 type FileBoundaries = (String, String, Vec<BoundaryRef>);
+/// A file read in pass 1: its path, its relative path, the bytes to parse, and
+/// the raw bytes when erasure changed them.
+type ErasedSource = (PathBuf, String, Vec<u8>, Option<Vec<u8>>);
+/// What pass 3 needs of a read file's bytes: the parsed text and the raw bytes
+/// when they differ.
+type ReadSource = (Vec<u8>, Option<Vec<u8>>);
 
 /// One file, carried between the four passes.
 struct Analysed {
@@ -75,15 +85,64 @@ struct Analysed {
     included: Vec<String>,
 }
 
+/// Which files the C adapter reads, as the C++ adapter needs to know it.
+///
+/// A `.h` that probes as C belongs to C only if a C root reads it; otherwise the
+/// C++ adapter takes it. Both adapters decide from the same discovery
+/// ([`family_root_files`] for C), so a header is still claimed by exactly one.
+enum CReach {
+    /// This IS the C adapter walking its own discovered files: it reads them all.
+    Itself,
+    /// Ask the C discovery, lazily (a walk of the tree), once per analysis.
+    Discovered {
+        project_root: PathBuf,
+        files: OnceCell<HashSet<PathBuf>>,
+    },
+}
+
+impl CReach {
+    fn new(dialect: Dialect, project_root: &Path, explicit_files: bool) -> Self {
+        if dialect == Dialect::C && !explicit_files {
+            Self::Itself
+        } else {
+            Self::Discovered { project_root: project_root.to_path_buf(), files: OnceCell::new() }
+        }
+    }
+
+    fn reads(&self, path: &Path) -> bool {
+        match self {
+            Self::Itself => true,
+            Self::Discovered { project_root, files } => {
+                let set = files.get_or_init(|| {
+                    family_root_files(project_root, Dialect::C)
+                        .into_iter()
+                        .flat_map(|(_, found)| found)
+                        .map(|file| file.canonicalize().unwrap_or(file))
+                        .collect()
+                });
+                let key = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+                set.contains(&key)
+            }
+        }
+    }
+}
+
 /// Reads a file and decides whether this dialect owns it.
 ///
-/// Returns `None` for a file the other adapter claims, which is how an
-/// ambiguous `.h` ends up in exactly one graph.
-fn owned_source(dialect: Dialect, path: &Path) -> PyResult<Option<Vec<u8>>> {
+/// Returns `None` for an unreadable file. The flag is false for a file the
+/// other adapter claims, which is how an ambiguous `.h` ends up in exactly one
+/// graph; such a file is still read, for its macros only. A `.h` the probe gives
+/// to C is owned by C++ when `reach` says no C root reads it.
+fn read_source(
+    dialect: Dialect,
+    path: &Path,
+    reach: &CReach,
+) -> PyResult<Option<(Vec<u8>, bool)>> {
     let Ok(source) = std::fs::read(path) else {
         return Ok(None);
     };
-    Ok(claims(dialect, path, &source)?.then_some(source))
+    let owned = claims(dialect, path, &source, || reach.reads(path))?;
+    Ok(Some((source, owned)))
 }
 
 fn relative_to(file: &Path, project_root: &Path, lang_root: &Path) -> String {
@@ -213,6 +272,10 @@ fn ensure_external_symbol(
     Ok(id)
 }
 
+fn is_callable(kind: NodeKind) -> bool {
+    matches!(kind, NodeKind::Function | NodeKind::Method)
+}
+
 /// Use-site role → edge kind. Identical to the other adapters'.
 fn role_to_kind(role: &str) -> Option<RelationKind> {
     Some(match role {
@@ -235,42 +298,91 @@ fn build_root(
     files: &[PathBuf],
     declared: Option<HashSet<String>>,
     extra_extractors: Option<&Py<PyAny>>,
+    reach: &CReach,
 ) -> PyResult<(String, Vec<Analysed>)> {
     let project = project_name(lang_root);
 
-    // Pass 1 — the scope names of every file, before anything is read in
-    // earnest. `records` is what tells `Engine::ping` from `fixture::ping`.
-    let mut records: HashSet<String> = HashSet::new();
+    // Pass 1a — the macros of every file, on the RAW bytes (ownership was
+    // decided on them too: a blanked C++ class head can parse as K&R C).
     let mut macros = MacroTable::new();
-    let mut sources: Vec<(PathBuf, String, Vec<u8>)> = Vec::new();
+    // Macros of headers the OTHER dialect owns. A header made of nothing but
+    // `#define`s parses cleanly as C, so it probes as C (leveldb's export.h and
+    // port/thread_annotations.h) while `class LEVELDB_EXPORT DB` is C++. Such a
+    // file is read for erasure only: no FILE node, no facts, not part of the
+    // expansion table, so ownership (one adapter per `.h`) is unchanged.
+    let mut foreign = MacroTable::new();
+    let mut raw_sources: Vec<(PathBuf, String, Vec<u8>, Vec<String>)> = Vec::new();
     for file in files {
-        let Some(source) = owned_source(dialect, file)? else {
+        let Some((source, owned)) = read_source(dialect, file, reach)? else {
             continue;
         };
+        if !owned {
+            if source.windows(7).any(|w| w == b"#define") {
+                let tree = parse_tree(&source, dialect)?;
+                declared_macros(tree.root_node(), &source, &mut foreign);
+            }
+            continue;
+        }
         let tree = parse_tree(&source, dialect)?;
         let scopes = declared_scopes(tree.root_node(), &source);
         declared_macros(tree.root_node(), &source, &mut macros);
-        // Only `records` is wanted: it is what classifies `X::y` as a method
-        // rather than a namespaced function. `scopes.namespaces` is dropped
-        // because MODULE is the directory here; see below.
-        records.extend(scopes.records);
         let file_rel = relative_to(file, project_root, lang_root);
-        sources.push((file.clone(), file_rel, source));
+        raw_sources.push((file.clone(), file_rel, source, scopes.records));
+    }
+
+    // Pass 1b — erase the project's annotation macros (empty, attribute or
+    // storage-keyword bodies) with same-length spaces, so `class API Foo {}`
+    // and `int x GUARDED_BY(m);` parse as written. A file that changed is
+    // parsed again for its scope names. `records` is what tells
+    // `Engine::ping` from `fixture::ping`; `scopes.namespaces` is dropped
+    // because MODULE is the directory here; see below.
+    let erasable = if foreign.is_empty() {
+        erase::erasable(&macros)
+    } else {
+        erase::erasable_in(&[&macros, &foreign])
+    };
+    let mut records: HashSet<String> = HashSet::new();
+    // (file, relative path, text to parse, the raw bytes when they differ)
+    let mut sources: Vec<ErasedSource> = Vec::new();
+    for (file, file_rel, raw, raw_records) in raw_sources {
+        let blanked = match erase::blank(&raw, &erasable) {
+            Cow::Borrowed(_) => None,
+            Cow::Owned(text) => Some(text),
+        };
+        match blanked {
+            None => {
+                records.extend(raw_records);
+                sources.push((file, file_rel, raw, None));
+            }
+            Some(text) => {
+                let tree = parse_tree(&text, dialect)?;
+                records.extend(declared_scopes(tree.root_node(), &text).records);
+                sources.push((file, file_rel, text, Some(raw)));
+            }
+        }
     }
 
     // Pass 2 — read every file, and record every declaring site before the
     // first node exists.
     let mut ledger = DeclLedger::new();
-    let mut read: Vec<(String, String, FileFacts, Vec<u8>)> = Vec::with_capacity(sources.len());
-    for (file, file_rel, source) in &sources {
+    let mut read: Vec<(String, String, FileFacts, ReadSource)> = Vec::with_capacity(sources.len());
+    for (file, file_rel, source, raw) in &sources {
         let tree = parse_tree(source, dialect)?;
-        let facts = read_file(tree.root_node(), source, dialect, file_rel, &records, &macros);
+        let facts = read_file(
+            tree.root_node(),
+            source,
+            dialect,
+            file_rel,
+            &records,
+            &macros,
+            &erasable,
+        );
         facts.survey(&mut ledger);
         read.push((
             file_rel.clone(),
             file.to_string_lossy().into_owned(),
             facts,
-            source.clone(),
+            (source.clone(), raw.clone()),
         ));
     }
 
@@ -333,13 +445,15 @@ fn build_root(
     // Pass 3 — emit.
     let emitter = CFamilyEmitter::new(py, &project, &ledger, &search_dirs, &known_files);
     let mut analysed = Vec::with_capacity(read.len());
-    for (file_rel, file_abs, facts, source) in read {
+    for (file_rel, file_abs, facts, (source, raw)) in read {
         let file_id = file_ids[&file_rel].clone();
         emitter.emit(graph, &facts, &file_id)?;
 
         let tree = parse_tree(&source, dialect)?;
         let mut boundaries = extract_boundaries(tree.root_node(), &source, dialect);
-        boundaries.extend(run_extractors(py, extra_extractors, &source, &file_rel)?);
+        // User extractors see the file as written, not with its macros erased.
+        let raw_text = raw.as_deref().unwrap_or(source.as_slice());
+        boundaries.extend(run_extractors(py, extra_extractors, raw_text, &file_rel)?);
 
         // The files this one includes, as the project-relative paths their
         // declarations are filed under; an include that leaves the project
@@ -389,6 +503,10 @@ fn resolve_with_table(
     // A class's fields in declaration order, for the positional elements of an
     // initialiser: `struct ops o = { g };` fills the first field.
     let mut fields_by_class: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+    // Classes defined in a function body (`run()::State`) and, inside them, their
+    // nested classes. Declarations arrive in source order, so a class precedes its
+    // nested classes.
+    let mut local_classes: HashSet<String> = HashSet::new();
 
     for file in analysed {
         for decl in &file.facts.declarations {
@@ -406,31 +524,43 @@ fn resolve_with_table(
             {
                 fields_by_class.entry(qualified_name.clone()).or_default().push(decl.qualified_name.clone());
             }
-            index.declare(
+            let value_type = if decl.kind == NodeKind::Variable { type_key(&decl.type_text) } else { None };
+            index.declare_typed(
                 &decl.name,
                 &decl.qualified_name,
                 decl.kind,
                 &file.file_rel,
                 decl.linkage == Linkage::Internal,
+                value_type,
             );
+            // A field or file-scope variable that holds an object: the operand of `a = b`.
+            if decl.holds_object && matches!(decl.kind, NodeKind::Attribute | NodeKind::Variable) {
+                index.declare_object(&decl.qualified_name);
+            }
             // Classes, their members and fields: what a receiver's type is asked.
-            // `F::operator()()`: the call operator's own parentheses are not the signature's.
-            let without_signature = match decl.qualified_name.find("operator()") {
-                Some(at) => &decl.qualified_name[..at + "operator()".len()],
-                None => decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name),
-            };
             match decl.kind {
-                NodeKind::Class => index.declare_class(&decl.qualified_name),
+                NodeKind::Class => {
+                    index.declare_class(&decl.qualified_name);
+                    // A class owned by a callable, or by a class that is itself local.
+                    if let Owner::Decl { qualified_name: owner_name, kind: owner_kind } = &decl.owner
+                        && (matches!(owner_kind, NodeKind::Function | NodeKind::Method)
+                            || (*owner_kind == NodeKind::Class && local_classes.contains(owner_name)))
+                    {
+                        local_classes.insert(decl.qualified_name.clone());
+                        index.declare_local_class(&decl.qualified_name);
+                    }
+                }
                 NodeKind::Method => {
-                    if let Some((class, member)) = without_signature.rsplit_once("::") {
+                    if let Some((class, member)) = split_member(&decl.qualified_name) {
                         index.declare_member(class, member, &decl.qualified_name, decl.kind);
                     }
                 }
                 NodeKind::Attribute => {
-                    if let Some((class, field)) = without_signature.rsplit_once("::") {
+                    if let Some((class, field)) = split_member(&decl.qualified_name) {
                         index.declare_field(class, field, &decl.qualified_name, &decl.type_text);
                     }
                 }
+                NodeKind::TypeAlias => index.declare_alias(&decl.qualified_name, &decl.type_text),
                 _ => {}
             }
         }
@@ -458,7 +588,7 @@ fn resolve_with_table(
             // it is no edge of its own. Only a function is worth following.
             if occurrence.role == "alias" {
                 if let Some((qualified_name, NodeKind::Function | NodeKind::Method, _)) =
-                    index.lookup(&occurrence.name, &file.file_rel)
+                    index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable)
                 {
                     let target = node_id(project, &qualified_name, NodeKind::Function.as_str());
                     let target = if graph.has_node(&target) {
@@ -481,7 +611,7 @@ fn resolve_with_table(
                         };
                         match local {
                             Some((qualified, kind)) => Some(node_id(project, qualified, kind.as_str())),
-                            None => match index.lookup(name, &file.file_rel) {
+                            None => match index.lookup_kinds(name, &file.file_rel, |k| k == NodeKind::Variable) {
                                 Some((qualified, NodeKind::Variable, _)) => {
                                     Some(node_id(project, &qualified, NodeKind::Variable.as_str()))
                                 }
@@ -503,7 +633,7 @@ fn resolve_with_table(
             // `return g;` and `pick()(x)`: what a function returns, and a call of it.
             if matches!(occurrence.role, "returned" | "result_call") {
                 if let Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) =
-                    index.lookup(&occurrence.name, &file.file_rel)
+                    index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable)
                 {
                     let target = node_id(project, &qualified_name, kind.as_str());
                     let owner = enclosing_id(project, file, &occurrence.owner);
@@ -532,7 +662,7 @@ fn resolve_with_table(
                 };
                 let resolved = match own_parameter {
                     Some((parameter, kind)) => Some((parameter.clone(), *kind)),
-                    None => match index.lookup(&occurrence.name, &file.file_rel) {
+                    None => match index.lookup_kinds(&occurrence.name, &file.file_rel, is_callable) {
                         Some((qualified_name, kind @ (NodeKind::Function | NodeKind::Method), _)) => {
                             Some((qualified_name, kind))
                         }
@@ -572,9 +702,70 @@ fn resolve_with_table(
                 continue;
             }
 
+            // The scope the use-site sits in: a local class is visible from there.
+            let within: &str = match &occurrence.owner {
+                Owner::Decl { qualified_name, .. } => qualified_name.as_str(),
+                Owner::File => "",
+            };
+
+            // A type name (`type_use`) is asked of the class/typedef table only: a
+            // function or variable of the same name is not what a type position names.
+            // A speculative miss (a namespace component, `sizeof(variable)`) writes
+            // nothing; any other miss is an external symbol keyed by the site.
+            if occurrence.site.type_use {
+                let answer = index.resolve_type(
+                    &occurrence.name,
+                    &occurrence.site.qualifier,
+                    occurrence.site.tag,
+                    &file.file_rel,
+                    within,
+                );
+                match answer {
+                    Some((qualified_name, target_kind, ambiguous)) => {
+                        let target_id = node_id(project, &qualified_name, target_kind.as_str());
+                        if !graph.has_node(&target_id) {
+                            metrics.unresolved += 1;
+                            continue;
+                        }
+                        // `typedef S S;` must not make a node refer to itself.
+                        if target_id == enclosing_id {
+                            metrics.queries -= 1;
+                            continue;
+                        }
+                        metrics.resolved += 1;
+                        metrics.internal += 1;
+                        push_reference(
+                            py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                            Resolution::Name, ambiguous,
+                        )?;
+                    }
+                    None if occurrence.site.speculative => {
+                        metrics.queries -= 1;
+                    }
+                    None => {
+                        let key = format!(
+                            "{}@{}:{}:{}",
+                            occurrence.name,
+                            file.file_rel,
+                            occurrence.span.start_line,
+                            occurrence.span.start_col
+                        );
+                        let target_id = ensure_external_symbol(py, graph, project, &key, "unknown")?;
+                        metrics.resolved += 1;
+                        metrics.external += 1;
+                        push_reference(
+                            py, graph, enclosing_id, target_id, kind, occurrence, &file.file_rel,
+                            Resolution::External, false,
+                        )?;
+                    }
+                }
+                continue;
+            }
+
             // A bare name that is a parameter of the function it is written in means
             // that parameter, not whichever one of the project carries the name.
             let bare = occurrence.site.receiver_name.is_none()
+                && !occurrence.site.member
                 && occurrence.site.qualifier.is_empty()
                 && !occurrence.site.constructs
                 && !occurrence.site.in_initializer_list;
@@ -600,8 +791,8 @@ fn resolve_with_table(
             }
             // A call, a construction and a base in an initialiser list are asked of
             // the class table with everything the site says; the rest by name.
-            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list {
-                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel) {
+            let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list || occurrence.site.member {
+                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel, within) {
                     Outcome::Found { qualified_name, kind, ambiguous } => Some(Some((qualified_name, kind, ambiguous))),
                     // Nothing the project declares: a library, a built-in. A
                     // construction of one is no edge at all; a call is an external one.
@@ -622,7 +813,14 @@ fn resolve_with_table(
             };
             let answer = match asked {
                 Some(answer) => answer,
-                None => index.lookup(&occurrence.name, &file.file_rel),
+                // A type position names a class or a typedef; anything else that is
+                // looked up by name (a using-declaration) is never a field.
+                None if matches!(occurrence.role, "annotation" | "base") => index.lookup_kinds(
+                    &occurrence.name,
+                    &file.file_rel,
+                    |k| matches!(k, NodeKind::Class | NodeKind::TypeAlias),
+                ),
+                None => index.lookup_kinds(&occurrence.name, &file.file_rel, |k| k != NodeKind::Attribute),
             };
             // A base in an initialiser list is written like a field and is a call of
             // the base's constructor.
@@ -769,24 +967,10 @@ fn analyze_family(
 ) -> PyResult<Graph> {
     let project_root = project_root.canonicalize().unwrap_or(project_root);
 
+    let reach = CReach::new(dialect, &project_root, files.is_some());
     let root_files: Vec<(PathBuf, Vec<PathBuf>)> = match files {
         Some(files) => vec![(project_root.clone(), files)],
-        None => {
-            let roots = match dialect {
-                Dialect::C => c_roots(&project_root),
-                Dialect::Cpp => cpp_roots(&project_root),
-            };
-            roots
-                .iter()
-                .map(|root| {
-                    let collected = match dialect {
-                        Dialect::C => collect_c_files(root),
-                        Dialect::Cpp => collect_cpp_files(root),
-                    };
-                    (root.clone(), filter_nested_root_files(collected, root, &roots))
-                })
-                .collect()
-        }
+        None => family_root_files(&project_root, dialect),
     };
 
     let mut graph = Graph::empty(py);
@@ -802,6 +986,7 @@ fn analyze_family(
             root_files,
             custom_declared(py, dep_parsers, lang_root)?,
             extractors,
+            &reach,
         )?);
     }
 

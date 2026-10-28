@@ -54,24 +54,55 @@ impl Table {
     }
 }
 
-/// The spans of a node's `declared_at` list.
+/// The sites of a node's `declared_at` list, each with the file it is in.
 #[cfg(feature = "python")]
-fn declared_spans(value: &Bound<'_, PyAny>) -> Vec<Span> {
-    value.extract::<Vec<Span>>().unwrap_or_default()
+fn declared_sites(value: &Bound<'_, PyAny>, own_file: &str) -> Vec<(String, Span)> {
+    use crate::py::types::{PyDict, PyList};
+    let Ok(items) = value.cast::<PyList>() else {
+        return Vec::new();
+    };
+    let mut sites = Vec::new();
+    for item in items.iter() {
+        if let Ok(span) = item.extract::<Span>() {
+            // Python and TypeScript: a bare span in the node's own file.
+            sites.push((own_file.to_owned(), span));
+        } else if let Ok(entry) = item.cast::<PyDict>() {
+            // The C family: {"file": ..., "span": ...}.
+            let file = entry
+                .get_item("file")
+                .ok()
+                .flatten()
+                .and_then(|v| v.extract::<String>().ok());
+            let span = entry
+                .get_item("span")
+                .ok()
+                .flatten()
+                .and_then(|v| v.extract::<Span>().ok());
+            if let (Some(file), Some(span)) = (file, span) {
+                sites.push((file, span));
+            }
+        }
+    }
+    sites
 }
 
 #[cfg(not(feature = "python"))]
-fn declared_spans(value: &Bound<'_, PyAny>) -> Vec<Span> {
-    match value.value() {
-        crate::py::Value::List(items) => items
-            .iter()
-            .filter_map(|item| match item {
-                crate::py::Value::Span(span) => Some(*span),
+fn declared_sites(value: &Bound<'_, PyAny>, own_file: &str) -> Vec<(String, Span)> {
+    use crate::py::Value;
+    let Value::List(items) = value.value() else {
+        return Vec::new();
+    };
+    items
+        .iter()
+        .filter_map(|item| match item {
+            Value::Span(span) => Some((own_file.to_owned(), *span)),
+            Value::Dict(map) => match (map.get("file"), map.get("span")) {
+                (Some(Value::Str(file)), Some(Value::Span(span))) => Some((file.clone(), *span)),
                 _ => None,
-            })
-            .collect(),
-        _ => Vec::new(),
-    }
+            },
+            _ => None,
+        })
+        .collect()
 }
 
 #[gen_stub_pyclass]
@@ -127,8 +158,8 @@ impl SpanIndex {
             // Other places the definition is declared - the signatures an
             // overloaded function is resolved to.
             if let Some(value) = metadata.get_item("declared_at")? {
-                for span in declared_spans(&value) {
-                    idx.name.add(file_path.clone(), node.id.clone(), span);
+                for (file, span) in declared_sites(&value, file_path) {
+                    idx.name.add(file, node.id.clone(), span);
                 }
             }
         }

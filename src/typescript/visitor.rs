@@ -230,6 +230,17 @@ pub struct TsVisitor<'a> {
     /// Start positions of every `read`/`write`/`call` already recorded, so a name
     /// is never recorded twice as a use.
     named_sites: HashSet<(u32, u32)>,
+    /// Every module name that has a file or directory of its own (with all dotted
+    /// prefixes). A `namespace` whose dotted name is in here makes no node: it
+    /// would share an id with that MODULE.
+    file_modules: Option<&'a HashSet<String>>,
+    /// How many `ambient_declaration`s (`declare ...`) enclose the current node.
+    ambient_depth: usize,
+    /// One flag per namespace frame on the stack: is that namespace ambient?
+    ambient_ns: Vec<bool>,
+    /// Name spans of re-declarations (merged namespaces, merged interfaces,
+    /// interface method overloads, same-named members of union arms), by node id.
+    redeclared: IndexMap<String, Vec<Span>>,
 }
 
 impl<'a> TsVisitor<'a> {
@@ -264,7 +275,18 @@ impl<'a> TsVisitor<'a> {
             occurrences: Vec::new(),
             overloads: HashMap::new(),
             named_sites: HashSet::new(),
+            file_modules: None,
+            ambient_depth: 0,
+            ambient_ns: Vec::new(),
+            redeclared: IndexMap::new(),
         }
+    }
+
+    /// The module names that own a file or directory, so a `namespace` never
+    /// shares an id with one of them.
+    pub fn with_file_modules(mut self, modules: &'a HashSet<String>) -> Self {
+        self.file_modules = Some(modules);
+        self
     }
 
     pub fn into_occurrences(self) -> Vec<OccurrenceRef> {
@@ -303,7 +325,13 @@ impl<'a> TsVisitor<'a> {
             "public_field_definition" => self.visit_public_field(node),
             "property_signature" => self.visit_property_signature(node),
             "method_signature" | "abstract_method_signature" => self.visit_method_signature(node),
-            "function_signature" => self.note_overload(node),
+            "function_signature" => self.visit_function_signature(node),
+            "ambient_declaration" => {
+                self.ambient_depth += 1;
+                let result = self.visit_children(node);
+                self.ambient_depth -= 1;
+                result
+            }
             "function_declaration" | "generator_function_declaration" | "method_definition" => {
                 self.handle_function(node)
             }
@@ -313,19 +341,47 @@ impl<'a> TsVisitor<'a> {
         }
     }
 
-    /// `namespace N { export function f() {} }`: what is declared inside is `N.f`.
+    /// `namespace N { export function f() {} }`: N is a MODULE `<scope>.N`
+    /// (metadata `is_namespace`, the extent of the declaration, DECLARED by its
+    /// container) and what is declared inside is `N.f`. `namespace A.B {}` is two
+    /// MODULEs, `A` and `A.B`. A string name (`declare module "x"`) has no stable
+    /// qualified name: its body is walked under `<scope>."x"` and no node is made.
     fn visit_namespace(&mut self, node: TsNode<'_>) -> PyResult<()> {
         let Some(name) = node.child_by_field_name("name") else {
             return Ok(());
         };
-        let qname = format!("{}.{}", self.scope(), self.text(name));
-        let container = self.container();
-        self.push(qname, container, NodeKind::Module);
+        let ambient = self.ambient_depth > 0;
+        let mut frames = 0usize;
+        if name.kind() == "string" {
+            let qname = format!("{}.{}", self.scope(), self.text(name));
+            let container = self.container();
+            self.push(qname, container, NodeKind::Module);
+            self.ambient_ns.push(false);
+            frames = 1;
+        } else {
+            let mut segments = Vec::new();
+            namespace_segments(name, &mut segments);
+            for segment in segments {
+                let segment_name = self.text(segment);
+                let qname = format!("{}.{}", self.scope(), segment_name);
+                let id = if self.is_file_module(&qname) {
+                    node_id(self.project_name, &qname, NodeKind::Module.as_str())
+                } else {
+                    self.declare_namespace(node, segment, &qname, &segment_name)?
+                };
+                self.push(qname, id, NodeKind::Module);
+                self.ambient_ns.push(ambient);
+                frames += 1;
+            }
+        }
         let result = match node.child_by_field_name("body") {
             Some(body) => self.visit_children(body),
             None => Ok(()),
         };
-        self.pop();
+        for _ in 0..frames {
+            self.pop();
+            self.ambient_ns.pop();
+        }
         result
     }
 
@@ -395,7 +451,22 @@ impl<'a> TsVisitor<'a> {
                 | "function_declaration"
                 | "generator_function_declaration"
                 | "type_alias_declaration"
-                | "enum_declaration" => return self.visit(child),
+                | "enum_declaration"
+                | "ambient_declaration"
+                | "function_signature" => return self.visit(child),
+                "internal_module" | "module" => {
+                    // `export declare namespace N {}` may parse with a bare `declare`
+                    // keyword as a sibling instead of an ambient_declaration wrapper.
+                    let ambient = ts::children(node).iter().any(|c| c.kind() == "declare");
+                    if ambient {
+                        self.ambient_depth += 1;
+                    }
+                    let result = self.visit(child);
+                    if ambient {
+                        self.ambient_depth -= 1;
+                    }
+                    return result;
+                }
                 "lexical_declaration" => return self.handle_lexical_declaration(child),
                 _ => {}
             }
@@ -497,12 +568,14 @@ impl<'a> TsVisitor<'a> {
         self.handle_class(node, true, true)
     }
 
-    /// An interface field `x: T;`.
+    /// An interface or type-literal field `x: T;` (also `"a-b": T` and `0: T`).
     fn visit_property_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
-        let Some(prop) = ts::child_of_type(node, "property_identifier") else {
+        let Some(prop) = node.child_by_field_name("name") else {
             return Ok(());
         };
-        let name = self.text(prop);
+        let Some(name) = self.member_name(prop) else {
+            return Ok(());
+        };
         let qname = format!("{}.{name}", self.scope());
         let attr = self.make_node(
             NodeKind::Attribute,
@@ -513,7 +586,7 @@ impl<'a> TsVisitor<'a> {
             Some(prop),
         )?;
         let attr_id = attr.get().id.clone();
-        self.add_node_with_relation(attr, RelationKind::Declares)?;
+        self.declare_or_redeclare(attr, prop)?;
         if let Some(type_ann) = ts::child_of_type(node, "type_annotation") {
             self.record_annotation(type_ann, &attr_id);
         }
@@ -522,10 +595,12 @@ impl<'a> TsVisitor<'a> {
 
     /// An interface method signature `foo(): T;`.
     fn visit_method_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
-        let Some(name_node) = ts::child_of_types(node, &METHOD_NAME_TYPES) else {
+        let Some(name_node) = node.child_by_field_name("name") else {
             return Ok(());
         };
-        let name = self.text(name_node);
+        let Some(name) = self.member_name(name_node) else {
+            return Ok(());
+        };
         let qname = format!("{}.{name}", self.scope());
         let method = self.make_node(
             NodeKind::Method,
@@ -536,7 +611,7 @@ impl<'a> TsVisitor<'a> {
             Some(name_node),
         )?;
         let method_id = method.get().id.clone();
-        self.add_node_with_relation(method, RelationKind::Declares)?;
+        self.declare_or_redeclare(method, name_node)?;
         self.record_type_parameters(node, &method_id);
         if let Some(type_ann) = ts::child_of_type(node, "type_annotation") {
             self.record_annotation(type_ann, &method_id);
@@ -568,7 +643,7 @@ impl<'a> TsVisitor<'a> {
 
         // Every name of the aliased type, then the constraints and defaults of its parameters.
         if let Some(value) = alias_value(node) {
-            self.record_type_uses(value, &alias_id, "annotation");
+            self.walk_alias_type(value, &alias_id, &qname)?;
         }
         self.record_type_parameters(node, &alias_id);
         Ok(())
@@ -714,6 +789,165 @@ impl<'a> TsVisitor<'a> {
             self.overloads.entry(qname).or_default().push(ts::span(name_node));
         }
         Ok(())
+    }
+
+    /// A function signature. Inside an ambient namespace (`declare namespace D {
+    /// export function h(x: number): void; }`) it declares the FUNCTION, declared at
+    /// every same-named signature of the block; anywhere else it is an overload note.
+    fn visit_function_signature(&mut self, node: TsNode<'_>) -> PyResult<()> {
+        let ambient_ns = self.ambient_ns.last() == Some(&true)
+            && self.kind_stack.last() == Some(&NodeKind::Module);
+        if !ambient_ns {
+            return self.note_overload(node);
+        }
+        let Some(name_node) = ts::child_of_type(node, "identifier") else {
+            return Ok(());
+        };
+        let name = self.text(name_node);
+        let qname = format!("{}.{name}", self.scope());
+        let id = node_id(self.project_name, &qname, NodeKind::Function.as_str());
+        if self.graph.has_node(&id) {
+            return Ok(());
+        }
+        let mut holder = node.parent();
+        if let Some(parent) = holder
+            && parent.kind() == "export_statement"
+        {
+            holder = parent.parent();
+        }
+        if let Some(block) = holder {
+            for sibling in ts::children(block) {
+                let signature = match sibling.kind() {
+                    "function_signature" => Some(sibling),
+                    "export_statement" => ts::children(sibling)
+                        .into_iter()
+                        .find(|c| c.kind() == "function_signature"),
+                    _ => None,
+                };
+                if let Some(signature) = signature
+                    && let Some(other) = ts::child_of_type(signature, "identifier")
+                    && self.text(other) == name
+                {
+                    self.overloads.entry(qname.clone()).or_default().push(ts::span(other));
+                }
+            }
+        }
+        self.handle_function(node)
+    }
+
+    /// The name of a member written as `x`, `#x`, `"a-b"` (unquoted) or `0`. A
+    /// computed name (`[Symbol.iterator]`) has no stable name: no node.
+    fn member_name(&self, name: TsNode<'_>) -> Option<String> {
+        match name.kind() {
+            "property_identifier" | "private_property_identifier" | "identifier" | "number" => {
+                Some(self.text(name))
+            }
+            "string" => Some(strip_quotes(&self.text(name))),
+            _ => None,
+        }
+    }
+
+    /// Is `qname` the name of a module that owns a file or directory?
+    fn is_file_module(&self, qname: &str) -> bool {
+        self.modules.contains_key(qname)
+            || self.file_modules.is_some_and(|set| set.contains(qname))
+    }
+
+    /// The MODULE of one segment of a namespace name. Returns its id; a second
+    /// declaration of the same namespace adds a `declared_at` span, not a node.
+    fn declare_namespace(
+        &mut self,
+        node: TsNode<'_>,
+        segment: TsNode<'_>,
+        qname: &str,
+        name: &str,
+    ) -> PyResult<String> {
+        let metadata = PyDict::new(self.py);
+        metadata.set_item("is_namespace", true)?;
+        let module = self.make_node(NodeKind::Module, qname, name, Some(node), metadata, Some(segment))?;
+        let id = module.get().id.clone();
+        self.declare_or_redeclare(module, segment)?;
+        Ok(id)
+    }
+
+    /// Adds `node` DECLARED by the current container, or - when a node with that id
+    /// exists - records the new name span as one more place it is declared.
+    fn declare_or_redeclare(&mut self, node: Py<Node>, name_node: TsNode<'_>) -> PyResult<()> {
+        let id = node.get().id.clone();
+        if self.graph.has_node(&id) {
+            return self.redeclare(&id, name_node);
+        }
+        self.add_node_with_relation(node, RelationKind::Declares)
+    }
+
+    /// A re-declaration in the SAME file: the DECLARES edge again (folded by
+    /// `dedupe_structural_relations`) and the name span in `declared_at`. In another
+    /// file the first declaration wins and nothing is added, because `declared_at`
+    /// spans are indexed under the node's own file.
+    fn redeclare(&mut self, id: &str, name_node: TsNode<'_>) -> PyResult<()> {
+        let same_file = self
+            .graph
+            .node_map()
+            .get(id)
+            .is_some_and(|n| n.get().file_path.as_deref() == Some(self.file_path));
+        if !same_file {
+            return Ok(());
+        }
+        self.push_relation(self.container(), id.to_string(), RelationKind::Declares)?;
+        let span = ts::span(name_node);
+        let known = self.redeclared.entry(id.to_string()).or_default();
+        if !known.contains(&span) {
+            known.push(span);
+        }
+        let spans = known.clone();
+        if let Some(metadata) = self.graph.node_metadata(self.py, id) {
+            metadata.bind(self.py).set_item("declared_at", PyList::new(self.py, spans)?)?;
+        }
+        Ok(())
+    }
+
+    /// The body of a type alias. Members of an object type - also in the arms of a
+    /// top-level union, intersection or parenthesized type - are nodes `Alias.member`,
+    /// like an interface's. Everything else (call/construct/index signatures,
+    /// computed names, other types) is recorded as the alias's own annotation.
+    fn walk_alias_type(&mut self, node: TsNode<'_>, alias_id: &str, alias_qname: &str) -> PyResult<()> {
+        match node.kind() {
+            "union_type" | "intersection_type" | "parenthesized_type" => {
+                for child in ts::children(node) {
+                    if child.is_named() {
+                        self.walk_alias_type(child, alias_id, alias_qname)?;
+                    }
+                }
+                Ok(())
+            }
+            "object_type" => {
+                self.push(alias_qname.to_string(), alias_id.to_string(), NodeKind::TypeAlias);
+                let mut result = Ok(());
+                for child in ts::children(node) {
+                    if !child.is_named() || child.kind() == "comment" {
+                        continue;
+                    }
+                    let is_member = matches!(child.kind(), "property_signature" | "method_signature")
+                        && child
+                            .child_by_field_name("name")
+                            .is_some_and(|n| self.member_name(n).is_some());
+                    if is_member {
+                        result = self.visit(child);
+                        if result.is_err() {
+                            break;
+                        }
+                    } else {
+                        self.record_type_uses(child, alias_id, "annotation");
+                    }
+                }
+                self.pop();
+                result
+            }
+            _ => {
+                self.record_type_uses(node, alias_id, "annotation");
+                Ok(())
+            }
+        }
     }
 
     /// The annotation's text without the leading colon.
@@ -2238,6 +2472,21 @@ impl<'a> TsVisitor<'a> {
         self.scope_stack.pop();
         self.container_stack.pop();
         self.kind_stack.pop();
+    }
+}
+
+/// The identifiers of a namespace name in source order: `A` is [A], `A.B.C` is [A, B, C].
+fn namespace_segments<'t>(name: TsNode<'t>, out: &mut Vec<TsNode<'t>>) {
+    match name.kind() {
+        "nested_identifier" | "member_expression" => {
+            if let Some(object) = name.child_by_field_name("object") {
+                namespace_segments(object, out);
+            }
+            if let Some(property) = name.child_by_field_name("property") {
+                out.push(property);
+            }
+        }
+        _ => out.push(name),
     }
 }
 

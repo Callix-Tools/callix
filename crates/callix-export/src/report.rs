@@ -228,8 +228,12 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              `obj.x = v`) references the property it names, and an object-literal key or method \
              references the member of the type the literal is checked against (the key of an \
              untyped literal declares the property and is no edge); element access `o[\"k\"]`, \
-             shorthand and computed keys reference nothing, and members of a type literal have \
-             no node, so reads of them stay `unlocated`; every name in a type annotation or \
+             shorthand and computed keys reference nothing; members of a type alias's object \
+             type (also in its top-level union or intersection arms) are nodes `Alias.member`, \
+             and a namespace (`namespace N`, exported, `declare`, `A.B`) is a MODULE whose \
+             members are `N.member`, while an inline type literal elsewhere, a nested object \
+             type, a computed member name, `declare global` and a string-named `declare module` \
+             give no node, so reads of them stay `unlocated`; every name in a type annotation or \
              alias body is a HAS_TYPE, a type argument or an `as`/`satisfies` type a REFERENCES, \
              and a type parameter gives no edge; `implements` clauses and the annotations of \
              inline closures are not walked",

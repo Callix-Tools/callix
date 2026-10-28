@@ -129,8 +129,8 @@ def test_type_alias_body_is_walked(tmp_path: Path) -> None:
     s = at(graph, RelationKind.HAS_TYPE, 13, col(13, "Shape"))
     nested = at(graph, RelationKind.HAS_TYPE, 13, col(13, "a.T", 2))
     indexed = at(graph, RelationKind.HAS_TYPE, 14, col(14, "Shape"))
-    assert [(a, b) for a, b, _, _ in s] == [("b.K", "a.Shape")]
-    assert [(a, b) for a, b, _, _ in nested] == [("b.K", "a.T")]
+    assert [(a, b) for a, b, _, _ in s] == [("b.K.s", "a.Shape")]
+    assert [(a, b) for a, b, _, _ in nested] == [("b.K.t", "a.T")]
     assert [(a, b) for a, b, _, _ in indexed] == [("b.L", "a.Shape")]
 
 

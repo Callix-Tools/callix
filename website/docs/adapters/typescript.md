@@ -69,8 +69,23 @@ untyped literal declares the property and gives no edge, and a key typed by a
 library interface gives none either.
 
 Not covered: element access (`o["k"]`, `o[k]`), shorthand keys (`{ x }` references the
-local), computed keys, `x.count++` as a write, and members of a type literal, which
-have no node yet, so reads of them are `unlocated`.
+local), computed keys, and `x.count++` as a write. Members of a type alias's object type
+(also in the arms of its top-level union or intersection) are nodes `Alias.member`, like
+an interface's. An inline type literal elsewhere (a parameter, a variable, a generic
+argument), an object type nested in a member's type and a computed member name have no
+stable qualified name and no node, so reads of them are `unlocated`. A string or number
+member name (`"~standard": T`, `0: T`) is a node named without its quotes.
+
+**Namespaces.** A `namespace N { ... }` (also `export namespace`, `declare namespace`
+and `namespace A.B`, which gives the MODULEs `A` and `A.B`) is a MODULE `<scope>.N` with
+`metadata["is_namespace"]`, the extent of its declaration as `span`, and a `DECLARES` edge
+from its container; what it declares is `N.member`. A call written directly in the body
+of a namespace belongs to the namespace's MODULE. The function signatures of an
+ambient namespace (`declare namespace D { function h(x: number): void; }`) are FUNCTIONs
+whose `declared_at` lists every signature. A second declaration of the same namespace,
+interface or member in the same file adds a `declared_at` span, not a node. A namespace
+that shares a dotted name with a file or directory module is not a node of its own, and
+neither are `declare global` and a string-named `declare module "x"`.
 
 A method or accessor of an object literal that is not a variable's initializer (a call argument, a returned or nested literal) is an inline closure: its calls belong to the enclosing function, as a callback's do. A comment in front of an initializer (`/*@__PURE__*/`) does not affect what is scanned.
 

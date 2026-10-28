@@ -124,6 +124,20 @@ fn build_root_structure(
         }
     }
 
+    // Every module name that owns a file or directory, with all dotted prefixes:
+    // a `namespace` with such a name must not become a second MODULE of that id.
+    let mut file_modules: HashSet<String> = HashSet::new();
+    for qname in placements.keys() {
+        let mut prefix = String::new();
+        for part in qname.split('.') {
+            if !prefix.is_empty() {
+                prefix.push('.');
+            }
+            prefix.push_str(part);
+            file_modules.insert(prefix.clone());
+        }
+    }
+
     for file in files {
         let source_root = roots.iter().find(|r| file.starts_with(r)).unwrap_or(&roots[0]);
         let Some(module_qname) = qualified_name(file, source_root) else {
@@ -178,7 +192,8 @@ fn build_root_structure(
             &classifier,
             &modules,
             &aliases,
-        );
+        )
+        .with_file_modules(&file_modules);
         visitor.visit(tree.root_node())?;
         for occurrence in visitor.into_occurrences() {
             all_occurrences.push((abs_path.clone(), occurrence));

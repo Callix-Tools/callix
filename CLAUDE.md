@@ -201,6 +201,8 @@ import path, so internal imports bind by direct lookup), and a Rust module path
 in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
 be declared below its `impl`.
 
+In TypeScript a `namespace`/`module` block is a MODULE `<scope>.N` (`is_namespace`, a real span and `name_span`, DECLARED by its container), and the members of a type alias's object type are `Alias.member`; a re-declaration in the same file adds a `declared_at` span instead of a node.
+
 In Python and TypeScript a MODULE that has a file of its own (the `.py` file or
 `__init__.py`; the `.ts` file or `index.*`) is placed at a zero-width `1:1` span in
 that file, and `metadata["name_span"]` is the same span. A namespace package and a

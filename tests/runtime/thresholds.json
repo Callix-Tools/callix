@@ -15,7 +15,7 @@
     "recall": 0.6901
   },
   "laravel/framework": {
-    "recall": 0.5129
+    "recall": 0.5128
   },
   "redis/redis": {
     "recall": 0.922

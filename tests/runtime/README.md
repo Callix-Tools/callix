@@ -215,12 +215,12 @@ tracer of that language. The unit tests (`tests/unit/test_runtime_compare.py`,
 
 | Project | Language | Tool | Workload | Pairs | Found | Wrong target | Missing | Recall | By calls |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| redis/redis 8.10.0 | C | valgrind callgrind 3.22.0 | redis-server (`-O0 -fno-inline`, libc malloc) driven by `capture/c_workload.redis` and `redis-benchmark -n 500` (`capture/c.sh`) | 5,581 | 5,098 | 18 | 413 | 0.9220 | 0.9919 |
-| google/leveldb 1.23 | C++ | valgrind callgrind 3.22.0 | 27 of 30 gtest binaries, cases over 1 s left out (`capture/cpp.sh`) | 5,655 | 2,327 | 1,011 | 34 | 0.6901 | |
+| redis/redis 8.10.0 | C | valgrind callgrind 3.22.0 | redis-server (`-O0 -fno-inline`, libc malloc) driven by `capture/c_workload.redis` and `redis-benchmark -n 500` (`capture/c.sh`) | 5,581 | 5,098 | 18 | 413 | 0.9220 | 0.9920 |
+| google/leveldb 1.23 | C++ | valgrind callgrind 3.22.0 | 27 of 30 gtest binaries, cases over 1 s left out (`capture/cpp.sh`) | 5,655 | 2,327 | 1,011 | 34 | 0.6901 | 0.9531 |
 | BurntSushi/ripgrep 14.1.1 | Rust | valgrind callgrind 3.22.0 | 24 `rg` searches over `crates/` plus the unit tests of 5 crates (`capture/rust.py`) | 3,848 | 3,175 | 342 | 80 | 0.8827 | 0.8544 |
 | gin-gonic/gin v1.12.0 | Go | entry-hook instrumentation, go 1.26 | `go test ./...` (`capture/go.py`) | 2,616 | 2,127 | 232 | 231 | 0.8212 | 0.9975 |
-| apache/superset 6.1.0 | Python | `sys.monitoring`, CPython 3.12 | `tests/unit_tests` (`capture/python.sh`) | ~8,000 | 6,837 | 146 | 512 | 0.9122 | 0.9296 |
-| laravel/framework v13.23.0 | PHP | Xdebug 3.2 profiler, PHP 8.3 | phpunit `tests/{Support,Container,Pipeline,Events,Config,Routing,Validation}` (`capture/php.sh`) | 18,491 | 7,763 | 326 | 7,046 | 0.5129 | 0.9114 |
+| apache/superset 6.1.0 | Python | `sys.monitoring`, CPython 3.12 | `tests/unit_tests` (`capture/python.sh`) | 7,974 | 6,837 | 146 | 512 | 0.9122 | 0.9296 |
+| laravel/framework v13.23.0 | PHP | Xdebug 3.2 profiler, PHP 8.3 | phpunit `tests/{Support,Container,Pipeline,Events,Config,Routing,Validation}` (`capture/php.sh`) | 18,491 | 7,763 | 326 | 7,048 | 0.5128 | 0.9114 |
 | colinhacks/zod v4.4.3 | TypeScript | jsprobe (babel instrumentation, vitest, node 22) | the zod package's vitest suite (`capture/typescript.sh`) | 3,933 | 2,461 | 203 | 728 | 0.7255 | 0.4348 |
 
 What the misses are, by project:

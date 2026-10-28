@@ -141,16 +141,25 @@ def test_implicit_calls_have_their_own_category():
 
 
 @pytest.mark.parametrize(("language", "name", "implicit"), [
-    ("python", "pkg.Foo.__init__", True),
+    ("python", "pkg.Foo.__init__", False),
+    ("python", "pkg.Foo.__eq__", True),
     ("python", "pkg.Foo.run", False),
     ("rust", "<proj::Foo as core::ops::drop::Drop>::drop", True),
     ("rust", "<proj::Foo as proj::Shape>::area", False),
     ("rust", "<alloc::vec::Vec<T> as core::iter::traits::iterator::Iterator>::next", True),
     ("php", "App\\Foo->__construct", True),
+    ("php", "__", False),
+    ("php", "App\\C->offsetGet", True),
+    ("php", "App\\C->getIterator", True),
+    ("php", "App\\C->__callStatic", True),
+    ("php", "App\\C->count", False),
     ("typescript", "Foo.constructor", True),
     ("go", "pkg.init", True),
     ("c", "main", False),
     ("cpp", "ns::Foo::run(int)", False),
+    ("cpp", "_GLOBAL__sub_I__ZN7leveldb4DBTestE", True),
+    ("cpp", "__static_initialization_and_destruction_0()", True),
+    ("cpp", "leveldb::DBTest_Empty_Test::TestBody()", False),
 ])
 def test_is_implicit(language, name, implicit):
     assert runtime.is_implicit(name, language) is implicit
@@ -175,6 +184,24 @@ def test_anonymous_function_maps_by_line_when_the_name_is_unknown():
     nodes = [node("outer", "outer", "a.ts", [1, 1, 20, 2])]
     fn = {"id": 0, "file": "a.ts", "name": "<anonymous>", "line": 7}
     assert runtime.map_function(fn, graph(nodes, []), "typescript") == ("outer", None)
+
+
+def test_php_closure_maps_to_its_enclosing_method_and_folds_into_it():
+    nodes = [
+        node("m", "m", "a.php", [10, 1, 20, 2], kind="method", qn="App\\C.m"),
+        node("h", "h", "a.php", [30, 1, 32, 2], kind="method", qn="App\\C.h"),
+    ]
+    g = graph(nodes, [("m", "h", "definition")])
+    art = artifact("php", [
+        ("a.php", "App\\C->m", 10), ("a.php", "App\\C->App\\{closure:12-14}", 12),
+        ("a.php", "App\\C->h", 30),
+    ], [(0, 1, 1), (1, 2, 4)])
+    result = runtime.score(art, g)
+    assert result["folded"] == 1
+    assert result["found"] == 1
+    assert result["unmapped"] == 0
+    top = {"id": 0, "file": "a.php", "name": "{closure:50-52}", "line": 50}
+    assert runtime.map_function(top, g, "php") == (None, "no_name")
 
 
 def test_recall_is_rounded_and_weighted_by_calls():
@@ -232,12 +259,21 @@ def test_ambiguity_is_broken_by_line_then_by_qualifier():
     ("cpp", "Foo<int>::bar(int, char const*) const", (["Foo", "bar"], False)),
     ("cpp", "std::vector<int>::operator[](unsigned long)", (["std", "vector", "operator[]"], False)),
     ("cpp", "Foo::operator<<(int)", (["Foo", "operator<<"], False)),
+    ("cpp", "leveldb::Slice::ToString[abi:cxx11]() const", (["leveldb", "Slice", "ToString"], False)),
     ("rust", "<proj::Foo as core::ops::drop::Drop>::drop", (["proj", "Foo", "drop"], False)),
     ("rust", "proj::run::{{closure}}", (["proj", "run"], True)),
     ("go", "github.com/x/gin.(*Engine).Run.func1", (["github", "com/x/gin", "Engine", "Run"], True)),
     ("go", "pkg.Map[...]", (["pkg", "Map"], False)),
     ("python", "a.f.<locals>.<lambda>", (["a", "f"], True)),
+    ("python", "Cls.run.<locals>.helper", (["Cls", "run", "helper"], False)),
+    ("python", "f.<locals>.<genexpr>", (["f"], True)),
+    ("python", "t.<locals>.<lambda>.<locals>.<lambda>", (["t"], True)),
     ("php", "App\\Foo->bar", (["App", "Foo", "bar"], False)),
+    ("php", "App\\Foo->App\\{closure:12-14}", (["App", "Foo"], True)),
+    ("php", "App\\{closure:3-5}", (["App"], True)),
+    ("php", "{closure:3-5}", ([], True)),
+    ("php", "App\\Foo::App\\{closure:7}", (["App", "Foo"], True)),
+    ("php", "{anonymous-class:8-20}->passes", (["{anonymous-class:8-20}", "passes"], False)),
     ("c", "main", (["main"], False)),
 ])
 def test_split_name(language, raw, expected):
@@ -287,3 +323,191 @@ def test_artifacts_round_trip_through_the_scorer(tmp_path):
     common.write_artifact(path, art)
     g = graph(simple(), [("a", "b", "definition")])
     assert runtime.score(common.load_artifact(path), g)["recall"] == 1.0
+
+
+def test_gtest_body_maps_to_its_test_macro():
+    nodes = [
+        node("e", "TEST_F", "t.cc", [1, 1, 3, 2], qn="leveldb::TEST_F(DBTest,Empty)"),
+        node("o", "TEST_F", "t.cc", [5, 1, 7, 2], qn="leveldb::TEST_F(DBTest,Other)"),
+        node("b", "TEST", "t.cc", [9, 1, 11, 2], qn="leveldb::TEST(Foo,Bar_Baz)"),
+    ]
+    g = graph(nodes, [])
+
+    def fn(name):
+        return {"id": 0, "file": "t.cc", "name": name, "line": 0}
+
+    assert runtime.map_function(fn("leveldb::DBTest_Empty_Test::TestBody()"), g, "cpp") == ("e", None)
+    assert runtime.map_function(fn("leveldb::Foo_Bar_Baz_Test::TestBody()"), g, "cpp") == ("b", None)
+    assert runtime.map_function(fn("leveldb::DBTest_Missing_Test::TestBody()"), g, "cpp") == (None, "no_name")
+
+
+def test_analyze_langs():
+    assert runtime.analyze_langs("cpp") == "cpp,c"
+    assert runtime.analyze_langs("go") == "go"
+
+def test_rust_raw_identifier_maps_to_its_r_hash_node():
+    nodes = [node("m", "r#async", "src/p.rs", [10, 5, 12, 6], kind="method")]
+    fn = {"id": 0, "file": "src/p.rs", "name": "<p::StderrReader>::async", "line": 10}
+    assert runtime.map_function(fn, graph(nodes, []), "rust") == ("m", None)
+
+
+def test_rust_function_generated_by_a_project_macro_maps_to_the_macro():
+    macro = node("mac", "syntax", "src/g.rs", [29, 5, 37, 6])
+    macro["metadata"]["macro"] = "macro_rules"
+    plain = node("f", "helper", "src/g.rs", [1, 1, 100, 2])
+    nodes = [macro, plain]
+    fn = {"id": 0, "file": "src/g.rs", "name": "g::tests::any1", "line": 32}
+    assert runtime.map_function(fn, graph(nodes, []), "rust") == ("mac", None)
+    # Only a macro catches a named function: no line-only fallback otherwise.
+    fn = {"id": 0, "file": "src/g.rs", "name": "g::tests::other", "line": 60}
+    assert runtime.map_function(fn, graph(nodes, []), "rust") == (None, "no_name")
+
+@pytest.mark.parametrize(("raw", "expected"), [
+    ("gin.init.0", (["gin", "init"], False)),
+    ("gin.init.0.func1", (["gin", "init"], True)),
+    ("gin.init.func1", (["gin", "init"], True)),
+    ("gin.(*Context).initFormCache", (["gin", "Context", "initFormCache"], False)),
+])
+def test_go_init_names(raw, expected):
+    assert runtime.split_name(raw, "go") == expected
+
+
+def test_go_init_rules():
+    assert runtime.is_implicit("gin.init.3", "go")
+    assert not runtime.is_implicit("gin.init.func1", "go")
+    nodes = [
+        node("init", "init", "a.go", [1, 1, 3, 2], qn="p.init"),
+        node("fmt", "defaultFormatter", "b.go", [5, 1, 9, 2], kind="variable", qn="p.defaultFormatter"),
+        node("set", "SetMode", "b.go", [11, 1, 12, 2], qn="p.SetMode"),
+        node("log", "Logger", "b.go", [14, 1, 20, 2], qn="p.Logger"),
+    ]
+    g = graph(nodes, [("init", "set", "definition"), ("log", "fmt", "value")])
+    art = artifact("go", [
+        ("b_test.go", "p.init.1", 3), ("b.go", "p.SetMode", 11),
+        ("b.go", "p.init.func1", 5), ("b.go", "p.Logger", 14),
+    ], [(0, 1, 1), (3, 2, 4)])
+    result = runtime.score(art, g)
+    assert (result["found"], result["unmapped"], result["implicit"]) == (2, 0, 0)
+
+def _pnode(ident, name, file, span, kind="function", qn=None, meta=None):
+    return {
+        "id": ident, "kind": kind, "qualified_name": qn or name, "name": name,
+        "file_path": file, "span": span, "metadata": meta or {},
+    }
+
+
+def _part(functions, edges):
+    return {
+        "schema": 1, "project": "o/r", "ref": "1", "sha": "abc", "language": "python",
+        "tool": "t", "workload": "w", "command": "c",
+        "functions": [
+            {"id": i, "file": f, "name": n, "line": ln}
+            for i, (f, n, ln) in enumerate(functions)
+        ],
+        "edges": [list(e) for e in edges],
+    }
+
+
+def test_python_lambda_maps_to_its_node_and_genexpr_to_the_function_not_a_variable():
+    nodes = [
+        _pnode("f", "f", "a.py", [1, 1, 10, 2]),
+        _pnode("lam", "<lambda1>", "a.py", [3, 20, 3, 40], qn="a.f.<lambda1>"),
+        _pnode("v", "names", "a.py", [5, 5, 5, 60], kind="variable", qn="a.f.names"),
+    ]
+    g = runtime.Graph({"nodes": nodes, "relations": []})
+    lam = {"id": 0, "file": "a.py", "name": "f.<locals>.<lambda>", "line": 3}
+    gen = {"id": 1, "file": "a.py", "name": "f.<locals>.<genexpr>", "line": 5}
+    assert runtime.map_function(lam, g, "python") == ("lam", None)
+    assert runtime.map_function(gen, g, "python") == ("f", None)
+
+
+def test_python_property_callee_is_implicit():
+    nodes = [
+        _pnode("m", "m", "a.py", [1, 1, 5, 2], kind="method", qn="a.C.m"),
+        _pnode("p", "size", "a.py", [7, 1, 9, 2], kind="method", qn="a.C.size",
+               meta={"is_property": True, "decorators": ["property"]}),
+        _pnode("s", "size2", "a.py", [11, 1, 13, 2], kind="method", qn="a.C.size2",
+               meta={"decorators": ["size2.setter"]}),
+    ]
+    g = runtime.Graph({"nodes": nodes, "relations": []})
+    art = _part([("a.py", "C.m", 1), ("a.py", "C.size", 7), ("a.py", "C.size2", 11)],
+                [(0, 1, 1), (0, 2, 1)])
+    result = runtime.score(art, g)
+    assert result["implicit"] == 2 and result["missing"] == 0
+
+
+def test_python_call_to_a_class_is_a_call_to_its_own_or_inherited_init():
+    nodes = [
+        _pnode("main", "main", "a.py", [1, 1, 5, 2]),
+        _pnode("A", "A", "a.py", [7, 1, 9, 2], kind="class", qn="a.A"),
+        _pnode("B", "B", "a.py", [11, 1, 15, 2], kind="class", qn="a.B"),
+        _pnode("binit", "__init__", "a.py", [12, 5, 13, 2], kind="method", qn="a.B.__init__"),
+    ]
+    rel = [
+        {"source_id": "A", "target_id": "B", "kind": "inherits_from", "metadata": {}},
+        {"source_id": "main", "target_id": "A", "kind": "calls",
+         "metadata": {"resolution": "definition"}},
+    ]
+    g = runtime.Graph({"nodes": nodes, "relations": rel})
+    art = _part([("a.py", "main", 1), ("a.py", "B.__init__", 12)], [(0, 1, 1)])
+    result = runtime.score(art, g)
+    assert result["found"] == 1 and result["implicit"] == 0
+
+# --- TypeScript (colinhacks/zod) -------------------------------------------
+
+
+@pytest.mark.parametrize(("raw", "expected"), [
+    ("ZodType.parse", (["ZodType", "parse"], False)),
+    ("ZodType.get description", (["ZodType", "description"], False)),
+    ("$ZodType.<anonymous#3>", (["$ZodType"], True)),
+    ("<anonymous>", ([], True)),
+    ("defineLazy.<object>.get [computed]", (["defineLazy"], True)),
+    ("_ZodString.<object#2>.regex.<anonymous>", (["_ZodString"], True)),
+])
+def test_split_name_typescript(raw, expected):
+    assert runtime.split_name(raw, "typescript") == expected
+
+
+@pytest.mark.parametrize(("name", "implicit"), [
+    ("ZodType.get description", True),
+    ("defineLazy.<object>.get [computed]", True),
+    ("merge.def.<object>.set shape", True),
+    ("Doc.constructor", True),
+    ("ZodType.<object>.refine", False),
+    ("getter", False),
+])
+def test_is_implicit_typescript(name, implicit):
+    assert runtime.is_implicit(name, "typescript") is implicit
+
+
+def test_typescript_closures_map_to_the_callable_or_the_file():
+    nodes = [
+        node("file", "a.ts", "a.ts", kind="file"),
+        node("var", "$ZodType", "a.ts", [1, 14, 30, 3], kind="variable"),
+        node("run", "runChecks", "a.ts", [5, 3, 9, 4]),
+        node("m", "description", "a.ts", [40, 3, 42, 4], kind="method", qn="ZodType.description"),
+    ]
+    g = graph(nodes, [])
+    fn = lambda name, line: {"file": "a.ts", "name": name, "line": line}  # noqa: E731
+    # inside a FUNCTION: that function; in a top-level initializer: the FILE, never the VARIABLE
+    assert runtime.map_function(fn("$ZodType.runChecks.<anonymous>", 6), g, "typescript") == ("run", None)
+    assert runtime.map_function(fn("$ZodType.<anonymous#2>", 12), g, "typescript") == ("file", None)
+    assert runtime.map_function(fn("$ZodType.<object>.check", 20), g, "typescript") == ("file", None)
+    assert runtime.map_function(fn("ZodType.get description", 40), g, "typescript") == ("m", None)
+    # a named function without a node stays unmapped: no line fallback
+    assert runtime.map_function(fn("default", 50), g, "typescript") == (None, "no_name")
+
+
+def test_an_accessor_folded_into_a_function_does_not_hide_a_written_call():
+    nodes = [
+        node("file", "a.ts", "a.ts", kind="file"),
+        node("lazy", "defineLazy", "a.ts", [10, 1, 20, 2]),
+    ]
+    g = graph(nodes, [])
+    art = artifact("typescript", [
+        ("a.ts", "<anonymous>", 2), ("a.ts", "defineLazy", 10),
+        ("a.ts", "defineLazy.<object>.get [computed]", 12),
+    ], [(0, 1, 1), (0, 2, 5)])
+    result = runtime.score(art, g)
+    # both raw edges map to (file, defineLazy): the written call is scored, not implicit
+    assert (result["implicit"], result["missing"]) == (0, 1)

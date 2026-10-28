@@ -1,1 +1,23 @@
-{}
+{
+  "BurntSushi/ripgrep": {
+    "recall": 0.8827
+  },
+  "apache/superset": {
+    "recall": 0.9122
+  },
+  "colinhacks/zod": {
+    "recall": 0.7255
+  },
+  "gin-gonic/gin": {
+    "recall": 0.8212
+  },
+  "google/leveldb": {
+    "recall": 0.6901
+  },
+  "laravel/framework": {
+    "recall": 0.5129
+  },
+  "redis/redis": {
+    "recall": 0.922
+  }
+}

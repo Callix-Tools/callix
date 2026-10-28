@@ -101,7 +101,9 @@ def parse_text(text, fn_lines, counts):
         if line.startswith("calls="):
             parts = line[len("calls="):].split()
             count = int(parts[0])
-            prev = _position(parts[1:], columns, prev)
+            # The target position is relative to the call site but does not
+            # replace it: the cost line that follows is relative to the call site.
+            _position(parts[1:], columns, prev)
             target_file = callee_file or fl
             if fn and callee_name and fl and not callee_name.startswith("<cycle"):
                 if not fn.startswith("<cycle"):
@@ -130,6 +132,19 @@ def parse_text(text, fn_lines, counts):
     return
 
 
+def _project_file(path, root, exclude):
+    """`relativize`, plus: a relative path must name a file under `root`.
+
+    Callgrind prints a relative path for objects built without a compilation
+    directory (glibc's `./csu/../csu/libc-start.c`), which is never project code.
+    """
+    rel = common.relativize(path, root, exclude)
+    if rel is not None and not Path(str(path).strip()).is_absolute():
+        if not (Path(root) / rel).is_file():
+            return None
+    return rel
+
+
 def parse(paths, root, exclude=common.DEFAULT_EXCLUDE):
     """Return `((file, name, line), (file, name, line), count)` triples for in-project calls."""
     fn_lines = {}
@@ -139,8 +154,8 @@ def parse(paths, root, exclude=common.DEFAULT_EXCLUDE):
         parse_text(text, fn_lines, counts)
     calls = []
     for ((cf, cn), (tf, tn)), count in counts.items():
-        rel_caller = common.relativize(cf, root, exclude)
-        rel_callee = common.relativize(tf, root, exclude)
+        rel_caller = _project_file(cf, root, exclude)
+        rel_callee = _project_file(tf, root, exclude)
         if rel_caller is None or rel_callee is None:
             continue
         calls.append((

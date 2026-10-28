@@ -1,5 +1,8 @@
 /target
 
+# Run output of `task runtime` (depends on the machine and toolchains)
+/tests/runtime/report.json
+
 # The typescript-go clone for the Go bridge: fetched by build.rs, ~370 MB
 /.ts-go
 

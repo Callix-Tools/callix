@@ -2,6 +2,79 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-10-28
+### Bug Fixes
+
+- **php**: do not treat installed vendor packages as sub-roots by @claude
+- **php**: resolve top-level use imports to their definitions by @claude
+- **php**: resolve self, static and parent to the enclosing class or its base by @claude
+- **php**: treat language constructs and magic constants as syntax by @claude
+- **php**: unqualified function calls no longer bind to classes by @claude
+- **php**: make anonymous classes resolver scopes by @claude
+- **php**: search the base class and traits before interfaces for a member by @claude
+- **php**: emit REFERENCES edges for first-class callable syntax by @claude
+- **go**: annotate every named type, not only the right-most identifier by @claude
+- **go**: emit type occurrences for receivers, type specs, var/const types and function bodies by @claude
+- **go**: give package qualifiers and import paths a position by @claude
+- **go**: scan package-level var and const initializers by @claude
+- **go**: record keys of keyed struct literals as field writes by @claude
+- **go**: record bare uses of package-level names as references by @claude
+- **go**: declare embedded struct fields as ATTRIBUTE nodes by @claude
+- **go**: declare every name of a multi-name field and anonymous struct fields by @claude
+- **go**: record conversions T(x) as references to the type by @claude
+- **rust**: record an annotation for a bare type name by @claude
+- **rust**: record every type name as an annotation by @claude
+- **rust**: record path prefixes and visibility paths as references by @claude
+- **rust**: emit references for values, patterns and struct literals by @claude
+- **rust**: bind names in use trees and bodyless `mod x;` to positioned edges by @claude
+- **rust**: declare enum variants, associated items and in-body items by @claude
+- **rust**: index macro_rules! definitions and macro invocation names by @claude
+- **rust**: record later declarations of a qualified name in declared_at by @claude
+- **cfamily**: erase project macros that expand to nothing or an attribute by @claude
+- **cfamily**: reference type names in bodies, casts, sizeof, scopes and signatures by @claude
+- **cfamily**: bind field accesses by the receiver's declared type by @claude
+- **cfamily**: declare a class for an anonymous typedef struct or union by @claude
+- **cfamily**: position prototypes, forward declarations and #include operands by @claude
+- **cfamily**: analyse namespace-wrapped .h headers as C++ by @claude
+- **cpp**: treat overloaded operator uses as calls by @claude
+- **cpp**: declare classes defined in function bodies; name qualified record heads by their last component by @claude
+- **export**: define an included header's file symbol on a non-empty range by @claude
+- **python,typescript**: pin the superset call count the module change leaves alone by @claude
+- **python**: treat imports in function bodies and blocks as imports by @claude
+- **python**: reference the field named by a keyword argument by @claude
+- **python**: record every name in a type annotation by @claude
+- **python**: scan a generator expression that is a call's only argument by @claude
+- **python**: declare assignment targets where Python binds them by @claude
+- **typescript**: reference members for property reads, writes and object-literal keys by @claude
+- **typescript**: record every name in a type by @claude
+- **typescript**: read initializers from grammar fields and scan object-literal methods by @claude
+- **typescript**: namespaces and type-literal members become nodes by @claude
+- **typescript**: file-level declare function becomes a FUNCTION by @claude
+- **export**: name each SCIP symbol after its own sub-root by @claude
+- **export**: give an LSIF definition with no text a visible range by @claude
+- **php**: resolve the left side of :: as a class, never a function by @claude
+- **php**: a parameter reassigned before its call no longer receives the callers' values by @claude
+- **php**: fix(php): a parameter reassigned before its call no longer receives the callers' values by @Neko1313 in [#60](https://github.com/Callix-Tools/callix/pull/60)
+
+### CI/CD
+
+- key the Rust cache on the exact Python version by @claude
+- point the loader at libpython for the PyO3 test binary by @claude
+
+### Documentation
+
+- **claude**: assign models to dynamic workflow stages by @claude
+- **accuracy**: update the suite table to the merged case counts by @claude
+
+### Features
+
+- **python,typescript**: place MODULE nodes and bind module references by @claude
+- **typescript**: place import/export specifiers and module strings by @claude
+
+
+
+
+**Full Changelog**: https://github.com/Callix-Tools/callix/compare/v1.6.0...v1.7.0
 ## [1.6.0] - 2026-10-26
 ### Features
 

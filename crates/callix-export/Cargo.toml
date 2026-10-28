@@ -1,6 +1,6 @@
 [package]
 name = "callix-export"
-version = "1.6.0"
+version = "1.7.0"
 edition = "2024"
 description = "Exporters for the callix graph: LSIF, CycloneDX, CSV, DOT and text reports"
 license = "MIT"

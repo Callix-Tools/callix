@@ -182,8 +182,9 @@ source file are ONE node, and whichever file was read first would otherwise
 decide its span. The ledger keeps (file, name_span) per site, which is what
 `declared_at` is made of. An `#include` path literal (delimiters included) is
 the IMPORT's `name_span` and the span of its RESOLVES_TO; the FILE-to-header
-IMPORTS edge stays unpositioned. An exporter defines a FILE at 1:1 only when a
-placed edge targets it.
+IMPORTS edge stays unpositioned. An exporter defines a FILE on its first
+character (1:1-1:2, never an empty range: `docker/check_lsif.py` rejects one) only
+when a placed edge targets it.
 
 **Before the scope pass, the adapter blanks the project's erasable macros**
 (`src/cfamily/erase.rs`: bodies that are empty, an attribute, a calling convention,

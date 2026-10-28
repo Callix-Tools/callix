@@ -17,7 +17,8 @@
 //!
 //! A header's prototype or forward declaration (`declared_at`) is an occurrence
 //! with the ForwardDefinition role (0x40); an `#include` is a plain reference to
-//! the included header's file symbol, which is defined at 1:1 of its document.
+//! the included header's file symbol, which is defined on the first character of
+//! its document (1:1-1:2).
 //!
 //! The encoder is hand-written protobuf (varints and length-delimited fields),
 //! checked against an index rust-analyzer produced; field numbers are those of

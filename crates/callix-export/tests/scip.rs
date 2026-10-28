@@ -257,13 +257,13 @@ fn declaration_sites_and_includes_are_placed() {
     let doc = |path: &str| index.documents.iter().find(|d| d.path == path).unwrap_or_else(|| panic!("no document {path}"));
 
     // The header has a document: the prototype is a forward definition, and the
-    // file itself is defined at 1:1 because an include points at it.
+    // file itself is defined on its first character because an include points at it.
     let header = doc("a.h");
     let proto = header.occurrences.iter().find(|o| o.symbol == "callix . c . . add().").expect("prototype");
     assert_eq!(proto.range, [2, 4, 7]);
     assert_eq!(proto.roles, 0x40, "ForwardDefinition");
     let file_def = header.occurrences.iter().find(|o| o.symbol == "callix . c . . `a.h`/").expect("file symbol");
-    assert_eq!(file_def.range, [0, 0, 0]);
+    assert_eq!(file_def.range, [0, 0, 1]);
     assert_eq!(file_def.roles, 1, "Definition");
 
     // The include operands are plain references.

@@ -9,7 +9,7 @@
 //! node's `declared_at` (a header's prototype or forward declaration, as a
 //! forward reference in its own file), and a `RESOLVES_TO` that carries a span
 //! (an `#include` operand, pointing at the header's FILE, which is then defined
-//! at 1:1 of its document).
+//! on the first character of its document, 1:1-1:2).
 
 use std::collections::{HashMap, HashSet};
 
@@ -167,7 +167,8 @@ impl<'g> Index<'g> {
         }
 
         // A FILE that a placed edge points at (an `#include` operand) is a
-        // symbol too, defined at the very start of its own document. Only
+        // symbol too, defined on the first character of its own document
+        // (1:1-1:2: an empty range is not a place an editor can show). Only
         // referenced files are defined, so no other graph's export changes.
         let mut targeted_files: HashSet<&str> = HashSet::new();
         for relation in &graph.relations {
@@ -187,7 +188,7 @@ impl<'g> Index<'g> {
                 continue;
             }
             let name_span = if file_target {
-                Some(Span { start_line: 1, start_col: 1, end_line: 1, end_col: 1 })
+                Some(Span { start_line: 1, start_col: 1, end_line: 1, end_col: 2 })
             } else {
                 node.name_span()
             };

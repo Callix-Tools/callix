@@ -277,6 +277,6 @@ fn declaration_sites_and_includes_are_ranges() {
     assert_eq!(at(2, 4), 2);
     // The a.h operand of the include in a.c.
     assert!(at(0, 9) >= 1);
-    // The header's file symbol is defined at 0:0 of its own document.
-    assert!(ranges.iter().any(|r| r["start"]["line"] == 0 && r["start"]["character"] == 0 && r["end"]["character"] == 0));
+    // The header's file symbol is defined on the first character of its own document.
+    assert!(ranges.iter().any(|r| r["start"]["line"] == 0 && r["start"]["character"] == 0 && r["end"]["character"] == 1));
 }

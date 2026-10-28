@@ -100,8 +100,10 @@ tasks:
     cmds:
       # Native: the engine's own tests, the exporters, the CLI end to end.
       - cargo test --workspace {{.PROFILE}}
-      # Python: the 137 tests that exercise the PyO3 layer.
-      - cargo test -p callix --features python {{.PROFILE}}
+      # Python: the 137 tests that exercise the PyO3 layer. The test binary
+      # links libpython, which a uv-installed interpreter keeps outside the
+      # loader's search path, so point the loader at the venv's LIBDIR.
+      - LD_LIBRARY_PATH="$("$PYO3_PYTHON" -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))')${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" cargo test -p callix --features python {{.PROFILE}}
 
   # ---------------------------------------------------------------------------
   # Command line and image

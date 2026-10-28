@@ -342,7 +342,7 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   a RESOLVES_TO that records `metadata["span"]` (the name an import brings in); a
   structural RESOLVES_TO is neither placed nor counted, and
   `RelationKind::is_reference` (reports, counts) stays the four kinds. The SCIP
-  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
+  encoder is hand-written protobuf, cross-checked against a rust-analyzer index. A SCIP symbol's `<project>` is its node's own sub-root (`Symbol.project`, the PROJECT that reaches it through CONTAINS/DECLARES in `Index::build`), the first PROJECT only for a node none reaches; distinct definitions that still share a symbol (CLASS and TYPE_ALIAS are both `#`) put the non-primary kind under a `<kind>/` namespace (`scip.rs::disambiguate`). Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
   structural checker the tests use.

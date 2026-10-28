@@ -251,3 +251,82 @@ fn scip_exports_resolves_to_with_span() {
         "{warnings:?}"
     );
 }
+
+#[test]
+fn scip_symbols_distinct_per_subroot() {
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"pl","kind":"project","qualified_name":"lib","name":"lib","file_path":null,"span":null,"metadata":{}},
+       {"id":"ps","kind":"project","qualified_name":"src","name":"src","file_path":null,"span":null,"metadata":{}},
+       {"id":"ml","kind":"module","qualified_name":"deps/lib","name":"deps/lib","file_path":null,"span":null,"metadata":{}},
+       {"id":"ms","kind":"module","qualified_name":"src","name":"src","file_path":null,"span":null,"metadata":{}},
+       {"id":"fl","kind":"file","qualified_name":"deps/lib/shim.h","name":"shim.h","file_path":"deps/lib/shim.h","span":null,"metadata":{}},
+       {"id":"fs","kind":"file","qualified_name":"src/z.c","name":"z.c","file_path":"src/z.c","span":null,"metadata":{}},
+       {"id":"zl","kind":"function","qualified_name":"zmalloc","name":"zmalloc","file_path":"deps/lib/shim.h","span":[1,1,1,36],"metadata":{"name_span":{"__span__":[1,7,1,14]}}},
+       {"id":"zs","kind":"function","qualified_name":"zmalloc","name":"zmalloc","file_path":"src/z.c","span":[1,1,1,45],"metadata":{"name_span":{"__span__":[1,7,1,14]}}},
+       {"id":"f","kind":"function","qualified_name":"f","name":"f","file_path":"src/z.c","span":[2,1,2,26],"metadata":{"name_span":{"__span__":[2,6,2,7]}}}],
+      "relations":[
+       {"source_id":"pl","target_id":"ml","kind":"contains","metadata":{}},
+       {"source_id":"ml","target_id":"fl","kind":"contains","metadata":{}},
+       {"source_id":"fl","target_id":"zl","kind":"declares","metadata":{}},
+       {"source_id":"ps","target_id":"ms","kind":"contains","metadata":{}},
+       {"source_id":"ms","target_id":"fs","kind":"contains","metadata":{}},
+       {"source_id":"fs","target_id":"zs","kind":"declares","metadata":{}},
+       {"source_id":"fs","target_id":"f","kind":"declares","metadata":{}},
+       {"source_id":"f","target_id":"zs","kind":"calls","metadata":{"span":{"__span__":[2,12,2,19]}}}]}"#;
+    let (bytes, _) = export(&Graph::from_json(json).unwrap());
+    let index = decode_scip(&bytes);
+    let defined_in = |symbol: &str| -> Vec<String> {
+        index
+            .documents
+            .iter()
+            .filter(|d| d.occurrences.iter().any(|o| o.symbol == symbol && o.roles & 1 == 1))
+            .map(|d| d.path.clone())
+            .collect()
+    };
+    assert_eq!(defined_in("callix . lib . . zmalloc()."), ["deps/lib/shim.h"]);
+    assert_eq!(defined_in("callix . src . . zmalloc()."), ["src/z.c"]);
+    let z = index.documents.iter().find(|d| d.path == "src/z.c").unwrap();
+    let call = z.occurrences.iter().find(|o| o.roles & 1 == 0).expect("the call is a reference");
+    assert_eq!(call.symbol, "callix . src . . zmalloc().");
+    assert!(index.external.is_empty(), "{:?}", index.external);
+}
+
+#[test]
+fn scip_single_project_symbols_unchanged() {
+    // `a.f` sits under the project; `loose.g` is reached by no CONTAINS edge and
+    // falls back to the first project. Both read exactly as before.
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"p","kind":"project","qualified_name":"proj","name":"proj","file_path":null,"span":null,"metadata":{}},
+       {"id":"fa","kind":"file","qualified_name":"a.py","name":"a.py","file_path":"a.py","span":null,"metadata":{}},
+       {"id":"f","kind":"function","qualified_name":"a.f","name":"f","file_path":"a.py","span":[1,1,2,10],"metadata":{"name_span":{"__span__":[1,5,1,6]}}},
+       {"id":"g","kind":"function","qualified_name":"loose.g","name":"g","file_path":"a.py","span":[3,1,4,10],"metadata":{"name_span":{"__span__":[3,5,3,6]}}}],
+      "relations":[
+       {"source_id":"p","target_id":"fa","kind":"contains","metadata":{}},
+       {"source_id":"fa","target_id":"f","kind":"declares","metadata":{}}]}"#;
+    let (bytes, _) = export(&Graph::from_json(json).unwrap());
+    let symbols: Vec<String> = decode_scip(&bytes).documents[0].occurrences.iter().map(|o| o.symbol.clone()).collect();
+    assert_eq!(symbols, ["callix . proj . . `a.f`().", "callix . proj . . `loose.g`()."]);
+}
+
+#[test]
+fn scip_class_and_type_alias_of_one_name_stay_distinct() {
+    // `typedef struct Fp {..} Fp;` is two nodes; the alias is listed first.
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"p","kind":"project","qualified_name":"p","name":"p","file_path":null,"span":null,"metadata":{}},
+       {"id":"fa","kind":"file","qualified_name":"a.h","name":"a.h","file_path":"a.h","span":null,"metadata":{}},
+       {"id":"ta","kind":"type_alias","qualified_name":"Fp","name":"Fp","file_path":"a.h","span":[1,1,3,5],"metadata":{"name_span":{"__span__":[3,3,3,5]}}},
+       {"id":"c","kind":"class","qualified_name":"Fp","name":"Fp","file_path":"a.h","span":[1,9,3,2],"metadata":{"name_span":{"__span__":[1,16,1,18]}}}],
+      "relations":[
+       {"source_id":"p","target_id":"fa","kind":"contains","metadata":{}},
+       {"source_id":"fa","target_id":"ta","kind":"declares","metadata":{}},
+       {"source_id":"fa","target_id":"c","kind":"declares","metadata":{}}]}"#;
+    let (bytes, _) = export(&Graph::from_json(json).unwrap());
+    let occurrences = &decode_scip(&bytes).documents[0].occurrences;
+    let count = |symbol: &str| occurrences.iter().filter(|o| o.symbol == symbol && o.roles & 1 == 1).count();
+    assert_eq!(count("callix . p . . Fp#"), 1, "the class keeps the plain symbol");
+    assert_eq!(count("callix . p . . type_alias/Fp#"), 1, "{occurrences:?}");
+    assert_eq!(occurrences.len(), 2);
+}

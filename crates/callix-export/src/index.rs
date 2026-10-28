@@ -8,7 +8,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::Warning;
-use crate::model::{Graph, Node, NodeKind, Span};
+use crate::model::{Graph, Node, NodeKind, RelationKind, Span};
 
 /// Node kinds that are definitions with a position of their own.
 pub(crate) const DEFINITION_KINDS: [NodeKind; 8] = [
@@ -74,6 +74,10 @@ pub(crate) struct Doc {
 pub(crate) struct Symbol<'g> {
     pub node: &'g Node,
     pub external: bool,
+    /// The name of the sub-root (PROJECT) this node sits under, reached through
+    /// CONTAINS and DECLARES; `None` when no PROJECT reaches it (and for every
+    /// external symbol). LSIF ignores it.
+    pub project: Option<&'g str>,
 }
 
 impl Symbol<'_> {
@@ -105,6 +109,38 @@ pub(crate) struct Index<'g> {
     pub skipped_references: usize,
     pub unplaced_references: usize,
     pub ref_edges: usize,
+    /// Node id to the name of the PROJECT that reaches it.
+    project_of: HashMap<&'g str, &'g str>,
+}
+
+/// Maps every node id to the name of the first PROJECT (in graph order) that
+/// reaches it through CONTAINS / DECLARES. Walking down from each PROJECT is
+/// O(nodes + edges); "already assigned" doubles as the cycle guard.
+fn project_map(graph: &Graph) -> HashMap<&str, &str> {
+    let mut children: HashMap<&str, Vec<&str>> = HashMap::new();
+    for relation in &graph.relations {
+        if matches!(relation.kind, RelationKind::Contains | RelationKind::Declares) {
+            children.entry(relation.source_id.as_str()).or_default().push(relation.target_id.as_str());
+        }
+    }
+    let mut owner: HashMap<&str, &str> = HashMap::new();
+    for project in graph.nodes_of(NodeKind::Project) {
+        let name = project.name.as_str();
+        if owner.contains_key(project.id.as_str()) {
+            continue;
+        }
+        owner.insert(project.id.as_str(), name);
+        let mut stack = vec![project.id.as_str()];
+        while let Some(id) = stack.pop() {
+            for &child in children.get(id).into_iter().flatten() {
+                if !owner.contains_key(child) {
+                    owner.insert(child, name);
+                    stack.push(child);
+                }
+            }
+        }
+    }
+    owner
 }
 
 impl<'g> Index<'g> {
@@ -119,6 +155,7 @@ impl<'g> Index<'g> {
             skipped_references: 0,
             unplaced_references: 0,
             ref_edges: 0,
+            project_of: project_map(graph),
         };
         index.collect();
         index
@@ -139,7 +176,8 @@ impl<'g> Index<'g> {
             return i;
         }
         let i = self.symbols.len();
-        self.symbols.push(Symbol { node, external });
+        let project = if external { None } else { self.project_of.get(node.id.as_str()).copied() };
+        self.symbols.push(Symbol { node, external, project });
         self.symbol_index.insert(node.id.as_str(), i);
         i
     }

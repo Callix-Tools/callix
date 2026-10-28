@@ -86,7 +86,13 @@ is exact.
 
 A symbol reads `callix . <project> . . <descriptor>`: the qualified name as one
 backtick-escaped descriptor, suffixed by what it is — `#` for a type, `().` for a
-callable, `.` for a term, `(…)` for a parameter. rust-analyzer's own symbols,
+callable, `.` for a term, `(…)` for a parameter. `<project>` is the sub-root
+(PROJECT) the definition belongs to, so a workspace with several sub-roots keeps
+same-named definitions apart; a definition no PROJECT contains uses the first one.
+When two definitions would still share a symbol (C `typedef struct S S` is a class
+and a type alias, both `#`), the class keeps the plain symbol and the type alias —
+more generally the non-primary kind — is written under a `<kind>/` namespace, e.g.
+`type_alias/S#`. rust-analyzer's own symbols,
 which the graph keeps verbatim for Rust's external references, are used as they
 are, and the definitions callix indexes for the Rust fixture sit at exactly the
 ranges rust-analyzer's index puts them (a test checks it against a real index).

@@ -69,6 +69,10 @@ is which edges a program has.
 * A function reached through a variable, argument, return value or container is
   an edge to the function (higher-order cases follow PyCG here). callix's
   type-based resolvers do not follow values, and those cases show it.
+* A Rust `macro_rules!` is a function of the program, named `m::name` (`m::util::name`
+  in a module), and every invocation of it is an edge to it; the calls its expansion
+  makes are edges of the caller. C and C++ preprocessor macros stay expansion-only,
+  with no node of their own.
 
 | | module-level code | function | method | constructor |
 |---|---|---|---|---|

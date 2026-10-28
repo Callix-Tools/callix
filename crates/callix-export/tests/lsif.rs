@@ -228,3 +228,34 @@ fn a_go_package_graph_is_valid_lsif() {
     // the package definition, the import path, the qualifier and `fmt`
     assert!(labelled(&elements, "range").len() >= 4);
 }
+
+#[test]
+fn a_resolves_to_with_a_position_is_a_reference() {
+    let json = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+      "nodes":[
+       {"id":"fl","kind":"file","qualified_name":"src/lib.rs","name":"lib.rs","file_path":"src/lib.rs","span":null,"metadata":{}},
+       {"id":"fs","kind":"file","qualified_name":"src/shapes.rs","name":"shapes.rs","file_path":"src/shapes.rs","span":null,"metadata":{}},
+       {"id":"imp","kind":"import","qualified_name":"src/lib.rs::crate::shapes::Circle","name":"crate::shapes::Circle","file_path":"src/lib.rs","span":[1,1,1,31],"metadata":{}},
+       {"id":"c","kind":"class","qualified_name":"demo::shapes::Circle","name":"Circle","file_path":"src/shapes.rs","span":[1,1,1,19],"metadata":{"name_span":{"__span__":[1,12,1,18]}}}],
+      "relations":[
+       {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{}},
+       {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{"span":{"__span__":[1,24,1,30]},"resolution":"name"}}]}"#;
+    let graph = Graph::from_json(json).unwrap();
+    let mut out = Vec::new();
+    Lsif.export(&graph, &mut out, &Options::default()).unwrap();
+    let el = check_lsif(&String::from_utf8(out).unwrap());
+    assert!(
+        labelled(&el, "document").iter().any(|d| d["uri"].as_str().unwrap().ends_with("src/lib.rs")),
+        "src/lib.rs has a document"
+    );
+    let hit = labelled(&el, "range").into_iter().any(|r| {
+        r["start"] == serde_json::json!({"line": 0, "character": 23})
+    });
+    assert!(hit, "the leaf's range is not exported");
+    let refs: usize = edges(&el, "item")
+        .iter()
+        .filter(|i| i["property"] == "references")
+        .map(|i| i["inVs"].as_array().unwrap().len())
+        .sum();
+    assert_eq!(refs, 1);
+}

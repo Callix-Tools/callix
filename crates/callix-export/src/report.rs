@@ -249,9 +249,31 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
             "rust-analyzer scip, by types; needs rust-analyzer and Cargo",
             "static calls and concrete methods; a function value is followed by a flow pass and \
              marked `flow` (arrays and `for` loops, a closed list of iterator and thread callbacks); \
-             the calls in macro arguments are found and a `macro_rules!` of the same file is \
-             expanded; a call through a trait lands on the trait's method, not on an impl; implicit \
-             calls (`Drop`, operators, `for` over an iterator) are not edges",
+             the calls in macro arguments are found, nested std macros included; a `macro_rules!` \
+             is a function and every invocation of a macro the project defines is a call to it (an item-level one from its file; invocations inside `impl` and `trait` bodies are not recorded); \
+             a `macro_rules!` of the same file is expanded, one of another file and procedural \
+             macros are not; a call through a trait lands on the trait's method, not on an impl; implicit \
+             calls (`Drop`, operators, `for` over an iterator) are not edges; every type name in a \
+             signature, field, bound or `where` clause, `let`, alias, cast, closure or `impl` header \
+             is a type annotation, and the self type and trait of an `impl` (and the trait of an \
+             impl for a type outside the project) are recorded on the file; every segment of a \
+             path before the last and every `pub(crate)` / `pub(super)` / `pub(in path)` is a \
+             reference to the type or MODULE it names, while `self` in a path and `<T as Trait>::` \
+             qualifiers are not recorded, and a reference to a MODULE is not exported to LSIF or \
+             SCIP (a MODULE has no file to define it in); a const or static read, a struct \
+             literal's type and fields (shorthand included) and the paths and fields of match and \
+             `let` patterns are references, while a read of a local or a parameter is not an edge; \
+             enum variants, the associated types and consts of impls and traits and the items of \
+             a function body are nodes, and the calls and reads in a const or static initializer \
+             belong to the const; names inside the \
+             arguments of a macro the project defines and the bare receiver of a field access \
+             are not recorded; each name a `use` brings in (through groups and `as`, not `*` or \
+             `self`) resolves from its IMPORT to its definition, by path for a path of the crate \
+             (`name`, relative 2018 paths included) and through rust-analyzer otherwise, and \
+             `mod x;` is a reference to the MODULE (not exported); a `use` inside a function \
+             body, the prefix segments of a use path and a `#[path]` module are not recorded; \
+             same-named methods of several impls of one type (different traits or trait \
+             arguments, cfg variants) are one node, and a call to any of them is an edge to it",
         ),
         "php" => (
             "symbol table, by names",

@@ -219,3 +219,33 @@ fn a_go_package_is_a_definition_and_its_qualifier_and_import_path_reference_it()
         assert!(warnings.iter().all(|w| w.code != code), "{code}: {warnings:?}");
     }
 }
+
+/// A file that only re-exports has no definition. Its `use` leaf is a RESOLVES_TO with a
+/// position, which is a reference occurrence, so the file still gets a document.
+const PUB_USE_ONLY: &str = r#"{"schema_version":1,"metadata":{"resolver_status":"ok"},
+  "nodes":[
+   {"id":"fl","kind":"file","qualified_name":"src/lib.rs","name":"lib.rs","file_path":"src/lib.rs","span":null,"metadata":{}},
+   {"id":"fs","kind":"file","qualified_name":"src/shapes.rs","name":"shapes.rs","file_path":"src/shapes.rs","span":null,"metadata":{}},
+   {"id":"imp","kind":"import","qualified_name":"src/lib.rs::crate::shapes::Circle","name":"crate::shapes::Circle","file_path":"src/lib.rs","span":[1,1,1,31],"metadata":{}},
+   {"id":"c","kind":"class","qualified_name":"demo::shapes::Circle","name":"Circle","file_path":"src/shapes.rs","span":[1,1,1,19],"metadata":{"name_span":{"__span__":[1,12,1,18]}}}],
+  "relations":[
+   {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{}},
+   {"source_id":"imp","target_id":"c","kind":"resolves_to","metadata":{"span":{"__span__":[1,24,1,30]},"resolution":"name"}}]}"#;
+
+#[test]
+fn a_document_with_only_pub_use_is_exported() {
+    let (bytes, warnings) = export(&Graph::from_json(PUB_USE_ONLY).unwrap());
+    let index = decode_scip(&bytes);
+    let lib = index
+        .documents
+        .iter()
+        .find(|d| d.path == "src/lib.rs")
+        .expect("src/lib.rs is a document");
+    assert_eq!(lib.occurrences.len(), 1, "{:?}", lib.occurrences);
+    let leaf = &lib.occurrences[0];
+    assert_eq!(leaf.roles & 1, 0, "a reference, not a definition");
+    assert!(leaf.symbol.contains("Circle"), "{}", leaf.symbol);
+    assert_eq!((leaf.range[0], leaf.range[1]), (0, 23));
+    // The structural RESOLVES_TO (no position) yields nothing and is not 'unplaced'.
+    assert!(warnings.iter().all(|w| w.code != "no-reference-span"), "{warnings:?}");
+}

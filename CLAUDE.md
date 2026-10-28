@@ -198,8 +198,14 @@ documents rather than by touching the queries.
 Do not assume Python's shape elsewhere. `MODULE` is a dotted name in Python and
 TypeScript, a **package directory** in Go (its `qualified_name` equals the
 import path, so internal imports bind by direct lookup), and a Rust module path
-in `rustlang`. Rust dispatches `impl` blocks in a second pass because a type may
-be declared below its `impl`.
+in `rustlang`; an inline `mod foo { ... }` is a MODULE too (without a `file_path`
+or span, like the file modules). Rust dispatches `impl` blocks in a second pass
+because a type may be declared below its `impl`. In `rustlang` an enum variant is a
+CLASS `Enum.Variant` (called like a tuple struct), an associated type a TYPE_ALIAS and
+an associated const a VARIABLE `Type.NAME`, an item in a function body is qualified
+under the function (`m::f::Local`), and a const or static initializer's uses are
+enclosed by the const. A Rust method is `{module}::{Type}.{method}` with no trait in
+the name, so one node may stand for several impls, through `declared_at`.
 
 In Go every name of a multi-name field (`a, b int`) is its own ATTRIBUTE, and the fields of an anonymous struct field type (also behind `*`, `[]`, `[N]`, a map value, a chan) are ATTRIBUTEs `T.F.<anon>.G`, DECLARED by the ATTRIBUTE `F`. There is no node for `<anon>`, and no `base`/`INHERITS_FROM` for types embedded in such a struct.
 
@@ -299,8 +305,10 @@ edge a resolution pass writes has `metadata["resolution"]` — `definition`,
   (`ty_embedded.rs::prepare`): resolution that depends on what surrounds the
   directory is not a property of the directory.
 - **`declared_at`** on a node lists extra name spans the type checker may answer
-  with (overload signatures, a function-valued field); `SpanIndex::from_graph`
-  reads it.
+  with (overload signatures, a function-valued field, and, in Rust, every later
+  declaration of a qualified name in the same file: same-named methods of different
+  impls of one type (`impl Add<S>` / `impl Add<&S>`, an inherent and a trait method)
+  and cfg variants); `SpanIndex::from_graph` reads it.
 
 `callix analyze` prints where each language's calls went, and
 `callix report -t status` counts the edges by `resolution`; the per-language
@@ -344,7 +352,11 @@ A Cargo workspace beside the binding (the root package stays `callix`, so maturi
   encoder is hand-written protobuf, cross-checked against a rust-analyzer index. Each exporter is `fn(&Graph, &mut dyn Write,
   &Options) -> Result<Vec<Warning>>`: it streams, and it reports what the format
   could not carry instead of silently dropping it. `lsif::check::validate` is the
-  structural checker the tests use.
+  structural checker the tests use. `index.rs` places an edge by
+  `Relation::is_placed_reference()`: a `CALLS`/`REFERENCES`/`HAS_TYPE`/`INHERITS_FROM`, or a
+  `RESOLVES_TO` that carries `metadata["span"]` (the name an import brings in). The
+  structural, unspanned `RESOLVES_TO` of an import is not a reference, and a file that
+  only re-exports still gets a document. `RelationKind::is_reference` is unchanged, for reports and counts.
 - **`crates/callix-cli`** is the `callix` binary. It depends on `callix` with the
   default features, i.e. **without** `python`: the native engine, with nothing
   linked to libpython (`cargo tree -p callix-cli` has no pyo3, `ldd` no python).
@@ -393,6 +405,10 @@ Things that are easy to get wrong:
   in `collect_php_files` applies only relative to a sub-root, so a vendor package
   made a root of its own was walked in full and its namespaces became "internal"
   to the resolver.
+- **A Rust annotation is every type name under the type**, the last segment of a path, once per site (`recorded` in `src/rustlang/visitor.rs`), and never the declaring name of a generic parameter. `Result<A, B>`, bounds, `where` clauses, `let`/alias/cast/closure types, tuple fields and enum payloads all count. An `impl` header's annotations, and the `base` of an `impl Trait for T` whose `T` is not a project class, are enclosed by the **FILE**, never the MODULE: a Rust MODULE has no `file_path`, so `note_site_file` records no `metadata["file"]` and `crates/callix-export/src/index.rs` drops an edge it cannot place.
+- **A Rust path qualifier is a reference, never an annotation.** Every segment of a path before the last (`Foo` in `Foo::new()`, `inner`, `crate`, `super`, and every segment of `pub(in path)`, with the `crate`/`super` of `pub(crate)`/`pub(super)`) is a `read` occurrence, so the edge is a `REFERENCES` with `access: read`: a module is not a type and a `HAS_TYPE` to a MODULE would describe the answer as better than it is. It shares the one-site-one-occurrence set (`recorded`) with annotations. `self`, `<T as Trait>::` and primitive qualifiers (`u8::MAX`) are not recorded: no query that is certain to fail. A visibility is enclosed by the declaration, for a `mod` or a `use` by the FILE (a MODULE has no `file_path`). A module answer binds through `module_sites` in `src/rustlang/adapter.rs` (the start of a file, 1:1, maps to its file module; the name of an inline `mod` maps to its MODULE), because a MODULE has no span and the SpanIndex cannot see it.
+- **A Rust name in expression or pattern position is a `read` with `detail: "value"`.** This covers a const or static read, the last segment of a path (`Mode::A`, `u32::MAX`), a struct literal's type and each field initializer or shorthand, the type path and fields of a struct or tuple-struct pattern, and an uppercase identifier in a pattern (`src/rustlang/visitor.rs::collect_values`). A lowercase pattern identifier is a binding and is not recorded. Callees, plain-name arguments and field accesses keep their own occurrence through the shared `recorded` set (`collect_calls` marks them). Names inside a macro the project defines, inside an opaque macro such as `matches!`, and the bare receiver of `x.f` are not recorded (the arguments of a std macro such as `println!` are blanked first and read as expressions; the blanking repeats until nothing changes, so `vec!(f())` inside `assert_eq!(..)` is reached). In `resolve_pass`, a value answer that lands on a local or a parameter (SCIP `local` symbol, which `symbol_to_ref` marks `ResolvedRef.kind == "local"`, or a PARAMETER or a function-local VARIABLE) is dropped: no edge and no EXTERNAL_SYMBOL. An enum variant stays an `unlocated` external until variants are nodes (RUST-06).
+- **A Rust `macro_rules!` is a FUNCTION** named `module::name` (qualified under the function when written in a body) with `metadata["macro"] = "macro_rules"`; it gets a DECLARES edge from the FILE and, like every Rust function, no CONTAINS. Its invocation name is a `call` occurrence for any macro the crate defines (`RustExtractor::with_project_macros`, a crate-wide name set), on the last path segment of `crate::m!`. An item-level invocation (`name!(..);` outside any function) is a `call` occurrence enclosed by the FILE, never the MODULE (a Rust MODULE has no file_path), so its CALLS edge goes from the FILE to the macro's FUNCTION node; item-level invocations arrive as an `expression_statement` wrapping the `macro_invocation`, which `dispatch_items` unwraps. Invocations inside `impl` and `trait` bodies are not recorded. `resolve_pass` skips nodes carrying `metadata["macro"]` when it binds the `name:` callees written in a macro body, since such a token names a function. A fn and a macro with the same name in one module collapse into one node (known limit).
 - **Language detection uses `collect_files`, not `can_handle`.** `can_handle` only
   looks at the root itself, so a Go module in a subdirectory fails it while the
   sources are found.
@@ -413,8 +429,8 @@ Things that are easy to get wrong:
   type (`map[K]V` depends on both) and skips predeclared names and type
   parameters in scope in the visitor, because neither is a node and a type
   parameter would become a per-site `annotation@` external. Interface method
-  results are annotated too. `src/rustlang/visitor.rs::walk_type` has the same
-  root-skip, tracked separately (RUST-01).
+  results are annotated too. `src/rustlang/visitor.rs::walk_type` had the same
+  root-skip and includes its root too.
   Annotations are recorded at: receivers (enclosed by the method), the
   right-hand side and the constraints of type specs and aliases (enclosed by the
   TYPE_ALIAS or CLASS), `var`/`const` types (enclosed by the VARIABLE, one per
@@ -459,6 +475,18 @@ Things that are easy to get wrong:
   (class, function or const) without going through the file's alias map, a
   namespace alias (`use App\Contracts;`) binds to its MODULE, and the IMPORT
   node carries the clause's span.
+- **A Rust `use` leaf resolves from its IMPORT, and `mod x;` is a reference from the
+  FILE.** The IMPORT stays one node per declaration; the visitor reports one `UseSite`
+  per name the tree brings in (`src/rustlang/visitor.rs`). The structure pass
+  (`build_crate_structure`) binds each by path once every file of the crate is read
+  (`mod util;` in lib.rs is met before util.rs): an `internal` leaf by its absolute path,
+  an `unknown` one as a 2018 path relative to the importing module, and writes a
+  `RESOLVES_TO` with `span` and `resolution: name` (a `mod x;` is a `REFERENCES` FILE ->
+  MODULE with `access: read`). Only leaves it could not bind (std, dependencies, re-exports)
+  go to the resolver as `import` occurrences, so no site is answered twice; an unbound
+  answer with no name is dropped. `*`, `self`, `crate`, `super`, the `as` alias, a `use` inside a
+  function body and a `#[path]` module are not sites. Edges into a MODULE are not exported
+  (a Rust MODULE has no file).
 - **An `EXTERNAL_SYMBOL` keyed `call@path:line:col` names a site, not a symbol.**
   The LSIF exporter reads the identifier from the source for its hover and gives
   it no moniker.

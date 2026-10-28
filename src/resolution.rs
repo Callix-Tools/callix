@@ -22,6 +22,7 @@
 //!   know). The edge points at a synthetic external symbol keyed by the call site.
 //! * `name` - matched by name in a symbol table, with no type information. Only
 //!   the adapters whose backend is a table (PHP's own, the C family's) write it,
+//!   and Rust's structure pass, for a `use` path or a `mod x;` it binds by path,
 //!   and `ambiguous` accompanies it when several declarations carried the name.
 
 use crate::py::prelude::*;
@@ -154,6 +155,14 @@ mod tests {
     fn a_read_of_a_variable_is_a_definition() {
         let r = Resolution::classify(RelationKind::References, Some(NodeKind::Variable), "internal");
         assert_eq!(r, Resolution::Definition);
+    }
+
+    #[test]
+    fn a_reference_to_a_field_or_a_struct_is_a_definition() {
+        for kind in [NodeKind::Attribute, NodeKind::Class, NodeKind::Variable] {
+            let r = Resolution::classify(RelationKind::References, Some(kind), "internal");
+            assert_eq!(r, Resolution::Definition);
+        }
     }
 
     #[test]

@@ -183,34 +183,34 @@
   },
   "rust": {
     "nodes": {
-      "attribute": 3,
-      "class": 3,
-      "external_symbol": 5,
+      "attribute": 5,
+      "class": 11,
+      "external_symbol": 7,
       "file": 2,
-      "function": 4,
+      "function": 6,
       "import": 2,
       "method": 4,
-      "module": 2,
-      "parameter": 4,
+      "module": 3,
+      "parameter": 6,
       "project": 1,
-      "type_alias": 1,
-      "variable": 1
+      "type_alias": 3,
+      "variable": 4
     },
     "relations": {
-      "calls": 9,
-      "contains": 4,
-      "declares": 26,
-      "has_type": 1,
+      "calls": 11,
+      "contains": 5,
+      "declares": 54,
+      "has_type": 17,
       "imports": 2,
       "inherits_from": 1,
-      "references": 3,
-      "resolves_to": 2
+      "references": 16,
+      "resolves_to": 6
     },
     "resolver": {
-      "external": 4,
-      "internal": 10,
-      "queries": 16,
-      "resolved": 16,
+      "external": 18,
+      "internal": 26,
+      "queries": 51,
+      "resolved": 51,
       "unresolved": 0
     },
     "resolver_status": "ok"

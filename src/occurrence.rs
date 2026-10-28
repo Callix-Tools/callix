@@ -18,7 +18,9 @@ use crate::span::Span;
 /// (the flow pass reads it).
 ///
 /// `detail` carries what a role cannot: `arg:LINE:COL:INDEX` (or `...:=NAME` for a
-/// keyword) on a `read` that is an argument of the call at `LINE:COL`.
+/// keyword) on a `read` that is an argument of the call at `LINE:COL`, and `value`
+/// on a Rust `read` / `write` of a name in expression or pattern position (an answer
+/// that lands on a local or a parameter is dropped).
 #[gen_stub_pyclass]
 #[pyclass(module = "callix._core", frozen, get_all, from_py_object)]
 #[derive(Clone)]

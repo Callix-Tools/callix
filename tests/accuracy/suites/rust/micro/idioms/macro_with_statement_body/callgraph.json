@@ -1,1 +1,1 @@
-{"m::main": ["m::setup", "m::run"], "m::setup": [], "m::run": []}
+{"m::main": ["m::setup", "m::run", "m::launch"], "m::setup": [], "m::run": [], "m::launch": []}

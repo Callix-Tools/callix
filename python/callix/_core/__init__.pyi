@@ -533,7 +533,9 @@ class OccurrenceRef:
     (the flow pass reads it).
     
     `detail` carries what a role cannot: `arg:LINE:COL:INDEX` (or `...:=NAME` for a
-    keyword) on a `read` that is an argument of the call at `LINE:COL`.
+    keyword) on a `read` that is an argument of the call at `LINE:COL`, and `value`
+    on a Rust `read` / `write` of a name in expression or pattern position (an answer
+    that lands on a local or a parameter is dropped).
     """
     @property
     def role(self) -> builtins.str: ...

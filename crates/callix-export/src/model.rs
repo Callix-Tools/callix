@@ -213,6 +213,14 @@ pub struct Relation {
 }
 
 impl Relation {
+    /// Whether an index places this edge at a position: a reference kind, or a
+    /// `RESOLVES_TO` that records where the name it resolves was written (the name an
+    /// import brings in). The structural `RESOLVES_TO` of an import has no span and is
+    /// not one. `RelationKind::is_reference` is unchanged, for reports and counts.
+    pub fn is_placed_reference(&self) -> bool {
+        self.kind.is_reference() || (self.kind == RelationKind::ResolvesTo && self.span().is_some())
+    }
+
     /// Where the edge was written (`metadata["span"]`), when it records that.
     pub fn span(&self) -> Option<Span> {
         Span::from_value(self.metadata.get("span")?)

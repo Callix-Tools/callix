@@ -8,7 +8,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::Warning;
-use crate::model::{Graph, Node, NodeKind, RelationKind, Span};
+use crate::model::{Graph, Node, NodeKind, Span};
 
 /// Node kinds that are definitions with a position of their own.
 pub(crate) const DEFINITION_KINDS: [NodeKind; 8] = [
@@ -176,11 +176,7 @@ impl<'g> Index<'g> {
 
         let mut seen: HashSet<(usize, Span, usize)> = HashSet::new();
         for relation in &graph.relations {
-            // A RESOLVES_TO that carries a span is the name an import brings in, as
-            // the resolver answered it; the structural ones carry no metadata.
-            let placed_import =
-                matches!(relation.kind, RelationKind::ResolvesTo) && relation.span().is_some();
-            if !relation.kind.is_reference() && !placed_import {
+            if !relation.is_placed_reference() {
                 continue;
             }
             self.ref_edges += 1;

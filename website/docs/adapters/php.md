@@ -77,6 +77,13 @@ The alias map is per kind, as in PHP: an unqualified function call goes through
 only. A class alias (`use Lib\Once;`) applies to class positions and to the
 head of a qualified name (`Models\User`), so it does not capture `once()`, and
 an unqualified call never binds to a class.
+A name written before `::` (a static call, a static property, a class constant
+or `::class`) is a class position, like a type, `new` or `instanceof`. It goes
+through the class aliases, then the namespace, then PSR-4, and binds only to a
+class, interface, trait or enum - never to a function or constant of the same
+name (`Str::` does not reach `str()`). An undeclared qualifier is reported
+under its namespaced name, because PHP does not fall back to the global
+namespace for classes.
 Receiver types are inferred for the cases that are syntactically recoverable and
 overwhelmingly common — `$x = new Foo()` followed by `$x->m()`, promoted
 constructor properties, `$this->`, and `self::` / `static::` / `parent::`.

@@ -980,9 +980,9 @@ impl PhpResolver {
                 return Answer::Internal(site);
             }
         }
-        // A class the tables miss may still be reachable: through PSR-4, or —
-        // in a value position — through a `use` alias the constant map does not
-        // hold.
+        // A class the tables miss may still be reachable through PSR-4. A bare name
+        // in value position can also meet a class this way; `::` qualifiers no longer
+        // come here, they are class positions (`walk_class_qualifier`).
         if matches!(kind, NameKind::Class | NameKind::Value)
             && let ClassRef::Declared(key) = self.class_ref(name, doc, namespace)
             && let Some(entry) = self.classes.get(&key)
@@ -1523,6 +1523,26 @@ impl PhpResolver {
             return;
         }
         self.record_name(doc, source, node, &scope.namespace, NameKind::Class);
+    }
+
+    /// The left side of `::` (`Foo::m()`, `Foo::$p`, `Foo::C`, `Foo::class`) is a
+    /// class position, like a type, `new` or `instanceof`: a name there binds to a
+    /// class, interface, trait or enum and never to a function or constant of the
+    /// same name (`Str::` must not reach `str()`). Anything that is not a plain
+    /// name (`self`, `static`, `parent`, `$x`, an expression) goes through
+    /// `walk_uses`, which already handles it.
+    fn walk_class_qualifier(
+        &mut self,
+        doc: u32,
+        source: &[u8],
+        node: TsNode<'_>,
+        scope: &mut UseScope,
+    ) {
+        if matches!(node.kind(), "name" | "qualified_name" | "relative_name") {
+            self.record_class_name(doc, source, node, scope);
+        } else {
+            self.walk_uses(doc, source, node, scope);
+        }
     }
 
     /// The class an expression evaluates to, as far as a symbol table can tell.
@@ -2241,7 +2261,7 @@ impl PhpResolver {
             }
         }
         if let Some(owner) = owner {
-            self.walk_uses(doc, source, owner, scope);
+            self.walk_class_qualifier(doc, source, owner, scope);
         }
     }
 
@@ -2273,7 +2293,7 @@ impl PhpResolver {
             let name = ts::text(member, source).into_owned();
             self.record_member(doc, member, &receiver, &name, Slot::Constant);
         }
-        self.walk_uses(doc, source, qualifier, scope);
+        self.walk_class_qualifier(doc, source, qualifier, scope);
     }
 
     /// `catch (FooError | BarError $e) { … }` — a type position, and one that

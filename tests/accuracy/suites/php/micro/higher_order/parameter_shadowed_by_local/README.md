@@ -1,1 +1,1 @@
-A parameter reassigned before it is called holds what was assigned last. The flow pass is flow-insensitive, so it also keeps what the caller passed: this case is kept failing (an extra edge `run -> cb`) so that the limit stays visible.
+A parameter assigned by a top-level statement of the body, before its call and without reading itself, holds only what was assigned at that call: the values callers pass do not reach it. The flow pass is otherwise flow-insensitive; see `parameter_reassigned_in_branch` for the case that stays a union.

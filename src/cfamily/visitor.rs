@@ -201,6 +201,25 @@ fn descendants<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
     out
 }
 
+/// Like `descendants`, but a `struct`, `union` or `class` specifier that has a
+/// body (other than `node` itself) is yielded and NOT entered: the members of a
+/// class defined in a function body are walked by their own definitions, so
+/// their calls and locals must not be attributed to the enclosing function.
+fn body_nodes<'tree>(node: TsNode<'tree>) -> Vec<TsNode<'tree>> {
+    let mut out = Vec::new();
+    let mut stack = vec![node];
+    while let Some(current) = stack.pop() {
+        out.push(current);
+        let record = matches!(current.kind(), "struct_specifier" | "union_specifier" | "class_specifier")
+            && current.child_by_field_name("body").is_some()
+            && current.id() != node.id();
+        if !record {
+            stack.extend(ts::children(current));
+        }
+    }
+    out
+}
+
 /// Declarator kinds a chain ends at.
 ///
 /// `identifier`, `field_identifier` and `type_identifier` are three distinct
@@ -925,7 +944,9 @@ fn collect_record_scope(
     found: &mut DeclaredScopes,
 ) {
     if let Some(name) = node.child_by_field_name("name") {
-        let text = ts::text(name, source).into_owned();
+        // `class Outer::Inner {` declares `Inner`.
+        let (_, leaf) = split_qualified(name, source);
+        let text = ts::text(bare_name(leaf), source).into_owned();
         if !text.is_empty() && !found.records.contains(&text) {
             found.records.push(text);
         }
@@ -1538,13 +1559,19 @@ impl<'a> Reader<'a> {
         };
         let body = node.child_by_field_name("body");
 
-        let (simple, name_span, span, doc) = match (node.child_by_field_name("name"), typedef) {
+        let (simple, name_span, span, doc, extra) = match (node.child_by_field_name("name"), typedef) {
             (Some(name_node), _) => {
-                (self.text(name_node), ts::span(name_node), ts::span(node), self.doc_for(node))
+                // `class Outer::Inner {` names `Inner`, inside the scope `Outer`.
+                let (extra, leaf) = split_qualified(name_node, self.source);
+                (self.text(leaf), ts::span(bare_name(leaf)), ts::span(node), self.doc_for(node), extra)
             }
-            (None, Some((leaf, definition))) if body.is_some() => {
-                (self.text(leaf), ts::span(leaf), ts::span(definition), self.doc_for(definition))
-            }
+            (None, Some((leaf, definition))) if body.is_some() => (
+                self.text(leaf),
+                ts::span(leaf),
+                ts::span(definition),
+                self.doc_for(definition),
+                Vec::<String>::new(),
+            ),
             _ => {
                 if let Some(body) = body
                     && self.in_member_scope()
@@ -1556,7 +1583,7 @@ impl<'a> Reader<'a> {
         };
 
         let linkage = self.frame_linkage();
-        let qname = self.qualify_in(&[], &simple, linkage);
+        let qname = self.qualify_in(&extra, &simple, linkage);
         let modifiers = Modifiers::read(node, self.source);
         let owner = self.owner();
         let access = self.access();
@@ -1608,8 +1635,10 @@ impl<'a> Reader<'a> {
         let Some(body) = body else { return };
         // `class` members default to private, `struct` and `union` to public.
         let member_access = if record_kind == "class" { "private" } else { "public" };
+        let mut components = extra;
+        components.push(simple);
         self.push_frame(
-            vec![simple],
+            components,
             Frame {
                 parts: 0,
                 owner: record_owner,
@@ -1878,6 +1907,32 @@ impl<'a> Reader<'a> {
 
     // -- functions and data -------------------------------------------------
 
+    /// A class, struct or union defined in a function body.
+    ///
+    /// It is a CLASS qualified by the callable's full qualified name
+    /// (`run()::State`; in C `run::State`), owned by the callable so the callable
+    /// DECLARES it. The scope is replaced by that name for the duration of
+    /// `on_record`, whose ordinary member frame then qualifies the fields,
+    /// methods, constructors and nested classes under it. The linkage is External
+    /// because the callable's name already carries the file for an internal one;
+    /// `qualify` must not add it a second time.
+    fn declare_local_record(&mut self, node: TsNode<'_>, owner: &Owner) {
+        let Owner::Decl { qualified_name, .. } = owner else {
+            return;
+        };
+        let saved = std::mem::replace(&mut self.parts, vec![qualified_name.clone()]);
+        self.frames.push(Frame {
+            parts: 0,
+            owner: owner.clone(),
+            linkage: Linkage::External,
+            access: "",
+            member: false,
+        });
+        self.on_record(node, None);
+        self.frames.pop();
+        self.parts = saved;
+    }
+
     /// A record definition written inline as a declaration's type.
     ///
     /// `struct engine { … } e;` at file scope and `class In { … };` inside
@@ -1937,7 +1992,7 @@ impl<'a> Reader<'a> {
     /// land on one and the flow pass can follow what it holds. Nothing else needs a
     /// node for a local, and a node per local would multiply the graph.
     fn declare_called_locals(&mut self, body: TsNode<'_>, owner: &Owner, function_qname: &str) {
-        let nodes = descendants(body);
+        let nodes = body_nodes(body);
         let mut called: HashSet<String> = HashSet::new();
         for node in &nodes {
             if node.kind() != "call_expression" {
@@ -2131,7 +2186,7 @@ impl<'a> Reader<'a> {
             }
         }
         if let Some(body) = node.child_by_field_name("body") {
-            for declaration in descendants(body) {
+            for declaration in body_nodes(body) {
                 if declaration.kind() != "declaration" {
                     continue;
                 }
@@ -2958,7 +3013,7 @@ impl<'a> Reader<'a> {
     /// of a file-scope variable, which C spells with a bare identifier and
     /// nothing else, is invisible — a member access through `.` or `->` is not.
     fn collect_body(&mut self, scope: TsNode<'_>, owner: &Owner, context: &BodyContext) {
-        for node in descendants(scope) {
+        for node in body_nodes(scope) {
             match node.kind() {
                 "call_expression" => {
                     // `CALL(x)` where `CALL` is a macro of the project: what it expands to
@@ -3151,6 +3206,13 @@ impl<'a> Reader<'a> {
                     }
                 }
                 // Casts, sizeof/alignof/offsetof, compound literals, template arguments, `new`.
+                // A class defined in the body: `struct S { .. };` and `struct S { .. } s;`.
+                // An anonymous one declares nothing (`on_record` returns for it).
+                "struct_specifier" | "union_specifier" | "class_specifier"
+                    if node.child_by_field_name("body").is_some() =>
+                {
+                    self.declare_local_record(node, owner);
+                }
                 "type_descriptor" => self.push_body_type(node, owner, context),
                 // `Impl::make()`, `Outer::Inner x`, `Region::Europe`: each class in the scope.
                 "qualified_identifier" => self.push_scope_components(node, owner),

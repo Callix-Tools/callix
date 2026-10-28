@@ -102,3 +102,4 @@ from graphlens beyond the DEPENDENCY nodes, that is a regression, and this
 table is the evidence of what the state was before it.
 
 Pins re-recorded after namespace-wrapped `.h` headers and `.h` files outside every C root went to C++ (issue #49).
+Pins re-recorded for issue #56 (CPP-11): classes defined in function bodies are now CLASS nodes (`Version::Get()::State`), and `class Outer::Inner` names `Inner`.

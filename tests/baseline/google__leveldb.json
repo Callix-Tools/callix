@@ -31,9 +31,9 @@
       "relations": 10
     },
     "db/c.cc": {
-      "hash": "61d118c43fd00278",
-      "nodes": 282,
-      "relations": 340
+      "hash": "7ff726c48a2087c5",
+      "nodes": 303,
+      "relations": 374
     },
     "db/corruption_test.cc": {
       "hash": "c13e5ae0c021c6d9",
@@ -41,9 +41,9 @@
       "relations": 94
     },
     "db/db_impl.cc": {
-      "hash": "8f2e070e72588680",
-      "nodes": 181,
-      "relations": 271
+      "hash": "e4b7b0db18779ea3",
+      "nodes": 189,
+      "relations": 285
     },
     "db/db_impl.h": {
       "hash": "59d25062521fff54",
@@ -61,9 +61,9 @@
       "relations": 11
     },
     "db/db_test.cc": {
-      "hash": "3a539856555525f4",
-      "nodes": 266,
-      "relations": 404
+      "hash": "bf4f568dbcccea72",
+      "nodes": 331,
+      "relations": 508
     },
     "db/dbformat.cc": {
       "hash": "862a0e4735247e39",
@@ -156,12 +156,12 @@
       "relations": 100
     },
     "db/repair.cc": {
-      "hash": "ed65d41e4048af7f",
-      "nodes": 55,
-      "relations": 109
+      "hash": "1978207df0453ace",
+      "nodes": 62,
+      "relations": 121
     },
     "db/skiplist.h": {
-      "hash": "75e71011466a7eb1",
+      "hash": "fd5d912a3ba5a060",
       "nodes": 67,
       "relations": 114
     },
@@ -201,9 +201,9 @@
       "relations": 10
     },
     "db/version_set.cc": {
-      "hash": "caf602a6a1400838",
-      "nodes": 223,
-      "relations": 291
+      "hash": "80059f6ebefac812",
+      "nodes": 249,
+      "relations": 335
     },
     "db/version_set.h": {
       "hash": "7fe76f74a03a8dc1",
@@ -511,9 +511,9 @@
       "relations": 6
     },
     "util/env_test.cc": {
-      "hash": "588a796945f471b4",
-      "nodes": 29,
-      "relations": 50
+      "hash": "bf715fd92a96a97d",
+      "nodes": 47,
+      "relations": 82
     },
     "util/env_windows.cc": {
       "hash": "fabcc1e05b7c75e7",
@@ -633,23 +633,23 @@
   },
   "kinds": {
     "nodes": {
-      "attribute": 700,
-      "class": 217,
+      "attribute": 738,
+      "class": 233,
       "dependency": 10,
       "external_symbol": 55,
       "file": 126,
       "function": 486,
       "import": 749,
-      "method": 1277,
+      "method": 1318,
       "module": 8,
-      "parameter": 1621,
+      "parameter": 1671,
       "project": 1,
       "type_alias": 12,
       "variable": 107
     },
     "relations": {
       "contains": 134,
-      "declares": 7611,
+      "declares": 7851,
       "depends_on": 10,
       "imports": 749,
       "resolves_to": 750
@@ -659,28 +659,28 @@
   "ref": "1.23",
   "resolution": {
     "metrics": {
-      "external": 4973,
-      "internal": 13077,
-      "queries": 18050,
-      "resolved": 18050,
+      "external": 4839,
+      "internal": 13674,
+      "queries": 18513,
+      "resolved": 18513,
       "unresolved": 0
     },
     "relations": {
-      "calls": 10280,
+      "calls": 10621,
       "contains": 134,
-      "declares": 7611,
+      "declares": 7851,
       "depends_on": 10,
-      "has_type": 3056,
+      "has_type": 3128,
       "imports": 749,
-      "inherits_from": 77,
-      "references": 3683,
+      "inherits_from": 88,
+      "references": 3693,
       "resolves_to": 750
     },
     "status": "degraded"
   },
   "totals": {
     "files": 126,
-    "nodes": 5369,
-    "relations": 9254
+    "nodes": 5514,
+    "relations": 9494
   }
 }

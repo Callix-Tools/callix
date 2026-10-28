@@ -37,15 +37,15 @@
   },
   "cpp": {
     "nodes": {
-      "attribute": 8,
+      "attribute": 10,
       "boundary": 1,
-      "class": 6,
+      "class": 9,
       "dependency": 1,
       "external_symbol": 21,
-      "file": 7,
-      "function": 6,
+      "file": 8,
+      "function": 7,
       "import": 10,
-      "method": 10,
+      "method": 12,
       "module": 2,
       "parameter": 7,
       "project": 1,
@@ -53,22 +53,22 @@
       "variable": 1
     },
     "relations": {
-      "calls": 20,
+      "calls": 22,
       "consumes": 1,
-      "contains": 9,
-      "declares": 72,
+      "contains": 10,
+      "declares": 85,
       "depends_on": 1,
       "has_type": 16,
       "imports": 10,
       "inherits_from": 2,
-      "references": 11,
+      "references": 13,
       "resolves_to": 10
     },
     "resolver": {
       "external": 17,
-      "internal": 35,
-      "queries": 52,
-      "resolved": 52,
+      "internal": 39,
+      "queries": 56,
+      "resolved": 56,
       "unresolved": 0
     },
     "resolver_status": "degraded"

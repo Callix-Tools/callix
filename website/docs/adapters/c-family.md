@@ -101,6 +101,20 @@ reference and pointer markers are kept, since they distinguish real overloads.
 C does not do this — it has no overloading, and adding a parameter list would
 gratuitously make `engine_build()` harder to look up than it needs to be.
 
+A class, struct or union defined in a function body is a CLASS qualified by the
+function that encloses it, parameter list included: `run()::State`, with the
+members `run()::State::stats` and `run()::State::State()` (in C, `run::State`).
+The function DECLARES it, and the member functions are callables of their own,
+so a call in a local constructor belongs to the constructor and not to `run()`.
+The name is bound lexically: from inside `run()` (or from inside a member of
+the local class) `State` means the local class even when a global `State`
+exists, and from any other function it never does. A local enum or typedef is
+not declared.
+
+A qualified record head - `class Outer::Inner { .. }` - declares the class
+`Inner` in the scope `Outer`: its `name` is `Inner` and its name span covers
+only `Inner`.
+
 Out-of-line definitions are classified with a workspace-wide pass. The grammar
 reports `qualified_identifier.scope` as a namespace identifier even when the
 scope is a class, and the class is usually declared in a different file, so the

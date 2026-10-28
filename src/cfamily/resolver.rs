@@ -111,6 +111,10 @@ pub struct CFamilyIndex {
     /// itself (not a pointer, array or function): the only ones `a = b` can call an
     /// operator on.
     objects: HashSet<String>,
+    /// Qualified names of the classes defined in a function body (`run()::State`)
+    /// and of the classes nested in them. They are found only by their exact name
+    /// or lexically from inside the callable, never by their bare name.
+    local_classes: HashSet<String>,
 }
 
 /// A member function of a class.
@@ -277,7 +281,10 @@ impl CFamilyIndex {
         let Some(candidates) = self.by_name.get(name) else {
             return Vec::new();
         };
-        let fits: Vec<&Symbol> = candidates.iter().filter(|s| accept(s.kind)).collect();
+        let fits: Vec<&Symbol> = candidates
+            .iter()
+            .filter(|s| accept(s.kind) && !self.local_classes.contains(&s.qualified_name))
+            .collect();
         let local: Vec<&Symbol> = fits
             .iter()
             .copied()
@@ -318,15 +325,25 @@ impl CFamilyIndex {
         qualifier: &[String],
         tag: bool,
         from_file: &str,
+        within: &str,
     ) -> Option<(String, NodeKind, bool)> {
         let candidates = self.by_name.get(name)?;
-        let qualifier = self.expand_qualifier(qualifier);
+        let mut qualifier = self.expand_qualifier(qualifier);
+        if qualifier.is_empty() {
+            // A class defined in the callable the use sits in wins over any other.
+            if let Some(local) = self.local_class(name, within) {
+                return Some((local, NodeKind::Class, false));
+            }
+        } else if let Some(local) = self.local_class(&qualifier[0], within) {
+            qualifier[0] = local;
+        }
         let exact = format!("{}::{name}", qualifier.join("::"));
         let tail = format!("::{exact}");
         let fits: Vec<&Symbol> = candidates
             .iter()
             .filter(|s| matches!(s.kind, NodeKind::Class | NodeKind::TypeAlias))
             .filter(|s| qualifier.is_empty() || s.qualified_name == exact || s.qualified_name.ends_with(&tail))
+            .filter(|s| !self.local_classes.contains(&s.qualified_name) || s.qualified_name == exact)
             .collect();
         let local: Vec<&Symbol> = fits
             .iter()
@@ -405,9 +422,69 @@ impl CFamilyIndex {
 
     /// The classes a type as written can mean, sorted: the written name is the
     /// whole qualified name or its tail (`Shape` for `n::Shape`).
-    fn classes_named(&self, written: &str) -> Vec<&String> {
+    ///
+    /// `within` is the qualified name of the callable (or class) the use sits in. If
+    /// the first component of `written` is a local class visible from there, only
+    /// that class (and what is nested in it) is meant. Otherwise a local class is
+    /// never matched by its tail - only by its exact name.
+    fn classes_named(&self, written: &str, within: &str) -> Vec<&String> {
+        let first = written.split("::").next().unwrap_or(written);
+        if let Some(local) = self.local_class(first, within) {
+            let exact = format!("{local}{}", &written[first.len()..]);
+            return self.classes.keys().filter(|q| q.as_str() == exact).collect();
+        }
         let tail = format!("::{written}");
-        self.classes.keys().filter(|q| q.as_str() == written || q.ends_with(&tail)).collect()
+        self.classes
+            .keys()
+            .filter(|q| q.as_str() == written || (q.ends_with(&tail) && !self.local_classes.contains(q.as_str())))
+            .collect()
+    }
+
+    /// Records a class defined in a function body, or nested in such a class.
+    pub fn declare_local_class(&mut self, qualified_name: &str) {
+        self.local_classes.insert(qualified_name.to_string());
+    }
+
+    /// `within` and every enclosing scope of it, innermost first. A scope boundary
+    /// is a `::` outside parentheses: `run()::State::State()` gives
+    /// `run()::State::State()`, `run()::State`, `run()`.
+    fn scopes(within: &str) -> Vec<String> {
+        if within.is_empty() {
+            return Vec::new();
+        }
+        let bytes = within.as_bytes();
+        let mut depth = 0usize;
+        let mut cuts: Vec<usize> = Vec::new();
+        let mut at = 0usize;
+        while at < bytes.len() {
+            match bytes[at] {
+                b'(' => depth += 1,
+                b')' => depth = depth.saturating_sub(1),
+                b':' if depth == 0 && bytes.get(at + 1) == Some(&b':') => {
+                    if at > 0 {
+                        cuts.push(at);
+                    }
+                    at += 1;
+                }
+                _ => {}
+            }
+            at += 1;
+        }
+        let mut scopes = vec![within.to_string()];
+        scopes.extend(cuts.into_iter().rev().map(|cut| within[..cut].to_string()));
+        scopes
+    }
+
+    /// The local class `name` means from inside `within`: C++ lexical lookup, the
+    /// innermost enclosing scope first. None when no scope of `within` defines one.
+    fn local_class(&self, name: &str, within: &str) -> Option<String> {
+        if self.local_classes.is_empty() || name.is_empty() {
+            return None;
+        }
+        Self::scopes(within)
+            .into_iter()
+            .map(|scope| format!("{scope}::{name}"))
+            .find(|candidate| self.local_classes.contains(candidate))
     }
 
     /// The class itself and its bases, nearest first, each once.
@@ -417,7 +494,7 @@ impl CFamilyIndex {
         while index < order.len() && order.len() < 64 {
             let current = order[index].clone();
             for base in self.classes.get(&current).into_iter().flatten() {
-                if let Some(found) = self.classes_named(base).first()
+                if let Some(found) = self.classes_named(base, class).first()
                     && !order.contains(found)
                 {
                     order.push((*found).clone());
@@ -446,10 +523,10 @@ impl CFamilyIndex {
 
     /// The classes a type name as written can mean: the class itself, or the class a
     /// typedef / `using` alias leads to (at most 8 hops). Empty for a library type.
-    fn class_of(&self, written: &str) -> Vec<String> {
+    fn class_of(&self, written: &str, within: &str) -> Vec<String> {
         let mut current = written.to_string();
         for _ in 0..8 {
-            let found = self.classes_named(&current);
+            let found = self.classes_named(&current, within);
             if !found.is_empty() {
                 return found.into_iter().cloned().collect();
             }
@@ -477,7 +554,7 @@ impl CFamilyIndex {
     /// What the receiver of a member access is: its root type (a typed local, `this`,
     /// a field of the enclosing class, a global), then one step per field of
     /// `receiver_path`.
-    fn receiver_classes(&self, site: &CallSite, from_file: &str) -> Receiver {
+    fn receiver_classes(&self, site: &CallSite, from_file: &str, within: &str) -> Receiver {
         let start = site.receiver_type.clone().or_else(|| {
             let name = site.receiver_name.as_deref()?;
             site.class_scope
@@ -489,7 +566,7 @@ impl CFamilyIndex {
             return Receiver::Unknown;
         };
         for step in &site.receiver_path {
-            let classes = self.class_of(&current);
+            let classes = self.class_of(&current, within);
             if classes.is_empty() {
                 return Receiver::Classes(Vec::new());
             }
@@ -498,13 +575,13 @@ impl CFamilyIndex {
                 None => return Receiver::Unknown,
             }
         }
-        Receiver::Classes(self.class_of(&current))
+        Receiver::Classes(self.class_of(&current, within))
     }
 
     /// The classes the LEFT operand of an operator can be. Like `receiver_classes`, but a
     /// field or global that is not recorded in `objects` (a pointer, an array) gives
     /// nothing, since `p = q` on pointers is built in.
-    fn operand_classes(&self, site: &CallSite, from_file: &str) -> Vec<String> {
+    fn operand_classes(&self, site: &CallSite, from_file: &str, within: &str) -> Vec<String> {
         let mut holder: Option<String> = None;
         let start = if let Some(t) = site.receiver_type.clone() {
             Some(t)
@@ -531,7 +608,7 @@ impl CFamilyIndex {
             return Vec::new();
         };
         for step in &site.receiver_path {
-            let classes = self.class_of(&current);
+            let classes = self.class_of(&current, within);
             let next = classes
                 .iter()
                 .find_map(|c| self.field_type(c, step).map(|t| (t, self.field_of(c, step))));
@@ -548,15 +625,15 @@ impl CFamilyIndex {
         {
             return Vec::new();
         }
-        self.class_of(&current)
+        self.class_of(&current, within)
     }
 
     /// An overloaded operator use. The left operand's class (and its bases) first, as a
     /// member; then, except for `=`, `[]` and `->` which are member-only, a visible
     /// two-parameter namespace-scope function, admitted only when an operand's class
     /// appears in the lineage of the class a parameter names. Never a bare-name fallback.
-    fn resolve_operator(&self, name: &str, site: &CallSite, from_file: &str) -> Outcome {
-        let lefts = self.operand_classes(site, from_file);
+    fn resolve_operator(&self, name: &str, site: &CallSite, from_file: &str, within: &str) -> Outcome {
+        let lefts = self.operand_classes(site, from_file, within);
         for class in &lefts {
             if let Some((member, ambiguous)) = self.member_of(class, name, site) {
                 return Outcome::Found {
@@ -574,7 +651,7 @@ impl CFamilyIndex {
         let right_classes = if right_name.is_empty() || right_name == "?" {
             Vec::new()
         } else {
-            self.class_of(right_name)
+            self.class_of(right_name, within)
         };
         let candidates: Vec<&Symbol> = self
             .visible(name, from_file, &|k| k == NodeKind::Function)
@@ -588,7 +665,7 @@ impl CFamilyIndex {
                     let Some(key) = type_key(parameter) else {
                         return false;
                     };
-                    let wanted = self.class_of(&key);
+                    let wanted = self.class_of(&key, within);
                     operands.iter().any(|operand| self.lineage(operand).iter().any(|c| wanted.contains(c)))
                 };
                 evidence(&lefts, params[0].as_str()) || evidence(&right_classes, params[1].as_str())
@@ -619,7 +696,7 @@ impl CFamilyIndex {
     /// name in a method means the class first. Only a receiver whose type is not
     /// known falls back to the bare name - and then the edge says `ambiguous` when
     /// the name is not unique.
-    pub fn resolve(&self, name: &str, role: &str, site: &CallSite, from_file: &str) -> Outcome {
+    pub fn resolve(&self, name: &str, role: &str, site: &CallSite, from_file: &str, within: &str) -> Outcome {
         // A namespace alias in the written scope stands for what it names.
         let expanded;
         let site = match site.qualifier.first().and_then(|first| self.namespace_aliases.get(first)) {
@@ -644,7 +721,7 @@ impl CFamilyIndex {
                 .as_deref()
                 .is_some_and(|scope| self.classes.get(scope).is_some_and(|bases| bases.iter().any(|b| b == name)));
         if site.constructs || base_init {
-            let classes = self.classes_named(&written);
+            let classes = self.classes_named(&written, within);
             let Some(class) = classes.first() else {
                 return Outcome::Outside;
             };
@@ -674,12 +751,12 @@ impl CFamilyIndex {
 
         // An overloaded operator: never the bare-name fallback of a member access.
         if site.overloaded_operator {
-            return self.resolve_operator(name, site, from_file);
+            return self.resolve_operator(name, site, from_file, within);
         }
 
         // A member access (call, read or write): the receiver's declared type decides.
         if site.member || site.receiver_type.is_some() || site.receiver_name.is_some() {
-            let receiver = self.receiver_classes(site, from_file);
+            let receiver = self.receiver_classes(site, from_file, within);
             if role == "call" {
                 return match receiver {
                     Receiver::Classes(classes) => {
@@ -727,7 +804,7 @@ impl CFamilyIndex {
         // A written scope: a class's member, or a namespace's function.
         if !site.qualifier.is_empty() {
             let scope = site.qualifier.join("::");
-            for class in self.classes_named(&scope) {
+            for class in self.classes_named(&scope, within) {
                 if let Some((member, ambiguous)) = self.member_of(class, name, site) {
                     return Outcome::Found { qualified_name: member.qualified_name, kind: member.kind, ambiguous };
                 }
@@ -848,10 +925,27 @@ pub fn type_key(text: &str) -> Option<String> {
 
 /// The parameter types of a C++ qualified name: `n::f(int,const char*)`.
 fn params_of(qualified_name: &str) -> Vec<String> {
-    let Some(open) = qualified_name.find('(') else {
+    let Some(close) = qualified_name.rfind(')') else {
         return Vec::new();
     };
-    let Some(close) = qualified_name.rfind(')') else {
+    // The group that ends at the last `)`: `run()::State::State(int)` is `(int)`, not
+    // the `()` of the enclosing function, and `F::operator()(int)` is `(int)`.
+    let mut depth = 0usize;
+    let mut open: Option<usize> = None;
+    for (at, c) in qualified_name[..=close].char_indices().rev() {
+        match c {
+            ')' => depth += 1,
+            '(' => {
+                depth -= 1;
+                if depth == 0 {
+                    open = Some(at);
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    let Some(open) = open else {
         return Vec::new();
     };
     let inside = &qualified_name[open + 1..close];
@@ -1032,7 +1126,7 @@ mod tests {
         index.declare_member("Sq", "area", "Sq::area()", NodeKind::Method);
 
         let receiver = |class: &str| CallSite { receiver_type: Some(class.to_string()), ..CallSite::default() };
-        let found = |name: &str, class: &str| match index.resolve(name, "call", &receiver(class), "main.cpp") {
+        let found = |name: &str, class: &str| match index.resolve(name, "call", &receiver(class), "main.cpp", "") {
             Outcome::Found { qualified_name, .. } => Some(qualified_name),
             _ => None,
         };
@@ -1043,7 +1137,7 @@ mod tests {
         assert_eq!(found("id", "Sq").as_deref(), Some("Shape::id()"));
         // A receiver of a type the project does not declare is not a project call.
         assert!(matches!(
-            index.resolve("size", "call", &receiver("std::string"), "main.cpp"),
+            index.resolve("size", "call", &receiver("std::string"), "main.cpp", ""),
             Outcome::Outside
         ));
     }
@@ -1053,7 +1147,7 @@ mod tests {
         let mut index = CFamilyIndex::new();
         index.declare("S", "S", NodeKind::Function, "a.h", false);
         index.declare("S", "S", NodeKind::Variable, "a.h", false);
-        assert!(index.resolve_type("S", &[], false, "a.h").is_none());
+        assert!(index.resolve_type("S", &[], false, "a.h", "").is_none());
     }
 
     #[test]
@@ -1061,10 +1155,10 @@ mod tests {
         let mut index = CFamilyIndex::new();
         index.declare("S", "S", NodeKind::Class, "a.h", false);
         index.declare("S", "S", NodeKind::TypeAlias, "a.h", false);
-        let (_, kind, ambiguous) = index.resolve_type("S", &[], false, "a.h").unwrap();
+        let (_, kind, ambiguous) = index.resolve_type("S", &[], false, "a.h", "").unwrap();
         assert!(matches!(kind, NodeKind::TypeAlias));
         assert!(!ambiguous);
-        let (_, kind, ambiguous) = index.resolve_type("S", &[], true, "a.h").unwrap();
+        let (_, kind, ambiguous) = index.resolve_type("S", &[], true, "a.h", "").unwrap();
         assert!(matches!(kind, NodeKind::Class));
         assert!(!ambiguous);
     }
@@ -1075,20 +1169,20 @@ mod tests {
         index.declare("string", "mine::string", NodeKind::Class, "a.h", false);
         let std = vec!["std".to_string()];
         let mine = vec!["mine".to_string()];
-        assert!(index.resolve_type("string", &std, false, "a.h").is_none());
-        assert!(index.resolve_type("string", &mine, false, "a.h").is_some());
+        assert!(index.resolve_type("string", &std, false, "a.h", "").is_none());
+        assert!(index.resolve_type("string", &mine, false, "a.h", "").is_some());
         // No scope written: any visible type of the name.
-        assert!(index.resolve_type("string", &[], false, "a.h").is_some());
+        assert!(index.resolve_type("string", &[], false, "a.h", "").is_some());
     }
 
     #[test]
     fn a_type_must_be_reachable_by_include() {
         let mut index = CFamilyIndex::new();
         index.declare("S", "S", NodeKind::Class, "a.h", false);
-        assert!(index.resolve_type("S", &[], false, "main.c").is_none());
+        assert!(index.resolve_type("S", &[], false, "main.c", "").is_none());
         index.include("main.c", "a.h");
         index.close_includes();
-        assert!(index.resolve_type("S", &[], false, "main.c").is_some());
+        assert!(index.resolve_type("S", &[], false, "main.c", "").is_some());
     }
 
     fn found(outcome: Outcome) -> Option<(String, NodeKind, bool)> {
@@ -1122,7 +1216,7 @@ mod tests {
     #[test]
     fn a_field_read_follows_the_receiver_through_a_chain() {
         let index = list_index();
-        let read = |site: CallSite| found(index.resolve("len", "read", &site, "a.h"));
+        let read = |site: CallSite| found(index.resolve("len", "read", &site, "a.h", ""));
         assert_eq!(read(member(Some("Node"), &["next"])), Some(("Node::len".into(), NodeKind::Attribute, false)));
         assert_eq!(read(member(Some("List"), &["head"])), Some(("Node::len".into(), NodeKind::Attribute, false)));
         assert_eq!(read(member(Some("List"), &[])), Some(("List::len".into(), NodeKind::Attribute, false)));
@@ -1133,7 +1227,7 @@ mod tests {
         let mut index = list_index();
         index.declare_alias("node_t", "struct Node *");
         index.declare_alias("node_tt", "node_t");
-        let got = found(index.resolve("len", "read", &member(Some("node_tt"), &[]), "a.h"));
+        let got = found(index.resolve("len", "read", &member(Some("node_tt"), &[]), "a.h", ""));
         assert_eq!(got.map(|g| g.0).as_deref(), Some("Node::len"));
     }
 
@@ -1142,22 +1236,22 @@ mod tests {
         let mut index = list_index();
         index.declare_typed("server", "server", NodeKind::Variable, "a.h", false, type_key("struct List"));
         let site = CallSite { member: true, receiver_name: Some("server".into()), ..CallSite::default() };
-        let got = found(index.resolve("len", "read", &site, "a.h"));
+        let got = found(index.resolve("len", "read", &site, "a.h", ""));
         assert_eq!(got.map(|g| g.0).as_deref(), Some("List::len"));
     }
 
     #[test]
     fn a_known_type_without_the_field_is_outside() {
         let index = list_index();
-        assert!(matches!(index.resolve("bogus", "read", &member(Some("Node"), &[]), "a.h"), Outcome::Outside));
-        assert!(matches!(index.resolve("len", "read", &member(Some("FILE"), &[]), "a.h"), Outcome::Outside));
+        assert!(matches!(index.resolve("bogus", "read", &member(Some("Node"), &[]), "a.h", ""), Outcome::Outside));
+        assert!(matches!(index.resolve("len", "read", &member(Some("FILE"), &[]), "a.h", ""), Outcome::Outside));
     }
 
     #[test]
     fn an_unknown_receiver_falls_back_to_fields_only_and_says_ambiguous() {
         let index = list_index();
         let site = CallSite { member: true, ..CallSite::default() };
-        let got = found(index.resolve("len", "read", &site, "a.h")).unwrap();
+        let got = found(index.resolve("len", "read", &site, "a.h", "")).unwrap();
         assert_eq!(got.1, NodeKind::Attribute);
         assert!(got.2);
     }
@@ -1174,8 +1268,8 @@ mod tests {
             in_initializer_list: true,
             ..CallSite::default()
         };
-        assert_eq!(found(index.resolve("next_", "write", &site, "a.h")).map(|g| g.0).as_deref(), Some("Set::next_"));
-        assert!(matches!(index.resolve("Set", "write", &site, "a.h"), Outcome::NotACall));
+        assert_eq!(found(index.resolve("next_", "write", &site, "a.h", "")).map(|g| g.0).as_deref(), Some("Set::next_"));
+        assert!(matches!(index.resolve("Set", "write", &site, "a.h", ""), Outcome::NotACall));
     }
 
     #[test]
@@ -1183,7 +1277,7 @@ mod tests {
         let mut index = CFamilyIndex::new();
         index.declare("mstime", "srv::mstime", NodeKind::Attribute, "a.c", false);
         index.declare("mstime", "mstime", NodeKind::Function, "a.c", false);
-        let got = found(index.resolve("mstime", "call", &CallSite::default(), "a.c")).unwrap();
+        let got = found(index.resolve("mstime", "call", &CallSite::default(), "a.c", "")).unwrap();
         assert_eq!((got.0.as_str(), got.1), ("mstime", NodeKind::Function));
     }
 
@@ -1213,7 +1307,7 @@ mod tests {
         index.declare_class("buf_t");
         index.declare("len", "buf_t::len", NodeKind::Attribute, "a.h", false);
         index.declare_field("buf_t", "len", "buf_t::len", "int");
-        let got = found(index.resolve("len", "read", &member(Some("buf_t"), &[]), "a.h"));
+        let got = found(index.resolve("len", "read", &member(Some("buf_t"), &[]), "a.h", ""));
         assert_eq!(got, Some(("buf_t::len".into(), NodeKind::Attribute, false)));
     }
 
@@ -1241,7 +1335,7 @@ mod tests {
     fn an_operator_member_is_found_through_a_base_class() {
         let mut index = operator_index();
         index.declare_member("B", "operator==", "B::operator==(const B&) const", NodeKind::Method);
-        let got = found(index.resolve("operator==", "call", &op_site(Some("D"), "D"), "a.h"));
+        let got = found(index.resolve("operator==", "call", &op_site(Some("D"), "D"), "a.h", ""));
         assert_eq!(got, Some(("B::operator==(const B&) const".into(), NodeKind::Method, false)));
     }
 
@@ -1249,7 +1343,7 @@ mod tests {
     fn a_free_operator_is_chosen_by_the_type_of_its_parameters() {
         let mut index = operator_index();
         index.declare("operator!=", "operator!=(const S&,const S&)", NodeKind::Function, "a.h", false);
-        let got = found(index.resolve("operator!=", "call", &op_site(Some("S"), "S"), "a.h"));
+        let got = found(index.resolve("operator!=", "call", &op_site(Some("S"), "S"), "a.h", ""));
         assert_eq!(got, Some(("operator!=(const S&,const S&)".into(), NodeKind::Function, false)));
     }
 
@@ -1258,7 +1352,7 @@ mod tests {
         let mut index = operator_index();
         index.declare("operator==", "operator==(const S&,const S&)", NodeKind::Function, "a.h", false);
         // `int == int`: no operand class at all.
-        let outcome = index.resolve("operator==", "call", &op_site(None, "int"), "a.h");
+        let outcome = index.resolve("operator==", "call", &op_site(None, "int"), "a.h", "");
         assert!(matches!(outcome, Outcome::NotACall));
     }
 
@@ -1266,7 +1360,7 @@ mod tests {
     fn assignment_never_falls_back_to_a_free_function() {
         let mut index = operator_index();
         index.declare("operator=", "operator=(S&,const S&)", NodeKind::Function, "a.h", false);
-        let outcome = index.resolve("operator=", "call", &op_site(Some("S"), "S"), "a.h");
+        let outcome = index.resolve("operator=", "call", &op_site(Some("S"), "S"), "a.h", "");
         assert!(matches!(outcome, Outcome::NotACall));
     }
 
@@ -1287,9 +1381,9 @@ mod tests {
             receiver_name: Some(field.to_string()),
             ..CallSite::default()
         };
-        let object = found(index.resolve("operator=", "call", &on("v_"), "a.h"));
+        let object = found(index.resolve("operator=", "call", &on("v_"), "a.h", ""));
         assert_eq!(object, Some(("S::operator=(const S&)".into(), NodeKind::Method, false)));
-        assert!(matches!(index.resolve("operator=", "call", &on("p_"), "a.h"), Outcome::NotACall));
+        assert!(matches!(index.resolve("operator=", "call", &on("p_"), "a.h", ""), Outcome::NotACall));
     }
 
     #[test]
@@ -1298,7 +1392,7 @@ mod tests {
         index.declare_member("S", "operator=", "S::operator=(const S&)", NodeKind::Method);
         index.declare_member("S", "operator=", "S::operator=(S&&)", NodeKind::Method);
         let pick_for = |right: &str| {
-            found(index.resolve("operator=", "call", &op_site(Some("S"), right), "a.h")).map(|f| (f.0, f.2))
+            found(index.resolve("operator=", "call", &op_site(Some("S"), right), "a.h", "")).map(|f| (f.0, f.2))
         };
         assert_eq!(pick_for("&&S"), Some(("S::operator=(S&&)".to_string(), false)));
         assert_eq!(pick_for("&&"), Some(("S::operator=(S&&)".to_string(), false)));
@@ -1310,7 +1404,7 @@ mod tests {
         let mut index = operator_index();
         index.declare("operator==", "operator==(const A&,const B&)", NodeKind::Function, "a.h", false);
         index.declare("operator==", "operator==(const A&,const C&)", NodeKind::Function, "a.h", false);
-        let got = found(index.resolve("operator==", "call", &op_site(Some("A"), "?"), "a.h"));
+        let got = found(index.resolve("operator==", "call", &op_site(Some("A"), "?"), "a.h", ""));
         assert_eq!(got.map(|g| g.2), Some(true));
     }
 
@@ -1322,5 +1416,54 @@ mod tests {
         assert_eq!(fit("T&", "&&T"), -2);
         assert_eq!(fit("T&&", "T"), 1);
         assert_eq!(fit("const T&", "T"), 3);
+    }
+
+    fn local_index() -> CFamilyIndex {
+        let mut index = CFamilyIndex::new();
+        index.declare("State", "State", NodeKind::Class, "a.cc", false);
+        index.declare_class("State");
+        index.declare_member("State", "State", "State::State()", NodeKind::Method);
+        index.declare("State", "run()::State", NodeKind::Class, "a.cc", false);
+        index.declare_class("run()::State");
+        index.declare_local_class("run()::State");
+        index.declare_member("run()::State", "State", "run()::State::State()", NodeKind::Method);
+        index
+    }
+
+    #[test]
+    fn local_class_wins_inside_its_function() {
+        let index = local_index();
+        let site = CallSite { constructs: true, ..CallSite::default() };
+        let got = found(index.resolve("State", "call", &site, "a.cc", "run()")).unwrap();
+        assert_eq!(got.0, "run()::State::State()");
+        assert!(!got.2);
+        // From inside the local class's own constructor the lookup is lexical too.
+        let got = found(index.resolve("State", "call", &site, "a.cc", "run()::State::State()")).unwrap();
+        assert_eq!(got.0, "run()::State::State()");
+        let (qualified, kind, ambiguous) = index.resolve_type("State", &[], false, "a.cc", "run()").unwrap();
+        assert_eq!(qualified, "run()::State");
+        assert!(kind == NodeKind::Class && !ambiguous);
+    }
+
+    #[test]
+    fn local_class_is_invisible_from_another_function() {
+        let index = local_index();
+        let site = CallSite { constructs: true, ..CallSite::default() };
+        let got = found(index.resolve("State", "call", &site, "a.cc", "other()")).unwrap();
+        assert_eq!(got.0, "State::State()");
+        assert!(!got.2);
+        let (qualified, _, ambiguous) = index.resolve_type("State", &[], false, "a.cc", "other()").unwrap();
+        assert_eq!(qualified, "State");
+        assert!(!ambiguous);
+        // Not in any function at all.
+        let (qualified, _, _) = index.resolve_type("State", &[], false, "a.cc", "").unwrap();
+        assert_eq!(qualified, "State");
+    }
+
+    #[test]
+    fn params_of_reads_the_last_parameter_list() {
+        assert_eq!(params_of("run()::State::State(int)"), names(&["int"]));
+        assert_eq!(params_of("F::operator()(int)"), names(&["int"]));
+        assert!(params_of("run()::State::State()").is_empty());
     }
 }

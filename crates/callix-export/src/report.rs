@@ -263,7 +263,9 @@ fn language_resolution(language: &str) -> (&'static str, &'static str) {
              class that declares it (bases included), or when a namespace-scope two-parameter \
              operator names an operand's class; operators on an expression result, unary \
              operators, argument-dependent lookup and template-dependent operands are not \
-             followed, and an operator nothing declares gives no edge",
+             followed, and an operator nothing declares gives no edge; a class, struct or union \
+             defined in a function body is qualified by that function (`run()::State`) and \
+             bound only from inside it, and a local enum or typedef is not declared",
         ),
         "yaml" => ("none", "declares no symbols"),
         _ => ("none", "not analysed"),

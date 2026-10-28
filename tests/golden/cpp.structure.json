@@ -94,6 +94,15 @@
       "span": null
     },
     {
+      "file_path": "src/local.cpp",
+      "id": "e267e5d9477ca25d",
+      "kind": "file",
+      "metadata": {},
+      "name": "local.cpp",
+      "qualified_name": "src/local.cpp",
+      "span": null
+    },
+    {
       "file_path": "src/main.cpp",
       "id": "76a741d010b73d4f",
       "kind": "file",
@@ -1322,6 +1331,245 @@
       ]
     },
     {
+      "file_path": "src/local.cpp",
+      "id": "3c91bd352f5ceefc",
+      "kind": "function",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            4,
+            5,
+            4,
+            16
+          ]
+        },
+        "return_type": "int",
+        "signature": "()"
+      },
+      "name": "local_total",
+      "qualified_name": "fixture::local_total()",
+      "span": [
+        4,
+        1,
+        13,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "07cb663d18215f86",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            5,
+            10,
+            5,
+            15
+          ]
+        },
+        "record_kind": "struct"
+      },
+      "name": "Tally",
+      "qualified_name": "fixture::local_total()::Tally",
+      "span": [
+        5,
+        3,
+        9,
+        4
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "8ecd2a61828fb697",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            6,
+            9,
+            6,
+            14
+          ]
+        }
+      },
+      "name": "count",
+      "qualified_name": "fixture::local_total()::Tally::count",
+      "span": [
+        6,
+        5,
+        6,
+        15
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "f4994a61ba520604",
+      "kind": "method",
+      "metadata": {
+        "access": "public",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            7,
+            5,
+            7,
+            10
+          ]
+        },
+        "return_type": "",
+        "signature": "()"
+      },
+      "name": "Tally",
+      "qualified_name": "fixture::local_total()::Tally::Tally()",
+      "span": [
+        7,
+        5,
+        7,
+        26
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "90e76ea154ee9f88",
+      "kind": "method",
+      "metadata": {
+        "access": "public",
+        "declared_in": [],
+        "is_definition": true,
+        "is_static": false,
+        "is_template": false,
+        "is_virtual": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            8,
+            10,
+            8,
+            14
+          ]
+        },
+        "return_type": "void",
+        "signature": "()"
+      },
+      "name": "bump",
+      "qualified_name": "fixture::local_total()::Tally::bump()",
+      "span": [
+        8,
+        5,
+        8,
+        32
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "e52943ea70eeaea2",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            15,
+            7,
+            15,
+            12
+          ]
+        },
+        "record_kind": "class"
+      },
+      "name": "Outer",
+      "qualified_name": "fixture::Outer",
+      "span": [
+        15,
+        1,
+        18,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "cc43aa61291696b9",
+      "kind": "class",
+      "metadata": {
+        "access": "",
+        "declared_in": [],
+        "is_definition": true,
+        "is_template": false,
+        "linkage": "external",
+        "name_span": {
+          "__span__": [
+            20,
+            14,
+            20,
+            19
+          ]
+        },
+        "record_kind": "class"
+      },
+      "name": "Inner",
+      "qualified_name": "fixture::Outer::Inner",
+      "span": [
+        20,
+        1,
+        23,
+        2
+      ]
+    },
+    {
+      "file_path": "src/local.cpp",
+      "id": "3f84e2b1857a7fe0",
+      "kind": "attribute",
+      "metadata": {
+        "access": "public",
+        "annotation": "int",
+        "declared_in": [],
+        "is_enumerator": false,
+        "is_static": false,
+        "name_span": {
+          "__span__": [
+            22,
+            7,
+            22,
+            8
+          ]
+        }
+      },
+      "name": "v",
+      "qualified_name": "fixture::Outer::Inner::v",
+      "span": [
+        22,
+        3,
+        22,
+        9
+      ]
+    },
+    {
       "file_path": "src/main.cpp",
       "id": "ef15d20511e90a12",
       "kind": "function",
@@ -1694,6 +1942,12 @@
       "metadata": {},
       "source_id": "468d1a6442363500",
       "target_id": "f701dbf6f3d7f1ac"
+    },
+    {
+      "kind": "contains",
+      "metadata": {},
+      "source_id": "468d1a6442363500",
+      "target_id": "e267e5d9477ca25d"
     },
     {
       "kind": "contains",
@@ -2177,6 +2431,84 @@
       },
       "source_id": "0b34ed338f27e9dd",
       "target_id": "64e96181de5fbdf2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "3c91bd352f5ceefc"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "07cb663d18215f86"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "3c91bd352f5ceefc",
+      "target_id": "07cb663d18215f86"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "8ecd2a61828fb697"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "8ecd2a61828fb697"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "f4994a61ba520604"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "f4994a61ba520604"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "90e76ea154ee9f88"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "07cb663d18215f86",
+      "target_id": "90e76ea154ee9f88"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "e52943ea70eeaea2"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "cc43aa61291696b9"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "e267e5d9477ca25d",
+      "target_id": "3f84e2b1857a7fe0"
+    },
+    {
+      "kind": "declares",
+      "metadata": {},
+      "source_id": "cc43aa61291696b9",
+      "target_id": "3f84e2b1857a7fe0"
     },
     {
       "kind": "declares",

@@ -56,7 +56,7 @@ use super::detector::{
     C_EXTENSIONS, CPP_EXTENSIONS, collect_c_files, collect_cpp_files, family_root_files, is_c,
     is_cpp, project_name,
 };
-use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include};
+use super::headers::{DeclLedger, Linkage, claims, include_search_dirs, resolve_include, split_member};
 use super::resolver::{CFamilyIndex, Outcome, SymbolTable, type_key};
 use super::visitor::{
     CFamilyEmitter, FileFacts, FoundOccurrence, MacroTable, Owner, declared_macros, declared_scopes,
@@ -503,6 +503,10 @@ fn resolve_with_table(
     // A class's fields in declaration order, for the positional elements of an
     // initialiser: `struct ops o = { g };` fills the first field.
     let mut fields_by_class: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+    // Classes defined in a function body (`run()::State`) and, inside them, their
+    // nested classes. Declarations arrive in source order, so a class precedes its
+    // nested classes.
+    let mut local_classes: HashSet<String> = HashSet::new();
 
     for file in analysed {
         for decl in &file.facts.declarations {
@@ -534,20 +538,25 @@ fn resolve_with_table(
                 index.declare_object(&decl.qualified_name);
             }
             // Classes, their members and fields: what a receiver's type is asked.
-            // `F::operator()()`: the call operator's own parentheses are not the signature's.
-            let without_signature = match decl.qualified_name.find("operator()") {
-                Some(at) => &decl.qualified_name[..at + "operator()".len()],
-                None => decl.qualified_name.split('(').next().unwrap_or(&decl.qualified_name),
-            };
             match decl.kind {
-                NodeKind::Class => index.declare_class(&decl.qualified_name),
+                NodeKind::Class => {
+                    index.declare_class(&decl.qualified_name);
+                    // A class owned by a callable, or by a class that is itself local.
+                    if let Owner::Decl { qualified_name: owner_name, kind: owner_kind } = &decl.owner
+                        && (matches!(owner_kind, NodeKind::Function | NodeKind::Method)
+                            || (*owner_kind == NodeKind::Class && local_classes.contains(owner_name)))
+                    {
+                        local_classes.insert(decl.qualified_name.clone());
+                        index.declare_local_class(&decl.qualified_name);
+                    }
+                }
                 NodeKind::Method => {
-                    if let Some((class, member)) = without_signature.rsplit_once("::") {
+                    if let Some((class, member)) = split_member(&decl.qualified_name) {
                         index.declare_member(class, member, &decl.qualified_name, decl.kind);
                     }
                 }
                 NodeKind::Attribute => {
-                    if let Some((class, field)) = without_signature.rsplit_once("::") {
+                    if let Some((class, field)) = split_member(&decl.qualified_name) {
                         index.declare_field(class, field, &decl.qualified_name, &decl.type_text);
                     }
                 }
@@ -693,6 +702,12 @@ fn resolve_with_table(
                 continue;
             }
 
+            // The scope the use-site sits in: a local class is visible from there.
+            let within: &str = match &occurrence.owner {
+                Owner::Decl { qualified_name, .. } => qualified_name.as_str(),
+                Owner::File => "",
+            };
+
             // A type name (`type_use`) is asked of the class/typedef table only: a
             // function or variable of the same name is not what a type position names.
             // A speculative miss (a namespace component, `sizeof(variable)`) writes
@@ -703,6 +718,7 @@ fn resolve_with_table(
                     &occurrence.site.qualifier,
                     occurrence.site.tag,
                     &file.file_rel,
+                    within,
                 );
                 match answer {
                     Some((qualified_name, target_kind, ambiguous)) => {
@@ -776,7 +792,7 @@ fn resolve_with_table(
             // A call, a construction and a base in an initialiser list are asked of
             // the class table with everything the site says; the rest by name.
             let asked = if occurrence.role == "call" || occurrence.site.in_initializer_list || occurrence.site.member {
-                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel) {
+                match index.resolve(&occurrence.name, occurrence.role, &occurrence.site, &file.file_rel, within) {
                     Outcome::Found { qualified_name, kind, ambiguous } => Some(Some((qualified_name, kind, ambiguous))),
                     // Nothing the project declares: a library, a built-in. A
                     // construction of one is no edge at all; a call is an external one.

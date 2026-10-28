@@ -102,6 +102,42 @@ pub fn qualify_scope(file_rel: &str, scope: &[String], linkage: Linkage) -> Stri
     parts.join(SCOPE_SEPARATOR)
 }
 
+/// Splits a member's qualified name into its class and its bare name.
+///
+/// The split is at the LAST `::` that is outside every parenthesis group, so
+/// the parameter list of the member (or of an enclosing function) never
+/// confuses it: `run()::State::State()` gives (`run()::State`, `State`),
+/// `F::operator()()` gives (`F`, `operator()`) and `n::C::f(std::string)`
+/// gives (`n::C`, `f`). The signature is stripped from the member part only.
+/// None when the name has no such `::`.
+pub fn split_member(qualified_name: &str) -> Option<(&str, &str)> {
+    let bytes = qualified_name.as_bytes();
+    let mut depth = 0usize;
+    let mut cut: Option<usize> = None;
+    let mut at = 0usize;
+    while at < bytes.len() {
+        match bytes[at] {
+            b'(' => depth += 1,
+            b')' => depth = depth.saturating_sub(1),
+            b':' if depth == 0 && bytes.get(at + 1) == Some(&b':') => {
+                cut = Some(at);
+                at += 1;
+            }
+            _ => {}
+        }
+        at += 1;
+    }
+    let cut = cut?;
+    let class = &qualified_name[..cut];
+    let member = &qualified_name[cut + 2..];
+    // `F::operator()()`: the call operator's own parentheses are not the signature's.
+    let member = match member.find("operator()") {
+        Some(position) => &member[..position + "operator()".len()],
+        None => member.split('(').next().unwrap_or(member),
+    };
+    Some((class, member))
+}
+
 /// Where one declaring site of a shared name sits.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct DeclSite {
@@ -595,5 +631,17 @@ mod tests {
         assert!(claims(Dialect::C, Path::new("a.c"), b"int f(void);", || panic!("asked")).unwrap());
         assert!(claims(Dialect::Cpp, Path::new("a.hpp"), b"int f();", || panic!("asked")).unwrap());
         assert!(!claims(Dialect::C, Path::new("a.txt"), b"", || panic!("asked")).unwrap());
+    }
+
+    #[test]
+    fn a_member_is_split_at_the_last_scope_outside_parentheses() {
+        assert_eq!(split_member("run()::State::State()"), Some(("run()::State", "State")));
+        assert_eq!(split_member("run()::State::stats"), Some(("run()::State", "stats")));
+        assert_eq!(split_member("n::C::f(std::string)"), Some(("n::C", "f")));
+        assert_eq!(split_member("F::operator()()"), Some(("F", "operator()")));
+        assert_eq!(split_member("F::operator()(int)"), Some(("F", "operator()")));
+        assert_eq!(split_member("Region::Europe"), Some(("Region", "Europe")));
+        assert_eq!(split_member("plain"), None);
+        assert_eq!(split_member("f(int)"), None);
     }
 }
